@@ -64,6 +64,15 @@ export function evaluateFeeRule(
         return null;
       }
     }
+    
+    // Handle NT class condition for Sjfartsverket
+    if (rule.applicable_conditions.nt_class) {
+      const nt = vessel.nt !== undefined ? vessel.nt : vessel.gt * 0.55;
+      const ntClass = getNetTonnageClass(nt);
+      if (ntClass !== rule.applicable_conditions.nt_class) {
+        return null;
+      }
+    }
   }
   
   // Get the value for the basis
