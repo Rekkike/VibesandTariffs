@@ -1,0 +1,543 @@
+{
+  "metadata": {
+    "id": "gothenburg",
+    "name": "Port of Gothenburg",
+    "country": "Sweden",
+    "currency": "SEK",
+    "validity_start": "2026-01-01",
+    "validity_end": "2026-12-31",
+    "description": "Complete tariff data for Gothenburg port"
+  },
+  "billers": [
+    {
+      "id": "port_of_gothenburg",
+      "name": "Port of Gothenburg",
+      "description": "Port authority for Gothenburg",
+      "currency": "SEK"
+    },
+    {
+      "id": "sjofartsverket",
+      "name": "Sj\u00f6fartsverket",
+      "description": "Swedish Maritime Administration",
+      "currency": "SEK"
+    },
+    {
+      "id": "apm_terminals_gothenburg",
+      "name": "APM Terminals Gothenburg",
+      "description": "Terminal operator at Port of Gothenburg",
+      "currency": "SEK"
+    }
+  ],
+  "fee_rules": [
+    {
+      "id": "port_gothenburg_container_vessel_dues",
+      "fee_family": "port_dues",
+      "biller": "Port of Gothenburg",
+      "name": "Container Vessel Dues",
+      "description": "Progressive dues based on vessel GT",
+      "rate_structure": {
+        "type": "progressive",
+        "basis": "gt",
+        "bands": [
+          {
+            "min": 0,
+            "max": 20000,
+            "rate": 1.96
+          },
+          {
+            "min": 20000,
+            "max": 40000,
+            "rate": 1.71
+          },
+          {
+            "min": 40000,
+            "max": 60000,
+            "rate": 1.15
+          },
+          {
+            "min": 60000,
+            "max": null,
+            "rate": 0.8
+          }
+        ]
+      },
+      "minimum": 500,
+      "source_reference": {
+        "document_name": "Port Tariff 2026 - Port of Gothenburg",
+        "document_url": "https://www.portofgothenburg.com/en/shipping/port-dues",
+        "document_issued": "2025-12-01",
+        "page": 5,
+        "clause": "Section 2.1",
+        "verified_on": "2025-12-15",
+        "verified_by": "Port Cost Analyzer Team"
+      }
+    },
+    {
+      "id": "port_gothenburg_env_discount_esi_csi",
+      "fee_family": "environmental_surcharge",
+      "biller": "Port of Gothenburg",
+      "name": "Environmental Discount - ESI/CSI",
+      "description": "10% discount for ESI >= 30 or CSI class 4",
+      "rate_structure": {
+        "type": "flat",
+        "amount": 0
+      },
+      "adjustments": [
+        {
+          "type": "discount",
+          "percentage": 10,
+          "condition": "esi_score >= 30 || csi_class == '4'",
+          "description": "Environmental discount",
+          "stacking_order": 1
+        }
+      ],
+      "source_reference": {
+        "document_name": "Port Tariff 2026",
+        "document_url": "https://www.portofgothenburg.com/en/shipping/port-dues",
+        "document_issued": "2025-12-01",
+        "page": 7,
+        "clause": "Section 3.2",
+        "verified_on": "2025-12-15",
+        "verified_by": "Port Cost Analyzer Team"
+      }
+    },
+    {
+      "id": "port_gothenburg_env_discount_fuel",
+      "fee_family": "environmental_surcharge",
+      "biller": "Port of Gothenburg",
+      "name": "Environmental Discount - Fuel",
+      "description": "10% discount for >= 30% fossil-free fuel",
+      "rate_structure": {
+        "type": "flat",
+        "amount": 0
+      },
+      "adjustments": [
+        {
+          "type": "discount",
+          "percentage": 10,
+          "condition": "fossil_free_fuel_percentage >= 30",
+          "description": "Fuel discount",
+          "stacking_order": 2
+        }
+      ],
+      "source_reference": {
+        "document_name": "Port Tariff 2026",
+        "document_url": "https://www.portofgothenburg.com/en/shipping/port-dues",
+        "document_issued": "2025-12-01",
+        "page": 7,
+        "clause": "Section 3.2",
+        "verified_on": "2025-12-15",
+        "verified_by": "Port Cost Analyzer Team"
+      }
+    },
+    {
+      "id": "port_gothenburg_frequency_discount",
+      "fee_family": "port_dues",
+      "biller": "Port of Gothenburg",
+      "name": "Frequency Discount",
+      "description": "50% discount for 2+ calls this month",
+      "rate_structure": {
+        "type": "flat",
+        "amount": 0
+      },
+      "adjustments": [
+        {
+          "type": "discount",
+          "percentage": 50,
+          "condition": "calls_this_month >= 2",
+          "description": "Frequency discount",
+          "stacking_order": 3
+        }
+      ],
+      "source_reference": {
+        "document_name": "Port Tariff 2026",
+        "document_url": "https://www.portofgothenburg.com/en/shipping/port-dues",
+        "document_issued": "2025-12-01",
+        "page": 8,
+        "clause": "Section 3.3",
+        "verified_on": "2025-12-15",
+        "verified_by": "Port Cost Analyzer Team"
+      }
+    },
+    {
+      "id": "port_gothenburg_waste_solid_eu",
+      "fee_family": "waste",
+      "biller": "Port of Gothenburg",
+      "name": "Solid Waste Dues - EU",
+      "description": "Solid waste for EU vessels",
+      "rate_structure": {
+        "type": "per_unit",
+        "unit_rate": 0.13,
+        "unit_type": "gt"
+      },
+      "applicable_conditions": {
+        "flag_state": "EU"
+      },
+      "source_reference": {
+        "document_name": "Port Tariff 2026",
+        "document_url": "https://www.portofgothenburg.com/en/shipping/port-dues",
+        "document_issued": "2025-12-01",
+        "page": 10,
+        "clause": "Section 4.1",
+        "verified_on": "2025-12-15",
+        "verified_by": "Port Cost Analyzer Team"
+      }
+    },
+    {
+      "id": "port_gothenburg_waste_solid_non_eu",
+      "fee_family": "waste",
+      "biller": "Port of Gothenburg",
+      "name": "Solid Waste Dues - Non-EU",
+      "description": "Solid waste for non-EU vessels",
+      "rate_structure": {
+        "type": "per_unit",
+        "unit_rate": 0.24,
+        "unit_type": "gt"
+      },
+      "applicable_conditions": {
+        "flag_state": "non-EU"
+      },
+      "source_reference": {
+        "document_name": "Port Tariff 2026",
+        "document_url": "https://www.portofgothenburg.com/en/shipping/port-dues",
+        "document_issued": "2025-12-01",
+        "page": 10,
+        "clause": "Section 4.1",
+        "verified_on": "2025-12-15",
+        "verified_by": "Port Cost Analyzer Team"
+      }
+    },
+    {
+      "id": "port_gothenburg_ops_connection",
+      "fee_family": "connection_fee",
+      "biller": "Port of Gothenburg",
+      "name": "OPS Connection Fee",
+      "description": "Onshore Power Supply connection",
+      "rate_structure": {
+        "type": "flat",
+        "amount": 7000
+      },
+      "applicable_conditions": {
+        "ops_usage": true
+      },
+      "source_reference": {
+        "document_name": "Port Tariff 2026",
+        "document_url": "https://www.portofgothenburg.com/en/shipping/port-dues",
+        "document_issued": "2025-12-01",
+        "page": 12,
+        "clause": "Section 5.1",
+        "verified_on": "2025-12-15",
+        "verified_by": "Port Cost Analyzer Team"
+      }
+    },
+    {
+      "id": "port_gothenburg_layup",
+      "fee_family": "lay_up",
+      "biller": "Port of Gothenburg",
+      "name": "Lay-up Fee",
+      "description": "Lay-up fee per metre LOA per day",
+      "rate_structure": {
+        "type": "per_commenced_day",
+        "daily_rate": 45,
+        "basis": "lay_up_days"
+      },
+      "source_reference": {
+        "document_name": "Port Tariff 2026",
+        "document_url": "https://www.portofgothenburg.com/en/shipping/port-dues",
+        "document_issued": "2025-12-01",
+        "page": 13,
+        "clause": "Section 5.2",
+        "verified_on": "2025-12-15",
+        "verified_by": "Port Cost Analyzer Team"
+      }
+    },
+    {
+      "id": "sjofartsverket_vessel_fee_class8_csi_e",
+      "fee_family": "vessel_fee",
+      "biller": "Sj\u00f6fartsverket",
+      "name": "Vessel Fee - Class 8",
+      "description": "Vessel fee for Class 8 (30000+ NT)",
+      "rate_structure": {
+        "type": "flat",
+        "amount": 172385
+      },
+      "applicable_conditions": {
+        "csi_class": "E"
+      },
+      "source_reference": {
+        "document_name": "Sj\u00f6fartsverket Prislista 2026",
+        "document_url": "https://www.sjofartsverket.se/en/fees",
+        "document_issued": "2025-11-01",
+        "page": 3,
+        "clause": "Fartygsavgift Class 8",
+        "verified_on": "2025-12-10",
+        "verified_by": "Port Cost Analyzer Team"
+      }
+    },
+    {
+      "id": "sjofartsverket_readiness_fee_class8",
+      "fee_family": "readiness_fee",
+      "biller": "Sj\u00f6fartsverket",
+      "name": "Readiness Fee - Class 8",
+      "description": "Readiness fee for Class 8 vessels",
+      "rate_structure": {
+        "type": "flat",
+        "amount": 51555
+      },
+      "source_reference": {
+        "document_name": "Sj\u00f6fartsverket Prislista 2026",
+        "document_url": "https://www.sjofartsverket.se/en/fees",
+        "document_issued": "2025-11-01",
+        "page": 4,
+        "clause": "Beredskapsavgift",
+        "verified_on": "2025-12-10",
+        "verified_by": "Port Cost Analyzer Team"
+      }
+    },
+    {
+      "id": "sjofartsverket_pilotage_class8",
+      "fee_family": "pilotage",
+      "biller": "Sj\u00f6fartsverket",
+      "name": "Pilotage - Class 8",
+      "description": "Pilotage start fee for Class 8",
+      "rate_structure": {
+        "type": "flat",
+        "amount": 32540
+      },
+      "source_reference": {
+        "document_name": "Sj\u00f6fartsverket Prislista 2026",
+        "document_url": "https://www.sjofartsverket.se/en/fees",
+        "document_issued": "2025-11-01",
+        "page": 6,
+        "clause": "Lotsavgift Class 8",
+        "verified_on": "2025-12-10",
+        "verified_by": "Port Cost Analyzer Team"
+      }
+    },
+    {
+      "id": "apm_terminals_handling_le20ft",
+      "fee_family": "terminal_handling",
+      "biller": "APM Terminals Gothenburg",
+      "name": "Terminal Handling - <=20ft",
+      "description": "Handling charge per container <=20ft",
+      "rate_structure": {
+        "type": "per_unit",
+        "unit_rate": 377,
+        "unit_type": "container_le20ft"
+      },
+      "source_reference": {
+        "document_name": "APM Terminals Tariff 2026",
+        "document_url": "https://www.apmterminals.com/en/gothenburg/tariffs",
+        "document_issued": "2025-12-01",
+        "page": 2,
+        "clause": "Terminal Charges",
+        "verified_on": "2025-12-15",
+        "verified_by": "Port Cost Analyzer Team"
+      }
+    },
+    {
+      "id": "apm_terminals_handling_gt20ft",
+      "fee_family": "terminal_handling",
+      "biller": "APM Terminals Gothenburg",
+      "name": "Terminal Handling - >20ft",
+      "description": "Handling charge per container >20ft",
+      "rate_structure": {
+        "type": "per_unit",
+        "unit_rate": 535,
+        "unit_type": "container_gt20ft"
+      },
+      "source_reference": {
+        "document_name": "APM Terminals Tariff 2026",
+        "document_url": "https://www.apmterminals.com/en/gothenburg/tariffs",
+        "document_issued": "2025-12-01",
+        "page": 2,
+        "clause": "Terminal Charges",
+        "verified_on": "2025-12-15",
+        "verified_by": "Port Cost Analyzer Team"
+      }
+    },
+    {
+      "id": "apm_terminals_isps",
+      "fee_family": "security",
+      "biller": "APM Terminals Gothenburg",
+      "name": "ISPS Security Charge",
+      "description": "Security charge per container",
+      "rate_structure": {
+        "type": "per_unit",
+        "unit_rate": 80,
+        "unit_type": "container_total"
+      },
+      "source_reference": {
+        "document_name": "APM Terminals Tariff 2026",
+        "document_url": "https://www.apmterminals.com/en/gothenburg/tariffs",
+        "document_issued": "2025-12-01",
+        "page": 3,
+        "clause": "ISPS Security",
+        "verified_on": "2025-12-15",
+        "verified_by": "Port Cost Analyzer Team"
+      }
+    },
+    {
+      "id": "apm_terminals_storage_export_7_9_days",
+      "fee_family": "storage",
+      "biller": "APM Terminals Gothenburg",
+      "name": "Yard Storage - Export 7-9 days",
+      "description": "Storage for export units days 7-9",
+      "rate_structure": {
+        "type": "banded_by_time",
+        "basis": "storage_days_export",
+        "bands": [
+          {
+            "min_days": 7,
+            "max_days": 9,
+            "daily_rate": 133
+          }
+        ]
+      },
+      "source_reference": {
+        "document_name": "APM Terminals Tariff 2026",
+        "document_url": "https://www.apmterminals.com/en/gothenburg/tariffs",
+        "document_issued": "2025-12-01",
+        "page": 4,
+        "clause": "Yard Storage",
+        "verified_on": "2025-12-15",
+        "verified_by": "Port Cost Analyzer Team"
+      }
+    },
+    {
+      "id": "apm_terminals_storage_export_10_13_days",
+      "fee_family": "storage",
+      "biller": "APM Terminals Gothenburg",
+      "name": "Yard Storage - Export 10-13 days",
+      "description": "Storage for export units days 10-13",
+      "rate_structure": {
+        "type": "banded_by_time",
+        "basis": "storage_days_export",
+        "bands": [
+          {
+            "min_days": 10,
+            "max_days": 13,
+            "daily_rate": 346
+          }
+        ]
+      },
+      "source_reference": {
+        "document_name": "APM Terminals Tariff 2026",
+        "document_url": "https://www.apmterminals.com/en/gothenburg/tariffs",
+        "document_issued": "2025-12-01",
+        "page": 4,
+        "clause": "Yard Storage",
+        "verified_on": "2025-12-15",
+        "verified_by": "Port Cost Analyzer Team"
+      }
+    },
+    {
+      "id": "apm_terminals_storage_export_over_13_days",
+      "fee_family": "storage",
+      "biller": "APM Terminals Gothenburg",
+      "name": "Yard Storage - Export >13 days",
+      "description": "Storage for export units >13 days",
+      "rate_structure": {
+        "type": "banded_by_time",
+        "basis": "storage_days_export",
+        "bands": [
+          {
+            "min_days": 14,
+            "max_days": null,
+            "daily_rate": 578
+          }
+        ]
+      },
+      "source_reference": {
+        "document_name": "APM Terminals Tariff 2026",
+        "document_url": "https://www.apmterminals.com/en/gothenburg/tariffs",
+        "document_issued": "2025-12-01",
+        "page": 4,
+        "clause": "Yard Storage",
+        "verified_on": "2025-12-15",
+        "verified_by": "Port Cost Analyzer Team"
+      }
+    },
+    {
+      "id": "apm_terminals_storage_import_5_7_days",
+      "fee_family": "storage",
+      "biller": "APM Terminals Gothenburg",
+      "name": "Yard Storage - Import 5-7 days",
+      "description": "Storage for import units days 5-7",
+      "rate_structure": {
+        "type": "banded_by_time",
+        "basis": "storage_days_import",
+        "bands": [
+          {
+            "min_days": 5,
+            "max_days": 7,
+            "daily_rate": 133
+          }
+        ]
+      },
+      "source_reference": {
+        "document_name": "APM Terminals Tariff 2026",
+        "document_url": "https://www.apmterminals.com/en/gothenburg/tariffs",
+        "document_issued": "2025-12-01",
+        "page": 4,
+        "clause": "Yard Storage",
+        "verified_on": "2025-12-15",
+        "verified_by": "Port Cost Analyzer Team"
+      }
+    },
+    {
+      "id": "apm_terminals_storage_import_8_11_days",
+      "fee_family": "storage",
+      "biller": "APM Terminals Gothenburg",
+      "name": "Yard Storage - Import 8-11 days",
+      "description": "Storage for import units days 8-11",
+      "rate_structure": {
+        "type": "banded_by_time",
+        "basis": "storage_days_import",
+        "bands": [
+          {
+            "min_days": 8,
+            "max_days": 11,
+            "daily_rate": 346
+          }
+        ]
+      },
+      "source_reference": {
+        "document_name": "APM Terminals Tariff 2026",
+        "document_url": "https://www.apmterminals.com/en/gothenburg/tariffs",
+        "document_issued": "2025-12-01",
+        "page": 4,
+        "clause": "Yard Storage",
+        "verified_on": "2025-12-15",
+        "verified_by": "Port Cost Analyzer Team"
+      }
+    },
+    {
+      "id": "apm_terminals_storage_import_over_11_days",
+      "fee_family": "storage",
+      "biller": "APM Terminals Gothenburg",
+      "name": "Yard Storage - Import >11 days",
+      "description": "Storage for import units >11 days",
+      "rate_structure": {
+        "type": "banded_by_time",
+        "basis": "storage_days_import",
+        "bands": [
+          {
+            "min_days": 12,
+            "max_days": null,
+            "daily_rate": 578
+          }
+        ]
+      },
+      "source_reference": {
+        "document_name": "APM Terminals Tariff 2026",
+        "document_url": "https://www.apmterminals.com/en/gothenburg/tariffs",
+        "document_issued": "2025-12-01",
+        "page": 4,
+        "clause": "Yard Storage",
+        "verified_on": "2025-12-15",
+        "verified_by": "Port Cost Analyzer Team"
+      }
+    }
+  ]
+}

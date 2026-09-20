@@ -3,8 +3,22 @@
 
 export * from './types';
 export * from './engine';
-export * from './loader';
 
-// Re-export known fee families
-import { KNOWN_FEE_FAMILIES } from './loader';
-export { KNOWN_FEE_FAMILIES };
+// KNOWN_FEE_FAMILIES is a constant that doesn't depend on fs
+// We'll define it directly here to avoid importing loader in browser context
+export const KNOWN_FEE_FAMILIES: Set<string> = new Set([
+  'port_dues',
+  'fairway_dues',
+  'waste',
+  'pilotage',
+  'towage',
+  'terminal_handling',
+  'storage',
+  'security',
+  'environmental_surcharge',
+  'vessel_fee',
+  'readiness_fee',
+  'cargo_fee',
+  'ops',
+  'lay_up'
+]);

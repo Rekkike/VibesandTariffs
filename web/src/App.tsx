@@ -22,9 +22,8 @@ import {
   IconButton
 } from '@mui/material';
 import { KeyboardArrowDown, KeyboardArrowUp } from '@mui/icons-material';
-import * as yaml from 'js-yaml';
-
 // Import core types and functions
+// Note: We don't import from loader since it uses Node.js fs module which isn't available in browser
 import {
   VesselInput,
   CallInput,
@@ -34,12 +33,13 @@ import {
   FeeResult,
   BillerBreakdown,
   QualityFlag,
-  getNetTonnageClass
+  getNetTonnageClass,
+  calculatePortCallCost
 } from '@port-cost/core';
 
-// Import the port data directly (for now, we'll load it from the YAML file)
-// In production, this would be loaded dynamically
-import gothenburgYaml from '../data/gothenburg_2026.yaml';
+// Import the port data - use js-yaml to parse it
+import gothenburgYaml from './data/gothenburg_2026.json';
+
 
 // Define types for our app state
 interface AppState {
@@ -126,10 +126,6 @@ const App: React.FC = () => {
       setState(prev => ({ ...prev, isLoading: true, error: null }));
       
       try {
-        // Import the calculation function dynamically
-        // This is a workaround for the module resolution issue
-        const { calculatePortCallCost } = await import('@port-cost/core');
-        
         const input: CostCalculationInput = {
           vessel: state.vessel,
           call: state.call
@@ -668,7 +664,7 @@ const App: React.FC = () => {
                                           >
                                             <TableCell>
                                               <Box display="flex" alignItems="center">
-                                                {fee.name}
+                                                {fee.fee_family}
                                                 {fee.quality_flags.length > 0 && (
                                                   <span className="status-badge status-warning" style={{ marginLeft: '10px' }}>
                                                     {fee.quality_flags.length} flag{fee.quality_flags.length > 1 ? 's' : ''}
