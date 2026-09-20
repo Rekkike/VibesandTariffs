@@ -129,11 +129,11 @@ export function evaluateFeeRule(
         const lastBand = banded.bands[banded.bands.length - 1];
         baseAmount = lastBand.rate * basisValue;
         rateApplied = `Banded rate: ${lastBand.rate} * ${basisValue}`;
-        bandOrBasis = `Band: ${lastBand.min ?? 0}-${lastBand.max ?? '∞'}`;
+        bandOrBasis = `Band: ${lastBand.min ?? 0}-${lastBand.max ?? '\u221e'}`;
       } else {
         baseAmount = applicableBand.rate * basisValue;
         rateApplied = `Banded rate: ${applicableBand.rate} * ${basisValue}`;
-        bandOrBasis = `Band: ${applicableBand.min ?? 0}-${applicableBand.max ?? '∞'}`;
+        bandOrBasis = `Band: ${applicableBand.min ?? 0}-${applicableBand.max ?? '\u221e'}`;
       }
       break;
     }
@@ -151,27 +151,25 @@ export function evaluateFeeRule(
       }
       
       // Progressive: split across bands
-      let remainingValue = basisValue;
       let accumulatedAmount = 0;
       const appliedBands: string[] = [];
       
-      for (const band of progressive.bands) {
-        if (remainingValue <= 0) break;
-        
+      // Sort bands by min to handle out-of-order definitions
+      const sortedBands = [...progressive.bands].sort((a, b) => (a.min ?? 0) - (b.min ?? 0));
+      
+      for (const band of sortedBands) {
         const bandMin = band.min ?? 0;
         const bandMax = band.max ?? Infinity;
-        const bandWidth = bandMax - bandMin;
         
-        if (remainingValue >= bandMin) {
-          const valueInBand = Math.min(remainingValue - bandMin, bandWidth);
-          if (valueInBand > 0) {
-            accumulatedAmount += valueInBand * band.rate;
-            appliedBands.push(`${bandMin}-${bandMax === Infinity ? '∞' : bandMax}: ${valueInBand} * ${band.rate}`);
-            remainingValue = bandMin; // Move to next band
-          }
+        // Calculate how much of the basisValue falls in this band
+        // The band covers [bandMin, bandMax), so the portion is:
+        // max(0, min(basisValue, bandMax) - bandMin)
+        const valueInBand = Math.max(0, Math.min(basisValue, bandMax) - bandMin);
+        if (valueInBand > 0) {
+          accumulatedAmount += valueInBand * band.rate;
+          appliedBands.push(`${bandMin}-${bandMax === Infinity ? '\u221e' : bandMax}: ${valueInBand} * ${band.rate}`);
         }
       }
-      
       baseAmount = accumulatedAmount;
       rateApplied = `Progressive: ${appliedBands.join(' + ')}`;
       bandOrBasis = `${progressive.basis}=${basisValue}`;
@@ -180,7 +178,16 @@ export function evaluateFeeRule(
     
     case 'per_commenced_day': {
       const perDay = rate as PerCommencedDayRate;
-      const days = call[perDay.basis as keyof typeof call] as number | undefined;
+      let days: number | undefined;
+      
+      // Check if basis is a vessel property - this means we need days from a different source
+      const vesselProps = ['gt', 'nt', 'loa_m', 'beam_m', 'draft_m'];
+      if (vesselProps.includes(perDay.basis)) {
+        // For vessel-based per_commenced_day, get days from lay_up_days
+        days = call.lay_up_days;
+      } else {
+        days = call[perDay.basis as keyof typeof call] as number | undefined;
+      }
       
       if (days === undefined) {
         qualityFlags.push({
@@ -197,9 +204,23 @@ export function evaluateFeeRule(
       let freeDays = perDay.free_days ?? 0;
       const chargeableDays = Math.max(0, commencedDays - freeDays);
       
-      baseAmount = chargeableDays * perDay.daily_rate;
-      rateApplied = `Per commenced day: ${chargeableDays} * ${perDay.daily_rate}`;
-      bandOrBasis = `${perDay.basis}=${days} (${chargeableDays} chargeable)`;
+      // For vessel-based per_commenced_day, multiply by the vessel property
+      if (vesselProps.includes(perDay.basis)) {
+        const vesselValue = (vessel as any)[perDay.basis as keyof typeof vessel] as number | undefined;
+        if (vesselValue !== undefined) {
+          baseAmount = chargeableDays * perDay.daily_rate * vesselValue;
+          rateApplied = `Per commenced day: ${chargeableDays} * ${perDay.daily_rate} * ${vesselValue} (${perDay.basis})`;
+          bandOrBasis = `${perDay.basis}=${vesselValue}, days=${days} (${chargeableDays} chargeable)`;
+        } else {
+          baseAmount = chargeableDays * perDay.daily_rate;
+          rateApplied = `Per commenced day: ${chargeableDays} * ${perDay.daily_rate}`;
+          bandOrBasis = `${perDay.basis}=N/A, days=${days} (${chargeableDays} chargeable)`;
+        }
+      } else {
+        baseAmount = chargeableDays * perDay.daily_rate;
+        rateApplied = `Per commenced day: ${chargeableDays} * ${perDay.daily_rate}`;
+        bandOrBasis = `${perDay.basis}=${days} (${chargeableDays} chargeable)`;
+      }
       break;
     }
     
@@ -235,6 +256,21 @@ export function evaluateFeeRule(
         case 'dangerous_goods':
           unitCount = call.dangerous_goods_units ?? 0;
           break;
+        case 'gt':
+          unitCount = vessel.gt;
+          break;
+        case 'nt':
+          unitCount = vessel.nt !== undefined ? vessel.nt : vessel.gt * 0.55;
+          break;
+        case 'loa_m':
+          unitCount = vessel.loa_m ?? 0;
+          break;
+        case 'draft_m':
+          unitCount = vessel.draft_m ?? 0;
+          break;
+        case 'beam_m':
+          unitCount = vessel.beam_m ?? 0;
+          break;
         default:
           // Try to get from call directly
           unitCount = (call as any)[perUnit.unit_type] ?? 0;
@@ -269,13 +305,17 @@ export function evaluateFeeRule(
       if (!applicableBand) {
         // Use highest band
         const lastBand = bandedTime.bands[bandedTime.bands.length - 1];
-        baseAmount = days * lastBand.daily_rate;
-        rateApplied = `Banded by time: ${days} * ${lastBand.daily_rate} (fallback)`;
+        const prevBand = bandedTime.bands[bandedTime.bands.length - 2];
+        const daysInBand = days - (prevBand?.max_days ?? 0);
+        baseAmount = Math.max(0, daysInBand) * lastBand.daily_rate;
+        rateApplied = `Banded by time: ${Math.max(0, daysInBand)} * ${lastBand.daily_rate} (fallback)`;
         bandOrBasis = `Days: ${days} (fallback to highest band)`;
       } else {
-        baseAmount = days * applicableBand.daily_rate;
-        rateApplied = `Banded by time: ${days} * ${applicableBand.daily_rate}`;
-        bandOrBasis = `Days: ${applicableBand.min_days}-${applicableBand.max_days ?? '∞'}`;
+        // Charge only days beyond the band minimum
+        const daysInBand = days - applicableBand.min_days;
+        baseAmount = Math.max(0, daysInBand) * applicableBand.daily_rate;
+        rateApplied = `Banded by time: ${Math.max(0, daysInBand)} * ${applicableBand.daily_rate}`;
+        bandOrBasis = `Days: ${applicableBand.min_days}-${applicableBand.max_days ?? '\u221e'}`;
       }
       break;
     }
@@ -398,7 +438,7 @@ function evaluateCondition(condition: string, input: CostCalculationInput): bool
 }
 
 /**
- * Calculates the net tonnage class for Sjöfartsverket
+ * Calculates the net tonnage class for Sjfartsverket
  * Classes: 1:0, 2:1000, 3:2000, 4:3000, 5:6000, 6:10000, 7:15000, 8:30000, 9:60000, 10:100000
  */
 export function getNetTonnageClass(nt: number): number {
@@ -446,7 +486,7 @@ export function calculatePortCallCost(
     });
   }
   
-  // Calculate NT class for Sjöfartsverket
+  // Calculate NT class for Sjfartsverket
   const ntClass = getNetTonnageClass(nt);
   
   // Process each fee rule

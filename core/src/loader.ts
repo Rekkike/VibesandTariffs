@@ -396,7 +396,7 @@ export function validateRateStructure(
     default:
       errors.push({
         rule_id: ruleId,
-        message: `Unknown rate structure type: ${rate.type}`,
+        message: `Unknown rate structure type: ${(rate as RateStructure).type}`,
         severity: 'error',
         path: 'rate_structure.type'
       });
