@@ -2,6 +2,7 @@
   "name": "@port-cost/web",
   "version": "1.0.0",
   "description": "Web UI for Port Call Cost Analyzer",
+  "homepage": "/VibesandTariffs",
   "private": true,
   "dependencies": {
     "@emotion/react": "^11.11.1",
