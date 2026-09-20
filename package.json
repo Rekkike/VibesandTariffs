@@ -1,0 +1,22 @@
+{
+  "name": "port-call-cost-analyzer",
+  "version": "1.0.0",
+  "description": "Port Call Cost Analyzer - Estimates total cost of container vessel calls at ports",
+  "private": true,
+  "workspaces": [
+    "core",
+    "web"
+  ],
+  "scripts": {
+    "build": "npm run build:core && npm run build:web",
+    "build:core": "cd core && npm run build",
+    "build:web": "cd web && npm run build",
+    "test": "npm run test:core",
+    "test:core": "cd core && npm test",
+    "dev": "cd web && npm run dev",
+    "start": "cd web && npm run start"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3"
+  }
+}
