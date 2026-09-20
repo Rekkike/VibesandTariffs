@@ -16,15 +16,15 @@ jobs:
       
       # Install root dependencies (needed for workspace support)
       - name: Install root dependencies
-        run: npm ci
+        run: npm install
       
       # Install and build core module
       - name: Install and build core
-        run: cd core && npm ci && npm run build
+        run: cd core && npm install && npm run build
       
       # Install web dependencies
       - name: Install web dependencies
-        run: cd web && npm ci
+        run: cd web && npm install
       
       # Build web app
       - name: Build web app
