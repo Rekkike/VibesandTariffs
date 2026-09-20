@@ -56,8 +56,8 @@ fee_rules:
           rate: 0.80
     minimum: 500
     source_reference:
-      document_name: "Port Tariff 2026 - Port of Gothenburg"
-      document_url: "https://www.portofgothenburg.com/en/shipping/port-dues"
+      document_name: "port-tariff-2026.pdf"
+      document_url: "docs/sources/sweden/gothenburg/port-authority/port-tariff-2026.pdf"
       document_issued: "2025-12-01"
       page: 5
       clause: "Section 2.1 - Container Vessel Dues"
@@ -83,8 +83,8 @@ fee_rules:
     applicable_conditions:
       esi_score: 30
     source_reference:
-      document_name: "Port Tariff 2026 - Port of Gothenburg"
-      document_url: "https://www.portofgothenburg.com/en/shipping/port-dues"
+      document_name: "port-tariff-2026.pdf"
+      document_url: "docs/sources/sweden/gothenburg/port-authority/port-tariff-2026.pdf"
       document_issued: "2025-12-01"
       page: 7
       clause: "Section 3.2 - Environmental Discounts"
@@ -109,8 +109,8 @@ fee_rules:
     applicable_conditions:
       fuel_percentage: 30
     source_reference:
-      document_name: "Port Tariff 2026 - Port of Gothenburg"
-      document_url: "https://www.portofgothenburg.com/en/shipping/port-dues"
+      document_name: "port-tariff-2026.pdf"
+      document_url: "docs/sources/sweden/gothenburg/port-authority/port-tariff-2026.pdf"
       document_issued: "2025-12-01"
       page: 7
       clause: "Section 3.2 - Environmental Discounts"
@@ -136,8 +136,8 @@ fee_rules:
     applicable_conditions:
       calls_this_month: 2
     source_reference:
-      document_name: "Port Tariff 2026 - Port of Gothenburg"
-      document_url: "https://www.portofgothenburg.com/en/shipping/port-dues"
+      document_name: "port-tariff-2026.pdf"
+      document_url: "docs/sources/sweden/gothenburg/port-authority/port-tariff-2026.pdf"
       document_issued: "2025-12-01"
       page: 8
       clause: "Section 3.3 - Frequency Discounts"
@@ -158,8 +158,8 @@ fee_rules:
     applicable_conditions:
       flag_state: EU
     source_reference:
-      document_name: "Port Tariff 2026 - Port of Gothenburg"
-      document_url: "https://www.portofgothenburg.com/en/shipping/port-dues"
+      document_name: "port-tariff-2026.pdf"
+      document_url: "docs/sources/sweden/gothenburg/port-authority/port-tariff-2026.pdf"
       document_issued: "2025-12-01"
       page: 10
       clause: "Section 4.1 - Waste Dues"
@@ -178,8 +178,8 @@ fee_rules:
     applicable_conditions:
       flag_state: non-EU
     source_reference:
-      document_name: "Port Tariff 2026 - Port of Gothenburg"
-      document_url: "https://www.portofgothenburg.com/en/shipping/port-dues"
+      document_name: "port-tariff-2026.pdf"
+      document_url: "docs/sources/sweden/gothenburg/port-authority/port-tariff-2026.pdf"
       document_issued: "2025-12-01"
       page: 10
       clause: "Section 4.1 - Waste Dues"
@@ -204,8 +204,8 @@ fee_rules:
     applicable_conditions:
       flag_state: EU
     source_reference:
-      document_name: "Port Tariff 2026 - Port of Gothenburg"
-      document_url: "https://www.portofgothenburg.com/en/shipping/port-dues"
+      document_name: "port-tariff-2026.pdf"
+      document_url: "docs/sources/sweden/gothenburg/port-authority/port-tariff-2026.pdf"
       document_issued: "2025-12-01"
       page: 10
       clause: "Section 4.2 - Sludge Waste Dues"
@@ -227,8 +227,8 @@ fee_rules:
     applicable_conditions:
       flag_state: non-EU
     source_reference:
-      document_name: "Port Tariff 2026 - Port of Gothenburg"
-      document_url: "https://www.portofgothenburg.com/en/shipping/port-dues"
+      document_name: "port-tariff-2026.pdf"
+      document_url: "docs/sources/sweden/gothenburg/port-authority/port-tariff-2026.pdf"
       document_issued: "2025-12-01"
       page: 10
       clause: "Section 4.2 - Sludge Waste Dues"
@@ -247,8 +247,8 @@ fee_rules:
     applicable_conditions:
       ops_usage: true
     source_reference:
-      document_name: "Port Tariff 2026 - Port of Gothenburg"
-      document_url: "https://www.portofgothenburg.com/en/shipping/port-dues"
+      document_name: "port-tariff-2026.pdf"
+      document_url: "docs/sources/sweden/gothenburg/port-authority/port-tariff-2026.pdf"
       document_issued: "2025-12-01"
       page: 12
       clause: "Section 5.1 - OPS Connection"
@@ -266,8 +266,8 @@ fee_rules:
       daily_rate: 45
       basis: lay_up_days
     source_reference:
-      document_name: "Port Tariff 2026 - Port of Gothenburg"
-      document_url: "https://www.portofgothenburg.com/en/shipping/port-dues"
+      document_name: "port-tariff-2026.pdf"
+      document_url: "docs/sources/sweden/gothenburg/port-authority/port-tariff-2026.pdf"
       document_issued: "2025-12-01"
       page: 13
       clause: "Section 5.2 - Lay-up Fees"
@@ -295,8 +295,8 @@ fee_rules:
     applicable_conditions:
       csi_class: A
     source_reference:
-      document_name: "Sjöfartsverket Prislista 2026"
-      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 3
       clause: "Fartygsavgift Class 1"
@@ -314,8 +314,8 @@ fee_rules:
     applicable_conditions:
       csi_class: B
     source_reference:
-      document_name: "Sjöfartsverket Prislista 2026"
-      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 3
       clause: "Fartygsavgift Class 1"
@@ -333,8 +333,8 @@ fee_rules:
     applicable_conditions:
       csi_class: C
     source_reference:
-      document_name: "Sjöfartsverket Prislista 2026"
-      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 3
       clause: "Fartygsavgift Class 1"
@@ -352,8 +352,8 @@ fee_rules:
     applicable_conditions:
       csi_class: D
     source_reference:
-      document_name: "Sjöfartsverket Prislista 2026"
-      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 3
       clause: "Fartygsavgift Class 1"
@@ -371,8 +371,8 @@ fee_rules:
     applicable_conditions:
       csi_class: E
     source_reference:
-      document_name: "Sjöfartsverket Prislista 2026"
-      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 3
       clause: "Fartygsavgift Class 1"
@@ -391,8 +391,8 @@ fee_rules:
     applicable_conditions:
       csi_class: A
     source_reference:
-      document_name: "Sjöfartsverket Prislista 2026"
-      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 3
       clause: "Fartygsavgift Class 2"
@@ -410,8 +410,8 @@ fee_rules:
     applicable_conditions:
       csi_class: B
     source_reference:
-      document_name: "Sjöfartsverket Prislista 2026"
-      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 3
       clause: "Fartygsavgift Class 2"
@@ -429,8 +429,8 @@ fee_rules:
     applicable_conditions:
       csi_class: C
     source_reference:
-      document_name: "Sjöfartsverket Prislista 2026"
-      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 3
       clause: "Fartygsavgift Class 2"
@@ -448,8 +448,8 @@ fee_rules:
     applicable_conditions:
       csi_class: D
     source_reference:
-      document_name: "Sjöfartsverket Prislista 2026"
-      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 3
       clause: "Fartygsavgift Class 2"
@@ -467,8 +467,8 @@ fee_rules:
     applicable_conditions:
       csi_class: E
     source_reference:
-      document_name: "Sjöfartsverket Prislista 2026"
-      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 3
       clause: "Fartygsavgift Class 2"
@@ -487,8 +487,8 @@ fee_rules:
     applicable_conditions:
       csi_class: A
     source_reference:
-      document_name: "Sjöfartsverket Prislista 2026"
-      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 3
       clause: "Fartygsavgift Class 3"
@@ -506,8 +506,8 @@ fee_rules:
     applicable_conditions:
       csi_class: B
     source_reference:
-      document_name: "Sjöfartsverket Prislista 2026"
-      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 3
       clause: "Fartygsavgift Class 3"
@@ -525,8 +525,8 @@ fee_rules:
     applicable_conditions:
       csi_class: C
     source_reference:
-      document_name: "Sjöfartsverket Prislista 2026"
-      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 3
       clause: "Fartygsavgift Class 3"
@@ -544,8 +544,8 @@ fee_rules:
     applicable_conditions:
       csi_class: D
     source_reference:
-      document_name: "Sjöfartsverket Prislista 2026"
-      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 3
       clause: "Fartygsavgift Class 3"
@@ -563,8 +563,8 @@ fee_rules:
     applicable_conditions:
       csi_class: E
     source_reference:
-      document_name: "Sjöfartsverket Prislista 2026"
-      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 3
       clause: "Fartygsavgift Class 3"
@@ -584,8 +584,8 @@ fee_rules:
     applicable_conditions:
       csi_class: A
     source_reference:
-      document_name: "Sjöfartsverket Prislista 2026"
-      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 3
       clause: "Fartygsavgift Class 4"
@@ -603,8 +603,8 @@ fee_rules:
     applicable_conditions:
       csi_class: B
     source_reference:
-      document_name: "Sjöfartsverket Prislista 2026"
-      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 3
       clause: "Fartygsavgift Class 4"
@@ -622,8 +622,8 @@ fee_rules:
     applicable_conditions:
       csi_class: C
     source_reference:
-      document_name: "Sjöfartsverket Prislista 2026"
-      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 3
       clause: "Fartygsavgift Class 4"
@@ -641,8 +641,8 @@ fee_rules:
     applicable_conditions:
       csi_class: D
     source_reference:
-      document_name: "Sjöfartsverket Prislista 2026"
-      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 3
       clause: "Fartygsavgift Class 4"
@@ -660,8 +660,8 @@ fee_rules:
     applicable_conditions:
       csi_class: E
     source_reference:
-      document_name: "Sjöfartsverket Prislista 2026"
-      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 3
       clause: "Fartygsavgift Class 4"
@@ -680,8 +680,8 @@ fee_rules:
     applicable_conditions:
       csi_class: A
     source_reference:
-      document_name: "Sjöfartsverket Prislista 2026"
-      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 3
       clause: "Fartygsavgift Class 5"
@@ -699,8 +699,8 @@ fee_rules:
     applicable_conditions:
       csi_class: B
     source_reference:
-      document_name: "Sjöfartsverket Prislista 2026"
-      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 3
       clause: "Fartygsavgift Class 5"
@@ -718,8 +718,8 @@ fee_rules:
     applicable_conditions:
       csi_class: C
     source_reference:
-      document_name: "Sjöfartsverket Prislista 2026"
-      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 3
       clause: "Fartygsavgift Class 5"
@@ -737,8 +737,8 @@ fee_rules:
     applicable_conditions:
       csi_class: D
     source_reference:
-      document_name: "Sjöfartsverket Prislista 2026"
-      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 3
       clause: "Fartygsavgift Class 5"
@@ -756,8 +756,8 @@ fee_rules:
     applicable_conditions:
       csi_class: E
     source_reference:
-      document_name: "Sjöfartsverket Prislista 2026"
-      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 3
       clause: "Fartygsavgift Class 5"
@@ -776,8 +776,8 @@ fee_rules:
     applicable_conditions:
       csi_class: A
     source_reference:
-      document_name: "Sjöfartsverket Prislista 2026"
-      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 3
       clause: "Fartygsavgift Class 6"
@@ -795,8 +795,8 @@ fee_rules:
     applicable_conditions:
       csi_class: B
     source_reference:
-      document_name: "Sjöfartsverket Prislista 2026"
-      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 3
       clause: "Fartygsavgift Class 6"
@@ -814,8 +814,8 @@ fee_rules:
     applicable_conditions:
       csi_class: C
     source_reference:
-      document_name: "Sjöfartsverket Prislista 2026"
-      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 3
       clause: "Fartygsavgift Class 6"
@@ -833,8 +833,8 @@ fee_rules:
     applicable_conditions:
       csi_class: D
     source_reference:
-      document_name: "Sjöfartsverket Prislista 2026"
-      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 3
       clause: "Fartygsavgift Class 6"
@@ -852,8 +852,8 @@ fee_rules:
     applicable_conditions:
       csi_class: E
     source_reference:
-      document_name: "Sjöfartsverket Prislista 2026"
-      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 3
       clause: "Fartygsavgift Class 6"
@@ -872,8 +872,8 @@ fee_rules:
     applicable_conditions:
       csi_class: A
     source_reference:
-      document_name: "Sjöfartsverket Prislista 2026"
-      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 3
       clause: "Fartygsavgift Class 7"
@@ -891,8 +891,8 @@ fee_rules:
     applicable_conditions:
       csi_class: B
     source_reference:
-      document_name: "Sjöfartsverket Prislista 2026"
-      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 3
       clause: "Fartygsavgift Class 7"
@@ -910,8 +910,8 @@ fee_rules:
     applicable_conditions:
       csi_class: C
     source_reference:
-      document_name: "Sjöfartsverket Prislista 2026"
-      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 3
       clause: "Fartygsavgift Class 7"
@@ -929,8 +929,8 @@ fee_rules:
     applicable_conditions:
       csi_class: D
     source_reference:
-      document_name: "Sjöfartsverket Prislista 2026"
-      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 3
       clause: "Fartygsavgift Class 7"
@@ -948,8 +948,8 @@ fee_rules:
     applicable_conditions:
       csi_class: E
     source_reference:
-      document_name: "Sjöfartsverket Prislista 2026"
-      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 3
       clause: "Fartygsavgift Class 7"
@@ -968,8 +968,8 @@ fee_rules:
     applicable_conditions:
       csi_class: A
     source_reference:
-      document_name: "Sjöfartsverket Prislista 2026"
-      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 3
       clause: "Fartygsavgift Class 8"
@@ -987,8 +987,8 @@ fee_rules:
     applicable_conditions:
       csi_class: B
     source_reference:
-      document_name: "Sjöfartsverket Prislista 2026"
-      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 3
       clause: "Fartygsavgift Class 8"
@@ -1006,8 +1006,8 @@ fee_rules:
     applicable_conditions:
       csi_class: C
     source_reference:
-      document_name: "Sjöfartsverket Prislista 2026"
-      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 3
       clause: "Fartygsavgift Class 8"
@@ -1025,8 +1025,8 @@ fee_rules:
     applicable_conditions:
       csi_class: D
     source_reference:
-      document_name: "Sjöfartsverket Prislista 2026"
-      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 3
       clause: "Fartygsavgift Class 8"
@@ -1044,8 +1044,8 @@ fee_rules:
     applicable_conditions:
       csi_class: E
     source_reference:
-      document_name: "Sjöfartsverket Prislista 2026"
-      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 3
       clause: "Fartygsavgift Class 8"
@@ -1064,8 +1064,8 @@ fee_rules:
     applicable_conditions:
       csi_class: A
     source_reference:
-      document_name: "Sjöfartsverket Prislista 2026"
-      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 3
       clause: "Fartygsavgift Class 9"
@@ -1083,8 +1083,8 @@ fee_rules:
     applicable_conditions:
       csi_class: B
     source_reference:
-      document_name: "Sjöfartsverket Prislista 2026"
-      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 3
       clause: "Fartygsavgift Class 9"
@@ -1102,8 +1102,8 @@ fee_rules:
     applicable_conditions:
       csi_class: C
     source_reference:
-      document_name: "Sjöfartsverket Prislista 2026"
-      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 3
       clause: "Fartygsavgift Class 9"
@@ -1121,8 +1121,8 @@ fee_rules:
     applicable_conditions:
       csi_class: D
     source_reference:
-      document_name: "Sjöfartsverket Prislista 2026"
-      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 3
       clause: "Fartygsavgift Class 9"
@@ -1140,8 +1140,8 @@ fee_rules:
     applicable_conditions:
       csi_class: E
     source_reference:
-      document_name: "Sjöfartsverket Prislista 2026"
-      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 3
       clause: "Fartygsavgift Class 9"
@@ -1160,8 +1160,8 @@ fee_rules:
     applicable_conditions:
       csi_class: A
     source_reference:
-      document_name: "Sjöfartsverket Prislista 2026"
-      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 3
       clause: "Fartygsavgift Class 10"
@@ -1179,8 +1179,8 @@ fee_rules:
     applicable_conditions:
       csi_class: B
     source_reference:
-      document_name: "Sjöfartsverket Prislista 2026"
-      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 3
       clause: "Fartygsavgift Class 10"
@@ -1198,8 +1198,8 @@ fee_rules:
     applicable_conditions:
       csi_class: C
     source_reference:
-      document_name: "Sjöfartsverket Prislista 2026"
-      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 3
       clause: "Fartygsavgift Class 10"
@@ -1217,8 +1217,8 @@ fee_rules:
     applicable_conditions:
       csi_class: D
     source_reference:
-      document_name: "Sjöfartsverket Prislista 2026"
-      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 3
       clause: "Fartygsavgift Class 10"
@@ -1236,8 +1236,8 @@ fee_rules:
     applicable_conditions:
       csi_class: E
     source_reference:
-      document_name: "Sjöfartsverket Prislista 2026"
-      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 3
       clause: "Fartygsavgift Class 10"
@@ -1256,8 +1256,8 @@ fee_rules:
     applicable_conditions:
       # Will be applied based on NT class
     source_reference:
-      document_name: "Sjöfartsverket Prislista 2026"
-      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 4
       clause: "Beredskapsavgift"
@@ -1273,8 +1273,8 @@ fee_rules:
       type: flat
       amount: 4200
     source_reference:
-      document_name: "Sjöfartsverket Prislista 2026"
-      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 4
       clause: "Beredskapsavgift"
@@ -1290,8 +1290,8 @@ fee_rules:
       type: flat
       amount: 8260
     source_reference:
-      document_name: "Sjöfartsverket Prislista 2026"
-      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 4
       clause: "Beredskapsavgift"
@@ -1307,8 +1307,8 @@ fee_rules:
       type: flat
       amount: 13155
     source_reference:
-      document_name: "Sjöfartsverket Prislista 2026"
-      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 4
       clause: "Beredskapsavgift"
@@ -1324,8 +1324,8 @@ fee_rules:
       type: flat
       amount: 24165
     source_reference:
-      document_name: "Sjöfartsverket Prislista 2026"
-      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 4
       clause: "Beredskapsavgift"
@@ -1341,8 +1341,8 @@ fee_rules:
       type: flat
       amount: 35100
     source_reference:
-      document_name: "Sjöfartsverket Prislista 2026"
-      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 4
       clause: "Beredskapsavgift"
@@ -1358,8 +1358,8 @@ fee_rules:
       type: flat
       amount: 44965
     source_reference:
-      document_name: "Sjöfartsverket Prislista 2026"
-      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 4
       clause: "Beredskapsavgift"
@@ -1375,8 +1375,8 @@ fee_rules:
       type: flat
       amount: 51555
     source_reference:
-      document_name: "Sjöfartsverket Prislista 2026"
-      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 4
       clause: "Beredskapsavgift"
@@ -1392,8 +1392,8 @@ fee_rules:
       type: flat
       amount: 60370
     source_reference:
-      document_name: "Sjöfartsverket Prislista 2026"
-      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 4
       clause: "Beredskapsavgift"
@@ -1409,8 +1409,8 @@ fee_rules:
       type: flat
       amount: 71305
     source_reference:
-      document_name: "Sjöfartsverket Prislista 2026"
-      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 4
       clause: "Beredskapsavgift"
@@ -1452,8 +1452,8 @@ fee_rules:
     applicable_conditions:
       calls_this_month: 1
     source_reference:
-      document_name: "Sjöfartsverket Prislista 2026"
-      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 4
       clause: "Frequency Discount - Vessel and Readiness Fees"
@@ -1471,8 +1471,8 @@ fee_rules:
       unit_rate: 3.36
       unit_type: ton
     source_reference:
-      document_name: "Sjöfartsverket Prislista 2026"
-      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 5
       clause: "Godsavgift - High Value"
@@ -1489,8 +1489,8 @@ fee_rules:
       unit_rate: 1.67
       unit_type: ton
     source_reference:
-      document_name: "Sjöfartsverket Prislista 2026"
-      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 5
       clause: "Godsavgift - Low Value"
@@ -1507,8 +1507,8 @@ fee_rules:
       unit_rate: 2.52
       unit_type: pax
     source_reference:
-      document_name: "Sjöfartsverket Prislista 2026"
-      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 5
       clause: "Godsavgift - Passengers"
@@ -1525,8 +1525,8 @@ fee_rules:
       unit_rate: 3.36
       unit_type: unit
     source_reference:
-      document_name: "Sjöfartsverket Prislista 2026"
-      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 5
       clause: "Godsavgift - Private Vehicles"
@@ -1544,8 +1544,8 @@ fee_rules:
       type: flat
       amount: 9670
     source_reference:
-      document_name: "Sjöfartsverket Prislista 2026"
-      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 6
       clause: "Lotsavgift Class 1"
@@ -1562,8 +1562,8 @@ fee_rules:
       unit_rate: 2160
       unit_type: half_hour
     source_reference:
-      document_name: "Sjöfartsverket Prislista 2026"
-      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 6
       clause: "Lotsavgift Class 1"
@@ -1579,8 +1579,8 @@ fee_rules:
       type: flat
       amount: 12485
     source_reference:
-      document_name: "Sjöfartsverket Prislista 2026"
-      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 6
       clause: "Lotsavgift Class 2"
@@ -1597,8 +1597,8 @@ fee_rules:
       unit_rate: 2840
       unit_type: half_hour
     source_reference:
-      document_name: "Sjöfartsverket Prislista 2026"
-      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 6
       clause: "Lotsavgift Class 2"
@@ -1614,8 +1614,8 @@ fee_rules:
       type: flat
       amount: 15290
     source_reference:
-      document_name: "Sjöfartsverket Prislista 2026"
-      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 6
       clause: "Lotsavgift Class 3"
@@ -1632,8 +1632,8 @@ fee_rules:
       unit_rate: 3435
       unit_type: half_hour
     source_reference:
-      document_name: "Sjöfartsverket Prislista 2026"
-      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 6
       clause: "Lotsavgift Class 3"
@@ -1649,8 +1649,8 @@ fee_rules:
       type: flat
       amount: 17300
     source_reference:
-      document_name: "Sjöfartsverket Prislista 2026"
-      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 6
       clause: "Lotsavgift Class 4"
@@ -1667,8 +1667,8 @@ fee_rules:
       unit_rate: 3940
       unit_type: half_hour
     source_reference:
-      document_name: "Sjöfartsverket Prislista 2026"
-      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 6
       clause: "Lotsavgift Class 4"
@@ -1684,8 +1684,8 @@ fee_rules:
       type: flat
       amount: 19305
     source_reference:
-      document_name: "Sjöfartsverket Prislista 2026"
-      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 6
       clause: "Lotsavgift Class 5"
@@ -1702,8 +1702,8 @@ fee_rules:
       unit_rate: 4400
       unit_type: half_hour
     source_reference:
-      document_name: "Sjöfartsverket Prislista 2026"
-      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 6
       clause: "Lotsavgift Class 5"
@@ -1719,8 +1719,8 @@ fee_rules:
       type: flat
       amount: 26105
     source_reference:
-      document_name: "Sjöfartsverket Prislista 2026"
-      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 6
       clause: "Lotsavgift Class 6"
@@ -1737,8 +1737,8 @@ fee_rules:
       unit_rate: 5865
       unit_type: half_hour
     source_reference:
-      document_name: "Sjöfartsverket Prislista 2026"
-      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 6
       clause: "Lotsavgift Class 6"
@@ -1754,8 +1754,8 @@ fee_rules:
       type: flat
       amount: 29730
     source_reference:
-      document_name: "Sjöfartsverket Prislista 2026"
-      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 6
       clause: "Lotsavgift Class 7"
@@ -1772,8 +1772,8 @@ fee_rules:
       unit_rate: 6735
       unit_type: half_hour
     source_reference:
-      document_name: "Sjöfartsverket Prislista 2026"
-      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 6
       clause: "Lotsavgift Class 7"
@@ -1789,8 +1789,8 @@ fee_rules:
       type: flat
       amount: 32540
     source_reference:
-      document_name: "Sjöfartsverket Prislista 2026"
-      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 6
       clause: "Lotsavgift Class 8"
@@ -1807,8 +1807,8 @@ fee_rules:
       unit_rate: 7335
       unit_type: half_hour
     source_reference:
-      document_name: "Sjöfartsverket Prislista 2026"
-      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 6
       clause: "Lotsavgift Class 8"
@@ -1824,8 +1824,8 @@ fee_rules:
       type: flat
       amount: 35755
     source_reference:
-      document_name: "Sjöfartsverket Prislista 2026"
-      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 6
       clause: "Lotsavgift Class 9"
@@ -1842,8 +1842,8 @@ fee_rules:
       unit_rate: 8105
       unit_type: half_hour
     source_reference:
-      document_name: "Sjöfartsverket Prislista 2026"
-      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 6
       clause: "Lotsavgift Class 9"
@@ -1859,8 +1859,8 @@ fee_rules:
       type: flat
       amount: 45420
     source_reference:
-      document_name: "Sjöfartsverket Prislista 2026"
-      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 6
       clause: "Lotsavgift Class 10"
@@ -1877,8 +1877,8 @@ fee_rules:
       unit_rate: 10255
       unit_type: half_hour
     source_reference:
-      document_name: "Sjöfartsverket Prislista 2026"
-      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 6
       clause: "Lotsavgift Class 10"
@@ -1895,8 +1895,8 @@ fee_rules:
       type: flat
       amount: 12620
     source_reference:
-      document_name: "Sjöfartsverket Prislista 2026"
-      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 6
       clause: "Extra Pilot"
@@ -1918,8 +1918,8 @@ fee_rules:
         condition: "pilotage_hours > 7"
         description: "Pilotage discount for >7 hours"
     source_reference:
-      document_name: "Sjöfartsverket Prislista 2026"
-      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 7
       clause: "Pilotage Discounts"
@@ -1938,8 +1938,8 @@ fee_rules:
     applicable_conditions:
       pilotage_ordering_lead_time_hours: 1
     source_reference:
-      document_name: "Sjöfartsverket Prislista 2026"
-      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 7
       clause: "Beställningsavgift"
@@ -1957,8 +1957,8 @@ fee_rules:
     applicable_conditions:
       pilotage_ordering_lead_time_hours: 2
     source_reference:
-      document_name: "Sjöfartsverket Prislista 2026"
-      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 7
       clause: "Beställningsavgift"
@@ -1976,8 +1976,8 @@ fee_rules:
     applicable_conditions:
       pilotage_ordering_lead_time_hours: 3
     source_reference:
-      document_name: "Sjöfartsverket Prislista 2026"
-      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 7
       clause: "Beställningsavgift"
@@ -1995,8 +1995,8 @@ fee_rules:
     applicable_conditions:
       pilotage_ordering_lead_time_hours: 4
     source_reference:
-      document_name: "Sjöfartsverket Prislista 2026"
-      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 7
       clause: "Beställningsavgift"
@@ -2014,8 +2014,8 @@ fee_rules:
     applicable_conditions:
       pilotage_ordering_lead_time_hours: 5
     source_reference:
-      document_name: "Sjöfartsverket Prislista 2026"
-      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 7
       clause: "Beställningsavgift"
@@ -2037,8 +2037,8 @@ fee_rules:
       unit_rate: 377
       unit_type: container_le20ft
     source_reference:
-      document_name: "APM Terminals Gothenburg Terminal Tariff 2026"
-      document_url: "https://www.apmterminals.com/en/gothenburg/tariffs"
+      document_name: "terminal-tariff-2026-june.pdf"
+      document_url: "docs/sources/sweden/gothenburg/apm-terminals/terminal-tariff-2026-june.pdf"
       document_issued: "2025-12-01"
       page: 2
       clause: "Terminal Charges"
@@ -2055,8 +2055,8 @@ fee_rules:
       unit_rate: 535
       unit_type: container_gt20ft
     source_reference:
-      document_name: "APM Terminals Gothenburg Terminal Tariff 2026"
-      document_url: "https://www.apmterminals.com/en/gothenburg/tariffs"
+      document_name: "terminal-tariff-2026-june.pdf"
+      document_url: "docs/sources/sweden/gothenburg/apm-terminals/terminal-tariff-2026-june.pdf"
       document_issued: "2025-12-01"
       page: 2
       clause: "Terminal Charges"
@@ -2073,8 +2073,8 @@ fee_rules:
       unit_rate: 54
       unit_type: "1000_kg"
     source_reference:
-      document_name: "APM Terminals Gothenburg Terminal Tariff 2026"
-      document_url: "https://www.apmterminals.com/en/gothenburg/tariffs"
+      document_name: "terminal-tariff-2026-june.pdf"
+      document_url: "docs/sources/sweden/gothenburg/apm-terminals/terminal-tariff-2026-june.pdf"
       document_issued: "2025-12-01"
       page: 2
       clause: "Terminal Charges"
@@ -2092,8 +2092,8 @@ fee_rules:
       unit_rate: 80
       unit_type: container_total
     source_reference:
-      document_name: "APM Terminals Gothenburg Terminal Tariff 2026"
-      document_url: "https://www.apmterminals.com/en/gothenburg/tariffs"
+      document_name: "terminal-tariff-2026-june.pdf"
+      document_url: "docs/sources/sweden/gothenburg/apm-terminals/terminal-tariff-2026-june.pdf"
       document_issued: "2025-12-01"
       page: 3
       clause: "ISPS Security"
@@ -2111,8 +2111,8 @@ fee_rules:
       unit_rate: 3111
       unit_type: move
     source_reference:
-      document_name: "APM Terminals Gothenburg Terminal Tariff 2026"
-      document_url: "https://www.apmterminals.com/en/gothenburg/tariffs"
+      document_name: "terminal-tariff-2026-june.pdf"
+      document_url: "docs/sources/sweden/gothenburg/apm-terminals/terminal-tariff-2026-june.pdf"
       document_issued: "2025-12-01"
       page: 3
       clause: "Hatch Cover Charge"
@@ -2130,8 +2130,8 @@ fee_rules:
       unit_rate: 1036
       unit_type: move
     source_reference:
-      document_name: "APM Terminals Gothenburg Terminal Tariff 2026"
-      document_url: "https://www.apmterminals.com/en/gothenburg/tariffs"
+      document_name: "terminal-tariff-2026-june.pdf"
+      document_url: "docs/sources/sweden/gothenburg/apm-terminals/terminal-tariff-2026-june.pdf"
       document_issued: "2025-12-01"
       page: 3
       clause: "Gearbox Handling"
@@ -2153,8 +2153,8 @@ fee_rules:
           max_days: 9
           daily_rate: 133
     source_reference:
-      document_name: "APM Terminals Gothenburg Terminal Tariff 2026"
-      document_url: "https://www.apmterminals.com/en/gothenburg/tariffs"
+      document_name: "terminal-tariff-2026-june.pdf"
+      document_url: "docs/sources/sweden/gothenburg/apm-terminals/terminal-tariff-2026-june.pdf"
       document_issued: "2025-12-01"
       page: 4
       clause: "Yard Storage"
@@ -2174,8 +2174,8 @@ fee_rules:
           max_days: 13
           daily_rate: 346
     source_reference:
-      document_name: "APM Terminals Gothenburg Terminal Tariff 2026"
-      document_url: "https://www.apmterminals.com/en/gothenburg/tariffs"
+      document_name: "terminal-tariff-2026-june.pdf"
+      document_url: "docs/sources/sweden/gothenburg/apm-terminals/terminal-tariff-2026-june.pdf"
       document_issued: "2025-12-01"
       page: 4
       clause: "Yard Storage"
@@ -2195,8 +2195,8 @@ fee_rules:
           max_days: null
           daily_rate: 578
     source_reference:
-      document_name: "APM Terminals Gothenburg Terminal Tariff 2026"
-      document_url: "https://www.apmterminals.com/en/gothenburg/tariffs"
+      document_name: "terminal-tariff-2026-june.pdf"
+      document_url: "docs/sources/sweden/gothenburg/apm-terminals/terminal-tariff-2026-june.pdf"
       document_issued: "2025-12-01"
       page: 4
       clause: "Yard Storage"
@@ -2217,8 +2217,8 @@ fee_rules:
           max_days: 7
           daily_rate: 133
     source_reference:
-      document_name: "APM Terminals Gothenburg Terminal Tariff 2026"
-      document_url: "https://www.apmterminals.com/en/gothenburg/tariffs"
+      document_name: "terminal-tariff-2026-june.pdf"
+      document_url: "docs/sources/sweden/gothenburg/apm-terminals/terminal-tariff-2026-june.pdf"
       document_issued: "2025-12-01"
       page: 4
       clause: "Yard Storage"
@@ -2238,8 +2238,8 @@ fee_rules:
           max_days: 11
           daily_rate: 346
     source_reference:
-      document_name: "APM Terminals Gothenburg Terminal Tariff 2026"
-      document_url: "https://www.apmterminals.com/en/gothenburg/tariffs"
+      document_name: "terminal-tariff-2026-june.pdf"
+      document_url: "docs/sources/sweden/gothenburg/apm-terminals/terminal-tariff-2026-june.pdf"
       document_issued: "2025-12-01"
       page: 4
       clause: "Yard Storage"
@@ -2259,8 +2259,8 @@ fee_rules:
           max_days: null
           daily_rate: 578
     source_reference:
-      document_name: "APM Terminals Gothenburg Terminal Tariff 2026"
-      document_url: "https://www.apmterminals.com/en/gothenburg/tariffs"
+      document_name: "terminal-tariff-2026-june.pdf"
+      document_url: "docs/sources/sweden/gothenburg/apm-terminals/terminal-tariff-2026-june.pdf"
       document_issued: "2025-12-01"
       page: 4
       clause: "Yard Storage"
@@ -2278,8 +2278,8 @@ fee_rules:
       daily_rate: 437
       basis: storage_days_export
     source_reference:
-      document_name: "APM Terminals Gothenburg Terminal Tariff 2026"
-      document_url: "https://www.apmterminals.com/en/gothenburg/tariffs"
+      document_name: "terminal-tariff-2026-june.pdf"
+      document_url: "docs/sources/sweden/gothenburg/apm-terminals/terminal-tariff-2026-june.pdf"
       document_issued: "2025-12-01"
       page: 5
       clause: "Yard Surcharges - OOG"
@@ -2296,8 +2296,8 @@ fee_rules:
       daily_rate: 709
       basis: storage_days_export
     source_reference:
-      document_name: "APM Terminals Gothenburg Terminal Tariff 2026"
-      document_url: "https://www.apmterminals.com/en/gothenburg/tariffs"
+      document_name: "terminal-tariff-2026-june.pdf"
+      document_url: "docs/sources/sweden/gothenburg/apm-terminals/terminal-tariff-2026-june.pdf"
       document_issued: "2025-12-01"
       page: 5
       clause: "Yard Surcharges - Reefer"
@@ -2314,8 +2314,8 @@ fee_rules:
       daily_rate: 382
       basis: storage_days_export
     source_reference:
-      document_name: "APM Terminals Gothenburg Terminal Tariff 2026"
-      document_url: "https://www.apmterminals.com/en/gothenburg/tariffs"
+      document_name: "terminal-tariff-2026-june.pdf"
+      document_url: "docs/sources/sweden/gothenburg/apm-terminals/terminal-tariff-2026-june.pdf"
       document_issued: "2025-12-01"
       page: 5
       clause: "Yard Surcharges - Dangerous Goods"
@@ -2332,8 +2332,8 @@ fee_rules:
       daily_rate: 1025
       basis: storage_days_export
     source_reference:
-      document_name: "APM Terminals Gothenburg Terminal Tariff 2026"
-      document_url: "https://www.apmterminals.com/en/gothenburg/tariffs"
+      document_name: "terminal-tariff-2026-june.pdf"
+      document_url: "docs/sources/sweden/gothenburg/apm-terminals/terminal-tariff-2026-june.pdf"
       document_issued: "2025-12-01"
       page: 5
       clause: "Yard Surcharges - Overdue Dangerous"
@@ -2351,8 +2351,8 @@ fee_rules:
       unit_rate: 538
       unit_type: dangerous_goods
     source_reference:
-      document_name: "APM Terminals Gothenburg Terminal Tariff 2026"
-      document_url: "https://www.apmterminals.com/en/gothenburg/tariffs"
+      document_name: "terminal-tariff-2026-june.pdf"
+      document_url: "docs/sources/sweden/gothenburg/apm-terminals/terminal-tariff-2026-june.pdf"
       document_issued: "2025-12-01"
       page: 5
       clause: "Gate Hazardous"
@@ -2370,8 +2370,8 @@ fee_rules:
       daily_rate: 500
       basis: pilotage_hours
     source_reference:
-      document_name: "APM Terminals Gothenburg Terminal Tariff 2026"
-      document_url: "https://www.apmterminals.com/en/gothenburg/tariffs"
+      document_name: "terminal-tariff-2026-june.pdf"
+      document_url: "docs/sources/sweden/gothenburg/apm-terminals/terminal-tariff-2026-june.pdf"
       document_issued: "2025-12-01"
       page: 6
       clause: "Idle Berth Service"
