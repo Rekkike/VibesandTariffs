@@ -20,5 +20,5 @@
       "@port-cost/core/*": ["../core/src/*"]
     }
   },
-  "include": ["src", "src/**/*.yaml"]
+  "include": ["src", "../core/data/*.yaml"]
 }

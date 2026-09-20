@@ -37,7 +37,7 @@ import {
 } from '@port-cost/core';
 
 // Import the port data - use js-yaml to parse it
-import gothenburgYaml from './data/gothenburg_2026.json';
+import gothenburgYamlText from '../core/data/gothenburg_2026.yaml';
 
 
 // Define types for our app state
@@ -108,10 +108,12 @@ const App: React.FC = () => {
   // Load port data on mount
   useEffect(() => {
     try {
-      // In production, fetch from API or load from file
-      // For now, use the imported YAML
-      const portData = gothenburgYaml as unknown as PortDefinition;
-      setPort(portData);
+      // Load the YAML file using the core loader
+      // In browser, we need to parse the YAML text directly since we can't use fs
+      import('js-yaml').then(yaml => {
+        const portData = yaml.load(gothenburgYamlText) as PortDefinition;
+        setPort(portData);
+      });
     } catch (err) {
       console.error('Failed to load port data:', err);
     }
