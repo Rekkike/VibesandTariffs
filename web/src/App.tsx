@@ -37,7 +37,7 @@ import {
 } from '@port-cost/core';
 
 // Import the port data - use js-yaml to parse it
-import gothenburgYamlText from '../core/data/gothenburg_2026.yaml';
+import gothenburgYamlText from './data/gothenburg_2026.yaml';
 
 
 // Define types for our app state

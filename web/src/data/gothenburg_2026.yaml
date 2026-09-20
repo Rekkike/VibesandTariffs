@@ -1,0 +1,2379 @@
+# Port of Gothenburg 2026 Tariff
+# Complete data file for Port Call Cost Analyzer
+# All amounts in SEK
+
+metadata:
+  id: gothenburg
+  name: Port of Gothenburg
+  country: Sweden
+  currency: SEK
+  validity_start: "2026-01-01"
+  validity_end: "2026-12-31"
+  description: "Complete tariff data for Gothenburg port including Port of Gothenburg, Sjöfartsverket, and APM Terminals"
+
+billers:
+  - id: port_of_gothenburg
+    name: Port of Gothenburg
+    description: "Port authority for Gothenburg"
+    currency: SEK
+
+  - id: sjofartsverket
+    name: Sjöfartsverket
+    description: "Swedish Maritime Administration (national authority)"
+    currency: SEK
+
+  - id: apm_terminals_gothenburg
+    name: APM Terminals Gothenburg
+    description: "Terminal operator at Port of Gothenburg"
+    currency: SEK
+
+# ============================================================================
+# PORT OF GOTHENBURG FEES
+# ============================================================================
+
+fee_rules:
+  # --- Container Vessel Dues (Progressive by GT) ---
+  - id: port_gothenburg_container_vessel_dues
+    fee_family: port_dues
+    biller: Port of Gothenburg
+    name: Container Vessel Dues
+    description: "Progressive dues based on vessel GT for container vessels"
+    rate_structure:
+      type: progressive
+      basis: gt
+      bands:
+        - min: 0
+          max: 20000
+          rate: 1.96
+        - min: 20000
+          max: 40000
+          rate: 1.71
+        - min: 40000
+          max: 60000
+          rate: 1.15
+        - min: 60000
+          max: null
+          rate: 0.80
+    minimum: 500
+    source_reference:
+      document_name: "port-tariff-2026.pdf"
+      document_url: "docs/sources/sweden/gothenburg/port-authority/port-tariff-2026.pdf"
+      document_issued: "2025-12-01"
+      page: 5
+      clause: "Section 2.1 - Container Vessel Dues"
+      verified_on: "2025-12-15"
+      verified_by: "Port Cost Analyzer Team"
+
+  # --- Environmental Discounts on Port Dues ---
+  # ESI score >= 30 or CSI class 4 -> 10% discount
+  - id: port_gothenburg_env_discount_esi_csi
+    fee_family: environmental_surcharge
+    biller: Port of Gothenburg
+    name: Environmental Discount - ESI/CSI
+    description: "10% discount on port dues for ESI score >= 30 or CSI class 4"
+    rate_structure:
+      type: flat
+      amount: 0
+    adjustments:
+      - type: discount
+        percentage: 10
+        condition: "esi_score >= 30 || csi_class == '4'"
+        description: "Environmental discount for ESI >= 30 or CSI class 4"
+        stacking_order: 1
+    applicable_conditions:
+      esi_score: 30
+    source_reference:
+      document_name: "port-tariff-2026.pdf"
+      document_url: "docs/sources/sweden/gothenburg/port-authority/port-tariff-2026.pdf"
+      document_issued: "2025-12-01"
+      page: 7
+      clause: "Section 3.2 - Environmental Discounts"
+      verified_on: "2025-12-15"
+      verified_by: "Port Cost Analyzer Team"
+
+  # >= 30% fossil-free fuel bunkered -> additional 10% discount
+  - id: port_gothenburg_env_discount_fuel
+    fee_family: environmental_surcharge
+    biller: Port of Gothenburg
+    name: Environmental Discount - Fossil-Free Fuel
+    description: "Additional 10% discount on port dues for >= 30% fossil-free fuel bunkered in Gothenburg"
+    rate_structure:
+      type: flat
+      amount: 0
+    adjustments:
+      - type: discount
+        percentage: 10
+        condition: "fossil_free_fuel_percentage >= 30"
+        description: "Environmental discount for >= 30% fossil-free fuel"
+        stacking_order: 2
+    applicable_conditions:
+      fuel_percentage: 30
+    source_reference:
+      document_name: "port-tariff-2026.pdf"
+      document_url: "docs/sources/sweden/gothenburg/port-authority/port-tariff-2026.pdf"
+      document_issued: "2025-12-01"
+      page: 7
+      clause: "Section 3.2 - Environmental Discounts"
+      verified_on: "2025-12-15"
+      verified_by: "Port Cost Analyzer Team"
+
+  # --- Frequency Discount on Port Dues ---
+  # 50% discount for second call on same route within discount window
+  - id: port_gothenburg_frequency_discount
+    fee_family: port_dues
+    biller: Port of Gothenburg
+    name: Frequency Discount
+    description: "50% discount on port dues for second call on same route within discount window"
+    rate_structure:
+      type: flat
+      amount: 0
+    adjustments:
+      - type: discount
+        percentage: 50
+        condition: "calls_this_month >= 2"
+        description: "Frequency discount for multiple calls"
+        stacking_order: 3
+    applicable_conditions:
+      calls_this_month: 2
+    source_reference:
+      document_name: "port-tariff-2026.pdf"
+      document_url: "docs/sources/sweden/gothenburg/port-authority/port-tariff-2026.pdf"
+      document_issued: "2025-12-01"
+      page: 8
+      clause: "Section 3.3 - Frequency Discounts"
+      verified_on: "2025-12-15"
+      verified_by: "Port Cost Analyzer Team"
+
+  # --- Waste Dues ---
+  # Solid waste: EU vessel 0.13 SEK/GT, non-EU 0.24 SEK/GT
+  - id: port_gothenburg_waste_solid_eu
+    fee_family: waste
+    biller: Port of Gothenburg
+    name: Solid Waste Dues - EU Vessel
+    description: "Solid waste disposal fee for EU-flagged vessels"
+    rate_structure:
+      type: per_unit
+      unit_rate: 0.13
+      unit_type: gt
+    applicable_conditions:
+      flag_state: EU
+    source_reference:
+      document_name: "port-tariff-2026.pdf"
+      document_url: "docs/sources/sweden/gothenburg/port-authority/port-tariff-2026.pdf"
+      document_issued: "2025-12-01"
+      page: 10
+      clause: "Section 4.1 - Waste Dues"
+      verified_on: "2025-12-15"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: port_gothenburg_waste_solid_non_eu
+    fee_family: waste
+    biller: Port of Gothenburg
+    name: Solid Waste Dues - Non-EU Vessel
+    description: "Solid waste disposal fee for non-EU flagged vessels"
+    rate_structure:
+      type: per_unit
+      unit_rate: 0.24
+      unit_type: gt
+    applicable_conditions:
+      flag_state: non-EU
+    source_reference:
+      document_name: "port-tariff-2026.pdf"
+      document_url: "docs/sources/sweden/gothenburg/port-authority/port-tariff-2026.pdf"
+      document_issued: "2025-12-01"
+      page: 10
+      clause: "Section 4.1 - Waste Dues"
+      verified_on: "2025-12-15"
+      verified_by: "Port Cost Analyzer Team"
+
+  # Sludge: EU vessel 0.21 SEK/GT up to 11 m³ then 2,400 SEK/m³
+  - id: port_gothenburg_waste_sludge_eu
+    fee_family: waste
+    biller: Port of Gothenburg
+    name: Sludge Waste Dues - EU Vessel
+    description: "Sludge waste disposal fee for EU-flagged vessels: 0.21 SEK/GT up to 11 m³, then 2,400 SEK/m³"
+    rate_structure:
+      type: banded
+      basis: gt
+      bands:
+        - min: 0
+          max: null
+          rate: 0.21
+    # Note: The 11 m³ threshold and 2,400 SEK/m³ excess would need custom logic
+    # For now, using per-GT rate as base
+    applicable_conditions:
+      flag_state: EU
+    source_reference:
+      document_name: "port-tariff-2026.pdf"
+      document_url: "docs/sources/sweden/gothenburg/port-authority/port-tariff-2026.pdf"
+      document_issued: "2025-12-01"
+      page: 10
+      clause: "Section 4.2 - Sludge Waste Dues"
+      verified_on: "2025-12-15"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: port_gothenburg_waste_sludge_non_eu
+    fee_family: waste
+    biller: Port of Gothenburg
+    name: Sludge Waste Dues - Non-EU Vessel
+    description: "Sludge waste disposal fee for non-EU flagged vessels: 0.31 SEK/GT up to 11 m³, then 2,400 SEK/m³"
+    rate_structure:
+      type: banded
+      basis: gt
+      bands:
+        - min: 0
+          max: null
+          rate: 0.31
+    applicable_conditions:
+      flag_state: non-EU
+    source_reference:
+      document_name: "port-tariff-2026.pdf"
+      document_url: "docs/sources/sweden/gothenburg/port-authority/port-tariff-2026.pdf"
+      document_issued: "2025-12-01"
+      page: 10
+      clause: "Section 4.2 - Sludge Waste Dues"
+      verified_on: "2025-12-15"
+      verified_by: "Port Cost Analyzer Team"
+
+  # --- OPS Connection Fee ---
+  - id: port_gothenburg_ops_connection
+    fee_family: connection_fee
+    biller: Port of Gothenburg
+    name: OPS Connection Fee
+    description: "Onshore Power Supply connection fee"
+    rate_structure:
+      type: flat
+      amount: 7000
+    applicable_conditions:
+      ops_usage: true
+    source_reference:
+      document_name: "port-tariff-2026.pdf"
+      document_url: "docs/sources/sweden/gothenburg/port-authority/port-tariff-2026.pdf"
+      document_issued: "2025-12-01"
+      page: 12
+      clause: "Section 5.1 - OPS Connection"
+      verified_on: "2025-12-15"
+      verified_by: "Port Cost Analyzer Team"
+
+  # --- Lay-up Fee ---
+  - id: port_gothenburg_layup
+    fee_family: lay_up
+    biller: Port of Gothenburg
+    name: Lay-up Fee
+    description: "Lay-up fee per metre LOA per commenced day"
+    rate_structure:
+      type: per_commenced_day
+      daily_rate: 45
+      basis: lay_up_days
+    source_reference:
+      document_name: "port-tariff-2026.pdf"
+      document_url: "docs/sources/sweden/gothenburg/port-authority/port-tariff-2026.pdf"
+      document_issued: "2025-12-01"
+      page: 13
+      clause: "Section 5.2 - Lay-up Fees"
+      verified_on: "2025-12-15"
+      verified_by: "Port Cost Analyzer Team"
+
+# ============================================================================
+# SJÖFARTSVERKET FEES (Swedish Maritime Administration)
+# All based on Net Tonnage (NT)
+# ============================================================================
+
+  # --- Vessel Fee (Fartygsavgift) by Size Class and CSI Class ---
+  # Size classes by NT: 1:0, 2:1000, 3:2000, 4:3000, 5:6000, 6:10000, 7:15000, 8:30000, 9:60000, 10:100000
+  # Rates per class x CSI class (A/B/C/D/E where E = not registered)
+  
+  # Class 1 (0+ NT)
+  - id: sjofartsverket_vessel_fee_class1_csi_a
+    fee_family: vessel_fee
+    biller: Sjöfartsverket
+    name: Vessel Fee - Class 1, CSI Class A
+    description: "Vessel fee for Class 1 (0+ NT) with CSI Class A"
+    rate_structure:
+      type: flat
+      amount: 735
+    applicable_conditions:
+      csi_class: A
+    source_reference:
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_issued: "2025-11-01"
+      page: 3
+      clause: "Fartygsavgift Class 1"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_vessel_fee_class1_csi_b
+    fee_family: vessel_fee
+    biller: Sjöfartsverket
+    name: Vessel Fee - Class 1, CSI Class B
+    description: "Vessel fee for Class 1 (0+ NT) with CSI Class B"
+    rate_structure:
+      type: flat
+      amount: 1660
+    applicable_conditions:
+      csi_class: B
+    source_reference:
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_issued: "2025-11-01"
+      page: 3
+      clause: "Fartygsavgift Class 1"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_vessel_fee_class1_csi_c
+    fee_family: vessel_fee
+    biller: Sjöfartsverket
+    name: Vessel Fee - Class 1, CSI Class C
+    description: "Vessel fee for Class 1 (0+ NT) with CSI Class C"
+    rate_structure:
+      type: flat
+      amount: 3315
+    applicable_conditions:
+      csi_class: C
+    source_reference:
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_issued: "2025-11-01"
+      page: 3
+      clause: "Fartygsavgift Class 1"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_vessel_fee_class1_csi_d
+    fee_family: vessel_fee
+    biller: Sjöfartsverket
+    name: Vessel Fee - Class 1, CSI Class D
+    description: "Vessel fee for Class 1 (0+ NT) with CSI Class D"
+    rate_structure:
+      type: flat
+      amount: 3685
+    applicable_conditions:
+      csi_class: D
+    source_reference:
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_issued: "2025-11-01"
+      page: 3
+      clause: "Fartygsavgift Class 1"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_vessel_fee_class1_csi_e
+    fee_family: vessel_fee
+    biller: Sjöfartsverket
+    name: Vessel Fee - Class 1, No CSI
+    description: "Vessel fee for Class 1 (0+ NT) with no CSI registration (Class E)"
+    rate_structure:
+      type: flat
+      amount: 3685
+    applicable_conditions:
+      csi_class: E
+    source_reference:
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_issued: "2025-11-01"
+      page: 3
+      clause: "Fartygsavgift Class 1"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  # Class 2 (1000+ NT)
+  - id: sjofartsverket_vessel_fee_class2_csi_a
+    fee_family: vessel_fee
+    biller: Sjöfartsverket
+    name: Vessel Fee - Class 2, CSI Class A
+    description: "Vessel fee for Class 2 (1000+ NT) with CSI Class A"
+    rate_structure:
+      type: flat
+      amount: 2810
+    applicable_conditions:
+      csi_class: A
+    source_reference:
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_issued: "2025-11-01"
+      page: 3
+      clause: "Fartygsavgift Class 2"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_vessel_fee_class2_csi_b
+    fee_family: vessel_fee
+    biller: Sjöfartsverket
+    name: Vessel Fee - Class 2, CSI Class B
+    description: "Vessel fee for Class 2 (1000+ NT) with CSI Class B"
+    rate_structure:
+      type: flat
+      amount: 6320
+    applicable_conditions:
+      csi_class: B
+    source_reference:
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_issued: "2025-11-01"
+      page: 3
+      clause: "Fartygsavgift Class 2"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_vessel_fee_class2_csi_c
+    fee_family: vessel_fee
+    biller: Sjöfartsverket
+    name: Vessel Fee - Class 2, CSI Class C
+    description: "Vessel fee for Class 2 (1000+ NT) with CSI Class C"
+    rate_structure:
+      type: flat
+      amount: 12640
+    applicable_conditions:
+      csi_class: C
+    source_reference:
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_issued: "2025-11-01"
+      page: 3
+      clause: "Fartygsavgift Class 2"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_vessel_fee_class2_csi_d
+    fee_family: vessel_fee
+    biller: Sjöfartsverket
+    name: Vessel Fee - Class 2, CSI Class D
+    description: "Vessel fee for Class 2 (1000+ NT) with CSI Class D"
+    rate_structure:
+      type: flat
+      amount: 14045
+    applicable_conditions:
+      csi_class: D
+    source_reference:
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_issued: "2025-11-01"
+      page: 3
+      clause: "Fartygsavgift Class 2"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_vessel_fee_class2_csi_e
+    fee_family: vessel_fee
+    biller: Sjöfartsverket
+    name: Vessel Fee - Class 2, No CSI
+    description: "Vessel fee for Class 2 (1000+ NT) with no CSI registration"
+    rate_structure:
+      type: flat
+      amount: 14045
+    applicable_conditions:
+      csi_class: E
+    source_reference:
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_issued: "2025-11-01"
+      page: 3
+      clause: "Fartygsavgift Class 2"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  # Class 3 (2000+ NT)
+  - id: sjofartsverket_vessel_fee_class3_csi_a
+    fee_family: vessel_fee
+    biller: Sjöfartsverket
+    name: Vessel Fee - Class 3, CSI Class A
+    description: "Vessel fee for Class 3 (2000+ NT) with CSI Class A"
+    rate_structure:
+      type: flat
+      amount: 5515
+    applicable_conditions:
+      csi_class: A
+    source_reference:
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_issued: "2025-11-01"
+      page: 3
+      clause: "Fartygsavgift Class 3"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_vessel_fee_class3_csi_b
+    fee_family: vessel_fee
+    biller: Sjöfartsverket
+    name: Vessel Fee - Class 3, CSI Class B
+    description: "Vessel fee for Class 3 (2000+ NT) with CSI Class B"
+    rate_structure:
+      type: flat
+      amount: 12410
+    applicable_conditions:
+      csi_class: B
+    source_reference:
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_issued: "2025-11-01"
+      page: 3
+      clause: "Fartygsavgift Class 3"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_vessel_fee_class3_csi_c
+    fee_family: vessel_fee
+    biller: Sjöfartsverket
+    name: Vessel Fee - Class 3, CSI Class C
+    description: "Vessel fee for Class 3 (2000+ NT) with CSI Class C"
+    rate_structure:
+      type: flat
+      amount: 24825
+    applicable_conditions:
+      csi_class: C
+    source_reference:
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_issued: "2025-11-01"
+      page: 3
+      clause: "Fartygsavgift Class 3"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_vessel_fee_class3_csi_d
+    fee_family: vessel_fee
+    biller: Sjöfartsverket
+    name: Vessel Fee - Class 3, CSI Class D
+    description: "Vessel fee for Class 3 (2000+ NT) with CSI Class D"
+    rate_structure:
+      type: flat
+      amount: 27580
+    applicable_conditions:
+      csi_class: D
+    source_reference:
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_issued: "2025-11-01"
+      page: 3
+      clause: "Fartygsavgift Class 3"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_vessel_fee_class3_csi_e
+    fee_family: vessel_fee
+    biller: Sjöfartsverket
+    name: Vessel Fee - Class 3, No CSI
+    description: "Vessel fee for Class 3 (2000+ NT) with no CSI registration"
+    rate_structure:
+      type: flat
+      amount: 27580
+    applicable_conditions:
+      csi_class: E
+    source_reference:
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_issued: "2025-11-01"
+      page: 3
+      clause: "Fartygsavgift Class 3"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  # Continue with remaining classes... (abbreviated for space)
+  # Class 4 (3000+ NT)
+  - id: sjofartsverket_vessel_fee_class4_csi_a
+    fee_family: vessel_fee
+    biller: Sjöfartsverket
+    name: Vessel Fee - Class 4, CSI Class A
+    description: "Vessel fee for Class 4 (3000+ NT) with CSI Class A"
+    rate_structure:
+      type: flat
+      amount: 8795
+    applicable_conditions:
+      csi_class: A
+    source_reference:
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_issued: "2025-11-01"
+      page: 3
+      clause: "Fartygsavgift Class 4"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_vessel_fee_class4_csi_b
+    fee_family: vessel_fee
+    biller: Sjöfartsverket
+    name: Vessel Fee - Class 4, CSI Class B
+    description: "Vessel fee for Class 4 (3000+ NT) with CSI Class B"
+    rate_structure:
+      type: flat
+      amount: 19790
+    applicable_conditions:
+      csi_class: B
+    source_reference:
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_issued: "2025-11-01"
+      page: 3
+      clause: "Fartygsavgift Class 4"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_vessel_fee_class4_csi_c
+    fee_family: vessel_fee
+    biller: Sjöfartsverket
+    name: Vessel Fee - Class 4, CSI Class C
+    description: "Vessel fee for Class 4 (3000+ NT) with CSI Class C"
+    rate_structure:
+      type: flat
+      amount: 39575
+    applicable_conditions:
+      csi_class: C
+    source_reference:
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_issued: "2025-11-01"
+      page: 3
+      clause: "Fartygsavgift Class 4"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_vessel_fee_class4_csi_d
+    fee_family: vessel_fee
+    biller: Sjöfartsverket
+    name: Vessel Fee - Class 4, CSI Class D
+    description: "Vessel fee for Class 4 (3000+ NT) with CSI Class D"
+    rate_structure:
+      type: flat
+      amount: 43975
+    applicable_conditions:
+      csi_class: D
+    source_reference:
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_issued: "2025-11-01"
+      page: 3
+      clause: "Fartygsavgift Class 4"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_vessel_fee_class4_csi_e
+    fee_family: vessel_fee
+    biller: Sjöfartsverket
+    name: Vessel Fee - Class 4, No CSI
+    description: "Vessel fee for Class 4 (3000+ NT) with no CSI registration"
+    rate_structure:
+      type: flat
+      amount: 43975
+    applicable_conditions:
+      csi_class: E
+    source_reference:
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_issued: "2025-11-01"
+      page: 3
+      clause: "Fartygsavgift Class 4"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  # Class 5 (6000+ NT)
+  - id: sjofartsverket_vessel_fee_class5_csi_a
+    fee_family: vessel_fee
+    biller: Sjöfartsverket
+    name: Vessel Fee - Class 5, CSI Class A
+    description: "Vessel fee for Class 5 (6000+ NT) with CSI Class A"
+    rate_structure:
+      type: flat
+      amount: 16150
+    applicable_conditions:
+      csi_class: A
+    source_reference:
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_issued: "2025-11-01"
+      page: 3
+      clause: "Fartygsavgift Class 5"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_vessel_fee_class5_csi_b
+    fee_family: vessel_fee
+    biller: Sjöfartsverket
+    name: Vessel Fee - Class 5, CSI Class B
+    description: "Vessel fee for Class 5 (6000+ NT) with CSI Class B"
+    rate_structure:
+      type: flat
+      amount: 36340
+    applicable_conditions:
+      csi_class: B
+    source_reference:
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_issued: "2025-11-01"
+      page: 3
+      clause: "Fartygsavgift Class 5"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_vessel_fee_class5_csi_c
+    fee_family: vessel_fee
+    biller: Sjöfartsverket
+    name: Vessel Fee - Class 5, CSI Class C
+    description: "Vessel fee for Class 5 (6000+ NT) with CSI Class C"
+    rate_structure:
+      type: flat
+      amount: 72680
+    applicable_conditions:
+      csi_class: C
+    source_reference:
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_issued: "2025-11-01"
+      page: 3
+      clause: "Fartygsavgift Class 5"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_vessel_fee_class5_csi_d
+    fee_family: vessel_fee
+    biller: Sjöfartsverket
+    name: Vessel Fee - Class 5, CSI Class D
+    description: "Vessel fee for Class 5 (6000+ NT) with CSI Class D"
+    rate_structure:
+      type: flat
+      amount: 80755
+    applicable_conditions:
+      csi_class: D
+    source_reference:
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_issued: "2025-11-01"
+      page: 3
+      clause: "Fartygsavgift Class 5"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_vessel_fee_class5_csi_e
+    fee_family: vessel_fee
+    biller: Sjöfartsverket
+    name: Vessel Fee - Class 5, No CSI
+    description: "Vessel fee for Class 5 (6000+ NT) with no CSI registration"
+    rate_structure:
+      type: flat
+      amount: 80755
+    applicable_conditions:
+      csi_class: E
+    source_reference:
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_issued: "2025-11-01"
+      page: 3
+      clause: "Fartygsavgift Class 5"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  # Class 6 (10000+ NT)
+  - id: sjofartsverket_vessel_fee_class6_csi_a
+    fee_family: vessel_fee
+    biller: Sjöfartsverket
+    name: Vessel Fee - Class 6, CSI Class A
+    description: "Vessel fee for Class 6 (10000+ NT) with CSI Class A"
+    rate_structure:
+      type: flat
+      amount: 23475
+    applicable_conditions:
+      csi_class: A
+    source_reference:
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_issued: "2025-11-01"
+      page: 3
+      clause: "Fartygsavgift Class 6"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_vessel_fee_class6_csi_b
+    fee_family: vessel_fee
+    biller: Sjöfartsverket
+    name: Vessel Fee - Class 6, CSI Class B
+    description: "Vessel fee for Class 6 (10000+ NT) with CSI Class B"
+    rate_structure:
+      type: flat
+      amount: 52825
+    applicable_conditions:
+      csi_class: B
+    source_reference:
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_issued: "2025-11-01"
+      page: 3
+      clause: "Fartygsavgift Class 6"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_vessel_fee_class6_csi_c
+    fee_family: vessel_fee
+    biller: Sjöfartsverket
+    name: Vessel Fee - Class 6, CSI Class C
+    description: "Vessel fee for Class 6 (10000+ NT) with CSI Class C"
+    rate_structure:
+      type: flat
+      amount: 105645
+    applicable_conditions:
+      csi_class: C
+    source_reference:
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_issued: "2025-11-01"
+      page: 3
+      clause: "Fartygsavgift Class 6"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_vessel_fee_class6_csi_d
+    fee_family: vessel_fee
+    biller: Sjöfartsverket
+    name: Vessel Fee - Class 6, CSI Class D
+    description: "Vessel fee for Class 6 (10000+ NT) with CSI Class D"
+    rate_structure:
+      type: flat
+      amount: 117385
+    applicable_conditions:
+      csi_class: D
+    source_reference:
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_issued: "2025-11-01"
+      page: 3
+      clause: "Fartygsavgift Class 6"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_vessel_fee_class6_csi_e
+    fee_family: vessel_fee
+    biller: Sjöfartsverket
+    name: Vessel Fee - Class 6, No CSI
+    description: "Vessel fee for Class 6 (10000+ NT) with no CSI registration"
+    rate_structure:
+      type: flat
+      amount: 117385
+    applicable_conditions:
+      csi_class: E
+    source_reference:
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_issued: "2025-11-01"
+      page: 3
+      clause: "Fartygsavgift Class 6"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  # Class 7 (15000+ NT)
+  - id: sjofartsverket_vessel_fee_class7_csi_a
+    fee_family: vessel_fee
+    biller: Sjöfartsverket
+    name: Vessel Fee - Class 7, CSI Class A
+    description: "Vessel fee for Class 7 (15000+ NT) with CSI Class A"
+    rate_structure:
+      type: flat
+      amount: 30060
+    applicable_conditions:
+      csi_class: A
+    source_reference:
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_issued: "2025-11-01"
+      page: 3
+      clause: "Fartygsavgift Class 7"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_vessel_fee_class7_csi_b
+    fee_family: vessel_fee
+    biller: Sjöfartsverket
+    name: Vessel Fee - Class 7, CSI Class B
+    description: "Vessel fee for Class 7 (15000+ NT) with CSI Class B"
+    rate_structure:
+      type: flat
+      amount: 67640
+    applicable_conditions:
+      csi_class: B
+    source_reference:
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_issued: "2025-11-01"
+      page: 3
+      clause: "Fartygsavgift Class 7"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_vessel_fee_class7_csi_c
+    fee_family: vessel_fee
+    biller: Sjöfartsverket
+    name: Vessel Fee - Class 7, CSI Class C
+    description: "Vessel fee for Class 7 (15000+ NT) with CSI Class C"
+    rate_structure:
+      type: flat
+      amount: 135275
+    applicable_conditions:
+      csi_class: C
+    source_reference:
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_issued: "2025-11-01"
+      page: 3
+      clause: "Fartygsavgift Class 7"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_vessel_fee_class7_csi_d
+    fee_family: vessel_fee
+    biller: Sjöfartsverket
+    name: Vessel Fee - Class 7, CSI Class D
+    description: "Vessel fee for Class 7 (15000+ NT) with CSI Class D"
+    rate_structure:
+      type: flat
+      amount: 150310
+    applicable_conditions:
+      csi_class: D
+    source_reference:
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_issued: "2025-11-01"
+      page: 3
+      clause: "Fartygsavgift Class 7"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_vessel_fee_class7_csi_e
+    fee_family: vessel_fee
+    biller: Sjöfartsverket
+    name: Vessel Fee - Class 7, No CSI
+    description: "Vessel fee for Class 7 (15000+ NT) with no CSI registration"
+    rate_structure:
+      type: flat
+      amount: 150310
+    applicable_conditions:
+      csi_class: E
+    source_reference:
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_issued: "2025-11-01"
+      page: 3
+      clause: "Fartygsavgift Class 7"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  # Class 8 (30000+ NT)
+  - id: sjofartsverket_vessel_fee_class8_csi_a
+    fee_family: vessel_fee
+    biller: Sjöfartsverket
+    name: Vessel Fee - Class 8, CSI Class A
+    description: "Vessel fee for Class 8 (30000+ NT) with CSI Class A"
+    rate_structure:
+      type: flat
+      amount: 34475
+    applicable_conditions:
+      csi_class: A
+    source_reference:
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_issued: "2025-11-01"
+      page: 3
+      clause: "Fartygsavgift Class 8"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_vessel_fee_class8_csi_b
+    fee_family: vessel_fee
+    biller: Sjöfartsverket
+    name: Vessel Fee - Class 8, CSI Class B
+    description: "Vessel fee for Class 8 (30000+ NT) with CSI Class B"
+    rate_structure:
+      type: flat
+      amount: 77575
+    applicable_conditions:
+      csi_class: B
+    source_reference:
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_issued: "2025-11-01"
+      page: 3
+      clause: "Fartygsavgift Class 8"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_vessel_fee_class8_csi_c
+    fee_family: vessel_fee
+    biller: Sjöfartsverket
+    name: Vessel Fee - Class 8, CSI Class C
+    description: "Vessel fee for Class 8 (30000+ NT) with CSI Class C"
+    rate_structure:
+      type: flat
+      amount: 155145
+    applicable_conditions:
+      csi_class: C
+    source_reference:
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_issued: "2025-11-01"
+      page: 3
+      clause: "Fartygsavgift Class 8"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_vessel_fee_class8_csi_d
+    fee_family: vessel_fee
+    biller: Sjöfartsverket
+    name: Vessel Fee - Class 8, CSI Class D
+    description: "Vessel fee for Class 8 (30000+ NT) with CSI Class D"
+    rate_structure:
+      type: flat
+      amount: 172385
+    applicable_conditions:
+      csi_class: D
+    source_reference:
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_issued: "2025-11-01"
+      page: 3
+      clause: "Fartygsavgift Class 8"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_vessel_fee_class8_csi_e
+    fee_family: vessel_fee
+    biller: Sjöfartsverket
+    name: Vessel Fee - Class 8, No CSI
+    description: "Vessel fee for Class 8 (30000+ NT) with no CSI registration"
+    rate_structure:
+      type: flat
+      amount: 172385
+    applicable_conditions:
+      csi_class: E
+    source_reference:
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_issued: "2025-11-01"
+      page: 3
+      clause: "Fartygsavgift Class 8"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  # Class 9 (60000+ NT)
+  - id: sjofartsverket_vessel_fee_class9_csi_a
+    fee_family: vessel_fee
+    biller: Sjöfartsverket
+    name: Vessel Fee - Class 9, CSI Class A
+    description: "Vessel fee for Class 9 (60000+ NT) with CSI Class A"
+    rate_structure:
+      type: flat
+      amount: 40360
+    applicable_conditions:
+      csi_class: A
+    source_reference:
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_issued: "2025-11-01"
+      page: 3
+      clause: "Fartygsavgift Class 9"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_vessel_fee_class9_csi_b
+    fee_family: vessel_fee
+    biller: Sjöfartsverket
+    name: Vessel Fee - Class 9, CSI Class B
+    description: "Vessel fee for Class 9 (60000+ NT) with CSI Class B"
+    rate_structure:
+      type: flat
+      amount: 90815
+    applicable_conditions:
+      csi_class: B
+    source_reference:
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_issued: "2025-11-01"
+      page: 3
+      clause: "Fartygsavgift Class 9"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_vessel_fee_class9_csi_c
+    fee_family: vessel_fee
+    biller: Sjöfartsverket
+    name: Vessel Fee - Class 9, CSI Class C
+    description: "Vessel fee for Class 9 (60000+ NT) with CSI Class C"
+    rate_structure:
+      type: flat
+      amount: 181625
+    applicable_conditions:
+      csi_class: C
+    source_reference:
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_issued: "2025-11-01"
+      page: 3
+      clause: "Fartygsavgift Class 9"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_vessel_fee_class9_csi_d
+    fee_family: vessel_fee
+    biller: Sjöfartsverket
+    name: Vessel Fee - Class 9, CSI Class D
+    description: "Vessel fee for Class 9 (60000+ NT) with CSI Class D"
+    rate_structure:
+      type: flat
+      amount: 201805
+    applicable_conditions:
+      csi_class: D
+    source_reference:
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_issued: "2025-11-01"
+      page: 3
+      clause: "Fartygsavgift Class 9"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_vessel_fee_class9_csi_e
+    fee_family: vessel_fee
+    biller: Sjöfartsverket
+    name: Vessel Fee - Class 9, No CSI
+    description: "Vessel fee for Class 9 (60000+ NT) with no CSI registration"
+    rate_structure:
+      type: flat
+      amount: 201805
+    applicable_conditions:
+      csi_class: E
+    source_reference:
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_issued: "2025-11-01"
+      page: 3
+      clause: "Fartygsavgift Class 9"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  # Class 10 (100000+ NT)
+  - id: sjofartsverket_vessel_fee_class10_csi_a
+    fee_family: vessel_fee
+    biller: Sjöfartsverket
+    name: Vessel Fee - Class 10, CSI Class A
+    description: "Vessel fee for Class 10 (100000+ NT) with CSI Class A"
+    rate_structure:
+      type: flat
+      amount: 47685
+    applicable_conditions:
+      csi_class: A
+    source_reference:
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_issued: "2025-11-01"
+      page: 3
+      clause: "Fartygsavgift Class 10"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_vessel_fee_class10_csi_b
+    fee_family: vessel_fee
+    biller: Sjöfartsverket
+    name: Vessel Fee - Class 10, CSI Class B
+    description: "Vessel fee for Class 10 (100000+ NT) with CSI Class B"
+    rate_structure:
+      type: flat
+      amount: 107295
+    applicable_conditions:
+      csi_class: B
+    source_reference:
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_issued: "2025-11-01"
+      page: 3
+      clause: "Fartygsavgift Class 10"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_vessel_fee_class10_csi_c
+    fee_family: vessel_fee
+    biller: Sjöfartsverket
+    name: Vessel Fee - Class 10, CSI Class C
+    description: "Vessel fee for Class 10 (100000+ NT) with CSI Class C"
+    rate_structure:
+      type: flat
+      amount: 214590
+    applicable_conditions:
+      csi_class: C
+    source_reference:
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_issued: "2025-11-01"
+      page: 3
+      clause: "Fartygsavgift Class 10"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_vessel_fee_class10_csi_d
+    fee_family: vessel_fee
+    biller: Sjöfartsverket
+    name: Vessel Fee - Class 10, CSI Class D
+    description: "Vessel fee for Class 10 (100000+ NT) with CSI Class D"
+    rate_structure:
+      type: flat
+      amount: 238430
+    applicable_conditions:
+      csi_class: D
+    source_reference:
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_issued: "2025-11-01"
+      page: 3
+      clause: "Fartygsavgift Class 10"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_vessel_fee_class10_csi_e
+    fee_family: vessel_fee
+    biller: Sjöfartsverket
+    name: Vessel Fee - Class 10, No CSI
+    description: "Vessel fee for Class 10 (100000+ NT) with no CSI registration"
+    rate_structure:
+      type: flat
+      amount: 238430
+    applicable_conditions:
+      csi_class: E
+    source_reference:
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_issued: "2025-11-01"
+      page: 3
+      clause: "Fartygsavgift Class 10"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  # --- Readiness Fee (Beredskapsavgift) by Class ---
+  - id: sjofartsverket_readiness_fee_class1
+    fee_family: readiness_fee
+    biller: Sjöfartsverket
+    name: Readiness Fee - Class 1
+    description: "Readiness fee for Class 1 vessels"
+    rate_structure:
+      type: flat
+      amount: 1110
+    applicable_conditions:
+      # Will be applied based on NT class
+    source_reference:
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_issued: "2025-11-01"
+      page: 4
+      clause: "Beredskapsavgift"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_readiness_fee_class2
+    fee_family: readiness_fee
+    biller: Sjöfartsverket
+    name: Readiness Fee - Class 2
+    description: "Readiness fee for Class 2 vessels"
+    rate_structure:
+      type: flat
+      amount: 4200
+    source_reference:
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_issued: "2025-11-01"
+      page: 4
+      clause: "Beredskapsavgift"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_readiness_fee_class3
+    fee_family: readiness_fee
+    biller: Sjöfartsverket
+    name: Readiness Fee - Class 3
+    description: "Readiness fee for Class 3 vessels"
+    rate_structure:
+      type: flat
+      amount: 8260
+    source_reference:
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_issued: "2025-11-01"
+      page: 4
+      clause: "Beredskapsavgift"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_readiness_fee_class4
+    fee_family: readiness_fee
+    biller: Sjöfartsverket
+    name: Readiness Fee - Class 4
+    description: "Readiness fee for Class 4 vessels"
+    rate_structure:
+      type: flat
+      amount: 13155
+    source_reference:
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_issued: "2025-11-01"
+      page: 4
+      clause: "Beredskapsavgift"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_readiness_fee_class5
+    fee_family: readiness_fee
+    biller: Sjöfartsverket
+    name: Readiness Fee - Class 5
+    description: "Readiness fee for Class 5 vessels"
+    rate_structure:
+      type: flat
+      amount: 24165
+    source_reference:
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_issued: "2025-11-01"
+      page: 4
+      clause: "Beredskapsavgift"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_readiness_fee_class6
+    fee_family: readiness_fee
+    biller: Sjöfartsverket
+    name: Readiness Fee - Class 6
+    description: "Readiness fee for Class 6 vessels"
+    rate_structure:
+      type: flat
+      amount: 35100
+    source_reference:
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_issued: "2025-11-01"
+      page: 4
+      clause: "Beredskapsavgift"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_readiness_fee_class7
+    fee_family: readiness_fee
+    biller: Sjöfartsverket
+    name: Readiness Fee - Class 7
+    description: "Readiness fee for Class 7 vessels"
+    rate_structure:
+      type: flat
+      amount: 44965
+    source_reference:
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_issued: "2025-11-01"
+      page: 4
+      clause: "Beredskapsavgift"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_readiness_fee_class8
+    fee_family: readiness_fee
+    biller: Sjöfartsverket
+    name: Readiness Fee - Class 8
+    description: "Readiness fee for Class 8 vessels"
+    rate_structure:
+      type: flat
+      amount: 51555
+    source_reference:
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_issued: "2025-11-01"
+      page: 4
+      clause: "Beredskapsavgift"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_readiness_fee_class9
+    fee_family: readiness_fee
+    biller: Sjöfartsverket
+    name: Readiness Fee - Class 9
+    description: "Readiness fee for Class 9 vessels"
+    rate_structure:
+      type: flat
+      amount: 60370
+    source_reference:
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_issued: "2025-11-01"
+      page: 4
+      clause: "Beredskapsavgift"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_readiness_fee_class10
+    fee_family: readiness_fee
+    biller: Sjöfartsverket
+    name: Readiness Fee - Class 10
+    description: "Readiness fee for Class 10 vessels"
+    rate_structure:
+      type: flat
+      amount: 71305
+    source_reference:
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_issued: "2025-11-01"
+      page: 4
+      clause: "Beredskapsavgift"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  # --- Frequency Discount for Vessel and Readiness Fees ---
+  # Applies to vessel_fee and readiness_fee only. Cargo and passenger fees always apply.
+  # 1-2 calls: 100%, 3 calls: 75%, 4 calls: 50%, 5 calls: 25%, 6+ calls: 0%
+  - id: sjofartsverket_frequency_discount
+    fee_family: vessel_fee
+    biller: Sjöfartsverket
+    name: Frequency Discount - Vessel Fee
+    description: "Frequency discount on vessel fee and readiness fee based on calls this month"
+    rate_structure:
+      type: flat
+      amount: 0
+    adjustments:
+      - type: discount
+        percentage: 0
+        condition: "calls_this_month >= 6"
+        description: "6+ calls: 0% of vessel + readiness fee"
+        stacking_order: 1
+      - type: discount
+        percentage: 25
+        condition: "calls_this_month == 5"
+        description: "5 calls: 25% of vessel + readiness fee"
+        stacking_order: 1
+      - type: discount
+        percentage: 50
+        condition: "calls_this_month == 4"
+        description: "4 calls: 50% of vessel + readiness fee"
+        stacking_order: 1
+      - type: discount
+        percentage: 75
+        condition: "calls_this_month == 3"
+        description: "3 calls: 75% of vessel + readiness fee"
+        stacking_order: 1
+    applicable_conditions:
+      calls_this_month: 1
+    source_reference:
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_issued: "2025-11-01"
+      page: 4
+      clause: "Frequency Discount - Vessel and Readiness Fees"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  # --- Cargo Fee (Godsavgift) ---
+  - id: sjofartsverket_cargo_fee_high_value
+    fee_family: cargo_fee
+    biller: Sjöfartsverket
+    name: Cargo Fee - High Value Goods
+    description: "Cargo fee for high-value goods. Transit cargo is exempt."
+    rate_structure:
+      type: per_unit
+      unit_rate: 3.36
+      unit_type: ton
+    source_reference:
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_issued: "2025-11-01"
+      page: 5
+      clause: "Godsavgift - High Value"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_cargo_fee_low_value
+    fee_family: cargo_fee
+    biller: Sjöfartsverket
+    name: Cargo Fee - Low Value Goods
+    description: "Cargo fee for low-value goods. Transit cargo is exempt."
+    rate_structure:
+      type: per_unit
+      unit_rate: 1.67
+      unit_type: ton
+    source_reference:
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_issued: "2025-11-01"
+      page: 5
+      clause: "Godsavgift - Low Value"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_cargo_fee_passengers
+    fee_family: cargo_fee
+    biller: Sjöfartsverket
+    name: Cargo Fee - Passengers
+    description: "Passenger fee"
+    rate_structure:
+      type: per_unit
+      unit_rate: 2.52
+      unit_type: pax
+    source_reference:
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_issued: "2025-11-01"
+      page: 5
+      clause: "Godsavgift - Passengers"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_cargo_fee_private_vehicles
+    fee_family: cargo_fee
+    biller: Sjöfartsverket
+    name: Cargo Fee - Private Vehicles
+    description: "Private vehicles fee"
+    rate_structure:
+      type: per_unit
+      unit_rate: 3.36
+      unit_type: unit
+    source_reference:
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_issued: "2025-11-01"
+      page: 5
+      clause: "Godsavgift - Private Vehicles"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  # --- Pilotage Fees ---
+  # Start fee + per half-hour rate by class
+  - id: sjofartsverket_pilotage_class1_start
+    fee_family: pilotage
+    biller: Sjöfartsverket
+    name: Pilotage Start Fee - Class 1
+    description: "Pilotage start fee for Class 1 vessels"
+    rate_structure:
+      type: flat
+      amount: 9670
+    source_reference:
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_issued: "2025-11-01"
+      page: 6
+      clause: "Lotsavgift Class 1"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_pilotage_class1_per_half_hour
+    fee_family: pilotage
+    biller: Sjöfartsverket
+    name: Pilotage Per Half Hour - Class 1
+    description: "Pilotage per half-hour rate for Class 1 vessels"
+    rate_structure:
+      type: per_unit
+      unit_rate: 2160
+      unit_type: half_hour
+    source_reference:
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_issued: "2025-11-01"
+      page: 6
+      clause: "Lotsavgift Class 1"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_pilotage_class2_start
+    fee_family: pilotage
+    biller: Sjöfartsverket
+    name: Pilotage Start Fee - Class 2
+    description: "Pilotage start fee for Class 2 vessels"
+    rate_structure:
+      type: flat
+      amount: 12485
+    source_reference:
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_issued: "2025-11-01"
+      page: 6
+      clause: "Lotsavgift Class 2"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_pilotage_class2_per_half_hour
+    fee_family: pilotage
+    biller: Sjöfartsverket
+    name: Pilotage Per Half Hour - Class 2
+    description: "Pilotage per half-hour rate for Class 2 vessels"
+    rate_structure:
+      type: per_unit
+      unit_rate: 2840
+      unit_type: half_hour
+    source_reference:
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_issued: "2025-11-01"
+      page: 6
+      clause: "Lotsavgift Class 2"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_pilotage_class3_start
+    fee_family: pilotage
+    biller: Sjöfartsverket
+    name: Pilotage Start Fee - Class 3
+    description: "Pilotage start fee for Class 3 vessels"
+    rate_structure:
+      type: flat
+      amount: 15290
+    source_reference:
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_issued: "2025-11-01"
+      page: 6
+      clause: "Lotsavgift Class 3"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_pilotage_class3_per_half_hour
+    fee_family: pilotage
+    biller: Sjöfartsverket
+    name: Pilotage Per Half Hour - Class 3
+    description: "Pilotage per half-hour rate for Class 3 vessels"
+    rate_structure:
+      type: per_unit
+      unit_rate: 3435
+      unit_type: half_hour
+    source_reference:
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_issued: "2025-11-01"
+      page: 6
+      clause: "Lotsavgift Class 3"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_pilotage_class4_start
+    fee_family: pilotage
+    biller: Sjöfartsverket
+    name: Pilotage Start Fee - Class 4
+    description: "Pilotage start fee for Class 4 vessels"
+    rate_structure:
+      type: flat
+      amount: 17300
+    source_reference:
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_issued: "2025-11-01"
+      page: 6
+      clause: "Lotsavgift Class 4"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_pilotage_class4_per_half_hour
+    fee_family: pilotage
+    biller: Sjöfartsverket
+    name: Pilotage Per Half Hour - Class 4
+    description: "Pilotage per half-hour rate for Class 4 vessels"
+    rate_structure:
+      type: per_unit
+      unit_rate: 3940
+      unit_type: half_hour
+    source_reference:
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_issued: "2025-11-01"
+      page: 6
+      clause: "Lotsavgift Class 4"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_pilotage_class5_start
+    fee_family: pilotage
+    biller: Sjöfartsverket
+    name: Pilotage Start Fee - Class 5
+    description: "Pilotage start fee for Class 5 vessels"
+    rate_structure:
+      type: flat
+      amount: 19305
+    source_reference:
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_issued: "2025-11-01"
+      page: 6
+      clause: "Lotsavgift Class 5"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_pilotage_class5_per_half_hour
+    fee_family: pilotage
+    biller: Sjöfartsverket
+    name: Pilotage Per Half Hour - Class 5
+    description: "Pilotage per half-hour rate for Class 5 vessels"
+    rate_structure:
+      type: per_unit
+      unit_rate: 4400
+      unit_type: half_hour
+    source_reference:
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_issued: "2025-11-01"
+      page: 6
+      clause: "Lotsavgift Class 5"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_pilotage_class6_start
+    fee_family: pilotage
+    biller: Sjöfartsverket
+    name: Pilotage Start Fee - Class 6
+    description: "Pilotage start fee for Class 6 vessels"
+    rate_structure:
+      type: flat
+      amount: 26105
+    source_reference:
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_issued: "2025-11-01"
+      page: 6
+      clause: "Lotsavgift Class 6"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_pilotage_class6_per_half_hour
+    fee_family: pilotage
+    biller: Sjöfartsverket
+    name: Pilotage Per Half Hour - Class 6
+    description: "Pilotage per half-hour rate for Class 6 vessels"
+    rate_structure:
+      type: per_unit
+      unit_rate: 5865
+      unit_type: half_hour
+    source_reference:
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_issued: "2025-11-01"
+      page: 6
+      clause: "Lotsavgift Class 6"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_pilotage_class7_start
+    fee_family: pilotage
+    biller: Sjöfartsverket
+    name: Pilotage Start Fee - Class 7
+    description: "Pilotage start fee for Class 7 vessels"
+    rate_structure:
+      type: flat
+      amount: 29730
+    source_reference:
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_issued: "2025-11-01"
+      page: 6
+      clause: "Lotsavgift Class 7"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_pilotage_class7_per_half_hour
+    fee_family: pilotage
+    biller: Sjöfartsverket
+    name: Pilotage Per Half Hour - Class 7
+    description: "Pilotage per half-hour rate for Class 7 vessels"
+    rate_structure:
+      type: per_unit
+      unit_rate: 6735
+      unit_type: half_hour
+    source_reference:
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_issued: "2025-11-01"
+      page: 6
+      clause: "Lotsavgift Class 7"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_pilotage_class8_start
+    fee_family: pilotage
+    biller: Sjöfartsverket
+    name: Pilotage Start Fee - Class 8
+    description: "Pilotage start fee for Class 8 vessels"
+    rate_structure:
+      type: flat
+      amount: 32540
+    source_reference:
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_issued: "2025-11-01"
+      page: 6
+      clause: "Lotsavgift Class 8"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_pilotage_class8_per_half_hour
+    fee_family: pilotage
+    biller: Sjöfartsverket
+    name: Pilotage Per Half Hour - Class 8
+    description: "Pilotage per half-hour rate for Class 8 vessels"
+    rate_structure:
+      type: per_unit
+      unit_rate: 7335
+      unit_type: half_hour
+    source_reference:
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_issued: "2025-11-01"
+      page: 6
+      clause: "Lotsavgift Class 8"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_pilotage_class9_start
+    fee_family: pilotage
+    biller: Sjöfartsverket
+    name: Pilotage Start Fee - Class 9
+    description: "Pilotage start fee for Class 9 vessels"
+    rate_structure:
+      type: flat
+      amount: 35755
+    source_reference:
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_issued: "2025-11-01"
+      page: 6
+      clause: "Lotsavgift Class 9"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_pilotage_class9_per_half_hour
+    fee_family: pilotage
+    biller: Sjöfartsverket
+    name: Pilotage Per Half Hour - Class 9
+    description: "Pilotage per half-hour rate for Class 9 vessels"
+    rate_structure:
+      type: per_unit
+      unit_rate: 8105
+      unit_type: half_hour
+    source_reference:
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_issued: "2025-11-01"
+      page: 6
+      clause: "Lotsavgift Class 9"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_pilotage_class10_start
+    fee_family: pilotage
+    biller: Sjöfartsverket
+    name: Pilotage Start Fee - Class 10
+    description: "Pilotage start fee for Class 10 vessels"
+    rate_structure:
+      type: flat
+      amount: 45420
+    source_reference:
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_issued: "2025-11-01"
+      page: 6
+      clause: "Lotsavgift Class 10"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_pilotage_class10_per_half_hour
+    fee_family: pilotage
+    biller: Sjöfartsverket
+    name: Pilotage Per Half Hour - Class 10
+    description: "Pilotage per half-hour rate for Class 10 vessels"
+    rate_structure:
+      type: per_unit
+      unit_rate: 10255
+      unit_type: half_hour
+    source_reference:
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_issued: "2025-11-01"
+      page: 6
+      clause: "Lotsavgift Class 10"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  # Extra pilot fee
+  - id: sjofartsverket_pilotage_extra_pilot
+    fee_family: pilotage
+    biller: Sjöfartsverket
+    name: Extra Pilot Fee
+    description: "Additional fee for extra pilot"
+    rate_structure:
+      type: flat
+      amount: 12620
+    source_reference:
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_issued: "2025-11-01"
+      page: 6
+      clause: "Extra Pilot"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  # Pilotage discount for >7 hours
+  - id: sjofartsverket_pilotage_discount
+    fee_family: pilotage
+    biller: Sjöfartsverket
+    name: Pilotage Discount
+    description: "40% discount for piloted time exceeding 7 hours"
+    rate_structure:
+      type: flat
+      amount: 0
+    adjustments:
+      - type: discount
+        percentage: 40
+        condition: "pilotage_hours > 7"
+        description: "Pilotage discount for >7 hours"
+    source_reference:
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_issued: "2025-11-01"
+      page: 7
+      clause: "Pilotage Discounts"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  # Ordering fee by lead time
+  - id: sjofartsverket_ordering_fee_under_1h
+    fee_family: ordering_fee
+    biller: Sjöfartsverket
+    name: Ordering Fee - Under 1 hour
+    description: "Ordering fee for lead time under 1 hour"
+    rate_structure:
+      type: flat
+      amount: 9390
+    applicable_conditions:
+      pilotage_ordering_lead_time_hours: 1
+    source_reference:
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_issued: "2025-11-01"
+      page: 7
+      clause: "Beställningsavgift"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_ordering_fee_1_2h
+    fee_family: ordering_fee
+    biller: Sjöfartsverket
+    name: Ordering Fee - 1-2 hours
+    description: "Ordering fee for lead time 1-2 hours"
+    rate_structure:
+      type: flat
+      amount: 7510
+    applicable_conditions:
+      pilotage_ordering_lead_time_hours: 2
+    source_reference:
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_issued: "2025-11-01"
+      page: 7
+      clause: "Beställningsavgift"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_ordering_fee_2_3h
+    fee_family: ordering_fee
+    biller: Sjöfartsverket
+    name: Ordering Fee - 2-3 hours
+    description: "Ordering fee for lead time 2-3 hours"
+    rate_structure:
+      type: flat
+      amount: 5635
+    applicable_conditions:
+      pilotage_ordering_lead_time_hours: 3
+    source_reference:
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_issued: "2025-11-01"
+      page: 7
+      clause: "Beställningsavgift"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_ordering_fee_3_4h
+    fee_family: ordering_fee
+    biller: Sjöfartsverket
+    name: Ordering Fee - 3-4 hours
+    description: "Ordering fee for lead time 3-4 hours"
+    rate_structure:
+      type: flat
+      amount: 3775
+    applicable_conditions:
+      pilotage_ordering_lead_time_hours: 4
+    source_reference:
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_issued: "2025-11-01"
+      page: 7
+      clause: "Beställningsavgift"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_ordering_fee_4h_plus
+    fee_family: ordering_fee
+    biller: Sjöfartsverket
+    name: Ordering Fee - 4+ hours
+    description: "Ordering fee for lead time 4 hours or more"
+    rate_structure:
+      type: flat
+      amount: 1880
+    applicable_conditions:
+      pilotage_ordering_lead_time_hours: 5
+    source_reference:
+      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_issued: "2025-11-01"
+      page: 7
+      clause: "Beställningsavgift"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+# ============================================================================
+# APM TERMINALS GOTHENBURG FEES
+# ============================================================================
+
+  # --- Terminal Charges on Goods ---
+  - id: apm_terminals_handling_le20ft
+    fee_family: terminal_handling
+    biller: APM Terminals Gothenburg
+    name: Terminal Handling - <=20ft Container
+    description: "Terminal handling charge per ISO unit <= 20ft"
+    rate_structure:
+      type: per_unit
+      unit_rate: 377
+      unit_type: container_le20ft
+    source_reference:
+      document_name: "terminal-tariff-2026-june.pdf"
+      document_url: "docs/sources/sweden/gothenburg/apm-terminals/terminal-tariff-2026-june.pdf"
+      document_issued: "2025-12-01"
+      page: 2
+      clause: "Terminal Charges"
+      verified_on: "2025-12-15"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: apm_terminals_handling_gt20ft
+    fee_family: terminal_handling
+    biller: APM Terminals Gothenburg
+    name: Terminal Handling - >20ft Container
+    description: "Terminal handling charge per unit > 20ft"
+    rate_structure:
+      type: per_unit
+      unit_rate: 535
+      unit_type: container_gt20ft
+    source_reference:
+      document_name: "terminal-tariff-2026-june.pdf"
+      document_url: "docs/sources/sweden/gothenburg/apm-terminals/terminal-tariff-2026-june.pdf"
+      document_issued: "2025-12-01"
+      page: 2
+      clause: "Terminal Charges"
+      verified_on: "2025-12-15"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: apm_terminals_handling_break_bulk
+    fee_family: terminal_handling
+    biller: APM Terminals Gothenburg
+    name: Terminal Handling - Break Bulk
+    description: "Terminal handling charge for break bulk cargo"
+    rate_structure:
+      type: per_unit
+      unit_rate: 54
+      unit_type: "1000_kg"
+    source_reference:
+      document_name: "terminal-tariff-2026-june.pdf"
+      document_url: "docs/sources/sweden/gothenburg/apm-terminals/terminal-tariff-2026-june.pdf"
+      document_issued: "2025-12-01"
+      page: 2
+      clause: "Terminal Charges"
+      verified_on: "2025-12-15"
+      verified_by: "Port Cost Analyzer Team"
+
+  # --- ISPS Security Charge ---
+  - id: apm_terminals_isps
+    fee_family: security
+    biller: APM Terminals Gothenburg
+    name: ISPS Security Charge
+    description: "ISPS security charge per container unit"
+    rate_structure:
+      type: per_unit
+      unit_rate: 80
+      unit_type: container_total
+    source_reference:
+      document_name: "terminal-tariff-2026-june.pdf"
+      document_url: "docs/sources/sweden/gothenburg/apm-terminals/terminal-tariff-2026-june.pdf"
+      document_issued: "2025-12-01"
+      page: 3
+      clause: "ISPS Security"
+      verified_on: "2025-12-15"
+      verified_by: "Port Cost Analyzer Team"
+
+  # --- Hatch Cover Charge ---
+  - id: apm_terminals_hatch_cover
+    fee_family: terminal_handling
+    biller: APM Terminals Gothenburg
+    name: Hatch Cover Charge
+    description: "Hatch cover charge per move and unit"
+    rate_structure:
+      type: per_unit
+      unit_rate: 3111
+      unit_type: move
+    source_reference:
+      document_name: "terminal-tariff-2026-june.pdf"
+      document_url: "docs/sources/sweden/gothenburg/apm-terminals/terminal-tariff-2026-june.pdf"
+      document_issued: "2025-12-01"
+      page: 3
+      clause: "Hatch Cover Charge"
+      verified_on: "2025-12-15"
+      verified_by: "Port Cost Analyzer Team"
+
+  # --- Gearbox Handling ---
+  - id: apm_terminals_gearbox
+    fee_family: terminal_handling
+    biller: APM Terminals Gothenburg
+    name: Gearbox Handling
+    description: "Gearbox handling charge per move and unit"
+    rate_structure:
+      type: per_unit
+      unit_rate: 1036
+      unit_type: move
+    source_reference:
+      document_name: "terminal-tariff-2026-june.pdf"
+      document_url: "docs/sources/sweden/gothenburg/apm-terminals/terminal-tariff-2026-june.pdf"
+      document_issued: "2025-12-01"
+      page: 3
+      clause: "Gearbox Handling"
+      verified_on: "2025-12-15"
+      verified_by: "Port Cost Analyzer Team"
+
+  # --- Yard Storage ---
+  # Export/Transhipment: 0-6 free, 7-9 at 133, 10-13 at 346, >13 at 578
+  - id: apm_terminals_storage_export_7_9_days
+    fee_family: storage
+    biller: APM Terminals Gothenburg
+    name: Yard Storage - Export/Transhipment 7-9 days
+    description: "Yard storage for export/transhipment units, days 7-9"
+    rate_structure:
+      type: banded_by_time
+      basis: storage_days_export
+      bands:
+        - min_days: 7
+          max_days: 9
+          daily_rate: 133
+    source_reference:
+      document_name: "terminal-tariff-2026-june.pdf"
+      document_url: "docs/sources/sweden/gothenburg/apm-terminals/terminal-tariff-2026-june.pdf"
+      document_issued: "2025-12-01"
+      page: 4
+      clause: "Yard Storage"
+      verified_on: "2025-12-15"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: apm_terminals_storage_export_10_13_days
+    fee_family: storage
+    biller: APM Terminals Gothenburg
+    name: Yard Storage - Export/Transhipment 10-13 days
+    description: "Yard storage for export/transhipment units, days 10-13"
+    rate_structure:
+      type: banded_by_time
+      basis: storage_days_export
+      bands:
+        - min_days: 10
+          max_days: 13
+          daily_rate: 346
+    source_reference:
+      document_name: "terminal-tariff-2026-june.pdf"
+      document_url: "docs/sources/sweden/gothenburg/apm-terminals/terminal-tariff-2026-june.pdf"
+      document_issued: "2025-12-01"
+      page: 4
+      clause: "Yard Storage"
+      verified_on: "2025-12-15"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: apm_terminals_storage_export_over_13_days
+    fee_family: storage
+    biller: APM Terminals Gothenburg
+    name: Yard Storage - Export/Transhipment >13 days
+    description: "Yard storage for export/transhipment units, >13 days"
+    rate_structure:
+      type: banded_by_time
+      basis: storage_days_export
+      bands:
+        - min_days: 14
+          max_days: null
+          daily_rate: 578
+    source_reference:
+      document_name: "terminal-tariff-2026-june.pdf"
+      document_url: "docs/sources/sweden/gothenburg/apm-terminals/terminal-tariff-2026-june.pdf"
+      document_issued: "2025-12-01"
+      page: 4
+      clause: "Yard Storage"
+      verified_on: "2025-12-15"
+      verified_by: "Port Cost Analyzer Team"
+
+  # Import/Domestic: 0-4 free, 5-7 at 133, 8-11 at 346, >11 at 578
+  - id: apm_terminals_storage_import_5_7_days
+    fee_family: storage
+    biller: APM Terminals Gothenburg
+    name: Yard Storage - Import/Domestic 5-7 days
+    description: "Yard storage for import/domestic units, days 5-7"
+    rate_structure:
+      type: banded_by_time
+      basis: storage_days_import
+      bands:
+        - min_days: 5
+          max_days: 7
+          daily_rate: 133
+    source_reference:
+      document_name: "terminal-tariff-2026-june.pdf"
+      document_url: "docs/sources/sweden/gothenburg/apm-terminals/terminal-tariff-2026-june.pdf"
+      document_issued: "2025-12-01"
+      page: 4
+      clause: "Yard Storage"
+      verified_on: "2025-12-15"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: apm_terminals_storage_import_8_11_days
+    fee_family: storage
+    biller: APM Terminals Gothenburg
+    name: Yard Storage - Import/Domestic 8-11 days
+    description: "Yard storage for import/domestic units, days 8-11"
+    rate_structure:
+      type: banded_by_time
+      basis: storage_days_import
+      bands:
+        - min_days: 8
+          max_days: 11
+          daily_rate: 346
+    source_reference:
+      document_name: "terminal-tariff-2026-june.pdf"
+      document_url: "docs/sources/sweden/gothenburg/apm-terminals/terminal-tariff-2026-june.pdf"
+      document_issued: "2025-12-01"
+      page: 4
+      clause: "Yard Storage"
+      verified_on: "2025-12-15"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: apm_terminals_storage_import_over_11_days
+    fee_family: storage
+    biller: APM Terminals Gothenburg
+    name: Yard Storage - Import/Domestic >11 days
+    description: "Yard storage for import/domestic units, >11 days"
+    rate_structure:
+      type: banded_by_time
+      basis: storage_days_import
+      bands:
+        - min_days: 12
+          max_days: null
+          daily_rate: 578
+    source_reference:
+      document_name: "terminal-tariff-2026-june.pdf"
+      document_url: "docs/sources/sweden/gothenburg/apm-terminals/terminal-tariff-2026-june.pdf"
+      document_issued: "2025-12-01"
+      page: 4
+      clause: "Yard Storage"
+      verified_on: "2025-12-15"
+      verified_by: "Port Cost Analyzer Team"
+
+  # --- Yard Surcharges ---
+  - id: apm_terminals_surcharge_oog
+    fee_family: yard_surcharge
+    biller: APM Terminals Gothenburg
+    name: OOG Surcharge
+    description: "Out of Gauge surcharge per unit per calendar day"
+    rate_structure:
+      type: per_commenced_day
+      daily_rate: 437
+      basis: storage_days_export
+    source_reference:
+      document_name: "terminal-tariff-2026-june.pdf"
+      document_url: "docs/sources/sweden/gothenburg/apm-terminals/terminal-tariff-2026-june.pdf"
+      document_issued: "2025-12-01"
+      page: 5
+      clause: "Yard Surcharges - OOG"
+      verified_on: "2025-12-15"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: apm_terminals_surcharge_reefer
+    fee_family: yard_surcharge
+    biller: APM Terminals Gothenburg
+    name: Reefer Surcharge
+    description: "Reefer surcharge per unit per calendar day (incl. handling, monitoring, power)"
+    rate_structure:
+      type: per_commenced_day
+      daily_rate: 709
+      basis: storage_days_export
+    source_reference:
+      document_name: "terminal-tariff-2026-june.pdf"
+      document_url: "docs/sources/sweden/gothenburg/apm-terminals/terminal-tariff-2026-june.pdf"
+      document_issued: "2025-12-01"
+      page: 5
+      clause: "Yard Surcharges - Reefer"
+      verified_on: "2025-12-15"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: apm_terminals_surcharge_dangerous
+    fee_family: yard_surcharge
+    biller: APM Terminals Gothenburg
+    name: Dangerous Goods Surcharge
+    description: "Dangerous goods surcharge per unit per calendar day"
+    rate_structure:
+      type: per_commenced_day
+      daily_rate: 382
+      basis: storage_days_export
+    source_reference:
+      document_name: "terminal-tariff-2026-june.pdf"
+      document_url: "docs/sources/sweden/gothenburg/apm-terminals/terminal-tariff-2026-june.pdf"
+      document_issued: "2025-12-01"
+      page: 5
+      clause: "Yard Surcharges - Dangerous Goods"
+      verified_on: "2025-12-15"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: apm_terminals_surcharge_overdue_dangerous
+    fee_family: yard_surcharge
+    biller: APM Terminals Gothenburg
+    name: Overdue Dangerous Cargo Penalty
+    description: "Overdue dangerous cargo penalty per unit per calendar day"
+    rate_structure:
+      type: per_commenced_day
+      daily_rate: 1025
+      basis: storage_days_export
+    source_reference:
+      document_name: "terminal-tariff-2026-june.pdf"
+      document_url: "docs/sources/sweden/gothenburg/apm-terminals/terminal-tariff-2026-june.pdf"
+      document_issued: "2025-12-01"
+      page: 5
+      clause: "Yard Surcharges - Overdue Dangerous"
+      verified_on: "2025-12-15"
+      verified_by: "Port Cost Analyzer Team"
+
+  # --- Gate Hazardous ---
+  - id: apm_terminals_gate_hazardous
+    fee_family: gate_hazardous
+    biller: APM Terminals Gothenburg
+    name: Gate Hazardous Fee
+    description: "Truck/rail dangerous goods receipt/delivery fee per unit"
+    rate_structure:
+      type: per_unit
+      unit_rate: 538
+      unit_type: dangerous_goods
+    source_reference:
+      document_name: "terminal-tariff-2026-june.pdf"
+      document_url: "docs/sources/sweden/gothenburg/apm-terminals/terminal-tariff-2026-june.pdf"
+      document_issued: "2025-12-01"
+      page: 5
+      clause: "Gate Hazardous"
+      verified_on: "2025-12-15"
+      verified_by: "Port Cost Analyzer Team"
+
+  # --- Idle Berth Service ---
+  - id: apm_terminals_idle_berth
+    fee_family: idle_berth
+    biller: APM Terminals Gothenburg
+    name: Idle Berth Service
+    description: "Idle berth service fee per hour (on explicit request)"
+    rate_structure:
+      type: per_commenced_day
+      daily_rate: 500
+      basis: pilotage_hours
+    source_reference:
+      document_name: "terminal-tariff-2026-june.pdf"
+      document_url: "docs/sources/sweden/gothenburg/apm-terminals/terminal-tariff-2026-june.pdf"
+      document_issued: "2025-12-01"
+      page: 6
+      clause: "Idle Berth Service"
+      verified_on: "2025-12-15"
+      verified_by: "Port Cost Analyzer Team"
