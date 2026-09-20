@@ -784,6 +784,63 @@ fee_rules:
       verified_on: "2025-12-10"
       verified_by: "Port Cost Analyzer Team"
 
+  - id: sjofartsverket_vessel_fee_class6_csi_b
+    fee_family: vessel_fee
+    biller: Sjöfartsverket
+    name: Vessel Fee - Class 6, CSI Class B
+    description: "Vessel fee for Class 6 (10000+ NT) with CSI Class B"
+    rate_structure:
+      type: flat
+      amount: 52825
+    applicable_conditions:
+      csi_class: B
+    source_reference:
+      document_name: "Sjöfartsverket Prislista 2026"
+      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_issued: "2025-11-01"
+      page: 3
+      clause: "Fartygsavgift Class 6"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_vessel_fee_class6_csi_c
+    fee_family: vessel_fee
+    biller: Sjöfartsverket
+    name: Vessel Fee - Class 6, CSI Class C
+    description: "Vessel fee for Class 6 (10000+ NT) with CSI Class C"
+    rate_structure:
+      type: flat
+      amount: 105645
+    applicable_conditions:
+      csi_class: C
+    source_reference:
+      document_name: "Sjöfartsverket Prislista 2026"
+      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_issued: "2025-11-01"
+      page: 3
+      clause: "Fartygsavgift Class 6"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_vessel_fee_class6_csi_d
+    fee_family: vessel_fee
+    biller: Sjöfartsverket
+    name: Vessel Fee - Class 6, CSI Class D
+    description: "Vessel fee for Class 6 (10000+ NT) with CSI Class D"
+    rate_structure:
+      type: flat
+      amount: 117385
+    applicable_conditions:
+      csi_class: D
+    source_reference:
+      document_name: "Sjöfartsverket Prislista 2026"
+      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_issued: "2025-11-01"
+      page: 3
+      clause: "Fartygsavgift Class 6"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
   - id: sjofartsverket_vessel_fee_class6_csi_e
     fee_family: vessel_fee
     biller: Sjöfartsverket
@@ -814,6 +871,63 @@ fee_rules:
       amount: 30060
     applicable_conditions:
       csi_class: A
+    source_reference:
+      document_name: "Sjöfartsverket Prislista 2026"
+      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_issued: "2025-11-01"
+      page: 3
+      clause: "Fartygsavgift Class 7"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_vessel_fee_class7_csi_b
+    fee_family: vessel_fee
+    biller: Sjöfartsverket
+    name: Vessel Fee - Class 7, CSI Class B
+    description: "Vessel fee for Class 7 (15000+ NT) with CSI Class B"
+    rate_structure:
+      type: flat
+      amount: 67640
+    applicable_conditions:
+      csi_class: B
+    source_reference:
+      document_name: "Sjöfartsverket Prislista 2026"
+      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_issued: "2025-11-01"
+      page: 3
+      clause: "Fartygsavgift Class 7"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_vessel_fee_class7_csi_c
+    fee_family: vessel_fee
+    biller: Sjöfartsverket
+    name: Vessel Fee - Class 7, CSI Class C
+    description: "Vessel fee for Class 7 (15000+ NT) with CSI Class C"
+    rate_structure:
+      type: flat
+      amount: 135275
+    applicable_conditions:
+      csi_class: C
+    source_reference:
+      document_name: "Sjöfartsverket Prislista 2026"
+      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_issued: "2025-11-01"
+      page: 3
+      clause: "Fartygsavgift Class 7"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_vessel_fee_class7_csi_d
+    fee_family: vessel_fee
+    biller: Sjöfartsverket
+    name: Vessel Fee - Class 7, CSI Class D
+    description: "Vessel fee for Class 7 (15000+ NT) with CSI Class D"
+    rate_structure:
+      type: flat
+      amount: 150310
+    applicable_conditions:
+      csi_class: D
     source_reference:
       document_name: "Sjöfartsverket Prislista 2026"
       document_url: "https://www.sjofartsverket.se/en/fees"
@@ -862,6 +976,63 @@ fee_rules:
       verified_on: "2025-12-10"
       verified_by: "Port Cost Analyzer Team"
 
+  - id: sjofartsverket_vessel_fee_class8_csi_b
+    fee_family: vessel_fee
+    biller: Sjöfartsverket
+    name: Vessel Fee - Class 8, CSI Class B
+    description: "Vessel fee for Class 8 (30000+ NT) with CSI Class B"
+    rate_structure:
+      type: flat
+      amount: 77575
+    applicable_conditions:
+      csi_class: B
+    source_reference:
+      document_name: "Sjöfartsverket Prislista 2026"
+      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_issued: "2025-11-01"
+      page: 3
+      clause: "Fartygsavgift Class 8"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_vessel_fee_class8_csi_c
+    fee_family: vessel_fee
+    biller: Sjöfartsverket
+    name: Vessel Fee - Class 8, CSI Class C
+    description: "Vessel fee for Class 8 (30000+ NT) with CSI Class C"
+    rate_structure:
+      type: flat
+      amount: 155145
+    applicable_conditions:
+      csi_class: C
+    source_reference:
+      document_name: "Sjöfartsverket Prislista 2026"
+      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_issued: "2025-11-01"
+      page: 3
+      clause: "Fartygsavgift Class 8"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_vessel_fee_class8_csi_d
+    fee_family: vessel_fee
+    biller: Sjöfartsverket
+    name: Vessel Fee - Class 8, CSI Class D
+    description: "Vessel fee for Class 8 (30000+ NT) with CSI Class D"
+    rate_structure:
+      type: flat
+      amount: 172385
+    applicable_conditions:
+      csi_class: D
+    source_reference:
+      document_name: "Sjöfartsverket Prislista 2026"
+      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_issued: "2025-11-01"
+      page: 3
+      clause: "Fartygsavgift Class 8"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
   - id: sjofartsverket_vessel_fee_class8_csi_e
     fee_family: vessel_fee
     biller: Sjöfartsverket
@@ -901,6 +1072,63 @@ fee_rules:
       verified_on: "2025-12-10"
       verified_by: "Port Cost Analyzer Team"
 
+  - id: sjofartsverket_vessel_fee_class9_csi_b
+    fee_family: vessel_fee
+    biller: Sjöfartsverket
+    name: Vessel Fee - Class 9, CSI Class B
+    description: "Vessel fee for Class 9 (60000+ NT) with CSI Class B"
+    rate_structure:
+      type: flat
+      amount: 90815
+    applicable_conditions:
+      csi_class: B
+    source_reference:
+      document_name: "Sjöfartsverket Prislista 2026"
+      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_issued: "2025-11-01"
+      page: 3
+      clause: "Fartygsavgift Class 9"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_vessel_fee_class9_csi_c
+    fee_family: vessel_fee
+    biller: Sjöfartsverket
+    name: Vessel Fee - Class 9, CSI Class C
+    description: "Vessel fee for Class 9 (60000+ NT) with CSI Class C"
+    rate_structure:
+      type: flat
+      amount: 181625
+    applicable_conditions:
+      csi_class: C
+    source_reference:
+      document_name: "Sjöfartsverket Prislista 2026"
+      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_issued: "2025-11-01"
+      page: 3
+      clause: "Fartygsavgift Class 9"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_vessel_fee_class9_csi_d
+    fee_family: vessel_fee
+    biller: Sjöfartsverket
+    name: Vessel Fee - Class 9, CSI Class D
+    description: "Vessel fee for Class 9 (60000+ NT) with CSI Class D"
+    rate_structure:
+      type: flat
+      amount: 201805
+    applicable_conditions:
+      csi_class: D
+    source_reference:
+      document_name: "Sjöfartsverket Prislista 2026"
+      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_issued: "2025-11-01"
+      page: 3
+      clause: "Fartygsavgift Class 9"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
   - id: sjofartsverket_vessel_fee_class9_csi_e
     fee_family: vessel_fee
     biller: Sjöfartsverket
@@ -931,6 +1159,63 @@ fee_rules:
       amount: 47685
     applicable_conditions:
       csi_class: A
+    source_reference:
+      document_name: "Sjöfartsverket Prislista 2026"
+      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_issued: "2025-11-01"
+      page: 3
+      clause: "Fartygsavgift Class 10"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_vessel_fee_class10_csi_b
+    fee_family: vessel_fee
+    biller: Sjöfartsverket
+    name: Vessel Fee - Class 10, CSI Class B
+    description: "Vessel fee for Class 10 (100000+ NT) with CSI Class B"
+    rate_structure:
+      type: flat
+      amount: 107295
+    applicable_conditions:
+      csi_class: B
+    source_reference:
+      document_name: "Sjöfartsverket Prislista 2026"
+      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_issued: "2025-11-01"
+      page: 3
+      clause: "Fartygsavgift Class 10"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_vessel_fee_class10_csi_c
+    fee_family: vessel_fee
+    biller: Sjöfartsverket
+    name: Vessel Fee - Class 10, CSI Class C
+    description: "Vessel fee for Class 10 (100000+ NT) with CSI Class C"
+    rate_structure:
+      type: flat
+      amount: 214590
+    applicable_conditions:
+      csi_class: C
+    source_reference:
+      document_name: "Sjöfartsverket Prislista 2026"
+      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_issued: "2025-11-01"
+      page: 3
+      clause: "Fartygsavgift Class 10"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_vessel_fee_class10_csi_d
+    fee_family: vessel_fee
+    biller: Sjöfartsverket
+    name: Vessel Fee - Class 10, CSI Class D
+    description: "Vessel fee for Class 10 (100000+ NT) with CSI Class D"
+    rate_structure:
+      type: flat
+      amount: 238430
+    applicable_conditions:
+      csi_class: D
     source_reference:
       document_name: "Sjöfartsverket Prislista 2026"
       document_url: "https://www.sjofartsverket.se/en/fees"
@@ -1132,12 +1417,55 @@ fee_rules:
       verified_on: "2025-12-10"
       verified_by: "Port Cost Analyzer Team"
 
+  # --- Frequency Discount for Vessel and Readiness Fees ---
+  # Applies to vessel_fee and readiness_fee only. Cargo and passenger fees always apply.
+  # 1-2 calls: 100%, 3 calls: 75%, 4 calls: 50%, 5 calls: 25%, 6+ calls: 0%
+  - id: sjofartsverket_frequency_discount
+    fee_family: vessel_fee
+    biller: Sjöfartsverket
+    name: Frequency Discount - Vessel Fee
+    description: "Frequency discount on vessel fee and readiness fee based on calls this month"
+    rate_structure:
+      type: flat
+      amount: 0
+    adjustments:
+      - type: discount
+        percentage: 0
+        condition: "calls_this_month >= 6"
+        description: "6+ calls: 0% of vessel + readiness fee"
+        stacking_order: 1
+      - type: discount
+        percentage: 25
+        condition: "calls_this_month == 5"
+        description: "5 calls: 25% of vessel + readiness fee"
+        stacking_order: 1
+      - type: discount
+        percentage: 50
+        condition: "calls_this_month == 4"
+        description: "4 calls: 50% of vessel + readiness fee"
+        stacking_order: 1
+      - type: discount
+        percentage: 75
+        condition: "calls_this_month == 3"
+        description: "3 calls: 75% of vessel + readiness fee"
+        stacking_order: 1
+    applicable_conditions:
+      calls_this_month: 1
+    source_reference:
+      document_name: "Sjöfartsverket Prislista 2026"
+      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_issued: "2025-11-01"
+      page: 4
+      clause: "Frequency Discount - Vessel and Readiness Fees"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
   # --- Cargo Fee (Godsavgift) ---
   - id: sjofartsverket_cargo_fee_high_value
     fee_family: cargo_fee
     biller: Sjöfartsverket
     name: Cargo Fee - High Value Goods
-    description: "Cargo fee for high-value goods"
+    description: "Cargo fee for high-value goods. Transit cargo is exempt."
     rate_structure:
       type: per_unit
       unit_rate: 3.36
@@ -1155,7 +1483,7 @@ fee_rules:
     fee_family: cargo_fee
     biller: Sjöfartsverket
     name: Cargo Fee - Low Value Goods
-    description: "Cargo fee for low-value goods"
+    description: "Cargo fee for low-value goods. Transit cargo is exempt."
     rate_structure:
       type: per_unit
       unit_rate: 1.67
@@ -1169,13 +1497,49 @@ fee_rules:
       verified_on: "2025-12-10"
       verified_by: "Port Cost Analyzer Team"
 
+  - id: sjofartsverket_cargo_fee_passengers
+    fee_family: cargo_fee
+    biller: Sjöfartsverket
+    name: Cargo Fee - Passengers
+    description: "Passenger fee"
+    rate_structure:
+      type: per_unit
+      unit_rate: 2.52
+      unit_type: pax
+    source_reference:
+      document_name: "Sjöfartsverket Prislista 2026"
+      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_issued: "2025-11-01"
+      page: 5
+      clause: "Godsavgift - Passengers"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_cargo_fee_private_vehicles
+    fee_family: cargo_fee
+    biller: Sjöfartsverket
+    name: Cargo Fee - Private Vehicles
+    description: "Private vehicles fee"
+    rate_structure:
+      type: per_unit
+      unit_rate: 3.36
+      unit_type: unit
+    source_reference:
+      document_name: "Sjöfartsverket Prislista 2026"
+      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_issued: "2025-11-01"
+      page: 5
+      clause: "Godsavgift - Private Vehicles"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
   # --- Pilotage Fees ---
   # Start fee + per half-hour rate by class
-  - id: sjofartsverket_pilotage_class1
+  - id: sjofartsverket_pilotage_class1_start
     fee_family: pilotage
     biller: Sjöfartsverket
-    name: Pilotage - Class 1
-    description: "Pilotage fee for Class 1 vessels: start fee + per half-hour"
+    name: Pilotage Start Fee - Class 1
+    description: "Pilotage start fee for Class 1 vessels"
     rate_structure:
       type: flat
       amount: 9670
@@ -1188,11 +1552,29 @@ fee_rules:
       verified_on: "2025-12-10"
       verified_by: "Port Cost Analyzer Team"
 
-  - id: sjofartsverket_pilotage_class2
+  - id: sjofartsverket_pilotage_class1_per_half_hour
     fee_family: pilotage
     biller: Sjöfartsverket
-    name: Pilotage - Class 2
-    description: "Pilotage fee for Class 2 vessels: start fee"
+    name: Pilotage Per Half Hour - Class 1
+    description: "Pilotage per half-hour rate for Class 1 vessels"
+    rate_structure:
+      type: per_unit
+      unit_rate: 2160
+      unit_type: half_hour
+    source_reference:
+      document_name: "Sjöfartsverket Prislista 2026"
+      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_issued: "2025-11-01"
+      page: 6
+      clause: "Lotsavgift Class 1"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_pilotage_class2_start
+    fee_family: pilotage
+    biller: Sjöfartsverket
+    name: Pilotage Start Fee - Class 2
+    description: "Pilotage start fee for Class 2 vessels"
     rate_structure:
       type: flat
       amount: 12485
@@ -1205,11 +1587,29 @@ fee_rules:
       verified_on: "2025-12-10"
       verified_by: "Port Cost Analyzer Team"
 
-  - id: sjofartsverket_pilotage_class3
+  - id: sjofartsverket_pilotage_class2_per_half_hour
     fee_family: pilotage
     biller: Sjöfartsverket
-    name: Pilotage - Class 3
-    description: "Pilotage fee for Class 3 vessels: start fee"
+    name: Pilotage Per Half Hour - Class 2
+    description: "Pilotage per half-hour rate for Class 2 vessels"
+    rate_structure:
+      type: per_unit
+      unit_rate: 2840
+      unit_type: half_hour
+    source_reference:
+      document_name: "Sjöfartsverket Prislista 2026"
+      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_issued: "2025-11-01"
+      page: 6
+      clause: "Lotsavgift Class 2"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_pilotage_class3_start
+    fee_family: pilotage
+    biller: Sjöfartsverket
+    name: Pilotage Start Fee - Class 3
+    description: "Pilotage start fee for Class 3 vessels"
     rate_structure:
       type: flat
       amount: 15290
@@ -1222,11 +1622,29 @@ fee_rules:
       verified_on: "2025-12-10"
       verified_by: "Port Cost Analyzer Team"
 
-  - id: sjofartsverket_pilotage_class4
+  - id: sjofartsverket_pilotage_class3_per_half_hour
     fee_family: pilotage
     biller: Sjöfartsverket
-    name: Pilotage - Class 4
-    description: "Pilotage fee for Class 4 vessels: start fee"
+    name: Pilotage Per Half Hour - Class 3
+    description: "Pilotage per half-hour rate for Class 3 vessels"
+    rate_structure:
+      type: per_unit
+      unit_rate: 3435
+      unit_type: half_hour
+    source_reference:
+      document_name: "Sjöfartsverket Prislista 2026"
+      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_issued: "2025-11-01"
+      page: 6
+      clause: "Lotsavgift Class 3"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_pilotage_class4_start
+    fee_family: pilotage
+    biller: Sjöfartsverket
+    name: Pilotage Start Fee - Class 4
+    description: "Pilotage start fee for Class 4 vessels"
     rate_structure:
       type: flat
       amount: 17300
@@ -1239,11 +1657,29 @@ fee_rules:
       verified_on: "2025-12-10"
       verified_by: "Port Cost Analyzer Team"
 
-  - id: sjofartsverket_pilotage_class5
+  - id: sjofartsverket_pilotage_class4_per_half_hour
     fee_family: pilotage
     biller: Sjöfartsverket
-    name: Pilotage - Class 5
-    description: "Pilotage fee for Class 5 vessels: start fee"
+    name: Pilotage Per Half Hour - Class 4
+    description: "Pilotage per half-hour rate for Class 4 vessels"
+    rate_structure:
+      type: per_unit
+      unit_rate: 3940
+      unit_type: half_hour
+    source_reference:
+      document_name: "Sjöfartsverket Prislista 2026"
+      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_issued: "2025-11-01"
+      page: 6
+      clause: "Lotsavgift Class 4"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_pilotage_class5_start
+    fee_family: pilotage
+    biller: Sjöfartsverket
+    name: Pilotage Start Fee - Class 5
+    description: "Pilotage start fee for Class 5 vessels"
     rate_structure:
       type: flat
       amount: 19305
@@ -1256,11 +1692,29 @@ fee_rules:
       verified_on: "2025-12-10"
       verified_by: "Port Cost Analyzer Team"
 
-  - id: sjofartsverket_pilotage_class6
+  - id: sjofartsverket_pilotage_class5_per_half_hour
     fee_family: pilotage
     biller: Sjöfartsverket
-    name: Pilotage - Class 6
-    description: "Pilotage fee for Class 6 vessels: start fee"
+    name: Pilotage Per Half Hour - Class 5
+    description: "Pilotage per half-hour rate for Class 5 vessels"
+    rate_structure:
+      type: per_unit
+      unit_rate: 4400
+      unit_type: half_hour
+    source_reference:
+      document_name: "Sjöfartsverket Prislista 2026"
+      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_issued: "2025-11-01"
+      page: 6
+      clause: "Lotsavgift Class 5"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_pilotage_class6_start
+    fee_family: pilotage
+    biller: Sjöfartsverket
+    name: Pilotage Start Fee - Class 6
+    description: "Pilotage start fee for Class 6 vessels"
     rate_structure:
       type: flat
       amount: 26105
@@ -1273,11 +1727,29 @@ fee_rules:
       verified_on: "2025-12-10"
       verified_by: "Port Cost Analyzer Team"
 
-  - id: sjofartsverket_pilotage_class7
+  - id: sjofartsverket_pilotage_class6_per_half_hour
     fee_family: pilotage
     biller: Sjöfartsverket
-    name: Pilotage - Class 7
-    description: "Pilotage fee for Class 7 vessels: start fee"
+    name: Pilotage Per Half Hour - Class 6
+    description: "Pilotage per half-hour rate for Class 6 vessels"
+    rate_structure:
+      type: per_unit
+      unit_rate: 5865
+      unit_type: half_hour
+    source_reference:
+      document_name: "Sjöfartsverket Prislista 2026"
+      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_issued: "2025-11-01"
+      page: 6
+      clause: "Lotsavgift Class 6"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_pilotage_class7_start
+    fee_family: pilotage
+    biller: Sjöfartsverket
+    name: Pilotage Start Fee - Class 7
+    description: "Pilotage start fee for Class 7 vessels"
     rate_structure:
       type: flat
       amount: 29730
@@ -1290,11 +1762,29 @@ fee_rules:
       verified_on: "2025-12-10"
       verified_by: "Port Cost Analyzer Team"
 
-  - id: sjofartsverket_pilotage_class8
+  - id: sjofartsverket_pilotage_class7_per_half_hour
     fee_family: pilotage
     biller: Sjöfartsverket
-    name: Pilotage - Class 8
-    description: "Pilotage fee for Class 8 vessels: start fee"
+    name: Pilotage Per Half Hour - Class 7
+    description: "Pilotage per half-hour rate for Class 7 vessels"
+    rate_structure:
+      type: per_unit
+      unit_rate: 6735
+      unit_type: half_hour
+    source_reference:
+      document_name: "Sjöfartsverket Prislista 2026"
+      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_issued: "2025-11-01"
+      page: 6
+      clause: "Lotsavgift Class 7"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_pilotage_class8_start
+    fee_family: pilotage
+    biller: Sjöfartsverket
+    name: Pilotage Start Fee - Class 8
+    description: "Pilotage start fee for Class 8 vessels"
     rate_structure:
       type: flat
       amount: 32540
@@ -1307,11 +1797,29 @@ fee_rules:
       verified_on: "2025-12-10"
       verified_by: "Port Cost Analyzer Team"
 
-  - id: sjofartsverket_pilotage_class9
+  - id: sjofartsverket_pilotage_class8_per_half_hour
     fee_family: pilotage
     biller: Sjöfartsverket
-    name: Pilotage - Class 9
-    description: "Pilotage fee for Class 9 vessels: start fee"
+    name: Pilotage Per Half Hour - Class 8
+    description: "Pilotage per half-hour rate for Class 8 vessels"
+    rate_structure:
+      type: per_unit
+      unit_rate: 7335
+      unit_type: half_hour
+    source_reference:
+      document_name: "Sjöfartsverket Prislista 2026"
+      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_issued: "2025-11-01"
+      page: 6
+      clause: "Lotsavgift Class 8"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_pilotage_class9_start
+    fee_family: pilotage
+    biller: Sjöfartsverket
+    name: Pilotage Start Fee - Class 9
+    description: "Pilotage start fee for Class 9 vessels"
     rate_structure:
       type: flat
       amount: 35755
@@ -1324,14 +1832,50 @@ fee_rules:
       verified_on: "2025-12-10"
       verified_by: "Port Cost Analyzer Team"
 
-  - id: sjofartsverket_pilotage_class10
+  - id: sjofartsverket_pilotage_class9_per_half_hour
     fee_family: pilotage
     biller: Sjöfartsverket
-    name: Pilotage - Class 10
-    description: "Pilotage fee for Class 10 vessels: start fee"
+    name: Pilotage Per Half Hour - Class 9
+    description: "Pilotage per half-hour rate for Class 9 vessels"
+    rate_structure:
+      type: per_unit
+      unit_rate: 8105
+      unit_type: half_hour
+    source_reference:
+      document_name: "Sjöfartsverket Prislista 2026"
+      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_issued: "2025-11-01"
+      page: 6
+      clause: "Lotsavgift Class 9"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_pilotage_class10_start
+    fee_family: pilotage
+    biller: Sjöfartsverket
+    name: Pilotage Start Fee - Class 10
+    description: "Pilotage start fee for Class 10 vessels"
     rate_structure:
       type: flat
       amount: 45420
+    source_reference:
+      document_name: "Sjöfartsverket Prislista 2026"
+      document_url: "https://www.sjofartsverket.se/en/fees"
+      document_issued: "2025-11-01"
+      page: 6
+      clause: "Lotsavgift Class 10"
+      verified_on: "2025-12-10"
+      verified_by: "Port Cost Analyzer Team"
+
+  - id: sjofartsverket_pilotage_class10_per_half_hour
+    fee_family: pilotage
+    biller: Sjöfartsverket
+    name: Pilotage Per Half Hour - Class 10
+    description: "Pilotage per half-hour rate for Class 10 vessels"
+    rate_structure:
+      type: per_unit
+      unit_rate: 10255
+      unit_type: half_hour
     source_reference:
       document_name: "Sjöfartsverket Prislista 2026"
       document_url: "https://www.sjofartsverket.se/en/fees"
