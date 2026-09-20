@@ -50,6 +50,37 @@ npm run dev
 
 The application will be available at `http://localhost:3000`
 
+
+## Architecture Decision Records (ADR)
+
+### ADR-001: Never install dependencies at root level
+
+**Status**: Accepted
+
+**Context**: This is a monorepo with npm workspaces (`core` and `web`). The `web` app depends on `@types/react-dom` which contains DOM type definitions (e.g., `Animatable`, `CSSStyleDeclaration`, `IntersectionObserver`, `ResizeObserver`) that require browser globals. The `core` module is a Node.js library that must NOT have access to DOM types.
+
+**Decision**: Workflow and local development must install dependencies directly in each workspace, never at the root level.
+
+**Consequences**:
+- GitHub Actions workflow must use `cd core && npm install` and `cd web && npm install` separately
+- Running `npm install` at root will install `@types/react-dom` which will break the core build
+- This applies to both CI/CD and local development
+
+**Example of correct workflow step**:
+```yaml
+- name: Install and build core
+  run: cd core && npm install && npm run build
+
+- name: Install web dependencies  
+  run: cd web && npm install
+```
+
+**Example of INCORRECT workflow step** (will break core build):
+```yaml
+- name: Install root dependencies
+  run: npm install  # DON'T DO THIS - installs DOM types at root
+```
+
 ## Running Tests
 
 ```bash
