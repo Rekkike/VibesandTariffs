@@ -16,7 +16,6 @@ import {
   TableBody,
   TableCell,
   TableContainer,
-  TableHead,
   TableRow,
   Collapse,
   IconButton
