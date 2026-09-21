@@ -1041,8 +1041,9 @@ describe('Panamax Verification - Gothenburg 2026', () => {
     }
   };
 
-  it('Port dues base should be 90,650 SEK for 55,000 GT panamax', () => {
-    const result = calculatePortCallCost(gothenburgPort, panamaxInput);
+  it('Port dues base should be 90,650 SEK for 55,000 GT panamax with no environmental discount inputs', () => {
+    const baseInput = { ...panamaxInput, call: { ...panamaxInput.call, esi_score: 0, clean_shipping_index_class: undefined } };
+    const result = calculatePortCallCost(gothenburgPort, baseInput);
     
     // Find port dues fee
     const portDuesFee = result.billers
@@ -1056,23 +1057,14 @@ describe('Panamax Verification - Gothenburg 2026', () => {
   it('Port dues with ESI >= 30 should be 81,585 SEK (10% discount)', () => {
     const result = calculatePortCallCost(gothenburgPort, panamaxInput);
     
-    // The environmental discount should apply: 90,650 * 0.9 = 81,585
-    // Need to check if the discount is being applied
     const portDuesFee = result.billers
       .find(b => b.biller === 'Port of Gothenburg')
       ?.fees.find(f => f.fee_family === 'port_dues');
     
-    // Check if there's an environmental discount fee
-    const envDiscount = result.billers
-      .find(b => b.biller === 'Port of Gothenburg')
-      ?.fees.find(f => f.fee_family === 'environmental_surcharge');
-    
-    // Either the discount is applied to port_dues directly, or there's a separate adjustment
-    // For now, let's check the total for Port of Gothenburg
-    const portOfGothenburg = result.billers.find(b => b.biller === 'Port of Gothenburg');
-    
-    // This test will likely fail initially - we need to implement the discount
-    // expect(portOfGothenburg?.subtotal).toBeCloseTo(81585 + 7150); // port dues + waste
+    // 90,650 * 0.9 = 81,585 (discount now computes as a real adjustment)
+    expect(portDuesFee?.amount).toBe(81585);
+    // The discount is recorded as an applied adjustment on the line
+    expect(portDuesFee?.adjustments_applied.length).toBeGreaterThan(0);
   });
 
   it('Waste (solid, EU) should be 7,150 SEK', () => {

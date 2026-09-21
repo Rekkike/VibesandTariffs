@@ -551,6 +551,25 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                   InputLabelProps={{ shrink: true }}
                 />
               </Grid>
+              {(port.metadata.id === 'gothenburg' || port.metadata.id === 'helsingborg') && (
+                <Grid item xs={6}>
+                  <FormControl fullWidth>
+                    <InputLabel>Clean Shipping Index Class (port discount)</InputLabel>
+                    <Select
+                      value={state.call.clean_shipping_index_class || ''}
+                      onChange={(e) => handleCallChange('clean_shipping_index_class', e.target.value === '' ? undefined : e.target.value as string)}
+                      label="Clean Shipping Index Class (port discount)"
+                    >
+                      <MenuItem value="">None</MenuItem>
+                      <MenuItem value="1">1</MenuItem>
+                      <MenuItem value="2">2</MenuItem>
+                      <MenuItem value="3">3</MenuItem>
+                      <MenuItem value="4">4 (10% port-dues discount)</MenuItem>
+                      <MenuItem value="5">5</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Grid>
+              )}
               <Grid item xs={6}>
                 <TextField
                   label="Calls This Month"
@@ -870,23 +889,6 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                   Helsingborg Call Parameters
                 </Typography>
                 <Grid container spacing={2}>
-                  <Grid item xs={6}>
-                    <FormControl fullWidth>
-                      <InputLabel>Clean Shipping Index Class (port discount)</InputLabel>
-                      <Select
-                        value={state.call.clean_shipping_index_class || ''}
-                        onChange={(e) => handleCallChange('clean_shipping_index_class', e.target.value === '' ? undefined : e.target.value as string)}
-                        label="Clean Shipping Index Class (port discount)"
-                      >
-                        <MenuItem value="">None</MenuItem>
-                        <MenuItem value="1">1</MenuItem>
-                        <MenuItem value="2">2</MenuItem>
-                        <MenuItem value="3">3</MenuItem>
-                        <MenuItem value="4">4 (10% port-dues discount)</MenuItem>
-                        <MenuItem value="5">5</MenuItem>
-                      </Select>
-                    </FormControl>
-                  </Grid>
                   <Grid item xs={6}>
                     <FormControlLabel
                       control={

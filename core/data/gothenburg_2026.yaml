@@ -21,6 +21,35 @@ billers:
     name: Sjöfartsverket
     description: "Swedish Maritime Administration (national authority)"
     currency: SEK
+    frequency_discount:
+      id: sjofartsverket_frequency_discount
+      name: Frequency Discount - Vessel Fee and Readiness Fee
+      fee_family: frequency_discount
+      apply_families: [vessel_fee, readiness_fee]
+      bands:
+        - min_calls: 1
+          max_calls: 2
+          payable_pct: 100
+        - min_calls: 3
+          max_calls: 3
+          payable_pct: 75
+        - min_calls: 4
+          max_calls: 4
+          payable_pct: 50
+        - min_calls: 5
+          max_calls: 5
+          payable_pct: 25
+        - min_calls: 6
+          max_calls: null
+          payable_pct: 0
+      source_reference:
+        document_name: "prislista-farleds-lotsavgifter-2026.pdf"
+        document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+        document_issued: "2025-11-01"
+        page: 4
+        clause: "Frequency discount on fartygsavgift and beredskapsavgift"
+        verified_on: "2025-12-10"
+        verified_by: "Port Cost Analyzer Team"
 
   - id: apm_terminals_gothenburg
     name: APM Terminals Gothenburg
@@ -55,6 +84,24 @@ fee_rules:
           max: null
           rate: 0.80
     minimum: 500
+    adjustments:
+      - type: discount
+        percentage: 10
+        condition: "esi_score >= 30 || clean_shipping_index_class == '4'"
+        description: "Environmental discount for ESI >= 30 or CSI class 4"
+        stack_method: additive
+        stacking_order: 1
+      - type: discount
+        percentage: 10
+        condition: "fossil_free_fuel_percentage >= 30"
+        description: "Environmental discount for >= 30% fossil-free fuel bunkered in Gothenburg"
+        stack_method: additive
+        stacking_order: 2
+      - type: discount
+        percentage: 50
+        condition: "calls_this_month >= 2"
+        description: "Frequency discount: 50% on GT-based port dues for the second call on the same route"
+        stacking_order: 3
     source_reference:
       document_name: "port-tariff-2026.pdf"
       document_url: "docs/sources/sweden/gothenburg/port-authority/port-tariff-2026.pdf"
@@ -64,88 +111,11 @@ fee_rules:
       verified_on: "2025-12-15"
       verified_by: "Port Cost Analyzer Team"
 
-  # --- Environmental Discounts on Port Dues ---
-  # ESI score >= 30 or CSI class 4 -> 10% discount
-  - id: port_gothenburg_env_discount_esi_csi
-    fee_family: environmental_surcharge
-    biller: Port of Gothenburg
-    name: Environmental Discount - ESI/CSI
-    description: "10% discount on port dues for ESI score >= 30 or CSI class 4"
-    rate_structure:
-      type: flat
-      amount: 0
-    adjustments:
-      - type: discount
-        percentage: 10
-        condition: "esi_score >= 30 || csi_class == '4'"
-        description: "Environmental discount for ESI >= 30 or CSI class 4"
-        stacking_order: 1
-    applicable_conditions:
-      esi_score: 30
-    source_reference:
-      document_name: "port-tariff-2026.pdf"
-      document_url: "docs/sources/sweden/gothenburg/port-authority/port-tariff-2026.pdf"
-      document_issued: "2025-12-01"
-      page: 7
-      clause: "Section 3.2 - Environmental Discounts"
-      verified_on: "2025-12-15"
-      verified_by: "Port Cost Analyzer Team"
-
-  # >= 30% fossil-free fuel bunkered -> additional 10% discount
-  - id: port_gothenburg_env_discount_fuel
-    fee_family: environmental_surcharge
-    biller: Port of Gothenburg
-    name: Environmental Discount - Fossil-Free Fuel
-    description: "Additional 10% discount on port dues for >= 30% fossil-free fuel bunkered in Gothenburg"
-    rate_structure:
-      type: flat
-      amount: 0
-    adjustments:
-      - type: discount
-        percentage: 10
-        condition: "fossil_free_fuel_percentage >= 30"
-        description: "Environmental discount for >= 30% fossil-free fuel"
-        stacking_order: 2
-    applicable_conditions:
-      fuel_percentage: 30
-    source_reference:
-      document_name: "port-tariff-2026.pdf"
-      document_url: "docs/sources/sweden/gothenburg/port-authority/port-tariff-2026.pdf"
-      document_issued: "2025-12-01"
-      page: 7
-      clause: "Section 3.2 - Environmental Discounts"
-      verified_on: "2025-12-15"
-      verified_by: "Port Cost Analyzer Team"
-
-  # --- Frequency Discount on Port Dues ---
-  # 50% discount for second call on same route within discount window
-  - id: port_gothenburg_frequency_discount
-    fee_family: port_dues
-    biller: Port of Gothenburg
-    name: Frequency Discount
-    description: "50% discount on port dues for second call on same route within discount window"
-    rate_structure:
-      type: flat
-      amount: 0
-    adjustments:
-      - type: discount
-        percentage: 50
-        condition: "calls_this_month >= 2"
-        description: "Frequency discount for multiple calls"
-        stacking_order: 3
-    applicable_conditions:
-      calls_this_month: 2
-    source_reference:
-      document_name: "port-tariff-2026.pdf"
-      document_url: "docs/sources/sweden/gothenburg/port-authority/port-tariff-2026.pdf"
-      document_issued: "2025-12-01"
-      page: 8
-      clause: "Section 3.3 - Frequency Discounts"
-      verified_on: "2025-12-15"
-      verified_by: "Port Cost Analyzer Team"
-
-  # --- Waste Dues ---
-  # Solid waste: EU vessel 0.13 SEK/GT, non-EU 0.24 SEK/GT
+  # --- Environmental and Frequency Discounts on Port Dues ---
+  # Encoded as adjustments on the container vessel dues rule above:
+  # ESI >= 30 or CSI class 4 -> 10%; >= 30% fossil-free fuel -> +10% (additive
+  # per the tariff's 10 + 10 wording); second call on same route -> 50%
+  # (port-tariff-2026.pdf Sections 3.2-3.3).
   - id: port_gothenburg_waste_solid_eu
     fee_family: waste
     biller: Port of Gothenburg
@@ -236,6 +206,97 @@ fee_rules:
       verified_by: "Port Cost Analyzer Team"
 
   # --- OPS Connection Fee ---
+  # Sludge exceeding the included 11 m3: 2,400 SEK per m3
+  - id: port_gothenburg_waste_sludge_excess
+    fee_family: waste
+    biller: Port of Gothenburg
+    name: Sludge Waste Dues - Excess Volume
+    description: "Sludge disposal fee per m3 exceeding the 11 m3 included volume"
+    rate_structure:
+      type: per_unit
+      unit_rate: 2400
+      unit_type: sludge_extra_m3
+    applicable_conditions:
+      sludge_extra_m3: 'present'
+    source_reference:
+      document_name: "port-tariff-2026.pdf"
+      document_url: "docs/sources/sweden/gothenburg/port-authority/port-tariff-2026.pdf"
+      document_issued: "2025-12-01"
+      page: 10
+      clause: "Section 4.1 - Waste Dues, sludge exceeding 11 m3"
+      verified_on: "2026-09-21"
+      verified_by: "Gothenburg repair pass (INTENDED_STATE 2.1)"
+
+  # Fresh water: below 50 m3 0 SEK; above 50 m3 50 SEK per m3
+  - id: port_gothenburg_fresh_water
+    fee_family: ancillary_service
+    biller: Port of Gothenburg
+    name: Fresh Water Supply
+    description: "Fresh water: 0 SEK up to 50 m3; 50 SEK per m3 above 50 m3"
+    rate_structure:
+      type: banded_flat
+      basis: fresh_water_m3
+      bands:
+        - min: null
+          max: 50
+          amount: 0
+        - min: 50
+          max: null
+          rate: 50
+          cap_at_max: false
+    applicable_conditions:
+      fresh_water_m3: 'present'
+    source_reference:
+      document_name: "port-tariff-2026.pdf"
+      document_url: "docs/sources/sweden/gothenburg/port-authority/port-tariff-2026.pdf"
+      document_issued: "2025-12-01"
+      page: 11
+      clause: "Section 4.2 - Fresh Water"
+      verified_on: "2026-09-21"
+      verified_by: "Gothenburg repair pass (INTENDED_STATE 2.1)"
+
+  # Scrubber waste: 800 SEK administration fee; actual disposal cost not encoded
+  - id: port_gothenburg_waste_scrubber
+    fee_family: waste
+    biller: Port of Gothenburg
+    name: Scrubber Waste Disposal - Administration
+    description: "Scrubber waste administration fee; actual disposal cost billed separately and not encoded"
+    rate_structure:
+      type: flat
+      amount: 800
+    applicable_conditions:
+      scrubber_waste: true
+    source_reference:
+      document_name: "port-tariff-2026.pdf"
+      document_url: "docs/sources/sweden/gothenburg/port-authority/port-tariff-2026.pdf"
+      document_issued: "2025-12-01"
+      page: 10
+      clause: "Section 4.1 - Waste Dues, scrubber waste"
+      verified_on: "2026-09-21"
+      verified_by: "Gothenburg repair pass (INTENDED_STATE 2.1)"
+
+  # Break bulk scrap rate (APM Terminals, charge on goods): base rate only;
+  # minimum charges and higher bands not published at the level encoded here.
+  - id: apm_terminals_handling_break_bulk_scrap
+    fee_family: terminal_handling
+    biller: APM Terminals Gothenburg
+    name: Terminal Handling - Break Bulk Scrap
+    description: "Break bulk base rate 54 SEK per 1,000 kg; no scrap minimum charges encoded"
+    rate_structure:
+      type: per_unit
+      unit_rate: 54
+      unit_type: break_bulk_1000kg
+    applicable_conditions:
+      break_bulk_1000kg: 'present'
+    source_reference:
+      document_name: "terminal-tariff-2026-june.pdf"
+      document_url: "docs/sources/sweden/gothenburg/apm-terminals/terminal-tariff-2026-june.pdf"
+      document_issued: "2025-12-01"
+      page: 2
+      clause: "Terminal Charges on Goods - break bulk"
+      verified_on: "2026-09-21"
+      verified_by: "Gothenburg repair pass (INTENDED_STATE 2.1)"
+
   - id: port_gothenburg_ops_connection
     fee_family: connection_fee
     biller: Port of Gothenburg
@@ -1306,46 +1367,6 @@ fee_rules:
 
 
 
-  - id: sjofartsverket_frequency_discount
-    fee_family: frequency_discount
-    biller: Sjöfartsverket
-    name: Frequency Discount - Vessel Fee and Readiness Fee
-    description: "Frequency discount on vessel fee and readiness fee based on calls this month"
-    rate_structure:
-      type: flat
-      amount: 0
-    adjustments:
-      - type: discount
-        percentage: 0
-        condition: "calls_this_month >= 6"
-        description: "6+ calls: 0% of vessel + readiness fee"
-        stacking_order: 1
-      - type: discount
-        percentage: 25
-        condition: "calls_this_month == 5"
-        description: "5 calls: 25% of vessel + readiness fee"
-        stacking_order: 1
-      - type: discount
-        percentage: 50
-        condition: "calls_this_month == 4"
-        description: "4 calls: 50% of vessel + readiness fee"
-        stacking_order: 1
-      - type: discount
-        percentage: 75
-        condition: "calls_this_month == 3"
-        description: "3 calls: 75% of vessel + readiness fee"
-        stacking_order: 1
-    applicable_conditions:
-      calls_this_month: 1
-    source_reference:
-      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
-      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
-      document_issued: "2025-11-01"
-      page: 4
-      clause: "Frequency Discount - Vessel and Readiness Fees"
-      verified_on: "2025-12-10"
-      verified_by: "Port Cost Analyzer Team"
-
   # --- Cargo Fee (Godsavgift) ---
   - id: sjofartsverket_cargo_fee_high_value
     fee_family: cargo_fee
@@ -1607,10 +1628,16 @@ fee_rules:
     fee_family: pilotage
     biller: Sjöfartsverket
     name: Pilotage Start Fee - Class 1
-    description:
+    description: Pilotage start fee for Class 1 vessels
     applicable_conditions:
       pilotage_required: true
-      nt_class: 1 "Pilotage start fee for Class 1 vessels"
+      nt_class: 1
+    adjustments:
+      - type: discount
+        percentage: 40
+        condition: "pilotage_hours > 7"
+        description: "40% discount for piloted time exceeding 7 hours"
+        stacking_order: 1
     rate_structure:
       type: flat
       amount: 9670
@@ -1627,14 +1654,20 @@ fee_rules:
     fee_family: pilotage
     biller: Sjöfartsverket
     name: Pilotage Per Half Hour - Class 1
-    description:
+    description: Pilotage per half-hour rate for Class 1 vessels
     applicable_conditions:
       pilotage_required: true
-      nt_class: 1 "Pilotage per half-hour rate for Class 1 vessels"
+      nt_class: 1
+    adjustments:
+      - type: discount
+        percentage: 40
+        condition: "pilotage_hours > 7"
+        description: "40% discount for piloted time exceeding 7 hours"
+        stacking_order: 1
     rate_structure:
       type: per_unit
       unit_rate: 2160
-      unit_type: half_hour
+      unit_type: pilotage_half_hour
     source_reference:
       document_name: "prislista-farleds-lotsavgifter-2026.pdf"
       document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
@@ -1648,10 +1681,16 @@ fee_rules:
     fee_family: pilotage
     biller: Sjöfartsverket
     name: Pilotage Start Fee - Class 2
-    description:
+    description: Pilotage start fee for Class 2 vessels
     applicable_conditions:
       pilotage_required: true
-      nt_class: 2 "Pilotage start fee for Class 2 vessels"
+      nt_class: 2
+    adjustments:
+      - type: discount
+        percentage: 40
+        condition: "pilotage_hours > 7"
+        description: "40% discount for piloted time exceeding 7 hours"
+        stacking_order: 1
     rate_structure:
       type: flat
       amount: 12485
@@ -1668,14 +1707,20 @@ fee_rules:
     fee_family: pilotage
     biller: Sjöfartsverket
     name: Pilotage Per Half Hour - Class 2
-    description:
+    description: Pilotage per half-hour rate for Class 2 vessels
     applicable_conditions:
       pilotage_required: true
-      nt_class: 2 "Pilotage per half-hour rate for Class 2 vessels"
+      nt_class: 2
+    adjustments:
+      - type: discount
+        percentage: 40
+        condition: "pilotage_hours > 7"
+        description: "40% discount for piloted time exceeding 7 hours"
+        stacking_order: 1
     rate_structure:
       type: per_unit
       unit_rate: 2840
-      unit_type: half_hour
+      unit_type: pilotage_half_hour
     source_reference:
       document_name: "prislista-farleds-lotsavgifter-2026.pdf"
       document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
@@ -1689,10 +1734,16 @@ fee_rules:
     fee_family: pilotage
     biller: Sjöfartsverket
     name: Pilotage Start Fee - Class 3
-    description:
+    description: Pilotage start fee for Class 3 vessels
     applicable_conditions:
       pilotage_required: true
-      nt_class: 3 "Pilotage start fee for Class 3 vessels"
+      nt_class: 3
+    adjustments:
+      - type: discount
+        percentage: 40
+        condition: "pilotage_hours > 7"
+        description: "40% discount for piloted time exceeding 7 hours"
+        stacking_order: 1
     rate_structure:
       type: flat
       amount: 15290
@@ -1709,14 +1760,20 @@ fee_rules:
     fee_family: pilotage
     biller: Sjöfartsverket
     name: Pilotage Per Half Hour - Class 3
-    description:
+    description: Pilotage per half-hour rate for Class 3 vessels
     applicable_conditions:
       pilotage_required: true
-      nt_class: 3 "Pilotage per half-hour rate for Class 3 vessels"
+      nt_class: 3
+    adjustments:
+      - type: discount
+        percentage: 40
+        condition: "pilotage_hours > 7"
+        description: "40% discount for piloted time exceeding 7 hours"
+        stacking_order: 1
     rate_structure:
       type: per_unit
       unit_rate: 3435
-      unit_type: half_hour
+      unit_type: pilotage_half_hour
     source_reference:
       document_name: "prislista-farleds-lotsavgifter-2026.pdf"
       document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
@@ -1730,10 +1787,16 @@ fee_rules:
     fee_family: pilotage
     biller: Sjöfartsverket
     name: Pilotage Start Fee - Class 4
-    description:
+    description: Pilotage start fee for Class 4 vessels
     applicable_conditions:
       pilotage_required: true
-      nt_class: 4 "Pilotage start fee for Class 4 vessels"
+      nt_class: 4
+    adjustments:
+      - type: discount
+        percentage: 40
+        condition: "pilotage_hours > 7"
+        description: "40% discount for piloted time exceeding 7 hours"
+        stacking_order: 1
     rate_structure:
       type: flat
       amount: 17300
@@ -1750,14 +1813,20 @@ fee_rules:
     fee_family: pilotage
     biller: Sjöfartsverket
     name: Pilotage Per Half Hour - Class 4
-    description:
+    description: Pilotage per half-hour rate for Class 4 vessels
     applicable_conditions:
       pilotage_required: true
-      nt_class: 4 "Pilotage per half-hour rate for Class 4 vessels"
+      nt_class: 4
+    adjustments:
+      - type: discount
+        percentage: 40
+        condition: "pilotage_hours > 7"
+        description: "40% discount for piloted time exceeding 7 hours"
+        stacking_order: 1
     rate_structure:
       type: per_unit
       unit_rate: 3940
-      unit_type: half_hour
+      unit_type: pilotage_half_hour
     source_reference:
       document_name: "prislista-farleds-lotsavgifter-2026.pdf"
       document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
@@ -1771,10 +1840,16 @@ fee_rules:
     fee_family: pilotage
     biller: Sjöfartsverket
     name: Pilotage Start Fee - Class 5
-    description:
+    description: Pilotage start fee for Class 5 vessels
     applicable_conditions:
       pilotage_required: true
-      nt_class: 5 "Pilotage start fee for Class 5 vessels"
+      nt_class: 5
+    adjustments:
+      - type: discount
+        percentage: 40
+        condition: "pilotage_hours > 7"
+        description: "40% discount for piloted time exceeding 7 hours"
+        stacking_order: 1
     rate_structure:
       type: flat
       amount: 19305
@@ -1791,14 +1866,20 @@ fee_rules:
     fee_family: pilotage
     biller: Sjöfartsverket
     name: Pilotage Per Half Hour - Class 5
-    description:
+    description: Pilotage per half-hour rate for Class 5 vessels
     applicable_conditions:
       pilotage_required: true
-      nt_class: 5 "Pilotage per half-hour rate for Class 5 vessels"
+      nt_class: 5
+    adjustments:
+      - type: discount
+        percentage: 40
+        condition: "pilotage_hours > 7"
+        description: "40% discount for piloted time exceeding 7 hours"
+        stacking_order: 1
     rate_structure:
       type: per_unit
       unit_rate: 4400
-      unit_type: half_hour
+      unit_type: pilotage_half_hour
     source_reference:
       document_name: "prislista-farleds-lotsavgifter-2026.pdf"
       document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
@@ -1812,10 +1893,16 @@ fee_rules:
     fee_family: pilotage
     biller: Sjöfartsverket
     name: Pilotage Start Fee - Class 6
-    description:
+    description: Pilotage start fee for Class 6 vessels
     applicable_conditions:
       pilotage_required: true
-      nt_class: 6 "Pilotage start fee for Class 6 vessels"
+      nt_class: 6
+    adjustments:
+      - type: discount
+        percentage: 40
+        condition: "pilotage_hours > 7"
+        description: "40% discount for piloted time exceeding 7 hours"
+        stacking_order: 1
     rate_structure:
       type: flat
       amount: 26105
@@ -1832,14 +1919,20 @@ fee_rules:
     fee_family: pilotage
     biller: Sjöfartsverket
     name: Pilotage Per Half Hour - Class 6
-    description:
+    description: Pilotage per half-hour rate for Class 6 vessels
     applicable_conditions:
       pilotage_required: true
-      nt_class: 6 "Pilotage per half-hour rate for Class 6 vessels"
+      nt_class: 6
+    adjustments:
+      - type: discount
+        percentage: 40
+        condition: "pilotage_hours > 7"
+        description: "40% discount for piloted time exceeding 7 hours"
+        stacking_order: 1
     rate_structure:
       type: per_unit
       unit_rate: 5865
-      unit_type: half_hour
+      unit_type: pilotage_half_hour
     source_reference:
       document_name: "prislista-farleds-lotsavgifter-2026.pdf"
       document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
@@ -1853,10 +1946,16 @@ fee_rules:
     fee_family: pilotage
     biller: Sjöfartsverket
     name: Pilotage Start Fee - Class 7
-    description:
+    description: Pilotage start fee for Class 7 vessels
     applicable_conditions:
       pilotage_required: true
-      nt_class: 7 "Pilotage start fee for Class 7 vessels"
+      nt_class: 7
+    adjustments:
+      - type: discount
+        percentage: 40
+        condition: "pilotage_hours > 7"
+        description: "40% discount for piloted time exceeding 7 hours"
+        stacking_order: 1
     rate_structure:
       type: flat
       amount: 29730
@@ -1873,14 +1972,20 @@ fee_rules:
     fee_family: pilotage
     biller: Sjöfartsverket
     name: Pilotage Per Half Hour - Class 7
-    description:
+    description: Pilotage per half-hour rate for Class 7 vessels
     applicable_conditions:
       pilotage_required: true
-      nt_class: 7 "Pilotage per half-hour rate for Class 7 vessels"
+      nt_class: 7
+    adjustments:
+      - type: discount
+        percentage: 40
+        condition: "pilotage_hours > 7"
+        description: "40% discount for piloted time exceeding 7 hours"
+        stacking_order: 1
     rate_structure:
       type: per_unit
       unit_rate: 6735
-      unit_type: half_hour
+      unit_type: pilotage_half_hour
     source_reference:
       document_name: "prislista-farleds-lotsavgifter-2026.pdf"
       document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
@@ -1894,10 +1999,16 @@ fee_rules:
     fee_family: pilotage
     biller: Sjöfartsverket
     name: Pilotage Start Fee - Class 8
-    description:
+    description: Pilotage start fee for Class 8 vessels
     applicable_conditions:
       pilotage_required: true
-      nt_class: 8 "Pilotage start fee for Class 8 vessels"
+      nt_class: 8
+    adjustments:
+      - type: discount
+        percentage: 40
+        condition: "pilotage_hours > 7"
+        description: "40% discount for piloted time exceeding 7 hours"
+        stacking_order: 1
     rate_structure:
       type: flat
       amount: 32540
@@ -1914,14 +2025,20 @@ fee_rules:
     fee_family: pilotage
     biller: Sjöfartsverket
     name: Pilotage Per Half Hour - Class 8
-    description:
+    description: Pilotage per half-hour rate for Class 8 vessels
     applicable_conditions:
       pilotage_required: true
-      nt_class: 8 "Pilotage per half-hour rate for Class 8 vessels"
+      nt_class: 8
+    adjustments:
+      - type: discount
+        percentage: 40
+        condition: "pilotage_hours > 7"
+        description: "40% discount for piloted time exceeding 7 hours"
+        stacking_order: 1
     rate_structure:
       type: per_unit
       unit_rate: 7335
-      unit_type: half_hour
+      unit_type: pilotage_half_hour
     source_reference:
       document_name: "prislista-farleds-lotsavgifter-2026.pdf"
       document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
@@ -1935,10 +2052,16 @@ fee_rules:
     fee_family: pilotage
     biller: Sjöfartsverket
     name: Pilotage Start Fee - Class 9
-    description:
+    description: Pilotage start fee for Class 9 vessels
     applicable_conditions:
       pilotage_required: true
-      nt_class: 9 "Pilotage start fee for Class 9 vessels"
+      nt_class: 9
+    adjustments:
+      - type: discount
+        percentage: 40
+        condition: "pilotage_hours > 7"
+        description: "40% discount for piloted time exceeding 7 hours"
+        stacking_order: 1
     rate_structure:
       type: flat
       amount: 35755
@@ -1955,14 +2078,20 @@ fee_rules:
     fee_family: pilotage
     biller: Sjöfartsverket
     name: Pilotage Per Half Hour - Class 9
-    description:
+    description: Pilotage per half-hour rate for Class 9 vessels
     applicable_conditions:
       pilotage_required: true
-      nt_class: 9 "Pilotage per half-hour rate for Class 9 vessels"
+      nt_class: 9
+    adjustments:
+      - type: discount
+        percentage: 40
+        condition: "pilotage_hours > 7"
+        description: "40% discount for piloted time exceeding 7 hours"
+        stacking_order: 1
     rate_structure:
       type: per_unit
       unit_rate: 8105
-      unit_type: half_hour
+      unit_type: pilotage_half_hour
     source_reference:
       document_name: "prislista-farleds-lotsavgifter-2026.pdf"
       document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
@@ -1976,10 +2105,16 @@ fee_rules:
     fee_family: pilotage
     biller: Sjöfartsverket
     name: Pilotage Start Fee - Class 10
-    description:
+    description: Pilotage start fee for Class 10 vessels
     applicable_conditions:
       pilotage_required: true
-      nt_class: 10 "Pilotage start fee for Class 10 vessels"
+      nt_class: 10
+    adjustments:
+      - type: discount
+        percentage: 40
+        condition: "pilotage_hours > 7"
+        description: "40% discount for piloted time exceeding 7 hours"
+        stacking_order: 1
     rate_structure:
       type: flat
       amount: 45420
@@ -1996,14 +2131,20 @@ fee_rules:
     fee_family: pilotage
     biller: Sjöfartsverket
     name: Pilotage Per Half Hour - Class 10
-    description:
+    description: Pilotage per half-hour rate for Class 10 vessels
     applicable_conditions:
       pilotage_required: true
-      nt_class: 10 "Pilotage per half-hour rate for Class 10 vessels"
+      nt_class: 10
+    adjustments:
+      - type: discount
+        percentage: 40
+        condition: "pilotage_hours > 7"
+        description: "40% discount for piloted time exceeding 7 hours"
+        stacking_order: 1
     rate_structure:
       type: per_unit
       unit_rate: 10255
-      unit_type: half_hour
+      unit_type: pilotage_half_hour
     source_reference:
       document_name: "prislista-farleds-lotsavgifter-2026.pdf"
       document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
@@ -2021,7 +2162,7 @@ fee_rules:
     description:
     applicable_conditions:
       pilotage_required: true
-      pilotage_extra_pilot: true "Additional fee for extra pilot"
+      pilotage_extra_pilot: true
     rate_structure:
       type: flat
       amount: 12620
@@ -2034,38 +2175,15 @@ fee_rules:
       verified_on: "2025-12-10"
       verified_by: "Port Cost Analyzer Team"
 
-  # Pilotage discount for >7 hours
-  - id: sjofartsverket_pilotage_discount
-    fee_family: pilotage
-    biller: Sjöfartsverket
-    name: Pilotage Discount
-    description: "40% discount for piloted time exceeding 7 hours"
-    applicable_conditions:
-      pilotage_required: true
-    rate_structure:
-      type: flat
-      amount: 0
-    adjustments:
-      - type: discount
-        percentage: 40
-        condition: "pilotage_hours > 7"
-        description: "Pilotage discount for >7 hours"
-        stacking_order: 1
-    source_reference:
-      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
-      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
-      document_issued: "2025-11-01"
-      page: 7
-      clause: "Pilotage Discounts"
-      verified_on: "2025-12-10"
-      verified_by: "Port Cost Analyzer Team"
-
-  # Ordering fee by lead time
+  # Pilotage discount for >7 hours: encoded as adjustments on each pilotage rule
   - id: sjofartsverket_ordering_fee_under_1h
     fee_family: ordering_fee
     biller: Sjöfartsverket
     name: Ordering Fee - Under 1 hour
     description: "Ordering fee for lead time under 1 hour"
+    applicable_conditions:
+      pilotage_required: true
+      ordering_lead_time_band: under_1h
     rate_structure:
       type: flat
       amount: 9390
@@ -2083,6 +2201,9 @@ fee_rules:
     biller: Sjöfartsverket
     name: Ordering Fee - 1-2 hours
     description: "Ordering fee for lead time 1-2 hours"
+    applicable_conditions:
+      pilotage_required: true
+      ordering_lead_time_band: 1_2h
     rate_structure:
       type: flat
       amount: 7510
@@ -2100,6 +2221,9 @@ fee_rules:
     biller: Sjöfartsverket
     name: Ordering Fee - 2-3 hours
     description: "Ordering fee for lead time 2-3 hours"
+    applicable_conditions:
+      pilotage_required: true
+      ordering_lead_time_band: 2_3h
     rate_structure:
       type: flat
       amount: 5635
@@ -2117,6 +2241,9 @@ fee_rules:
     biller: Sjöfartsverket
     name: Ordering Fee - 3-4 hours
     description: "Ordering fee for lead time 3-4 hours"
+    applicable_conditions:
+      pilotage_required: true
+      ordering_lead_time_band: 3_4h
     rate_structure:
       type: flat
       amount: 3775
@@ -2134,6 +2261,9 @@ fee_rules:
     biller: Sjöfartsverket
     name: Ordering Fee - 4+ hours
     description: "Ordering fee for lead time 4 hours or more"
+    applicable_conditions:
+      pilotage_required: true
+      ordering_lead_time_band: 4h_plus
     rate_structure:
       type: flat
       amount: 1880

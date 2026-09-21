@@ -46,7 +46,6 @@ describe('Canonical YAML Loading', () => {
       'terminal_handling',
       'storage',
       'security',
-      'environmental_surcharge',
       'connection_fee',
       'lay_up',
       'readiness_fee',
@@ -55,7 +54,8 @@ describe('Canonical YAML Loading', () => {
       'ordering_fee',
       'yard_surcharge',
       'gate_hazardous',
-      'idle_berth'
+      'idle_berth',
+      'ancillary_service'
     ];
     
     for (const family of requiredFamilies) {

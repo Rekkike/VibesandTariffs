@@ -441,6 +441,9 @@ export interface CallInput {
   clean_shipping_index_class?: string; // Clean Shipping Index class 1-5 (port discount; distinct from Sjöfartsverket A-E)
   towage_cost_per_tug?: number;      // estimated towage SEK per tug-assist (Helsingborg)
   sludge_extra_m3?: number;         // sludge above the 10 m3 included volume
+  fresh_water_m3?: number;          // fresh water supplied (m3); free up to 50 m3, then 50 SEK/m3
+  scrubber_waste?: boolean;         // scrubber waste delivered (800 SEK admin; disposal billed at cost)
+  break_bulk_1000kg?: number;       // break bulk tonnage (1,000 kg units) at 54 SEK/unit
 }
 
 // Full input for cost calculation

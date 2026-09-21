@@ -130,9 +130,19 @@ export function evaluateFeeRule(
     // Brackets are lower-inclusive / upper-exclusive except the last, which
     // is 4+ hours inclusive (\u22654 h pays the lowest fee).
     if (rule.applicable_conditions.ordering_lead_time_band) {
-      const band = getOrderingLeadTimeBandId(call.pilotage_ordering_lead_time_hours);
+      const hours = call.pilotage_ordering_lead_time_hours;
+      const band = getOrderingLeadTimeBandId(hours);
       if (band !== rule.applicable_conditions.ordering_lead_time_band) {
         return null;
+      }
+      // Spec 4.4.2: a missing lead time falls back to the least favourable
+      // band, which must be visible, never silent.
+      if (typeof hours !== 'number' || isNaN(hours) || hours < 0) {
+        qualityFlags.push({
+          type: 'fallback_value',
+          description: 'Pilotage ordering lead time not supplied; defaulted to the under-1-hour band, the least favourable rate (spec 4.4.2)',
+          severity: 'warning'
+        });
       }
     }
     

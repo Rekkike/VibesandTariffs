@@ -1,6 +1,6 @@
-# Port Call Cost Analyzer — Specification v0.2.21
+# Port Call Cost Analyzer — Specification v0.2.22
 
-This document is the committed record of the project specification at version 0.2.21. It governs the data model, engine, and UI contracts of the Port Call Cost Analyzer. `docs/INTENDED_STATE.md` remains the authoritative audit document for the Gothenburg 2026 pilot data; where the two documents overlap, INTENDED_STATE.md governs the Gothenburg figures and this document governs the architecture and UI behavior.
+This document is the committed record of the project specification at version 0.2.22. It governs the data model, engine, and UI contracts of the Port Call Cost Analyzer. `docs/INTENDED_STATE.md` remains the authoritative audit document for the Gothenburg 2026 pilot data; where the two documents overlap, INTENDED_STATE.md governs the Gothenburg figures and this document governs the architecture and UI behavior.
 
 ## Versioning Policy
 
@@ -37,6 +37,7 @@ Small adjustments increment only the third decimal. Larger updates may jump more
 | 0.2.19 | 2026-09-21 | Vessel library schema extended with nt and draught_m (pre-fill now covers all vessel-fee-relevant inputs); estimated values flagged in source notes and marked in the form |
 | 0.2.20 | 2026-09-21 | Hamburg port file added (HPA, GDWS pilotage, HHLA, BUKEA waste; estimated handling and towage parameters); port selector and cross-port comparison view with local-currency display and optional ECB/manual conversion; towage family added to shared taxonomy |
 | 0.2.21 | 2026-09-21 | Helsingborg added as the third port (single-biller port authority, Sjöfartsverket national tables transcribed in full per the port-silo principle, towage as an estimated parameter with LOA-class tug defaults); per-biller frequency-discount mechanism; ordering-fee lead-time bands; ancillary_service family added to the shared taxonomy |
+| 0.2.22 | 2026-09-21 | Gothenburg repair pass: rules that never fire (malformed pilotage conditions, unknown half-hour unit type, impossible CSI-class discount condition) repaired; pseudo-rule discounts (zero-amount rules that compute nothing) replaced with real adjustments on the container dues rule and the per-biller frequency-discount block; ordering-fee lead-time bands wired; missing-lead-time and inventory-gap rules (fresh water, sludge excess, scrubber waste, break-bulk) encoded; checkpoint tests pin the defect class |
 
 ## 1. Purpose
 
