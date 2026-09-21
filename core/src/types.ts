@@ -291,6 +291,13 @@ export interface FeeRule {
     description: string;
     severity?: 'info' | 'warning';
   };
+  // Contract-vs-published caveat (spec v0.2.4): the rate is the published list
+  // price, but shipping lines may hold different contract rates. Carried onto
+  // the result line as a quality flag, never hidden.
+  contract_vs_published?: {
+    description: string;
+    severity?: 'info' | 'warning';
+  };
   // Optional percentage scaling from a call input (e.g. pilotage segment %).
   scale_by?: {
     input_field: string;
@@ -419,6 +426,8 @@ export interface CallInput {
   storage_empty_days?: number;
   storage_empty_20ft_units?: number;
   storage_empty_40ft_units?: number;
+  gassing_20ft_units?: number;
+  gassing_40ft_units?: number;
   storage_empty_30ft_units?: number;
   storage_empty_45ft_units?: number;
   storage_import_30ft_units?: number;
@@ -441,6 +450,7 @@ export interface CallInput {
   clean_shipping_index_class?: string; // Clean Shipping Index class 1-5 (port discount; distinct from Sjöfartsverket A-E)
   towage_cost_per_tug?: number;      // estimated towage SEK per tug-assist (Helsingborg)
   sludge_extra_m3?: number;         // sludge above the 10 m3 included volume
+  idle_berth_hours?: number;        // APM idle berth service hours (explicit request only)
   fresh_water_m3?: number;          // fresh water supplied (m3); free up to 50 m3, then 50 SEK/m3
   scrubber_waste?: boolean;         // scrubber waste delivered (800 SEK admin; disposal billed at cost)
   break_bulk_1000kg?: number;       // break bulk tonnage (1,000 kg units) at 54 SEK/unit

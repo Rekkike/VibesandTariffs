@@ -2290,6 +2290,9 @@ fee_rules:
       type: per_unit
       unit_rate: 377
       unit_type: container_le20ft
+    contract_vs_published:
+      description: "Published APMT list rate; shipping lines may hold different contract rates (spec v0.2.4 contract-vs-published caveat)"
+      severity: 'info'
     source_reference:
       document_name: "terminal-tariff-2026-june.pdf"
       document_url: "docs/sources/sweden/gothenburg/apm-terminals/terminal-tariff-2026-june.pdf"
@@ -2308,6 +2311,9 @@ fee_rules:
       type: per_unit
       unit_rate: 535
       unit_type: container_gt20ft
+    contract_vs_published:
+      description: "Published APMT list rate; shipping lines may hold different contract rates (spec v0.2.4 contract-vs-published caveat)"
+      severity: 'info'
     source_reference:
       document_name: "terminal-tariff-2026-june.pdf"
       document_url: "docs/sources/sweden/gothenburg/apm-terminals/terminal-tariff-2026-june.pdf"
@@ -2618,11 +2624,13 @@ fee_rules:
     fee_family: idle_berth
     biller: APM Terminals Gothenburg
     name: Idle Berth Service
-    description: "Idle berth service fee per hour (on explicit request)"
+    description: "Idle berth service fee per hour, on explicit request only (voluntary service, rounded up; only when no operations). Gated behind the idle_berth_hours input; never charged by default."
     rate_structure:
       type: per_commenced_day
       daily_rate: 500
-      basis: pilotage_hours
+      basis: idle_berth_hours
+    applicable_conditions:
+      idle_berth_hours: 'present'
     source_reference:
       document_name: "terminal-tariff-2026-june.pdf"
       document_url: "docs/sources/sweden/gothenburg/apm-terminals/terminal-tariff-2026-june.pdf"

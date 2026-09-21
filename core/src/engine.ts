@@ -177,6 +177,15 @@ export function evaluateFeeRule(
       severity: rule.estimated_parameter.severity ?? 'info'
     });
   }
+  // Contract-vs-published caveat (spec v0.2.4): the published list price may
+  // differ from shipping-line contract rates; carried as a visible flag.
+  if (rule.contract_vs_published) {
+    qualityFlags.push({
+      type: 'contract_vs_published',
+      description: rule.contract_vs_published.description,
+      severity: rule.contract_vs_published.severity ?? 'warning'
+    });
+  }
   
   // Get the value for the basis
   const getBasisValue = (basis: string): number | undefined => {

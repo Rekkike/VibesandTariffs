@@ -1,6 +1,6 @@
-# Port Call Cost Analyzer — Specification v0.2.22
+# Port Call Cost Analyzer — Specification v0.2.23
 
-This document is the committed record of the project specification at version 0.2.22. It governs the data model, engine, and UI contracts of the Port Call Cost Analyzer. `docs/INTENDED_STATE.md` remains the authoritative audit document for the Gothenburg 2026 pilot data; where the two documents overlap, INTENDED_STATE.md governs the Gothenburg figures and this document governs the architecture and UI behavior.
+This document is the committed record of the project specification at version 0.2.23. It governs the data model, engine, and UI contracts of the Port Call Cost Analyzer. `docs/INTENDED_STATE.md` remains the authoritative audit document for the Gothenburg 2026 pilot data; where the two documents overlap, INTENDED_STATE.md governs the Gothenburg figures and this document governs the architecture and UI behavior.
 
 ## Versioning Policy
 
@@ -38,6 +38,7 @@ Small adjustments increment only the third decimal. Larger updates may jump more
 | 0.2.20 | 2026-09-21 | Hamburg port file added (HPA, GDWS pilotage, HHLA, BUKEA waste; estimated handling and towage parameters); port selector and cross-port comparison view with local-currency display and optional ECB/manual conversion; towage family added to shared taxonomy |
 | 0.2.21 | 2026-09-21 | Helsingborg added as the third port (single-biller port authority, Sjöfartsverket national tables transcribed in full per the port-silo principle, towage as an estimated parameter with LOA-class tug defaults); per-biller frequency-discount mechanism; ordering-fee lead-time bands; ancillary_service family added to the shared taxonomy |
 | 0.2.22 | 2026-09-21 | Gothenburg repair pass: rules that never fire (malformed pilotage conditions, unknown half-hour unit type, impossible CSI-class discount condition) repaired; pseudo-rule discounts (zero-amount rules that compute nothing) replaced with real adjustments on the container dues rule and the per-biller frequency-discount block; ordering-fee lead-time bands wired; missing-lead-time and inventory-gap rules (fresh water, sludge excess, scrubber waste, break-bulk) encoded; checkpoint tests pin the defect class |
+| 0.2.23 | 2026-09-21 | Audit pass on Hamburg and Helsingborg plus a tri-port sanity check: rule-inventory gaps closed (HHLA 45-ft storage and gassing-space services; the voluntary Gothenburg idle-berth service gated behind an explicit input so it can no longer fire silently); contract-vs-published caveat implemented in the data model and carried onto result lines (APM Terminals handling charges); Sjöfartsverket environmental class UI default corrected to E (not registered), the documented conservative default; form inputs added for the Gothenburg ancillary rules; audit findings and tri-port results recorded |
 
 ## 1. Purpose
 
@@ -458,6 +459,19 @@ Gothenburg, Hamburg, Helsingborg, Gävle, Gdansk, Bremerhaven, Aarhus. Pilot por
 5. Define how confidential or contract-based terminal charges are flagged and displayed in comparisons — partially resolved: a contract-vs-published caveat annotation is defined (v0.2.4); a general confidential-charge flag remains for ports where no public rate exists at all.
 6. Establish the GT-to-net-tonnage relationship for vessel presets (typical container vessel nt as a fraction of GT), or add explicit nt values to presets, since Sjöfartsverket bills on nettodräktighet.
 7. Determine pilotage time assumptions per port (e.g. Elbe approach hours for Hamburg, Gothenburg approach) for hourly pilotage components.
+
+### Audit Record — v0.2.23 (Hamburg, Helsingborg, tri-port sanity check)
+
+The six audit checks (rule inventory, firing, checkpoint coverage, discount/condition semantics, estimate integrity, silo integrity) were applied to the Hamburg and Helsingborg port files, followed by a tri-port verification running the four library vessels through all three ports with identical call parameters. Findings and resolutions:
+
+- **Hamburg rule-inventory gaps (fixed):** the HHLA 45-ft storage rates (92.20 EUR/day, import doubling/tripling and export doubling as for the other sizes) and the gassing-space container services (176.90 EUR 20-ft, 240.70 EUR 40-ft) from reference §5.2/§5.3 were absent from the port file; both are now encoded with full source references and optional call inputs, default off.
+- **Hamburg verified correct:** CP1 reproduces the HPA worked example to the cent (32,838.88 / 7,022.54 / 39,861.43); CP2–CP5 match all reference figures; the HPA minimum fee (43.56), demurrage minimum (44.38), and berth-fee minimum (16.84) apply with visible "min applied" labels; the Hafenfonds surcharge excludes storage and terminal handling as the reference requires; the GDWS dues cap (5,322) and pilot-fee cap (4,100) hold; SG 2/SG 3 and the penalty items remain modelled as notes, not charges, per reference §3.4.
+- **Helsingborg verified correct:** CP1–CP5 reproduce all reference figures; all §3.9 ancillaries encode and fire; §9 not-modelled items (godsavgift, Dalshult, OOG, scrubber waste, pumping) are surfaced as notices and never estimated; the CSI-1–5 port discount scale and the Sjöfartsverket A–E environmental class are kept strictly separate.
+- **Gothenburg firing defect (fixed):** the APM idle-berth service (500 SEK/h, explicit request only) fired silently whenever pilotage hours were set. It is now gated behind a dedicated idle-berth-hours input; blank input means the service was not ordered.
+- **Contract-vs-published caveat (implemented):** defined at v0.2.4 but not previously carried in the data model. A rule-level caveat field now flows onto every result line as a quality flag; the APMT Gothenburg handling charges (377/535 SEK) carry it.
+- **Sjöfartsverket environmental class default (corrected):** the form defaulted to class A (most favourable); the documented default (Helsingborg reference §10.2) is E (not registered), matching the engine's least-favourable fallback. The UI default is now E, a documented choice — the A-vs-E difference swings the vessel fee by roughly 64,600 SEK for a mid-size vessel and must never be an accident.
+- **Gothenburg ancillary inputs (added):** fresh water (m³ above 50), sludge excess (m³ above 11), scrubber waste (checkbox), and break bulk (1,000-kg units) now have form inputs, gated so blank values never fire the rules.
+- **Tri-port sanity check:** with identical call parameters (first call of month, discharged-only container counts split by size bucket, pilotage hours per LOA class, ordering lead ≥ 4 h, zero storage, valid ISSC, gangway class per vessel), Hamburg and Helsingborg reproduce their reference checkpoints exactly for all four vessels; Gothenburg was computed fresh and decomposed line by line. The known magnitude spread (Gothenburg's published handling roughly a third of Helsingborg's per-unit all-in; Hamburg's handling estimate roughly 4,000 SEK/move) is expected — the check confirms each port's decomposition is line-by-line correct, not that the ports equalize.
 
 ### Resolved Decisions (for reference)
 

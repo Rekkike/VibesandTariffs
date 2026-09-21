@@ -1189,6 +1189,93 @@ fee_rules:
       verified_on: "2026-09-21"
       verified_by: "vibe-session-hamburg"
 
+  - id: hhla_storage_import_45ft
+    fee_family: storage
+    biller: HHLA Container Terminals
+    name: Storage Import 45ft
+    description: "HHLA import storage: free time 3 calendar days after last discharge day; then 92.20 EUR per container/day. Import rates double after 7 chargeable days and triple after 14 (S4 3)."
+    rate_structure:
+      type: progressive_daily
+      days_input: storage_days_import
+      container_count_input: storage_import_45ft_units
+      free_days: 3
+      bands:
+        - min_days: 1
+          max_days: 7
+          rate_per_container_per_day: 92.20
+        - min_days: 8
+          max_days: 14
+          rate_per_container_per_day: 184.40
+        - min_days: 15
+          max_days: null
+          rate_per_container_per_day: 276.60
+    source_reference:
+      document_name: "quay-tariff-2026.pdf"
+      document_url: "docs/sources/germany/hamburg/hhla/quay-tariff-2026.pdf"
+      document_issued: "2025-11-27"
+      page: 6
+      clause: "3"
+      verified_on: "2026-09-21"
+      verified_by: "vibe-session-hamburg"
+  - id: hhla_storage_export_45ft
+    fee_family: storage
+    biller: HHLA Container Terminals
+    name: Storage Export 45ft
+    description: "HHLA export storage: free time 5 days after delivery; then 92.20 EUR per container/day. Export rates double after 9 chargeable days (S4 3)."
+    rate_structure:
+      type: progressive_daily
+      days_input: storage_days_export
+      container_count_input: storage_export_45ft_units
+      free_days: 5
+      bands:
+        - min_days: 1
+          max_days: 9
+          rate_per_container_per_day: 92.20
+        - min_days: 10
+          max_days: null
+          rate_per_container_per_day: 184.40
+    source_reference:
+      document_name: "quay-tariff-2026.pdf"
+      document_url: "docs/sources/germany/hamburg/hhla/quay-tariff-2026.pdf"
+      document_issued: "2025-11-27"
+      page: 6
+      clause: "3"
+      verified_on: "2026-09-21"
+      verified_by: "vibe-session-hamburg"
+  - id: hhla_container_service_gassing_20ft
+    fee_family: cargo_fee
+    biller: HHLA Container Terminals
+    name: Gassing Space 20ft
+    description: "HHLA container services: gassing space 176.90 EUR per container, 20ft (S4 8). Optional call input, default off."
+    rate_structure:
+      type: per_unit
+      unit_type: gassing_20ft_units
+      unit_rate: 176.90
+    source_reference:
+      document_name: "quay-tariff-2026.pdf"
+      document_url: "docs/sources/germany/hamburg/hhla/quay-tariff-2026.pdf"
+      document_issued: "2025-11-27"
+      page: 12
+      clause: "8"
+      verified_on: "2026-09-21"
+      verified_by: "vibe-session-hamburg"
+  - id: hhla_container_service_gassing_40ft
+    fee_family: cargo_fee
+    biller: HHLA Container Terminals
+    name: Gassing Space 40ft
+    description: "HHLA container services: gassing space 240.70 EUR per container, 40ft (S4 8). Optional call input, default off."
+    rate_structure:
+      type: per_unit
+      unit_type: gassing_40ft_units
+      unit_rate: 240.70
+    source_reference:
+      document_name: "quay-tariff-2026.pdf"
+      document_url: "docs/sources/germany/hamburg/hhla/quay-tariff-2026.pdf"
+      document_issued: "2025-11-27"
+      page: 12
+      clause: "8"
+      verified_on: "2026-09-21"
+      verified_by: "vibe-session-hamburg"
   # --- HHLA Container Services (S4 8) - optional call inputs, default off ---
   - id: hhla_container_service_reception
     fee_family: cargo_fee

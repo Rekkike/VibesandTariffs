@@ -638,6 +638,75 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                 />
               </Grid>
             </Grid>
+            {/* ============ GOTHENBURG-SPECIFIC CALL INPUTS ============ */}
+            {/* Audit pass (spec v0.2.23): the four rules added by the Gothenburg
+                repair (fresh water, sludge excess, scrubber waste, break-bulk)
+                plus the gated idle-berth service are optional inputs; blank
+                values never fire the rules (presence-gated in the data). */}
+            {port.metadata.id === 'gothenburg' && (
+              <>
+                <Typography variant="h6" component="h3" className="segment-heading vessel-call-heading">
+                  Gothenburg Ancillary Services (optional)
+                </Typography>
+                <Grid container spacing={2}>
+                  <Grid item xs={6}>
+                    <TextField
+                      label="Fresh Water Above 50 m³ (m³)"
+                      type="number"
+                      value={state.call.fresh_water_m3 || ''}
+                      onChange={(e) => handleCallChange('fresh_water_m3', parseFloat(e.target.value) || undefined)}
+                      fullWidth
+                      InputLabelProps={{ shrink: true }}
+                      helperText="0 SEK up to 50 m³; 50 SEK/m³ above; blank = not supplied"
+                    />
+                  </Grid>
+                  <Grid item xs={6}>
+                    <TextField
+                      label="Sludge Exceeding 11 m³ (m³)"
+                      type="number"
+                      value={state.call.sludge_extra_m3 || ''}
+                      onChange={(e) => handleCallChange('sludge_extra_m3', parseFloat(e.target.value) || undefined)}
+                      fullWidth
+                      InputLabelProps={{ shrink: true }}
+                      helperText="2,400 SEK/m³ above the included volume; blank = none"
+                    />
+                  </Grid>
+                  <Grid item xs={6}>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={state.call.scrubber_waste || false}
+                          onChange={(e) => handleCallChange('scrubber_waste', e.target.checked)}
+                        />
+                      }
+                      label="Scrubber waste disposal (800 SEK admin; actual cost separate)"
+                    />
+                  </Grid>
+                  <Grid item xs={6}>
+                    <TextField
+                      label="Break Bulk (1,000 kg units)"
+                      type="number"
+                      value={state.call.break_bulk_1000kg || ''}
+                      onChange={(e) => handleCallChange('break_bulk_1000kg', parseFloat(e.target.value) || undefined)}
+                      fullWidth
+                      InputLabelProps={{ shrink: true }}
+                      helperText="54 SEK per 1,000 kg; blank = none"
+                    />
+                  </Grid>
+                  <Grid item xs={6}>
+                    <TextField
+                      label="Idle Berth Service Hours"
+                      type="number"
+                      value={state.call.idle_berth_hours || ''}
+                      onChange={(e) => handleCallChange('idle_berth_hours', parseFloat(e.target.value) || undefined)}
+                      fullWidth
+                      InputLabelProps={{ shrink: true }}
+                      helperText="500 SEK/hour, explicit request only; blank = not ordered"
+                    />
+                  </Grid>
+                </Grid>
+              </>
+            )}
             {/* ============ HAMBURG-SPECIFIC CALL INPUTS ============ */}
             {/* Port-specific parameters (spec v0.2.20): fee families and inputs
                 differ between ports; these fields appear only on the Hamburg
@@ -1450,7 +1519,12 @@ const defaultCall = (portId: string): CallInput => ({
   flag_state: 'EU',
   vessel_type: 'container',
   esi_score: 40,
-  csi_class: 'A',
+  // Default E (not registered): the least favourable Sjöfartsverket class and
+  // the documented conservative default (Helsingborg reference §10.2; engine
+  // fallback is also E). A user-set class overrides; this is a documented
+  // default, not an accident — class A vs E swings the vessel fee by ~64,600
+  // SEK for a mid-size vessel.
+  csi_class: 'E',
   fossil_free_fuel_percentage: 0,
   ops_usage: false,
   lay_up_days: 0,
