@@ -1027,6 +1027,25 @@ describe('Panamax Verification - Gothenburg 2026', () => {
     expect(hatchCoverFee?.amount).toBe(0);
   });
 
+  it('Hatch cover should be 20 * 3111 = 62220 SEK when hatch_cover_count = 20', () => {
+    const inputWithHatchCovers = createTestInput(
+      { gt: 55000, nt: 30250 },
+      { 
+        ...panamaxInput.call,
+        hatch_cover_count: 20,
+        port_id: 'gothenburg'
+      }
+    );
+    const result = calculatePortCallCost(gothenburgPort, inputWithHatchCovers);
+    
+    const hatchCoverFee = result.billers
+      .find(b => b.biller === 'APM Terminals Gothenburg')
+      ?.fees.find(f => f.fee_family === 'hatch_cover');
+    
+    expect(hatchCoverFee).toBeDefined();
+    expect(hatchCoverFee?.amount).toBe(20 * 3111);
+  });
+
   it('Gearbox handling should be 0 SEK when no gearboxes are handled', () => {
     const result = calculatePortCallCost(gothenburgPort, panamaxInput);
     
@@ -1036,5 +1055,24 @@ describe('Panamax Verification - Gothenburg 2026', () => {
     
     expect(gearboxFee).toBeDefined();
     expect(gearboxFee?.amount).toBe(0);
+  });
+
+  it('Gearbox handling should be 25 * 1036 = 25900 SEK when gearbox_count = 25', () => {
+    const inputWithGearboxes = createTestInput(
+      { gt: 55000, nt: 30250 },
+      { 
+        ...panamaxInput.call,
+        gearbox_count: 25,
+        port_id: 'gothenburg'
+      }
+    );
+    const result = calculatePortCallCost(gothenburgPort, inputWithGearboxes);
+    
+    const gearboxFee = result.billers
+      .find(b => b.biller === 'APM Terminals Gothenburg')
+      ?.fees.find(f => f.fee_family === 'gearbox_handling');
+    
+    expect(gearboxFee).toBeDefined();
+    expect(gearboxFee?.amount).toBe(25 * 1036);
   });
 });

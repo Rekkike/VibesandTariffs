@@ -274,6 +274,12 @@ export function evaluateFeeRule(
         case 'loa_m':
           unitCount = vessel.loa_m ?? 0;
           break;
+        case 'hatch_cover_count':
+          unitCount = call.hatch_cover_count ?? 0;
+          break;
+        case 'gearbox_count':
+          unitCount = call.gearbox_count ?? 0;
+          break;
         case 'draft_m':
           unitCount = vessel.draft_m ?? 0;
           break;

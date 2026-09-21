@@ -104,10 +104,16 @@ const App: React.FC = () => {
       reefer_units: 100,
       oog_units: 10,
       dangerous_goods_units: 20,
+      hatch_cover_count: 0,
+      gearbox_count: 0,
       pilotage_required: true,
       pilotage_hours: 4,
       pilotage_extra_pilot: false,
-      pilotage_ordering_lead_time_hours: 2
+      pilotage_ordering_lead_time_hours: 2,
+      ops_kwh_demand: 0,
+      ops_connected_hours: 0,
+      ops_electricity_price_per_kwh: 0,
+      ops_peak_demand_kw: 0
     },
     result: null,
     isLoading: false,
@@ -458,6 +464,51 @@ const App: React.FC = () => {
                   label="OPS Usage"
                 />
               </Grid>
+              {state.call.ops_usage && (
+                <>
+                  <Grid item xs={6}>
+                    <TextField
+                      label="OPS kWh Demand"
+                      type="number"
+                      value={state.call.ops_kwh_demand || ''}
+                      onChange={(e) => handleCallChange('ops_kwh_demand', parseFloat(e.target.value) || 0)}
+                      fullWidth
+                      InputLabelProps={{ shrink: true }}
+                    />
+                  </Grid>
+                  <Grid item xs={6}>
+                    <TextField
+                      label="OPS Connected Hours"
+                      type="number"
+                      value={state.call.ops_connected_hours || ''}
+                      onChange={(e) => handleCallChange('ops_connected_hours', parseFloat(e.target.value) || 0)}
+                      fullWidth
+                      InputLabelProps={{ shrink: true }}
+                    />
+                  </Grid>
+                  <Grid item xs={6}>
+                    <TextField
+                      label="Electricity Price (SEK/kWh)"
+                      type="number"
+                      value={state.call.ops_electricity_price_per_kwh || ''}
+                      onChange={(e) => handleCallChange('ops_electricity_price_per_kwh', parseFloat(e.target.value) || 0)}
+                      fullWidth
+                      InputLabelProps={{ shrink: true }}
+                      helperText="No published container-terminal OPS rate"
+                    />
+                  </Grid>
+                  <Grid item xs={6}>
+                    <TextField
+                      label="Peak Demand (kW)"
+                      type="number"
+                      value={state.call.ops_peak_demand_kw || ''}
+                      onChange={(e) => handleCallChange('ops_peak_demand_kw', parseFloat(e.target.value) || 0)}
+                      fullWidth
+                      InputLabelProps={{ shrink: true }}
+                    />
+                  </Grid>
+                </>
+              )}
               <Grid item xs={6}>
                 <FormControlLabel
                   control={
@@ -560,6 +611,26 @@ const App: React.FC = () => {
                   type="number"
                   value={state.call.dangerous_goods_units || ''}
                   onChange={(e) => handleCallChange('dangerous_goods_units', parseInt(e.target.value) || undefined)}
+                  fullWidth
+                  InputLabelProps={{ shrink: true }}
+                />
+              </Grid>
+              <Grid item xs={6}>
+                <TextField
+                  label="Hatch Cover Count"
+                  type="number"
+                  value={state.call.hatch_cover_count || ''}
+                  onChange={(e) => handleCallChange('hatch_cover_count', parseInt(e.target.value) || 0)}
+                  fullWidth
+                  InputLabelProps={{ shrink: true }}
+                />
+              </Grid>
+              <Grid item xs={6}>
+                <TextField
+                  label="Gearbox Count"
+                  type="number"
+                  value={state.call.gearbox_count || ''}
+                  onChange={(e) => handleCallChange('gearbox_count', parseInt(e.target.value) || 0)}
                   fullWidth
                   InputLabelProps={{ shrink: true }}
                 />
