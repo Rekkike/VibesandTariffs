@@ -15,8 +15,11 @@ import {
   Table,
   TableBody,
   TableCell,
+  TableHead,
   TableContainer,
   TableRow,
+  Tabs,
+  Tab,
   Collapse,
   IconButton,
   ToggleButton,
@@ -42,8 +45,21 @@ import {
   calculatePortCallCost
 } from '@port-cost/core';
 
-// Import the port data from canonical source (converted to JSON at build time)
-import gothenburgData from './data/gothenburg_2026.json';
+// Import the port registry from canonical sources (converted to JSON at build time).
+// The registry contains every port loaded from core/data/*.yaml (spec v0.2.17 section 4.3.1).
+import portsRegistry from './data/ports.json';
+
+// Loaded ports; adding a port is a data edit (drop a YAML in core/data/), never a code change
+const LOADED_PORTS: PortDefinition[] = ((portsRegistry as any).ports ?? []).filter(
+  (p: any) => p && p.fee_rules && Array.isArray(p.fee_rules)
+);
+
+// Navigation pages per spec v0.2.17 section 4.3.1: per-port workspaces plus a
+// distinct comparison screen. Per-port separation is required as soon as a
+// second port loads; the selector is always present for forward compatibility.
+type Page =
+  | { kind: 'port'; portId: string }
+  | { kind: 'comparison' };
 
 // Segment metadata for the toggleable pages
 // Internal keys (CostSegment) and all logic are unchanged; labels are display-only (spec v0.2.16)
@@ -86,75 +102,36 @@ const VESSEL_PRESETS = {
   'ultra-large': { gt: 215000, nt: 118250, loa_m: 400, beam_m: 60, draft_m: 16, teu_capacity: 20000 }
 };
 
-const App: React.FC = () => {
-  // Load port data synchronously from JSON (converted at build time)
-  // Validate port data has required fields
-  const port: PortDefinition | null = (() => {
-    try {
-      if (!gothenburgData || !gothenburgData.fee_rules || !Array.isArray(gothenburgData.fee_rules)) {
-        console.error(`Invalid port data: fee_rules is ${typeof gothenburgData?.fee_rules}`);
-        return null;
-      }
-      return gothenburgData as PortDefinition;
-    } catch (err) {
-      console.error('Port data validation failed:', err);
-      return null;
-    }
-  })();
+interface PortWorkspaceProps {
+  port: PortDefinition;
+  vessel: VesselInput;
+  call: CallInput;
+  onVesselChange: (vessel: VesselInput) => void;
+  onCallChange: (call: CallInput) => void;
+}
 
+const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVesselChange, onCallChange }) => {
   // Which result page(s) are visible - display filter only, never affects computation
   const [visibleSegments, setVisibleSegments] = useState<CostSegment[]>([
     'vessel_call',
     'energy_at_berth'
   ]);
 
-  // App state
+  // Local workspace state for display only (expansion, loading)
   const [state, setState] = useState<AppState>({
-    vessel: {
-      gt: 55000,
-      nt: 30250,
-      loa_m: 290,
-      beam_m: 32,
-      draft_m: 12,
-      teu_capacity: 4000
-    },
-    call: {
-      port_id: 'gothenburg',
-      date: new Date().toISOString().split('T')[0],
-      containers_loaded_le20ft: 500,
-      containers_loaded_gt20ft: 500,
-      containers_discharged_le20ft: 500,
-      containers_discharged_gt20ft: 500,
-      calls_this_month: 1,
-      flag_state: 'EU',
-      vessel_type: 'container',
-      esi_score: 40,
-      csi_class: 'A',
-      fossil_free_fuel_percentage: 0,
-      ops_usage: false,
-      lay_up_days: 0,
-      storage_days_export: 5,
-      storage_days_import: 3,
-      reefer_units: 100,
-      oog_units: 10,
-      dangerous_goods_units: 20,
-      hatch_cover_count: 0,
-      gearbox_count: 0,
-      pilotage_required: true,
-      pilotage_hours: 4,
-      pilotage_extra_pilot: false,
-      pilotage_ordering_lead_time_hours: 2,
-      ops_kwh_demand: 0,
-      ops_connected_hours: 0,
-      ops_electricity_price_per_kwh: 0,
-      ops_peak_demand_kw: 0
-    },
+    vessel,
+    call,
     result: null,
     isLoading: false,
     error: null,
     expandedBillers: new Set(),
     expandedFees: new Set()
   });
+
+  // Keep workspace state synchronized with shared (parent) inputs
+  useEffect(() => {
+    setState(prev => ({ ...prev, vessel, call }));
+  }, [vessel, call]);
 
   // Calculate costs when inputs change
   useEffect(() => {
@@ -168,7 +145,7 @@ const App: React.FC = () => {
       try {
         const input: CostCalculationInput = {
           vessel: state.vessel,
-          call: state.call
+          call: { ...state.call, port_id: port.metadata.id }
         };
 
         const result = calculatePortCallCost(port, input);
@@ -189,34 +166,16 @@ const App: React.FC = () => {
   }, [state.vessel, state.call, port]);
 
   const handleVesselChange = (field: keyof VesselInput, value: number | undefined) => {
-    setState(prev => ({
-      ...prev,
-      vessel: {
-        ...prev.vessel,
-        [field]: value
-      }
-    }));
+    onVesselChange({ ...vessel, [field]: value });
   };
 
   const handleCallChange = (field: keyof CallInput, value: any) => {
-    setState(prev => ({
-      ...prev,
-      call: {
-        ...prev.call,
-        [field]: value
-      }
-    }));
+    onCallChange({ ...call, [field]: value });
   };
 
   const applyPreset = (preset: keyof typeof VESSEL_PRESETS) => {
     const presetData = VESSEL_PRESETS[preset];
-    setState(prev => ({
-      ...prev,
-      vessel: {
-        ...prev.vessel,
-        ...presetData
-      }
-    }));
+    onVesselChange({ ...vessel, ...presetData });
   };
 
   const toggleBiller = (biller: string) => {
@@ -246,7 +205,7 @@ const App: React.FC = () => {
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('sv-SE', {
       style: 'currency',
-      currency: 'SEK',
+      currency: port.metadata.currency,
       minimumFractionDigits: 0,
       maximumFractionDigits: 0
     }).format(amount);
@@ -285,17 +244,7 @@ const App: React.FC = () => {
   }
 
   return (
-    <Box className="container">
-      {/* Header */}
-      <Paper className="header" elevation={3}>
-        <Typography variant="h1" component="h1">
-          Port Call Cost Analyzer
-        </Typography>
-        <Typography variant="subtitle1">
-          Gothenburg 2026 Pilot
-        </Typography>
-      </Paper>
-
+    <>
       {/* Persistent total strip - always visible regardless of toggled page */}
       <Paper className="total-strip" elevation={2}>
         <Box className="total-strip-main">
@@ -1042,6 +991,426 @@ const App: React.FC = () => {
           </Paper>
         </Grid>
       </Grid>
+    </>
+  );
+};
+
+// Shared form defaults (spec v0.2.17 section 4.3.1: parameters entered once,
+// mapped to each port's rules in the comparison view)
+const DEFAULT_VESSEL: VesselInput = {
+  gt: 55000,
+  nt: 30250,
+  loa_m: 290,
+  beam_m: 32,
+  draft_m: 12,
+  teu_capacity: 4000
+};
+
+const defaultCall = (portId: string): CallInput => ({
+  port_id: portId,
+  date: new Date().toISOString().split('T')[0],
+  containers_loaded_le20ft: 500,
+  containers_loaded_gt20ft: 500,
+  containers_discharged_le20ft: 500,
+  containers_discharged_gt20ft: 500,
+  calls_this_month: 1,
+  flag_state: 'EU',
+  vessel_type: 'container',
+  esi_score: 40,
+  csi_class: 'A',
+  fossil_free_fuel_percentage: 0,
+  ops_usage: false,
+  lay_up_days: 0,
+  storage_days_export: 5,
+  storage_days_import: 3,
+  reefer_units: 100,
+  oog_units: 10,
+  dangerous_goods_units: 20,
+  hatch_cover_count: 0,
+  gearbox_count: 0,
+  pilotage_required: true,
+  pilotage_hours: 4,
+  pilotage_extra_pilot: false,
+  pilotage_ordering_lead_time_hours: 2,
+  ops_kwh_demand: 0,
+  ops_connected_hours: 0,
+  ops_electricity_price_per_kwh: 0,
+  ops_peak_demand_kw: 0
+});
+
+// Port display name with tariff validity year for headers and tabs
+const portLabel = (port: PortDefinition): string => {
+  const year = (port.metadata.validity_start || '').slice(0, 4);
+  return year ? `${port.metadata.name} ${year}` : port.metadata.name;
+};
+
+interface ComparisonViewProps {
+  ports: PortDefinition[];
+  vessel: VesselInput;
+  call: CallInput;
+  selectedPortIds: string[];
+  onSelectionChange: (portIds: string[]) => void;
+}
+
+// The comparison screen (spec v0.2.17 section 4.3.1): a presentation over
+// multiple single-port computations - same vessel, same call, one column per
+// selected port. Rows group by cost segment and fee family (economic
+// function, never biller name). Absent functions show "not charged" rather
+// than hiding. List-price basis by default; quality flags carried through.
+const ComparisonView: React.FC<ComparisonViewProps> = ({
+  ports,
+  vessel,
+  call,
+  selectedPortIds,
+  onSelectionChange
+}) => {
+  const selectedPorts = ports.filter(p => selectedPortIds.includes(p.metadata.id));
+
+  // One calculation per selected port - the same engine and data as the
+  // per-port pages; no separate calculation path.
+  const portResults = useMemo(() => {
+    return selectedPorts.map(port => {
+      try {
+        const result = calculatePortCallCost(port, { vessel, call: { ...call, port_id: port.metadata.id } });
+        return { port, result, error: null as string | null };
+      } catch (err) {
+        return { port, result: null, error: `Calculation failed: ${err}` };
+      }
+    });
+  }, [selectedPorts, vessel, call]);
+
+  const formatCurrency = (amount: number, currency: string) =>
+    new Intl.NumberFormat('sv-SE', {
+      style: 'currency',
+      currency,
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(amount);
+
+  // Union of fee families actually charged across the selected ports, in
+  // segment order, so a function absent at one port still shows "not charged"
+  const rowsBySegment = useMemo(() => {
+    const familyTotals = new Map<string, Map<string, { amount: number; currency: string; flags: number }>>();
+    for (const { result } of portResults) {
+      if (!result) continue;
+      for (const biller of result.billers) {
+        for (const fee of biller.fees) {
+          if (!familyTotals.has(fee.fee_family)) {
+            familyTotals.set(fee.fee_family, new Map());
+          }
+          const perPort = familyTotals.get(fee.fee_family)!;
+          const entry = perPort.get(result.port_id) || { amount: 0, currency: fee.currency, flags: 0 };
+          entry.amount += fee.amount;
+          entry.flags += fee.quality_flags.length;
+          perPort.set(result.port_id, entry);
+        }
+      }
+    }
+    return SEGMENTS.map(segment => ({
+      segment,
+      families: Array.from(familyTotals.entries())
+        .filter(([family]) => (FEE_FAMILY_TO_SEGMENT[family] || 'vessel_call') === segment.id)
+        .map(([family, perPort]) => ({ family, perPort }))
+    })).filter(group => group.families.length > 0);
+  }, [portResults]);
+
+  const segmentSubtotals = useMemo(() => {
+    return portResults.map(({ port, result }) => {
+      const totals: Record<CostSegment, number> = {
+        vessel_call: 0,
+        energy_at_berth: 0,
+        terminal_and_yard: 0
+      };
+      if (result) {
+        for (const biller of result.billers) {
+          for (const fee of biller.fees) {
+            const segment = FEE_FAMILY_TO_SEGMENT[fee.fee_family] || 'vessel_call';
+            totals[segment] += fee.amount;
+          }
+        }
+      }
+      return { portId: port.metadata.id, totals };
+    });
+  }, [portResults]);
+
+  const cheapestTotalPortId = useMemo(() => {
+    const valid = portResults.filter(pr => pr.result);
+    if (valid.length < 2) return null;
+    let best: string | null = null;
+    let bestAmount = Infinity;
+    for (const { result } of valid) {
+      if (result!.total < bestAmount) {
+        bestAmount = result!.total;
+        best = result!.port_id;
+      }
+    }
+    return best;
+  }, [portResults]);
+
+  const mostExpensiveTotalPortId = useMemo(() => {
+    const valid = portResults.filter(pr => pr.result);
+    if (valid.length < 2) return null;
+    let worst: string | null = null;
+    let worstAmount = -Infinity;
+    for (const { result } of valid) {
+      if (result!.total > worstAmount) {
+        worstAmount = result!.total;
+        worst = result!.port_id;
+      }
+    }
+    return worst;
+  }, [portResults]);
+
+  const portColumn = (portId: string) => portResults.find(pr => pr.port.metadata.id === portId);
+
+  const amountCell = (entry: { amount: number; currency: string; flags: number } | undefined, fallbackCurrency: string) => {
+    if (!entry) {
+      // Explicit absence: never hidden, so an absence of cost is not
+      // mistaken for missing data (spec 4.3.1 comparability rules)
+      return <span className="comparison-not-charged">not charged</span>;
+    }
+    return (
+      <span>
+        {formatCurrency(entry.amount, entry.currency || fallbackCurrency)}
+        {entry.flags > 0 && (
+          <span className="status-badge status-warning" style={{ marginLeft: '6px' }}>
+            {entry.flags} flag{entry.flags > 1 ? 's' : ''}
+          </span>
+        )}
+      </span>
+    );
+  };
+
+  return (
+    <Box className="container">
+      <Paper className="header" elevation={3}>
+        <Typography variant="h1" component="h1">
+          Port Comparison
+        </Typography>
+        <Typography variant="subtitle1">
+          Same vessel, same call - one column per selected port. List-price (published tariff) basis.
+        </Typography>
+      </Paper>
+
+      <Paper className="comparison-section" elevation={2}>
+        <Typography variant="h5" component="h2">Ports to compare</Typography>
+        <Box className="comparison-port-selection">
+          {ports.map(port => (
+            <FormControlLabel
+              key={port.metadata.id}
+              control={
+                <Checkbox
+                  checked={selectedPortIds.includes(port.metadata.id)}
+                  onChange={(e) => {
+                    if (e.target.checked) {
+                      onSelectionChange([...selectedPortIds, port.metadata.id]);
+                    } else {
+                      onSelectionChange(selectedPortIds.filter(id => id !== port.metadata.id));
+                    }
+                  }}
+                />
+              }
+              label={portLabel(port)}
+            />
+          ))}
+        </Box>
+        {selectedPorts.length === 0 && (
+          <Typography color="error">Select at least one port to compare.</Typography>
+        )}
+      </Paper>
+
+      {selectedPorts.length > 0 && (
+        <Paper className="comparison-section" elevation={2}>
+          <Typography variant="body2" className="comparison-basis">
+            Comparison basis: reference tariff rates (list prices). Rows group by economic function
+            (fee family), never by biller name, so ports that charge the same function differently
+            still line up. Data-quality flags from each port's computation are carried through.
+          </Typography>
+
+          <TableContainer className="comparison-table-container">
+            <Table size="small" className="comparison-table">
+              <TableHead>
+                <TableRow>
+                  <TableCell>Cost item</TableCell>
+                  {portResults.map(({ port, result }) => (
+                    <TableCell key={port.metadata.id} align="right">
+                      <span className="comparison-port-name">{portLabel(port)}</span>
+                      {result && cheapestTotalPortId === port.metadata.id && (
+                        <span className="comparison-marker comparison-cheapest">cheapest</span>
+                      )}
+                      {result && mostExpensiveTotalPortId === port.metadata.id && (
+                        <span className="comparison-marker comparison-most-expensive">most expensive</span>
+                      )}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {rowsBySegment.map(({ segment, families }) => (
+                  <React.Fragment key={segment.id}>
+                    <TableRow className="comparison-segment-row">
+                      <TableCell>
+                        <strong>{segment.label}</strong>
+                      </TableCell>
+                      {portResults.map(({ port, result }) => {
+                        const subtotals = segmentSubtotals.find(s => s.portId === port.metadata.id)!;
+                        return (
+                          <TableCell key={port.metadata.id} align="right" className="comparison-subtotal">
+                            {result
+                              ? formatCurrency(subtotals.totals[segment.id], result.currency)
+                              : <span className="comparison-error">error</span>}
+                          </TableCell>
+                        );
+                      })}
+                    </TableRow>
+                    {families.map(({ family, perPort }) => (
+                      <TableRow key={`${segment.id}-${family}`}>
+                        <TableCell className="comparison-family-cell">
+                          {family.replace(/_/g, ' ')}
+                        </TableCell>
+                        {portResults.map(({ port }) => {
+                          const entry = perPort.get(port.metadata.id);
+                          return (
+                            <TableCell key={port.metadata.id} align="right" className="amount">
+                              {amountCell(entry, port.metadata.currency)}
+                            </TableCell>
+                          );
+                        })}
+                      </TableRow>
+                    ))}
+                  </React.Fragment>
+                ))}
+                <TableRow className="comparison-total-row">
+                  <TableCell>
+                    <strong>Grand Total</strong>
+                  </TableCell>
+                  {portResults.map(({ port, result }) => (
+                    <TableCell key={port.metadata.id} align="right" className="comparison-subtotal">
+                      {result
+                        ? formatCurrency(result.total, result.currency)
+                        : <span className="comparison-error">error</span>}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              </TableBody>
+            </Table>
+          </TableContainer>
+
+          {portResults.some(pr => pr.error) && (
+            <Typography color="error" sx={{ mt: 2 }}>
+              {portResults.filter(pr => pr.error).map(pr => `${pr.port.metadata.name}: ${pr.error}`).join('; ')}
+            </Typography>
+          )}
+
+          {portResults.some(pr => pr.result && pr.result.quality_flags.length > 0) && (
+            <Box className="quality-flags" sx={{ mt: 2 }}>
+              <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
+                Quality Flags (carried through from per-port computations)
+              </Typography>
+              <ul>
+                {portResults.map(pr =>
+                  (pr.result?.quality_flags ?? []).map((flag: QualityFlag, index: number) => (
+                    <li key={`${pr.port.metadata.id}-${index}`}>
+                      <strong>{pr.port.metadata.name}:</strong>{' '}
+                      <span style={{
+                        color: flag.severity === 'error' ? '#dc3545' : flag.severity === 'warning' ? '#856404' : '#0c5460'
+                      }}>
+                        [{flag.severity.toUpperCase()}] {flag.description}
+                      </span>
+                    </li>
+                  ))
+                )}
+              </ul>
+            </Box>
+          )}
+        </Paper>
+      )}
+    </Box>
+  );
+};
+
+// Top-level navigation (spec v0.2.17 section 4.3.1): persistent port selector
+// over per-port workspaces plus a distinct comparison screen. Vessel and call
+// parameters are shared across pages so the comparison computes the same call.
+const App: React.FC = () => {
+  const activePort = LOADED_PORTS[0];
+
+  const [page, setPage] = useState<Page>(
+    activePort ? { kind: 'port', portId: activePort.metadata.id } : { kind: 'comparison' }
+  );
+  const [vessel, setVessel] = useState<VesselInput>(DEFAULT_VESSEL);
+  const [call, setCall] = useState<CallInput>(() => defaultCall(activePort ? activePort.metadata.id : ''));
+  const [comparisonSelection, setComparisonSelection] = useState<string[]>(
+    LOADED_PORTS.map(p => p.metadata.id)
+  );
+
+  if (LOADED_PORTS.length === 0) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh">
+        <Typography variant="h6">No port data loaded.</Typography>
+      </Box>
+    );
+  }
+
+  const currentPort =
+    page.kind === 'port'
+      ? LOADED_PORTS.find(p => p.metadata.id === page.portId) ?? activePort
+      : undefined;
+
+  const tabIndex = page.kind === 'comparison' ? LOADED_PORTS.length : LOADED_PORTS.findIndex(
+    p => p.metadata.id === page.portId
+  );
+
+  return (
+    <Box>
+      <Paper className="header" elevation={3}>
+        <Typography variant="h1" component="h1">
+          Port Call Cost Analyzer
+        </Typography>
+        <Typography variant="subtitle1">
+          Ports are data, not code - every figure traceable to a source tariff
+        </Typography>
+      </Paper>
+
+      {/* Persistent port selector: one tab per loaded port, plus the
+          comparison screen */}
+      <Paper className="port-nav" elevation={2}>
+        <Tabs
+          value={tabIndex === -1 ? 0 : tabIndex}
+          onChange={(_, newValue: number) => {
+            if (newValue === LOADED_PORTS.length) {
+              setPage({ kind: 'comparison' });
+            } else {
+              setPage({ kind: 'port', portId: LOADED_PORTS[newValue].metadata.id });
+            }
+          }}
+          variant="scrollable"
+          scrollButtons="auto"
+        >
+          {LOADED_PORTS.map(port => (
+            <Tab key={port.metadata.id} label={portLabel(port)} />
+          ))}
+          <Tab label="Compare Ports" />
+        </Tabs>
+      </Paper>
+
+      {page.kind === 'comparison' ? (
+        <ComparisonView
+          ports={LOADED_PORTS}
+          vessel={vessel}
+          call={call}
+          selectedPortIds={comparisonSelection}
+          onSelectionChange={setComparisonSelection}
+        />
+      ) : currentPort ? (
+        <PortWorkspace
+          port={currentPort}
+          vessel={vessel}
+          call={call}
+          onVesselChange={setVessel}
+          onCallChange={setCall}
+        />
+      ) : null}
     </Box>
   );
 };
