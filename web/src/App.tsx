@@ -108,21 +108,37 @@ const App: React.FC = () => {
 
   // Load port data on mount
   useEffect(() => {
-    try {
-      // Load the YAML file using the core loader
-      // In browser, we need to parse the YAML text directly since we can't use fs
-      import('js-yaml').then(yaml => {
+    const loadPortData = async () => {
+      try {
+        // Load the YAML file using the core loader
+        // In browser, we need to parse the YAML text directly since we can't use fs
+        const yaml = await import('js-yaml');
         const portData = yaml.load(gothenburgYamlText) as PortDefinition;
+        
+        // Validate port data has required fields
+        if (!portData || !portData.fee_rules || !Array.isArray(portData.fee_rules)) {
+          throw new Error(`Invalid port data: fee_rules is ${typeof portData?.fee_rules}`);
+        }
+        
         setPort(portData);
-      });
-    } catch (err) {
-      console.error('Failed to load port data:', err);
-    }
+      } catch (err) {
+        console.error('Failed to load port data:', err);
+        setState(prev => ({ ...prev, error: `Port data failed to load: ${err}` }));
+      }
+    };
+    
+    loadPortData();
   }, []);
 
   // Calculate costs when inputs change
   useEffect(() => {
-    if (!port) return;
+    if (!port) {
+      // Port data failed to load, don't attempt calculation
+      if (state.error === null) {
+        setState(prev => ({ ...prev, error: 'Port data not loaded' }));
+      }
+      return;
+    }
     
     const calculate = async () => {
       setState(prev => ({ ...prev, isLoading: true, error: null }));

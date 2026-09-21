@@ -18,13 +18,13 @@ jobs:
         with:
           node-version: 20
       
+      # Copy canonical data to web BEFORE installing dependencies
+      - name: Copy canonical data to web
+        run: mkdir -p web/src/data && cp core/data/gothenburg_2026.yaml web/src/data/gothenburg_2026.yaml
+      
       # Install and build core module
       - name: Install and build core
         run: cd core && npm install && npm run build
-      
-      # Copy canonical data to web for CRA build
-      - name: Copy canonical data to web
-        run: mkdir -p web/src/data && cp core/data/gothenburg_2026.yaml web/src/data/gothenburg_2026.yaml
       
       # Install web dependencies
       - name: Install web dependencies
