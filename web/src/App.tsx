@@ -66,10 +66,13 @@ interface LibraryVessel {
   flag: string;
   built: number;
   gt: number;
+  nt: number;
   loa_m: number;
   beam_m: number;
+  draught_m: number;
   teu_capacity: number;
   class_note: string;
+  estimated_fields?: string[];
   source_note: string;
 }
 const LOADED_VESSELS: LibraryVessel[] = (vesselLibrary as any).vessels ?? [];
@@ -185,7 +188,15 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.vessel, state.call, port]);
 
+  // Which form fields currently hold values pre-filled from a library entry
+  // whose data is marked estimated (spec v0.2.19: estimated values are never
+  // mistaken for registry data — the field shows an "est." badge)
+  const [estimatedFields, setEstimatedFields] = useState<string[]>([]);
+
   const handleVesselChange = (field: keyof VesselInput, value: number | undefined) => {
+    // Manual edits clear the estimate badge for that field: the user has taken
+    // ownership of the value
+    setEstimatedFields(prev => prev.filter(f => f !== field));
     onVesselChange({ ...vessel, [field]: value });
   };
 
@@ -209,14 +220,17 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
       name: selected.name,
       imo: selected.imo,
       gt: selected.gt,
+      nt: selected.nt,
       loa_m: selected.loa_m,
       beam_m: selected.beam_m,
+      draft_m: selected.draught_m,
       teu_capacity: selected.teu_capacity
     });
     onCallChange({
       ...call,
       vessel_type: selected.vessel_type
     });
+    setEstimatedFields(selected.estimated_fields ?? []);
   };
 
   const toggleBiller = (biller: string) => {
@@ -376,13 +390,17 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
               </Grid>
               <Grid item xs={6}>
                 <TextField
-                  label="Net Tonnage (NT)"
+                  label={estimatedFields.includes('nt') ? 'Net Tonnage (NT) — est.' : 'Net Tonnage (NT)'}
                   type="number"
                   value={state.vessel.nt || ''}
                   onChange={(e) => handleVesselChange('nt', parseFloat(e.target.value) || undefined)}
                   fullWidth
                   InputLabelProps={{ shrink: true }}
-                  helperText={!state.vessel.nt ? 'Will be estimated as 0.55 × GT' : ''}
+                  helperText={
+                    estimatedFields.includes('nt')
+                      ? 'Estimated value from the vessel library (see source note) — editable'
+                      : !state.vessel.nt ? 'Will be estimated as 0.55 × GT' : ''
+                  }
                 />
               </Grid>
               <Grid item xs={6}>
@@ -407,12 +425,17 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
               </Grid>
               <Grid item xs={6}>
                 <TextField
-                  label="Draft (m)"
+                  label={estimatedFields.includes('draught_m') ? 'Draft (m) — est.' : 'Draft (m)'}
                   type="number"
                   value={state.vessel.draft_m || ''}
                   onChange={(e) => handleVesselChange('draft_m', parseFloat(e.target.value) || undefined)}
                   fullWidth
                   InputLabelProps={{ shrink: true }}
+                  helperText={
+                    estimatedFields.includes('draught_m')
+                      ? 'Estimated value from the vessel library (see source note) — editable'
+                      : ''
+                  }
                 />
               </Grid>
               <Grid item xs={6}>

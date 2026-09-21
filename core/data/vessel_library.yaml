@@ -4,17 +4,22 @@
 # Every entry carries a source_note for provenance.
 #
 # Schema:
-#   name:          vessel name (display + match key)
-#   imo:           IMO number (match key)
-#   vessel_type:   e.g. container, tanker
-#   flag:          flag state (display)
-#   built:         build year
-#   gt:            gross tonnage
-#   loa_m:         length overall in meters
-#   beam_m:        beam in meters
-#   teu_capacity:  container capacity in TEU
-#   class_note:    free-text size-class note
-#   source_note:   provenance — where the particulars were verified
+#   name:            vessel name (display + match key)
+#   imo:             IMO number (match key)
+#   vessel_type:     e.g. container, tanker
+#   flag:            flag state (display)
+#   built:           build year
+#   gt:              gross tonnage
+#   nt:              net tonnage (drives Sjöfartsverket fee classes; estimated
+#                    entries are flagged, see estimated_fields and source_note)
+#   loa_m:           length overall in meters
+#   beam_m:          beam in meters
+#   draught_m:       draught in meters
+#   teu_capacity:    container capacity in TEU
+#   class_note:      free-text size-class note
+#   estimated_fields: list of fields whose values are estimates rather than
+#                    registry-confirmed data (drives the form's "est." badge)
+#   source_note:     provenance — where the particulars were verified
 
 vessels:
   - name: HELGAFELL
@@ -23,11 +28,14 @@ vessels:
     flag: Faroe Islands
     built: 2005
     gt: 8890
+    nt: 3200
     loa_m: 137
     beam_m: 22
+    draught_m: 8.51
     teu_capacity: 909
     class_note: "Feeder (North Atlantic / North Europe feeder routes)"
-    source_note: "Particulars cross-checked via VesselFinder (IMO 9306017) and Flexport Atlas vessel registry, 2026-09-21."
+    estimated_fields: [nt]
+    source_note: "Particulars cross-checked via VesselFinder (IMO 9306017) and Flexport Atlas vessel registry, 2026-09-21. Draught confirmed via owner fleet data. NT estimated (~36 percent of GT); fee class estimate: Class 4 (3,000+ NT) — estimate sits mid-class, low sensitivity."
 
   - name: VISTULA MAERSK
     imo: "9775737"
@@ -35,11 +43,14 @@ vessels:
     flag: Denmark
     built: 2018
     gt: 34882
+    nt: 13000
     loa_m: 200
     beam_m: 35.2
+    draught_m: 10.0
     teu_capacity: 3596
     class_note: "Panamax / ice-class intra-Europe (Seago Line Baltic service)"
-    source_note: "Particulars cross-checked via VesselFinder (IMO 9775737), Flexport Atlas, and VesselTracking registries, 2026-09-21."
+    estimated_fields: [nt, draught_m]
+    source_note: "Particulars cross-checked via VesselFinder (IMO 9775737), Flexport Atlas, and VesselTracking registries, 2026-09-21. Draught estimated. NT estimated; fee class estimate: Class 6 (10,000+ NT) with a borderline risk of Class 7 (15,000+) if the true NT is higher — this entry most needs registry confirmation."
 
   - name: MAREN MAERSK
     imo: "9632129"
@@ -47,11 +58,14 @@ vessels:
     flag: Denmark
     built: 2014
     gt: 194849
+    nt: 70000
     loa_m: 399
     beam_m: 60
+    draught_m: 16.0
     teu_capacity: 19076
     class_note: "Ultra-large (Triple-E class, Asia-Europe)"
-    source_note: "Particulars cross-checked via VesselFinder (IMO 9632129) and Flexport Atlas vessel registry, 2026-09-21."
+    estimated_fields: [nt]
+    source_note: "Particulars cross-checked via VesselFinder (IMO 9632129) and Flexport Atlas vessel registry, 2026-09-21. Draught is design draught, class-standard for Triple-E. NT estimated; fee class: Class 7 (15,000+ NT) — the estimate is far above the threshold, so class placement is robust."
 
   - name: MSC KYUNGMIN
     imo: "9967005"
@@ -59,8 +73,11 @@ vessels:
     flag: LR
     built: 2024
     gt: 21979
+    nt: 8000
     loa_m: 171.92
     beam_m: 28.4
+    draught_m: 9.8
     teu_capacity: 2400
     class_note: "Feeder (Fujian Mawei series; TEU capacity estimated, not confirmed)"
-    source_note: "Particulars verified against VesselFinder vessel particulars (IMO 9967005), 2026-09-21. GT, LOA, beam, build year, and flag are registry-confirmed; TEU capacity is a series estimate."
+    estimated_fields: [nt, draught_m]
+    source_note: "Particulars verified against VesselFinder vessel particulars (IMO 9967005), 2026-09-21. GT, LOA, beam, build year, and flag are registry-confirmed; TEU capacity is a series estimate. Draught estimated (typical for the Fujian Mawei 1,700-series feeder; AIS has observed 8.3 m laden). NT estimated; fee class estimate: Class 6 (10,000+ NT) — estimate sits below the Class 6 threshold; verify before relying on class placement."

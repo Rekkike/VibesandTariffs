@@ -1,4 +1,4 @@
-# Port Call Cost Analyzer — Specification v0.2.18
+# Port Call Cost Analyzer — Specification v0.2.19
 
 This document is the committed record of the project specification at version 0.2.17. It governs the data model, engine, and UI contracts of the Port Call Cost Analyzer. `docs/INTENDED_STATE.md` remains the authoritative audit document for the Gothenburg 2026 pilot data; where the two documents overlap, INTENDED_STATE.md governs the Gothenburg figures and this document governs the architecture and UI behavior.
 
@@ -34,6 +34,7 @@ Small adjustments increment only the third decimal. Larger updates may jump more
 | 0.2.16 | 2026-09-21 | Segment display names finalized: "Vessel Call" (subtitle noting terminal vessel operations are included), "Energy at Berth", "Yard & Storage" — replacing the misleading "Terminal & Yard" label, since the terminal's charges are split by activity across segments and only the by-biller view shows a biller's complete charges. Internal mapping key unchanged |
 | 0.2.17 | 2026-09-21 | Added section 4.3.1: multi-port navigation (per-port pages with a persistent port selector, required as soon as a second port loads) and the cross-port comparison view — one column per selected port, rows by cost segment and fee family, list-price default with marked overrides, explicit "not charged" for absent functions, and data-quality flags carried through. Comparison is a presentation over multiple single-port computations, not a separate calculation path |
 | 0.2.18 | 2026-09-21 | Line-labeling rule added to section 4.3 (fee family is the grouping, rule name is the line); vessel library recorded as section 3.4 (curated static YAML, autocomplete by name or IMO, pre-fill without locking, no runtime API dependency) |
+| 0.2.19 | 2026-09-21 | Vessel library schema extended with nt and draught_m (pre-fill now covers all vessel-fee-relevant inputs); estimated values flagged in source notes and marked in the form |
 
 ## 1. Purpose
 
@@ -93,7 +94,7 @@ Towage cost depends on the number of tugs, which varies by port, vessel size, we
 
 ### 3.4 Vessel Library
 
-A curated, versioned static file of named vessels and their particulars: `core/data/vessel_library.yaml`, holding name, imo, vessel_type, flag, built, gt, loa_m, beam_m, teu_capacity, class_note, and a `source_note` with provenance. The library is versioned like the tariff data — YAML authored, JSON at build time, no runtime API dependency. Entries are validated at conversion (name, imo, gt, and source_note required) and locked by tests. In the UI, a search/typeahead field matches on name or IMO and pre-fills the form's vessel inputs (gt, loa_m, vessel_type, flag, built year, teu_capacity where the form has those inputs). Pre-filled values remain editable — selection is a convenience, not a lock.
+A curated, versioned static file of named vessels and their particulars: `core/data/vessel_library.yaml`, holding name, imo, vessel_type, flag, built, gt, nt, loa_m, beam_m, draught_m, teu_capacity, class_note, and a `source_note` with provenance. NT matters because vessel-fee classes key on NT thresholds — a stale NT misclassifies the vessel. Entries whose nt or draught_m are estimates rather than registry-confirmed data carry an `estimated_fields` list; the estimate is flagged in the source note and surfaced visually in the form (an "est." badge on the affected field), so an estimated value is never mistaken for registry data. The library is versioned like the tariff data — YAML authored, JSON at build time, no runtime API dependency. Entries are validated at conversion (name, imo, gt, nt, draught_m, and source_note required) and locked by tests. In the UI, a search/typeahead field matches on name or IMO and pre-fills the form's vessel inputs (gt, nt, loa_m, beam_m, draught_m, vessel_type, flag, built year, teu_capacity where the form has those inputs). Pre-filled values remain editable — selection is a convenience, not a lock.
 
 ## 4. Tariff Rule Language
 

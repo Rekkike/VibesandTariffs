@@ -4,7 +4,8 @@
  * (spec v0.2.17 section 4.3.1: multi-port navigation; section 3.4: vessel library).
  * Scans core/data/*.yaml: files with fee_rules are ports (emitted to ports.json);
  * files with a vessels array are vessel-library entries (emitted to
- * vessel_library.json). Adding a port or a vessel is a data edit: drop a YAML
+ * vessel_library.json). Vessel entries require name, imo, gt, nt, draught_m,
+ * and source_note. Adding a port or a vessel is a data edit: drop a YAML
  * file in core/data/ — no code change.
  * Usage: node scripts/convert_yaml_to_json.js
  */
@@ -38,7 +39,7 @@ function main() {
 
       if (Array.isArray(data && data.vessels)) {
         for (const vessel of data.vessels) {
-          for (const field of ['name', 'imo', 'gt', 'source_note']) {
+          for (const field of ['name', 'imo', 'gt', 'nt', 'draught_m', 'source_note']) {
             if (vessel[field] === undefined || vessel[field] === null || vessel[field] === '') {
               throw new Error(`Invalid vessel entry in ${file}: missing ${field}`);
             }
