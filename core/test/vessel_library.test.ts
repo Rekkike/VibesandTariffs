@@ -27,7 +27,7 @@ describe('Vessel library data (spec section 3.4)', () => {
   test('library file loads and contains vessel entries', () => {
     expect(data).toBeDefined();
     expect(Array.isArray(data.vessels)).toBe(true);
-    expect(data.vessels.length).toBeGreaterThanOrEqual(3);
+    expect(data.vessels.length).toBeGreaterThanOrEqual(4);
   });
 
   test('every entry has the full schema including source_note provenance', () => {
@@ -69,5 +69,16 @@ describe('Vessel library data (spec section 3.4)', () => {
     expect(maren!.gt).toBe(194849);
     expect(maren!.loa_m).toBe(399);
     expect(maren!.teu_capacity).toBe(19076);
+
+    const kyungmin = byName.get('MSC KYUNGMIN');
+    expect(kyungmin).toBeDefined();
+    expect(kyungmin!.imo).toBe('9967005');
+    expect(kyungmin!.flag).toBe('LR');
+    expect(kyungmin!.built).toBe(2024);
+    expect(kyungmin!.gt).toBe(21979);
+    expect(kyungmin!.loa_m).toBe(171.92);
+    expect(kyungmin!.beam_m).toBe(28.4);
+    expect(kyungmin!.teu_capacity).toBe(2400);
+    expect(kyungmin!.class_note).toContain('estimated');
   });
 });

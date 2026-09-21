@@ -52,3 +52,15 @@ vessels:
     teu_capacity: 19076
     class_note: "Ultra-large (Triple-E class, Asia-Europe)"
     source_note: "Particulars cross-checked via VesselFinder (IMO 9632129) and Flexport Atlas vessel registry, 2026-09-21."
+
+  - name: MSC KYUNGMIN
+    imo: "9967005"
+    vessel_type: container
+    flag: LR
+    built: 2024
+    gt: 21979
+    loa_m: 171.92
+    beam_m: 28.4
+    teu_capacity: 2400
+    class_note: "Feeder (Fujian Mawei series; TEU capacity estimated, not confirmed)"
+    source_note: "Particulars verified against VesselFinder vessel particulars (IMO 9967005), 2026-09-21. GT, LOA, beam, build year, and flag are registry-confirmed; TEU capacity is a series estimate."
