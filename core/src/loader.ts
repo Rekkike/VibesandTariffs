@@ -14,6 +14,12 @@ import {
   PerCommencedDayRate,
   PerUnitRate,
   BandedByTimeRate,
+  BandedFlatRate,
+  CompositeTrancheRate,
+  TieredPerPeriodRate,
+  PerCommencedPeriodRate,
+  ProgressiveDailyRate,
+  FlatByInputRate,
   SourceReference,
   ValidationError,
   PortValidationResult
@@ -38,7 +44,9 @@ export const KNOWN_FEE_FAMILIES: Set<string> = new Set([
   'ordering_fee',
   'yard_surcharge',
   'gate_hazardous',
-  'idle_berth'
+  'idle_berth',
+  'hafenfonds',
+  'frequency_discount'
 ]);
 
 /**
@@ -389,6 +397,148 @@ export function validateRateStructure(
           severity: 'error',
           path: 'rate_structure.basis'
         });
+      }
+      break;
+    }
+    
+    case 'banded_flat': {
+      const bf = rate as BandedFlatRate;
+      if (!bf.bands || bf.bands.length === 0) {
+        errors.push({ rule_id: ruleId, message: 'Banded flat rate must have at least one band', severity: 'error', path: 'rate_structure.bands' });
+        break;
+      }
+      const sortedBands = [...bf.bands].sort((a, b) => (a.min ?? -Infinity) - (b.min ?? -Infinity));
+      for (let i = 0; i < sortedBands.length; i++) {
+        const band = sortedBands[i];
+        if (band.rate === undefined && band.amount === undefined) {
+          errors.push({ rule_id: ruleId, message: `Banded flat band ${i} needs rate or amount`, severity: 'error', path: `rate_structure.bands[${i}]` });
+        }
+        if (i > 0) {
+          const prevMax = sortedBands[i - 1].max;
+          if (prevMax !== null && prevMax !== undefined && band.min !== null && band.min !== undefined && (band.min < prevMax || band.min > prevMax)) {
+            // half-open bands must abut exactly: previous max == current min
+            if (band.min !== prevMax) {
+              errors.push({ rule_id: ruleId, message: `Banded flat bands not contiguous at band ${i}: min ${band.min} != prev max ${prevMax}`, severity: 'error', path: `rate_structure.bands[${i}]` });
+            }
+          }
+        }
+      }
+      if (!bf.basis) {
+        errors.push({ rule_id: ruleId, message: 'Banded flat rate missing basis', severity: 'error', path: 'rate_structure.basis' });
+      }
+      if (bf.linear_extension) {
+        const le = bf.linear_extension;
+        if (typeof le.from_basis !== 'number' || typeof le.per_basis_units !== 'number' || typeof le.amount !== 'number') {
+          errors.push({ rule_id: ruleId, message: 'Banded flat linear_extension requires from_basis, per_basis_units, amount', severity: 'error', path: 'rate_structure.linear_extension' });
+        }
+      }
+      break;
+    }
+    
+    case 'composite_tranche': {
+      const ct = rate as CompositeTrancheRate;
+      if (!ct.tranches || ct.tranches.length === 0) {
+        errors.push({ rule_id: ruleId, message: 'Composite tranche rate must have at least one tranche', severity: 'error', path: 'rate_structure.tranches' });
+        break;
+      }
+      let prevMax: number | null = null;
+      for (let i = 0; i < ct.tranches.length; i++) {
+        const tranche = ct.tranches[i];
+        const min = tranche.min ?? 0;
+        const max = tranche.max ?? Infinity;
+        if (i > 0 && min !== (prevMax ?? Infinity)) {
+          errors.push({ rule_id: ruleId, message: `Composite tranches not contiguous at tranche ${i}`, severity: 'error', path: `rate_structure.tranches[${i}]` });
+        }
+        if (!tranche.components || Object.keys(tranche.components).length === 0) {
+          errors.push({ rule_id: ruleId, message: `Composite tranche ${i} missing components`, severity: 'error', path: `rate_structure.tranches[${i}].components` });
+        }
+        for (const [compId, compRate] of Object.entries(tranche.components ?? {})) {
+          if (typeof compRate !== 'number' || compRate < 0) {
+            errors.push({ rule_id: ruleId, message: `Composite tranche ${i} component ${compId} has invalid rate`, severity: 'error', path: `rate_structure.tranches[${i}].components` });
+          }
+        }
+        prevMax = tranche.max;
+      }
+      if (!ct.basis) {
+        errors.push({ rule_id: ruleId, message: 'Composite tranche rate missing basis', severity: 'error', path: 'rate_structure.basis' });
+      }
+      for (const [compId, stack] of Object.entries(ct.component_adjustments ?? {})) {
+        if (!Array.isArray(stack)) {
+          errors.push({ rule_id: ruleId, message: `Component adjustment stack for ${compId} must be an array`, severity: 'error', path: `rate_structure.component_adjustments.${compId}` });
+        }
+      }
+      break;
+    }
+    
+    case 'tiered_per_period': {
+      const tp = rate as TieredPerPeriodRate;
+      if (!tp.initial_tier || typeof tp.initial_tier.hours !== 'number' || typeof tp.initial_tier.rate_per_basis !== 'number') {
+        errors.push({ rule_id: ruleId, message: 'Tiered per period rate requires initial_tier.hours and initial_tier.rate_per_basis', severity: 'error', path: 'rate_structure.initial_tier' });
+      }
+      if (tp.subsequent_tier && (typeof tp.subsequent_tier.period_hours !== 'number' || typeof tp.subsequent_tier.rate_per_basis !== 'number')) {
+        errors.push({ rule_id: ruleId, message: 'Tiered per period subsequent_tier requires period_hours and rate_per_basis', severity: 'error', path: 'rate_structure.subsequent_tier' });
+      }
+      if (!tp.basis || !tp.hours_input) {
+        errors.push({ rule_id: ruleId, message: 'Tiered per period rate requires basis and hours_input', severity: 'error', path: 'rate_structure' });
+      }
+      break;
+    }
+    
+    case 'per_commenced_period': {
+      const pp = rate as PerCommencedPeriodRate;
+      if (!pp.tiers || pp.tiers.length === 0) {
+        errors.push({ rule_id: ruleId, message: 'Per commenced period rate must have at least one tier', severity: 'error', path: 'rate_structure.tiers' });
+        break;
+      }
+      for (let i = 0; i < pp.tiers.length; i++) {
+        const tier = pp.tiers[i];
+        if (typeof tier.rate_per_period_per_basis !== 'number' || tier.rate_per_period_per_basis < 0) {
+          errors.push({ rule_id: ruleId, message: `Per commenced period tier ${i} has invalid rate`, severity: 'error', path: `rate_structure.tiers[${i}]` });
+        }
+      }
+      if (!pp.basis || !pp.hours_input || typeof pp.free_hours !== 'number' || typeof pp.period_hours !== 'number') {
+        errors.push({ rule_id: ruleId, message: 'Per commenced period rate requires basis, hours_input, free_hours, period_hours', severity: 'error', path: 'rate_structure' });
+      }
+      break;
+    }
+    
+    case 'progressive_daily': {
+      const pd = rate as ProgressiveDailyRate;
+      if (!pd.bands || pd.bands.length === 0) {
+        errors.push({ rule_id: ruleId, message: 'Progressive daily rate must have at least one band', severity: 'error', path: 'rate_structure.bands' });
+        break;
+      }
+      for (let i = 0; i < pd.bands.length; i++) {
+        const band = pd.bands[i];
+        if (typeof band.rate_per_container_per_day !== 'number' || band.rate_per_container_per_day < 0) {
+          errors.push({ rule_id: ruleId, message: `Progressive daily band ${i} has invalid rate`, severity: 'error', path: `rate_structure.bands[${i}]` });
+        }
+        if (typeof band.min_days !== 'number') {
+          errors.push({ rule_id: ruleId, message: `Progressive daily band ${i} missing min_days`, severity: 'error', path: `rate_structure.bands[${i}]` });
+        }
+      }
+      if (!pd.days_input || !pd.container_count_input || typeof pd.free_days !== 'number') {
+        errors.push({ rule_id: ruleId, message: 'Progressive daily rate requires days_input, container_count_input, free_days', severity: 'error', path: 'rate_structure' });
+      }
+      break;
+    }
+    
+    case 'flat_by_input': {
+      const fi = rate as FlatByInputRate;
+      if (!fi.options || fi.options.length === 0) {
+        errors.push({ rule_id: ruleId, message: 'Flat by input rate must have at least one option', severity: 'error', path: 'rate_structure.options' });
+        break;
+      }
+      for (let i = 0; i < fi.options.length; i++) {
+        const opt = fi.options[i];
+        if (!opt.value || typeof opt.amount !== 'number') {
+          errors.push({ rule_id: ruleId, message: `Flat by input option ${i} requires value and amount`, severity: 'error', path: `rate_structure.options[${i}]` });
+        }
+      }
+      if (!fi.input_field || !fi.fallback_option) {
+        errors.push({ rule_id: ruleId, message: 'Flat by input rate requires input_field and fallback_option', severity: 'error', path: 'rate_structure' });
+      } else if (!fi.options.some(o => o.value === fi.fallback_option)) {
+        errors.push({ rule_id: ruleId, message: `Flat by input fallback_option "${fi.fallback_option}" is not among options`, severity: 'error', path: 'rate_structure.fallback_option' });
       }
       break;
     }
