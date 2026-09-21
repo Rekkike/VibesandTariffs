@@ -207,6 +207,8 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
   const applyPreset = (preset: keyof typeof VESSEL_PRESETS) => {
     const presetData = VESSEL_PRESETS[preset];
     onVesselChange({ ...vessel, ...presetData });
+    // Presets carry no library provenance: clear the estimate badges
+    setEstimatedFields([]);
   };
 
   // Selecting a library vessel pre-fills the form's inputs — a convenience,
@@ -224,11 +226,15 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
       loa_m: selected.loa_m,
       beam_m: selected.beam_m,
       draft_m: selected.draught_m,
-      teu_capacity: selected.teu_capacity
+      teu_capacity: selected.teu_capacity,
+      built_year: selected.built
     });
     onCallChange({
       ...call,
-      vessel_type: selected.vessel_type
+      vessel_type: selected.vessel_type,
+      // Gangway class default follows the service (reference §9): feeder-class
+      // container vessels get the feeder rate, deep-sea the overseas rate.
+      gangway_class: selected.teu_capacity <= 1000 ? 'feeder' : 'overseas'
     });
     setEstimatedFields(selected.estimated_fields ?? []);
   };
@@ -461,6 +467,19 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                   </Select>
                 </FormControl>
               </Grid>
+              {port.metadata.id === 'hamburg' && (
+                <Grid item xs={6}>
+                  <TextField
+                    label="Build Year"
+                    type="number"
+                    value={state.vessel.built_year ?? ''}
+                    onChange={(e) => handleVesselChange('built_year', parseFloat(e.target.value) || undefined)}
+                    fullWidth
+                    InputLabelProps={{ shrink: true }}
+                    helperText="Drives the engine-Tier default (2011+ → Tier II, 2000–2010 → Tier I, earlier → Tier 0)"
+                  />
+                </Grid>
+              )}
             </Grid>
 
             {/* ============ VESSEL CALL SEGMENT INPUTS ============ */}
@@ -600,6 +619,244 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                 />
               </Grid>
             </Grid>
+            {/* ============ HAMBURG-SPECIFIC CALL INPUTS ============ */}
+            {/* Port-specific parameters (spec v0.2.20): fee families and inputs
+                differ between ports; these fields appear only on the Hamburg
+                workspace. All are list-price defaults (off/zero/100%) unless
+                the user sets them; estimate flags surface in the results. */}
+            {port.metadata.id === 'hamburg' && (
+              <>
+                <Typography variant="h6" component="h3" className="segment-heading vessel-call-heading">
+                  Hamburg Call Parameters
+                </Typography>
+                <Grid container spacing={2}>
+                  <Grid item xs={6}>
+                    <FormControl fullWidth>
+                      <InputLabel>Engine Tier (IAPP, most polluting engine)</InputLabel>
+                      <Select
+                        value={state.call.engine_tier || 'auto'}
+                        onChange={(e) => {
+                          const v = e.target.value as string;
+                          if (v === 'auto') {
+                            handleCallChange('engine_tier', undefined);
+                            handleCallChange('engine_tier_estimated', undefined);
+                          } else {
+                            handleCallChange('engine_tier', v);
+                            handleCallChange('engine_tier_estimated', false);
+                          }
+                        }}
+                        label="Engine Tier (IAPP, most polluting engine)"
+                      >
+                        <MenuItem value="auto">Auto (build-year default, flagged estimated)</MenuItem>
+                        <MenuItem value="Tier 0">Tier 0 / no IAPP (+30%)</MenuItem>
+                        <MenuItem value="Tier I">Tier I (+25%)</MenuItem>
+                        <MenuItem value="Tier II">Tier II (+5%)</MenuItem>
+                        <MenuItem value="Tier III">Tier III+ (−20%)</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <TextField
+                      label="ESI Air Score (0–100)"
+                      type="number"
+                      value={state.call.esi_score ?? ''}
+                      onChange={(e) => handleCallChange('esi_score', parseFloat(e.target.value) || undefined)}
+                      fullWidth
+                      InputLabelProps={{ shrink: true }}
+                      helperText="Only if registered in the IAPH database; no default"
+                    />
+                  </Grid>
+                  <Grid item xs={6}>
+                    <TextField
+                      label="ESI Noise Score (0–100)"
+                      type="number"
+                      value={state.call.esi_noise_score ?? ''}
+                      onChange={(e) => handleCallChange('esi_noise_score', parseFloat(e.target.value) || undefined)}
+                      fullWidth
+                      InputLabelProps={{ shrink: true }}
+                      helperText="Separate discount; only if registered"
+                    />
+                  </Grid>
+                  <Grid item xs={6}>
+                    <TextField
+                      label="Quantum: prior-year paid GT"
+                      type="number"
+                      value={state.call.quantum_prior_year_gt ?? ''}
+                      onChange={(e) => handleCallChange('quantum_prior_year_gt', parseFloat(e.target.value) || undefined)}
+                      fullWidth
+                      InputLabelProps={{ shrink: true }}
+                      helperText=">1.5m → 2.5%, >10m → 5%, >25m → 7.5%; 0 = no discount"
+                    />
+                  </Grid>
+                  <Grid item xs={6}>
+                    <TextField
+                      label="Lay Time at Berth (hours)"
+                      type="number"
+                      value={state.call.lay_time_hours ?? ''}
+                      onChange={(e) => handleCallChange('lay_time_hours', parseFloat(e.target.value) || undefined)}
+                      fullWidth
+                      InputLabelProps={{ shrink: true }}
+                      helperText="HHLA tonnage-dues basis (first 24 h full rate, then per commenced 12 h)"
+                    />
+                  </Grid>
+                  <Grid item xs={6}>
+                    <TextField
+                      label="Total Time in Port (hours)"
+                      type="number"
+                      value={state.call.port_time_hours ?? ''}
+                      onChange={(e) => handleCallChange('port_time_hours', parseFloat(e.target.value) || undefined)}
+                      fullWidth
+                      InputLabelProps={{ shrink: true }}
+                      helperText="Demurrage beyond the 120 h port-fee coverage; blank uses lay time"
+                    />
+                  </Grid>
+                  <Grid item xs={6}>
+                    <TextField
+                      label="Elbe Transit Segment (% of full)"
+                      type="number"
+                      value={state.call.pilotage_segment_pct ?? 100}
+                      onChange={(e) => handleCallChange('pilotage_segment_pct', parseFloat(e.target.value) || undefined)}
+                      fullWidth
+                      InputLabelProps={{ shrink: true }}
+                      helperText="100 = Hamburg↔Elbe buoy; partial transits (e.g. 40 Cuxhaven) scale dues and fees"
+                    />
+                  </Grid>
+                  <Grid item xs={6}>
+                    <TextField
+                      label="Towage per Call (EUR) — est."
+                      type="number"
+                      value={state.call.towage_amount ?? 15000}
+                      onChange={(e) => handleCallChange('towage_amount', parseFloat(e.target.value) || undefined)}
+                      fullWidth
+                      InputLabelProps={{ shrink: true }}
+                      helperText="Estimated; no published tariff (3 tugs × ~5,000 EUR market range)"
+                    />
+                  </Grid>
+                  <Grid item xs={6}>
+                    <TextField
+                      label="Handling Rate per Move (EUR) — est."
+                      type="number"
+                      value={state.call.handling_rate_per_move ?? 358}
+                      onChange={(e) => handleCallChange('handling_rate_per_move', parseFloat(e.target.value) || undefined)}
+                      fullWidth
+                      InputLabelProps={{ shrink: true }}
+                      helperText="Estimated; HHLA unpublished, anchored to Eurogate Hamburg 5.1.1"
+                    />
+                  </Grid>
+                  <Grid item xs={6}>
+                    <TextField
+                      label="Gangways"
+                      type="number"
+                      value={state.call.gangway_count ?? 1}
+                      onChange={(e) => handleCallChange('gangway_count', parseFloat(e.target.value) || undefined)}
+                      fullWidth
+                      InputLabelProps={{ shrink: true }}
+                      helperText="One gangway per call default"
+                    />
+                  </Grid>
+                  <Grid item xs={6}>
+                    <TextField
+                      label="Gangway Supervision (hours)"
+                      type="number"
+                      value={state.call.gangway_supervision_hours ?? 0}
+                      onChange={(e) => handleCallChange('gangway_supervision_hours', parseFloat(e.target.value) || undefined)}
+                      fullWidth
+                      InputLabelProps={{ shrink: true }}
+                      helperText="101.30 EUR/h during operations; 0 in reference calls"
+                    />
+                  </Grid>
+                  <Grid item xs={6}>
+                    <FormControl fullWidth>
+                      <InputLabel>Gangway Class</InputLabel>
+                      <Select
+                        value={state.call.gangway_class || 'overseas'}
+                        onChange={(e) => handleCallChange('gangway_class', e.target.value as string)}
+                        label="Gangway Class"
+                      >
+                        <MenuItem value="feeder">Feeder (453.50 EUR)</MenuItem>
+                        <MenuItem value="overseas">Overseas (633.80 EUR)</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={state.call.hpa_berth_usage || false}
+                          onChange={(e) => handleCallChange('hpa_berth_usage', e.target.checked)}
+                        />
+                      }
+                      label="Vessel at an HPA-operated berth (not a terminal berth; enables HPA berth fees)"
+                    />
+                  </Grid>
+                  {state.call.hpa_berth_usage && (
+                    <>
+                      <Grid item xs={6}>
+                        <FormControl fullWidth>
+                          <InputLabel>HPA Berth Type</InputLabel>
+                          <Select
+                            value={state.call.berth_type || 'quay'}
+                            onChange={(e) => handleCallChange('berth_type', e.target.value as string)}
+                            label="HPA Berth Type"
+                          >
+                            <MenuItem value="quay">Quay (0.0152 EUR/GT per 6 h)</MenuItem>
+                            <MenuItem value="dolphins">Dolphins (0.0052 EUR/GT per 6 h)</MenuItem>
+                          </Select>
+                        </FormControl>
+                      </Grid>
+                      <Grid item xs={6}>
+                        <TextField
+                          label="Berth Hours"
+                          type="number"
+                          value={state.call.berth_hours ?? ''}
+                          onChange={(e) => handleCallChange('berth_hours', parseFloat(e.target.value) || undefined)}
+                          fullWidth
+                          InputLabelProps={{ shrink: true }}
+                        />
+                      </Grid>
+                    </>
+                  )}
+                  <Grid item xs={12}>
+                    <Typography variant="body2" className="segment-description">
+                      Waste-fee reductions (application-based, off by default; combinable)
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={4}>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={state.call.waste_short_sea_reduction || false}
+                          onChange={(e) => handleCallChange('waste_short_sea_reduction', e.target.checked)}
+                        />
+                      }
+                      label="Short-sea (−90%)"
+                    />
+                  </Grid>
+                  <Grid item xs={4}>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={state.call.waste_alternative_fuel_reduction || false}
+                          onChange={(e) => handleCallChange('waste_alternative_fuel_reduction', e.target.checked)}
+                        />
+                      }
+                      label="Alternative fuel (−50% MARPOL I)"
+                    />
+                  </Grid>
+                  <Grid item xs={4}>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={state.call.waste_sustainable_waste_reduction || false}
+                          onChange={(e) => handleCallChange('waste_sustainable_waste_reduction', e.target.checked)}
+                        />
+                      }
+                      label="Sustainable waste (−2% MARPOL V)"
+                    />
+                  </Grid>
+                </Grid>
+              </>
+            )}
 
             {/* ============ ENERGY AT BERTH SEGMENT INPUTS ============ */}
             <Typography variant="h6" component="h3" className="segment-heading energy-heading">
@@ -1133,7 +1390,29 @@ const defaultCall = (portId: string): CallInput => ({
   ops_kwh_demand: 0,
   ops_connected_hours: 0,
   ops_electricity_price_per_kwh: 0,
-  ops_peak_demand_kw: 0
+  ops_peak_demand_kw: 0,
+  // Hamburg parameters (spec v0.2.20). Lay time 16 h mid-range default
+  // (50 h for ULCV); gangway one per call, class default overseas with the
+  // feeder default applied from the vessel library for feeder-class ships;
+  // pilotage full Elbe transit; estimated-parameter defaults seeded so the
+  // estimate-flagged lines render with their default amounts.
+  ...(portId === 'hamburg' ? {
+    lay_time_hours: 16,
+    gangway_class: 'overseas',
+    gangway_count: 1,
+    gangway_supervision_hours: 0,
+    pilotage_segment_pct: 100,
+    towage_amount: 15000,
+    handling_rate_per_move: 358,
+    hpa_berth_usage: false,
+    berth_type: 'quay',
+    berth_hours: 0,
+    esi_noise_score: undefined,
+    quantum_prior_year_gt: 0,
+    waste_short_sea_reduction: false,
+    waste_alternative_fuel_reduction: false,
+    waste_sustainable_waste_reduction: false
+  } : {})
 });
 
 // Port display name with tariff validity year for headers and tabs
@@ -1163,6 +1442,74 @@ const ComparisonView: React.FC<ComparisonViewProps> = ({
   onSelectionChange
 }) => {
   const selectedPorts = ports.filter(p => selectedPortIds.includes(p.metadata.id));
+  // Optional end-of-comparison conversion (spec v0.2.20): local currency
+  // throughout; conversion only here, user-triggered, ECB rates or manual
+  // entry, with rate source and date displayed alongside the converted figure.
+  const [conversionCurrency, setConversionCurrency] = useState<string>('EUR');
+  const [manualRate, setManualRate] = useState<string>('');
+  const [rateInfo, setRateInfo] = useState<{ source: string; date: string; fallback: boolean } | null>(null);
+  const [convertedTotals, setConvertedTotals] = useState<
+    { portId: string; portName: string; localAmount: number; localCurrency: string; rate: number; convertedAmount: number }[] | null
+  >(null);
+
+  // ECB daily reference rates are quoted against EUR; the rate from a local
+  // currency L to display currency D is rate(D)/rate(L). Cached with its
+  // publication date; if the feed is unreachable the last cached set is used
+  // and this is stated explicitly (spec section 6).
+  const fetchEcbRates = async () => {
+    const target = conversionCurrency;
+    const manual = parseFloat(manualRate);
+    const applyRates = (rates: Record<string, number>, source: string, date: string, fallback: boolean) => {
+      const rows = portResults
+        .filter(pr => pr.result)
+        .map(({ port, result }) => {
+          const local = result!;
+          let rate: number;
+          if (!Number.isNaN(manual) && manual > 0) {
+            rate = manual; // manual rate entered per 1 unit of local currency
+          } else {
+            const rLocal = rates[local.currency];
+            const rTarget = rates[target];
+            rate = rTarget / rLocal;
+          }
+          return {
+            portId: port.metadata.id,
+            portName: port.metadata.name,
+            localAmount: local.total,
+            localCurrency: local.currency,
+            rate,
+            convertedAmount: local.total * rate
+          };
+        });
+      setConvertedTotals(rows);
+      setRateInfo({
+        source: !Number.isNaN(manual) && manual > 0 ? 'Manual rate entered by user' : source,
+        date,
+        fallback
+      });
+    };
+
+    if (!Number.isNaN(manual) && manual > 0) {
+      applyRates({}, 'Manual', new Date().toISOString().split('T')[0], false);
+      return;
+    }
+    try {
+      const res = await fetch('https://api.frankfurter.app/latest?from=EUR');
+      if (!res.ok) throw new Error(`ECB feed HTTP ${res.status}`);
+      const data = await res.json();
+      const rates: Record<string, number> = { EUR: 1, ...data.rates };
+      localStorage.setItem('ecb_rates_cache', JSON.stringify({ rates, date: data.date }));
+      applyRates(rates, 'ECB daily reference rates (Frankfurter mirror of ECB feed)', data.date, false);
+    } catch (err) {
+      const cached = localStorage.getItem('ecb_rates_cache');
+      if (cached) {
+        const { rates, date } = JSON.parse(cached);
+        applyRates(rates, 'Last cached ECB reference rates', date, true);
+      } else {
+        setRateInfo({ source: 'unavailable', date: '-', fallback: true });
+      }
+    }
+  };
 
   // One calculation per selected port - the same engine and data as the
   // per-port pages; no separate calculation path.
@@ -1185,11 +1532,29 @@ const ComparisonView: React.FC<ComparisonViewProps> = ({
       maximumFractionDigits: 0
     }).format(amount);
 
+  // Rule names per port (line-labeling rule, spec v0.2.18): the family is the
+  // group, the rule name is the line, with the biller shown per line.
+  const ruleNameByPortAndId = useMemo(() => {
+    const map = new Map<string, Map<string, string>>();
+    for (const port of ports) {
+      const inner = new Map<string, string>();
+      for (const rule of port.fee_rules) inner.set(rule.id, rule.name);
+      map.set(port.metadata.id, inner);
+    }
+    return map;
+  }, [ports]);
   // Union of fee families actually charged across the selected ports, in
-  // segment order, so a function absent at one port still shows "not charged"
+  // segment order, so a function absent at one port still shows "not charged".
+  // Each cell carries the family subtotal plus its per-rule lines (rule name,
+  // biller, per-line amount, estimate marker).
   const rowsBySegment = useMemo(() => {
-    const familyTotals = new Map<string, Map<string, { amount: number; currency: string; flags: number }>>();
-    for (const { result } of portResults) {
+    const familyTotals = new Map<string, Map<string, {
+      amount: number;
+      currency: string;
+      flags: number;
+      lines: { name: string; biller: string; amount: number; estimated: boolean }[];
+    }>>();
+    for (const { port, result } of portResults) {
       if (!result) continue;
       for (const biller of result.billers) {
         for (const fee of biller.fees) {
@@ -1197,9 +1562,20 @@ const ComparisonView: React.FC<ComparisonViewProps> = ({
             familyTotals.set(fee.fee_family, new Map());
           }
           const perPort = familyTotals.get(fee.fee_family)!;
-          const entry = perPort.get(result.port_id) || { amount: 0, currency: fee.currency, flags: 0 };
+          const entry = perPort.get(result.port_id) || {
+            amount: 0,
+            currency: fee.currency,
+            flags: 0,
+            lines: []
+          };
           entry.amount += fee.amount;
           entry.flags += fee.quality_flags.length;
+          entry.lines.push({
+            name: ruleNameByPortAndId.get(port.metadata.id)?.get(fee.fee_rule_id) ?? fee.fee_family,
+            biller: fee.biller,
+            amount: fee.amount,
+            estimated: fee.quality_flags.some(flag => flag.type === 'estimated_parameter' || flag.type === 'estimated_engine_tier')
+          });
           perPort.set(result.port_id, entry);
         }
       }
@@ -1210,7 +1586,7 @@ const ComparisonView: React.FC<ComparisonViewProps> = ({
         .filter(([family]) => (FEE_FAMILY_TO_SEGMENT[family] || 'vessel_call') === segment.id)
         .map(([family, perPort]) => ({ family, perPort }))
     })).filter(group => group.families.length > 0);
-  }, [portResults]);
+  }, [portResults, ruleNameByPortAndId]);
 
   const segmentSubtotals = useMemo(() => {
     return portResults.map(({ port, result }) => {
@@ -1259,23 +1635,35 @@ const ComparisonView: React.FC<ComparisonViewProps> = ({
     return worst;
   }, [portResults]);
 
-  const portColumn = (portId: string) => portResults.find(pr => pr.port.metadata.id === portId);
 
-  const amountCell = (entry: { amount: number; currency: string; flags: number } | undefined, fallbackCurrency: string) => {
+  const amountCell = (
+    entry: { amount: number; currency: string; flags: number; lines: { name: string; biller: string; amount: number; estimated: boolean }[] } | undefined,
+    fallbackCurrency: string
+  ) => {
     if (!entry) {
       // Explicit absence: never hidden, so an absence of cost is not
       // mistaken for missing data (spec 4.3.1 comparability rules)
       return <span className="comparison-not-charged">not charged</span>;
     }
     return (
-      <span>
-        {formatCurrency(entry.amount, entry.currency || fallbackCurrency)}
-        {entry.flags > 0 && (
-          <span className="status-badge status-warning" style={{ marginLeft: '6px' }}>
-            {entry.flags} flag{entry.flags > 1 ? 's' : ''}
-          </span>
-        )}
-      </span>
+      <Box sx={{ textAlign: 'right' }}>
+        <span>
+          {formatCurrency(entry.amount, entry.currency || fallbackCurrency)}
+          {entry.flags > 0 && (
+            <span className="status-badge status-warning" style={{ marginLeft: '6px' }}>
+              {entry.flags} flag{entry.flags > 1 ? 's' : ''}
+            </span>
+          )}
+        </span>
+        {entry.lines.map((line, index) => (
+          <Box key={index} sx={{ fontSize: '0.75rem', color: '#666', mt: 0.25 }}>
+            {line.name} · {line.biller}: {formatCurrency(line.amount, entry.currency || fallbackCurrency)}
+            {line.estimated && (
+              <span className="status-badge status-warning" style={{ marginLeft: '4px' }}>est.</span>
+            )}
+          </Box>
+        ))}
+      </Box>
     );
   };
 
@@ -1394,6 +1782,86 @@ const ComparisonView: React.FC<ComparisonViewProps> = ({
             </Table>
           </TableContainer>
 
+          {/* Optional, user-triggered conversion (spec v0.2.20): the very end
+              of the comparison. Each port's local-currency total is expressed
+              in the chosen display currency using ECB daily reference rates
+              (or a manual rate); the rate source and date are shown with the
+              converted figure. No inline conversion anywhere else. */}
+          <Box className="comparison-conversion" sx={{ mt: 3, p: 2, border: '1px solid #e0e0e0', borderRadius: 1 }}>
+            <Typography variant="h6" component="h3">
+              Optional: express totals in one currency
+            </Typography>
+            <Typography variant="body2" className="comparison-basis">
+              All amounts above are in each tariff's local currency. This step converts each port's
+              total once, at the end, for display only - it never enters any calculation.
+            </Typography>
+            <Grid container spacing={2} alignItems="center">
+              <Grid item xs={6} md={3}>
+                <FormControl fullWidth>
+                  <InputLabel>Display currency</InputLabel>
+                  <Select
+                    value={conversionCurrency}
+                    onChange={(e) => setConversionCurrency(e.target.value as string)}
+                    label="Display currency"
+                  >
+                    {['EUR', 'SEK', 'DKK', 'PLN', 'USD'].map(c => (
+                      <MenuItem key={c} value={c}>{c}</MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item xs={6} md={3}>
+                <TextField
+                  label="Manual rate per 1 {conversionCurrency} (optional)"
+                  type="number"
+                  value={manualRate}
+                  onChange={(e) => setManualRate(e.target.value)}
+                  fullWidth
+                  InputLabelProps={{ shrink: true }}
+                  helperText="Overrides the ECB fetch for all ports"
+                />
+              </Grid>
+              <Grid item xs={6} md={3}>
+                <Button
+                  variant="contained"
+                  onClick={fetchEcbRates}
+                  disabled={conversionCurrency === '' || (!!manualRate)}
+                >
+                  Fetch ECB reference rates
+                </Button>
+              </Grid>
+              <Grid item xs={12} md={3}>
+                {rateInfo && (
+                  <Typography variant="body2" className="comparison-basis">
+                    Rate source: {rateInfo.source}, {rateInfo.date}
+                    {rateInfo.fallback && ' (ECB unreachable - last cached rates used)'}
+                  </Typography>
+                )}
+              </Grid>
+            </Grid>
+            {convertedTotals && (
+              <Table size="small" sx={{ mt: 2 }}>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Port</TableCell>
+                    <TableCell align="right">Local total</TableCell>
+                    <TableCell align="right">Rate ({conversionCurrency} per unit)</TableCell>
+                    <TableCell align="right">Converted total</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {convertedTotals.map(ct => (
+                    <TableRow key={ct.portId}>
+                      <TableCell>{ct.portName}</TableCell>
+                      <TableCell align="right">{formatCurrency(ct.localAmount, ct.localCurrency)}</TableCell>
+                      <TableCell align="right">{ct.rate.toFixed(4)}</TableCell>
+                      <TableCell align="right">{formatCurrency(ct.convertedAmount, conversionCurrency)}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+          </Box>
           {portResults.some(pr => pr.error) && (
             <Typography color="error" sx={{ mt: 2 }}>
               {portResults.filter(pr => pr.error).map(pr => `${pr.port.metadata.name}: ${pr.error}`).join('; ')}
@@ -1430,6 +1898,22 @@ const ComparisonView: React.FC<ComparisonViewProps> = ({
 // Top-level navigation (spec v0.2.17 section 4.3.1): persistent port selector
 // over per-port workspaces plus a distinct comparison screen. Vessel and call
 // parameters are shared across pages so the comparison computes the same call.
+// Port-specific call inputs: reset to their default (off/zero/100%) when the
+// user switches ports, with their estimate flags (spec v0.2.20 port selector).
+// Vessel particulars, lay time, and container counts carry over.
+const PORT_SPECIFIC_CALL_FIELDS = [
+  'engine_tier', 'engine_tier_estimated', 'esi_score', 'esi_noise_score',
+  'quantum_prior_year_gt', 'pilotage_segment_pct', 'towage_amount',
+  'handling_rate_per_move', 'gangway_class', 'gangway_count',
+  'gangway_supervision_hours', 'hpa_berth_usage', 'berth_type', 'berth_hours',
+  'waste_short_sea_reduction', 'waste_alternative_fuel_reduction',
+  'waste_sustainable_waste_reduction', 'csi_class', 'fossil_free_fuel_percentage',
+  'ops_kwh_demand', 'ops_connected_hours', 'ops_electricity_price_per_kwh',
+  'ops_peak_demand_kw', 'pilotage_hours', 'pilotage_extra_pilot',
+  'pilotage_ordering_lead_time_hours', 'hatch_cover_count', 'gearbox_count',
+  'lay_up_days'
+];
+
 const App: React.FC = () => {
   const activePort = LOADED_PORTS[0];
 
@@ -1441,6 +1925,23 @@ const App: React.FC = () => {
   const [comparisonSelection, setComparisonSelection] = useState<string[]>(
     LOADED_PORTS.map(p => p.metadata.id)
   );
+  const [lastPortId, setLastPortId] = useState<string>(activePort?.metadata.id ?? '');
+
+  // Switching ports swaps the fee-rule set: shared inputs carry over,
+  // port-specific inputs reset to defaults (spec v0.2.20)
+  useEffect(() => {
+    const currentPortId = page.kind === 'port' ? page.portId : '';
+    if (!currentPortId || currentPortId === lastPortId) return;
+    const defaults = defaultCall(currentPortId);
+    setCall(prev => {
+      const next: Record<string, unknown> = { ...prev, port_id: currentPortId };
+      for (const field of PORT_SPECIFIC_CALL_FIELDS) {
+        next[field] = (defaults as unknown as Record<string, unknown>)[field];
+      }
+      return next as unknown as CallInput;
+    });
+    setLastPortId(currentPortId);
+  }, [page, lastPortId]);
 
   if (LOADED_PORTS.length === 0) {
     return (

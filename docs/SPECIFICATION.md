@@ -1,6 +1,6 @@
-# Port Call Cost Analyzer — Specification v0.2.19
+# Port Call Cost Analyzer — Specification v0.2.20
 
-This document is the committed record of the project specification at version 0.2.17. It governs the data model, engine, and UI contracts of the Port Call Cost Analyzer. `docs/INTENDED_STATE.md` remains the authoritative audit document for the Gothenburg 2026 pilot data; where the two documents overlap, INTENDED_STATE.md governs the Gothenburg figures and this document governs the architecture and UI behavior.
+This document is the committed record of the project specification at version 0.2.20. It governs the data model, engine, and UI contracts of the Port Call Cost Analyzer. `docs/INTENDED_STATE.md` remains the authoritative audit document for the Gothenburg 2026 pilot data; where the two documents overlap, INTENDED_STATE.md governs the Gothenburg figures and this document governs the architecture and UI behavior.
 
 ## Versioning Policy
 
@@ -35,6 +35,7 @@ Small adjustments increment only the third decimal. Larger updates may jump more
 | 0.2.17 | 2026-09-21 | Added section 4.3.1: multi-port navigation (per-port pages with a persistent port selector, required as soon as a second port loads) and the cross-port comparison view — one column per selected port, rows by cost segment and fee family, list-price default with marked overrides, explicit "not charged" for absent functions, and data-quality flags carried through. Comparison is a presentation over multiple single-port computations, not a separate calculation path |
 | 0.2.18 | 2026-09-21 | Line-labeling rule added to section 4.3 (fee family is the grouping, rule name is the line); vessel library recorded as section 3.4 (curated static YAML, autocomplete by name or IMO, pre-fill without locking, no runtime API dependency) |
 | 0.2.19 | 2026-09-21 | Vessel library schema extended with nt and draught_m (pre-fill now covers all vessel-fee-relevant inputs); estimated values flagged in source notes and marked in the form |
+| 0.2.20 | 2026-09-21 | Hamburg port file added (HPA, GDWS pilotage, HHLA, BUKEA waste; estimated handling and towage parameters); port selector and cross-port comparison view with local-currency display and optional ECB/manual conversion; towage family added to shared taxonomy |
 
 ## 1. Purpose
 
@@ -249,6 +250,10 @@ When more than one port is loaded, the UI is organized as separate per-port page
 - The comparison uses reference tariff rates only (list prices); contract rates and manual overrides from the scenario-adjustment layer may be applied per port, clearly marked, but the default comparison is list-price.
 - Data quality is carried through: lines derived from unpublished or estimated rates carry the same flags as in per-port views, and a comparison including such lines is marked accordingly.
 
+**Line labeling in the comparison.** The line-labeling rule (4.3) applies unchanged: the fee family is the row grouping (economic function, never biller name, so ports that carve the same function up differently still line up), and each line within a row is labeled by its distinct rule name with the biller shown per line (e.g. Pilotage Dues (Lotsabgaben) · GDWS). Lines derived from estimated parameters carry the estimate marker, exactly as in per-port views.
+
+**Local currency and end-of-comparison conversion.** Every amount, subtotal, and total in the comparison renders in the tariff's local currency (EUR Hamburg, SEK Gothenburg); the engine performs no conversion anywhere. At the very end of the comparison, an optional, user-triggered conversion step expresses each port's total in the user's chosen display currency: current ECB daily reference rates are fetched (or a manual rate entered), and the rate source and date are displayed alongside the converted figures, per the currency rules of Section 6 (cached rates with stated fallback when the feed is unreachable). Conversion is display-only and applies exactly once at that step — never inline — so rankings by local-currency computation never depend on the display currency.
+
 The comparison view reads the same canonical data and engine as per-port pages — it is a presentation over multiple single-port computations, not a separate calculation path.
 
 ### 4.4 Fee Rule Elements
@@ -384,13 +389,23 @@ A fee rule without a complete source reference is rejected at load time. No rate
 
 The comparison layer aggregates these per call: itemized breakdown per port, total per port in local currency, ranking, and per-line traceability. When a port's total is shown in another currency, conversion is applied uniformly at presentation (Section 6), so rankings never depend on the display currency.
 
+### 5.3 Hamburg 2026 Port File (v1)
+
+The Hamburg port file (`core/data/hamburg_2026.yaml`, port id `hamburg`, currency EUR, effective 2026) is encoded under the same schema as the Gothenburg pilot file, with four billers: **HPA (Hamburg Port Authority)** — port fee (GT and environmental components, cumulative-tranche over GT with adjustment stack: engine-Tier surcharge/discount, ESI air bands with euro caps, ESI noise, 225,000 GT cap, OPS rebate, quantum volume discount; minimum fee; 120 h coverage), demurrage beyond 120 h, and berth fees at HPA-operated berths (off by default; terminal berths do not trigger them); **GDWS (federal)** — Elbe pilotage dues and fees, GT-banded with a partial-transit segment percentage (default 100 % full Hamburg—Elbe buoy transit) and the published caps; **HHLA Container Terminals** — tonnage dues (first 24 h, then per commenced 12 h), gangway class (feeder/overseas) and supervision, per-container security fee, storage (free times, size-based daily rates, escalation), and the optional container-services set (reception/delivery, extra movement, admin, VGM, reefer connect/energy/check, labelling, neutralization); and **City of Hamburg (BUKEA)** — the MARPOL I/IV/V ship waste fee with its GT cap and the application-based reductions (short-sea, alternative fuel, sustainable waste), off by default.
+
+**Estimated parameters.** Two Hamburg lines carry no published tariff and are encoded as estimated parameters — user-editable inputs with their default amounts, always flagged on the result line and never rendered as verified data: container handling (terminal_handling, HHLA; default 358 EUR per move, anchored to the published Eurogate Hamburg lift charge) and towage (default 15,000 EUR per call, no published tariff). The engine emits an `estimated_parameter` quality flag on these lines regardless of user override. The engine-Tier default (build-year heuristic: 2011+ → Tier II, 2000–2010 → Tier I, earlier or unknown → Tier 0) is likewise flagged estimated unless the user enters the certified IAPP tier.
+
+**Towage fee family.** Towage is added to the shared fee-family taxonomy (segment: vessel call). Where a port does not levy towage (Gothenburg has no encoded towage rule in the 2026 pilot data), the comparison view shows "not charged" for the family rather than hiding the row. Towage is deliberately not mapped to connection_fee or any other family.
+
+**Per-biller surcharges (Hafenfonds).** The Hamburg Hafenfonds (port fund) levy of 1.5 % on HHLA quay-tariff fees (excluding storage and the estimated handling parameter) is encoded as a surcharge rule on the HHLA biller object in the port file, not a hardcoded line item, so a future terminal biller (e.g. Eurogate) can carry its analogous social-fund rule as data.
+
 ## 6. Currency Handling
 
 - All arithmetic is performed in the tariff's native currency (SEK, EUR, DKK, PLN).
 - Conversion occurs exactly once, at the presentation layer, using ECB daily reference rates (public XML/CSV feed).
 - The latest fetched rate set is cached with its publication date, displayed alongside results.
 - If the feed is unreachable, the app uses the last cached rates and states this explicitly.
-- The user's chosen display currency is never part of the calculation input.
+- The user's chosen display currency is never part of the calculation input. With more than one port loaded, totals and rankings render in each port's local currency; conversion to a common display currency happens only in the comparison view's optional final step (4.3.1), so rankings never depend on the display currency.
 
 ## 7. Data Workflow and Repository Layout
 
