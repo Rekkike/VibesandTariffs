@@ -513,6 +513,8 @@ export interface CostCalculationResult {
   };
   billers: BillerBreakdown[];
   total: number;
+  total_estimated_parameters: number;
+  total_without_estimates: number;
   quality_flags: QualityFlag[];
   calculation_timestamp: string;
 }

@@ -1174,6 +1174,18 @@ export function calculatePortCallCost(
   
   // Calculate total
   const total = roundToCent(billers.reduce((sum, biller) => sum + biller.subtotal, 0));
+  // Generic estimated-parameter separation (spec v0.2.24): any fee line
+  // carrying an estimated-parameter flag counts into the estimated-parameters
+  // subtotal, so each view can show total, estimate subtotal, and the
+  // total-without-estimates side by side. Port-agnostic: driven entirely by
+  // the flags each port file's rules emit.
+  const totalEstimatedParameters = roundToCent(
+    billers
+      .flatMap(b => b.fees)
+      .filter(f => f.amount > 0 && f.quality_flags.some(flag => flag.type === 'estimated_parameter'))
+      .reduce((sum, f) => sum + f.amount, 0)
+  );
+  const totalWithoutEstimates = roundToCent(total - totalEstimatedParameters);
   
   return {
     port_id: port.metadata.id,
@@ -1188,6 +1200,8 @@ export function calculatePortCallCost(
     },
     billers,
     total,
+    total_estimated_parameters: totalEstimatedParameters,
+    total_without_estimates: totalWithoutEstimates,
     quality_flags: qualityFlags,
     calculation_timestamp: new Date().toISOString()
   };

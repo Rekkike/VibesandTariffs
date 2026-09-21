@@ -968,8 +968,8 @@ fee_rules:
   - id: hhla_container_handling
     fee_family: terminal_handling
     biller: HHLA Container Terminals
-    name: Container Handling (estimated)
-    description: "Container handling per move. HHLA's rate is unpublished (S4 2.1.2: upon request, individually negotiated). Default anchored to EUROGATE Container Terminal Hamburg's published waterside lift charge 5.1.1 (S9, effective 01.03.2026), 358.00 EUR per move. A move is one container lifted once (discharge or load)."
+    name: Container Handling (est., Eurogate anchor)
+    description: "Container handling per move. HHLA's rate is unpublished (S4 2.1.2: upon request, individually negotiated). Default anchored to EUROGATE Container Terminal Hamburg's published waterside lift charge 5.1.1 (S9, effective 01.03.2026), 358.00 EUR per move. A move is one container lifted once (discharge or load). HHLA terminal call with a handling estimate anchored to Eurogate's published lift charge - never presented as an Eurogate terminal call (spec v0.2.24)."
     rate_structure:
       type: per_unit
       unit_type: move

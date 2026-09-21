@@ -325,7 +325,7 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
             Grand Total: <strong>{formatCurrency(state.result?.total ?? 0)}</strong>
           </Typography>
         </Box>
-        <Box className="total-strip-segments">
+        <Box className="total-strip-segments">          {(state.result?.total_estimated_parameters ?? 0) > 0 && (            <Typography variant="body2" className="total-strip-segment">              <span className="status-badge status-warning" style={{ marginRight: '4px' }}>est.</span>              <span className="total-strip-segment-label">Estimated parameters:</span>{' '}              {formatCurrency(state.result?.total_estimated_parameters ?? 0)}            </Typography>          )}          {(state.result?.total_estimated_parameters ?? 0) > 0 && (            <Typography variant="body2" className="total-strip-segment">              <span className="total-strip-segment-label">Total without estimates:</span>{' '}              {formatCurrency(state.result?.total_without_estimates ?? 0)}            </Typography>          )}
           {SEGMENTS.map(segment => (
             <Typography key={segment.id} variant="body2" className="total-strip-segment">
               <span className="total-strip-segment-label">{segment.label}:</span>{' '}
@@ -1936,6 +1936,36 @@ const ComparisonView: React.FC<ComparisonViewProps> = ({
                     <TableCell key={port.metadata.id} align="right" className="comparison-subtotal">
                       {result
                         ? formatCurrency(result.total, result.currency)
+                        : <span className="comparison-error">error</span>}
+                    </TableCell>
+                  ))}
+                </TableRow>
+                {/* Estimated-parameter separation (spec v0.2.24): the total
+                    minus its estimated-parameter lines, shown for every port
+                    symmetrically (Hamburg handling/towage, Helsingborg
+                    towage, Gothenburg none) so the port-fee-level comparison
+                    is never dominated by estimates. */}
+                <TableRow className="comparison-estimate-row">
+                  <TableCell>
+                    <span className="status-badge status-warning" style={{ marginRight: '6px' }}>est.</span>
+                    Estimated parameters subtotal
+                  </TableCell>
+                  {portResults.map(({ port, result }) => (
+                    <TableCell key={port.metadata.id} align="right" className="comparison-subtotal">
+                      {result
+                        ? formatCurrency(result.total_estimated_parameters, result.currency)
+                        : <span className="comparison-error">error</span>}
+                    </TableCell>
+                  ))}
+                </TableRow>
+                <TableRow className="comparison-estimate-row">
+                  <TableCell>
+                    <strong>Total without estimates</strong>
+                  </TableCell>
+                  {portResults.map(({ port, result }) => (
+                    <TableCell key={port.metadata.id} align="right" className="comparison-subtotal">
+                      {result
+                        ? formatCurrency(result.total_without_estimates, result.currency)
                         : <span className="comparison-error">error</span>}
                     </TableCell>
                   ))}
