@@ -526,11 +526,11 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
               </Grid>
               <Grid item xs={6}>
                 <FormControl fullWidth>
-                  <InputLabel>CSI Class</InputLabel>
+                  <InputLabel>Sjöfartsverket Environmental Class</InputLabel>
                   <Select
                     value={state.call.csi_class || ''}
                     onChange={(e) => handleCallChange('csi_class', e.target.value as string | undefined)}
-                    label="CSI Class"
+                    label="Sjöfartsverket Environmental Class"
                   >
                     <MenuItem value="A">A</MenuItem>
                     <MenuItem value="B">B</MenuItem>
@@ -858,6 +858,82 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
               </>
             )}
 
+            {/* ============ HELSINGBORG-SPECIFIC CALL INPUTS ============ */}
+            {/* Port-specific parameters (spec v0.2.21): the port's own discount
+                scale (Clean Shipping Index class 1-5, distinct from
+                Sjöfartsverket's A-E environmental class), ISSC status driving
+                the double security fee, the datestamped EES level, and the
+                estimated towage parameters with LOA-class tug defaults. */}
+            {port.metadata.id === 'helsingborg' && (
+              <>
+                <Typography variant="h6" component="h3" className="segment-heading vessel-call-heading">
+                  Helsingborg Call Parameters
+                </Typography>
+                <Grid container spacing={2}>
+                  <Grid item xs={6}>
+                    <FormControl fullWidth>
+                      <InputLabel>Clean Shipping Index Class (port discount)</InputLabel>
+                      <Select
+                        value={state.call.clean_shipping_index_class || ''}
+                        onChange={(e) => handleCallChange('clean_shipping_index_class', e.target.value === '' ? undefined : e.target.value as string)}
+                        label="Clean Shipping Index Class (port discount)"
+                      >
+                        <MenuItem value="">None</MenuItem>
+                        <MenuItem value="1">1</MenuItem>
+                        <MenuItem value="2">2</MenuItem>
+                        <MenuItem value="3">3</MenuItem>
+                        <MenuItem value="4">4 (10% port-dues discount)</MenuItem>
+                        <MenuItem value="5">5</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={state.call.issc_valid ?? true}
+                          onChange={(e) => handleCallChange('issc_valid', e.target.checked)}
+                        />
+                      }
+                      label="Valid ISSC certificate (unchecked: double security fee)"
+                    />
+                  </Grid>
+                  <Grid item xs={6}>
+                    <TextField
+                      label="EES per Move (SEK) — datestamped level"
+                      type="number"
+                      value={state.call.ees_rate_per_move ?? 35}
+                      onChange={(e) => handleCallChange('ees_rate_per_move', parseFloat(e.target.value) || undefined)}
+                      fullWidth
+                      InputLabelProps={{ shrink: true }}
+                      helperText="September 2026 level: 35 SEK/move; monthly HVO band table in the tariff"
+                    />
+                  </Grid>
+                  <Grid item xs={6}>
+                    <TextField
+                      label="Towage per Tug-Assist (SEK) — est."
+                      type="number"
+                      value={state.call.towage_cost_per_tug ?? 60000}
+                      onChange={(e) => handleCallChange('towage_cost_per_tug', parseFloat(e.target.value) || undefined)}
+                      fullWidth
+                      InputLabelProps={{ shrink: true }}
+                      helperText="Estimated; no published Helsingborg tug tariff"
+                    />
+                  </Grid>
+                  <Grid item xs={6}>
+                    <TextField
+                      label="Tug Count (blank: LOA-class default)"
+                      type="number"
+                      value={state.call.tug_count ?? ''}
+                      onChange={(e) => handleCallChange('tug_count', parseFloat(e.target.value) || undefined)}
+                      fullWidth
+                      InputLabelProps={{ shrink: true }}
+                      helperText="<150 m: 0; 150–250 m: 1; >250 m: 2 — suggestion, always overridable"
+                    />
+                  </Grid>
+                </Grid>
+              </>
+            )}
             {/* ============ ENERGY AT BERTH SEGMENT INPUTS ============ */}
             <Typography variant="h6" component="h3" className="segment-heading energy-heading">
               Energy at Berth
@@ -1396,6 +1472,16 @@ const defaultCall = (portId: string): CallInput => ({
   // feeder default applied from the vessel library for feeder-class ships;
   // pilotage full Elbe transit; estimated-parameter defaults seeded so the
   // estimate-flagged lines render with their default amounts.
+  // Helsingborg parameters (spec v0.2.21). List-price defaults: valid ISSC,
+  // EES at the September 2026 level, towage estimate with LOA-class tug
+  // defaults applied by the engine when no tug count is supplied.
+  ...(portId === 'helsingborg' ? {
+    issc_valid: true,
+    ees_rate_per_move: 35,
+    towage_cost_per_tug: 60000,
+    tug_count: undefined,
+    clean_shipping_index_class: undefined
+  } : {}),
   ...(portId === 'hamburg' ? {
     lay_time_hours: 16,
     gangway_class: 'overseas',
@@ -1903,6 +1989,8 @@ const ComparisonView: React.FC<ComparisonViewProps> = ({
 // Vessel particulars, lay time, and container counts carry over.
 const PORT_SPECIFIC_CALL_FIELDS = [
   'engine_tier', 'engine_tier_estimated', 'esi_score', 'esi_noise_score',
+  'issc_valid', 'clean_shipping_index_class', 'ees_rate_per_move',
+  'towage_cost_per_tug', 'tug_count',
   'quantum_prior_year_gt', 'pilotage_segment_pct', 'towage_amount',
   'handling_rate_per_move', 'gangway_class', 'gangway_count',
   'gangway_supervision_hours', 'hpa_berth_usage', 'berth_type', 'berth_hours',

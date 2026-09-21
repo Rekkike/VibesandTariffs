@@ -83,7 +83,20 @@ export function evaluateFeeRule(
     
     if (rule.applicable_conditions.csi_class) {
       const requiredClass = rule.applicable_conditions.csi_class;
-      if (!call.csi_class || call.csi_class !== requiredClass) {
+      // Missing environmental class defaults to E (not registered) per spec
+      // 4.4.2: least favourable value, with a visible notice. Sjöfartsverket's
+      // own tables make E the not-registered rate, so an absent input never
+      // silently skips the national vessel fee.
+      if (call.csi_class === undefined || call.csi_class === '') {
+        if (requiredClass !== 'E') {
+          return null;
+        }
+        qualityFlags.push({
+          type: 'fallback_value',
+          description: 'Environmental class not supplied; defaulted to E (not registered), the least favourable rate (spec 4.4.2)',
+          severity: 'info'
+        });
+      } else if (call.csi_class !== requiredClass) {
         return null;
       }
     }
@@ -112,9 +125,20 @@ export function evaluateFeeRule(
       }
     }
     
+    // Ordering-fee lead-time band (best\u00e4llningsavgift): a national bracket
+    // derived from the call's ordering lead time, analogous to nt_class.
+    // Brackets are lower-inclusive / upper-exclusive except the last, which
+    // is 4+ hours inclusive (\u22654 h pays the lowest fee).
+    if (rule.applicable_conditions.ordering_lead_time_band) {
+      const band = getOrderingLeadTimeBandId(call.pilotage_ordering_lead_time_hours);
+      if (band !== rule.applicable_conditions.ordering_lead_time_band) {
+        return null;
+      }
+    }
+    
     // Generic conditions: any other key must match the call input exactly
     // (e.g. hpa_berth_usage: true, berth_type: 'quay').
-    const handled = new Set(['flag_state', 'ops_usage', 'esi_score', 'csi_class', 'fuel_percentage', 'nt_class', 'vessel_type']);
+    const handled = new Set(['flag_state', 'ops_usage', 'esi_score', 'csi_class', 'fuel_percentage', 'nt_class', 'vessel_type', 'ordering_lead_time_band']);
     for (const [key, value] of Object.entries(rule.applicable_conditions)) {
       if (handled.has(key)) continue;
       const callValue = (call as any)[key];
@@ -124,6 +148,10 @@ export function evaluateFeeRule(
         if (callValue === true) return null;
       } else if (Array.isArray(value)) {
         if (!value.includes(callValue)) return null;
+      } else if (value === 'present') {
+        // Presence gate: a numeric call input must be supplied and positive
+        // (e.g. fresh water m3 with a per-supply minimum).
+        if (typeof callValue !== 'number' || callValue <= 0) return null;
       } else if (callValue !== value) {
         return null;
       }
@@ -384,11 +412,52 @@ export function evaluateFeeRule(
         case 'beam_m':
           unitCount = vessel.beam_m ?? 0;
           break;
+        case 'pilotage_half_hour':
+          unitCount = typeof call.pilotage_hours === 'number' && call.pilotage_hours > 0
+            ? Math.ceil(call.pilotage_hours * 2)
+            : 0;
+          break;
+        case 'tug_count':
+          unitCount = call.tug_count ?? 0;
+          break;
         default:
           // Try to get from call directly
           unitCount = (call as any)[perUnit.unit_type] ?? 0;
       }
       
+      // Explicit count input overrides the derived unit-type count (e.g.
+      // Helsingborg ancillaries with dedicated unit-count fields).
+      if (perUnit.count_input) {
+        const explicit = (call as any)[perUnit.count_input];
+        if (typeof explicit === 'number') {
+          unitCount = explicit;
+        }
+      }
+      
+      // LOA-class default for the count itself (spec 3.3: tug/pilotage-hour
+      // suggestions are data, user-overridable). Applied only when the user
+      // supplied no count; raised as a flagged estimate, never verified data.
+      if (perUnit.default_by_loa && vessel.loa_m !== undefined) {
+        const userCount = (call as any)[perUnit.unit_type] ?? (perUnit.count_input ? (call as any)[perUnit.count_input] : undefined);
+        if (typeof userCount !== 'number') {
+          const loa = vessel.loa_m;
+          const band = perUnit.default_by_loa.bands.find(b =>
+            (b.min_m === undefined || loa >= b.min_m) &&
+            (b.max_m === undefined || loa < b.max_m)
+          );
+          if (band) {
+            unitCount = band.count;
+            qualityFlags.push({
+              type: 'estimated_parameter',
+              description: `Count defaulted to ${band.count} by LOA class${band.description ? ` (${band.description})` : ''}; user-overridable (spec 3.3)`,
+              severity: rule.estimated_parameter?.severity ?? 'info'
+            });
+          }
+        }
+      }
+      
+      
+
       let effectiveRate = perUnit.unit_rate;
       rateApplied = '';
       if (perUnit.unit_rate_input) {
@@ -752,6 +821,14 @@ export function evaluateFeeRule(
       return aOrder - bOrder;
     });
     
+    // Additive adjustments (stack_method: additive) accumulate their
+    // percentages off the pre-adjustment base (e.g. Helsingborg's two 10%
+    // environmental discounts stack to 20%, not 19%); multiplicative
+    // (default, the spec 4.4.1 fallback) adjustments apply to the running
+    // result in stacking order.
+    let additiveDiscountPct = 0;
+    let additiveSurchargePct = 0;
+    
     for (const adjustment of sortedAdjustments) {
       // Check if condition is met
       if (adjustment.condition) {
@@ -762,13 +839,26 @@ export function evaluateFeeRule(
         if (!conditionMet) continue;
       }
       
-      if (adjustment.type === 'discount') {
+      if (adjustment.stack_method === 'additive') {
+        if (adjustment.type === 'discount') {
+          additiveDiscountPct += adjustment.percentage;
+        } else if (adjustment.type === 'surcharge') {
+          additiveSurchargePct += adjustment.percentage;
+        }
+      } else if (adjustment.type === 'discount') {
         adjustedAmount *= (1 - adjustment.percentage / 100);
       } else if (adjustment.type === 'surcharge') {
         adjustedAmount *= (1 + adjustment.percentage / 100);
       }
       
       adjustmentsApplied.push(adjustment);
+    }
+    
+    if (additiveDiscountPct !== 0 || additiveSurchargePct !== 0) {
+      adjustedAmount = baseAmount
+        * (1 - additiveDiscountPct / 100)
+        * (1 + additiveSurchargePct / 100)
+        * (adjustedAmount / baseAmount);
     }
   }
   
@@ -794,6 +884,12 @@ function evaluateCondition(condition: string, input: CostCalculationInput): bool
   // For now, handle simple conditions
   // In production, use a proper expression evaluator
   
+  // Disjunction: 'a || b' is met when either side is met (e.g. ESI >= 30 or
+  // CSI class 4 for Helsingborg's environmental discount)
+  if (condition.includes('||')) {
+    return condition.split('||').some(part => evaluateCondition(part.trim(), input));
+  }
+  
   const call = input.call;
   const vessel = input.vessel;
   
@@ -810,6 +906,17 @@ function evaluateCondition(condition: string, input: CostCalculationInput): bool
     const match = condition.match(/csi_class == '([^']+)'/);
     if (match && call.csi_class) {
       return call.csi_class === match[1];
+    }
+  }
+  
+  // Clean Shipping Index class (1-5 index scale, port-side discount input);
+  // distinct from Sjöfartsverket's environmental class A-E, which is keyed on
+  // csi_class in port files but never via this condition form (spec v0.2.21:
+  // the port's CSI-4 discount and the national A-E classes must not conflate).
+  if (condition.includes('clean_shipping_index_class == ')) {
+    const match = condition.match(/clean_shipping_index_class == '([^']+)'/);
+    if (match && call.clean_shipping_index_class) {
+      return call.clean_shipping_index_class === match[1];
     }
   }
   
@@ -839,8 +946,36 @@ function evaluateCondition(condition: string, input: CostCalculationInput): bool
     }
   }
   
+  // Generic numeric comparison on call inputs: 'field > N' and 'field >= N'
+  // (e.g. pilotage_hours > 7 for the national pilotage-time discount).
+  const gtMatch = condition.match(/^(\w+) > (\d+(?:\.\d+)?)$/);
+  if (gtMatch) {
+    const value = (call as any)[gtMatch[1]];
+    return typeof value === 'number' && value > parseFloat(gtMatch[2]);
+  }
+  const gteMatch = condition.match(/^(\w+) >= (\d+(?:\.\d+)?)$/);
+  if (gteMatch) {
+    const value = (call as any)[gteMatch[1]];
+    return typeof value === 'number' && value >= parseFloat(gteMatch[2]);
+  }
+  
   // Default: condition not met
   return false;
+}
+
+/**
+ * Ordering-fee lead-time band (beställningsavgift) from the call's pilotage
+ * ordering lead time. National Sjöfartsverket brackets: <1 h, 1-2 h, 2-3 h,
+ * 3-4 h, ≥4 h; lower-inclusive, upper-exclusive, last band inclusive.
+ * Missing lead time falls back to the least favourable band (spec 4.4.2).
+ */
+export function getOrderingLeadTimeBandId(hours: number | undefined): string {
+  if (typeof hours !== 'number' || isNaN(hours) || hours < 0) return 'under_1h';
+  if (hours < 1) return 'under_1h';
+  if (hours < 2) return '1_2h';
+  if (hours < 3) return '2_3h';
+  if (hours < 4) return '3_4h';
+  return '4h_plus';
 }
 
 /**
@@ -974,6 +1109,41 @@ export function calculatePortCallCost(
       quality_flags: []
     });
     target.subtotal += surchargeAmount;
+  }
+  
+  // Apply per-biller frequency discounts (e.g. Sjöfartsverket vessel +
+  // readiness fees: percentage payable keyed on calls this calendar month).
+  // Itemized as its own negative line on the biller; never folded silently.
+  for (const billerDef of port.billers ?? []) {
+    const fd = billerDef.frequency_discount;
+    if (!fd) continue;
+    const target = billerMap.get(billerDef.name) ?? billerMap.get(billerDef.id);
+    if (!target) continue;
+    const applySet = new Set<string>(fd.apply_families);
+    const base = target.fees
+      .filter(f => applySet.has(f.fee_family))
+      .reduce((sum, f) => sum + f.amount, 0);
+    if (base <= 0) continue;
+    const calls = input.call.calls_this_month;
+    const band = fd.bands.find(b =>
+      calls >= b.min_calls && (b.max_calls === null || calls <= b.max_calls)
+    );
+    if (!band) continue;
+    if (band.payable_pct >= 100) continue;
+    const discountAmount = roundToCent(base * (band.payable_pct - 100) / 100);
+    target.fees.push({
+      fee_rule_id: fd.id,
+      fee_family: fd.fee_family,
+      biller: target.biller,
+      amount: discountAmount,
+      currency: target.currency,
+      rate_applied: `Frequency discount: ${band.payable_pct}% payable (${calls} calls this month) on ${roundToCent(base).toFixed(2)}`,
+      band_or_basis: `calls_this_month=${calls}, ${band.payable_pct}% of ${[...applySet].join(' + ')}`,
+      source_reference: fd.source_reference,
+      adjustments_applied: [],
+      quality_flags: []
+    });
+    target.subtotal += discountAmount;
   }
   
   // Convert map to array; round biller subtotals to the cent (per-line cent

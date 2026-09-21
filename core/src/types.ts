@@ -56,6 +56,7 @@ export const FEE_FAMILY_TO_SEGMENT: Record<FeeFamily, CostSegment> = {
   'yard_surcharge': 'terminal_and_yard',
   'gate_hazardous': 'terminal_and_yard',
   'idle_berth': 'terminal_and_yard',
+  'ancillary_service': 'vessel_call',
   'hatch_cover': 'vessel_call',
   'gearbox_handling': 'vessel_call',
   'fairway_dues': 'vessel_call',
@@ -118,6 +119,10 @@ export interface PerUnitRate {
   unit_rate: number;
   unit_type: string; // e.g., 'container', 'teu', 'kg', 'move'
   unit_rate_input?: string; // call input overriding the rate (e.g. handling_rate_per_move)
+  count_input?: string;      // call input holding the unit count (overrides the derived unit_type count)
+  default_by_loa?: {         // suggested count by LOA class (spec 3.3: defaults are data, user-overridable)
+    bands: { min_m?: number; max_m?: number; count: number; description?: string }[];
+  };
 }
 
 export interface BandedByTimeRate {
@@ -251,6 +256,11 @@ export interface Adjustment {
   percentage: number; // percentage to apply (e.g., 10 for 10%)
   condition?: string; // condition for applying this adjustment
   stacking_order?: number; // custom stacking order
+  // Multiplicative (default, spec 4.4.1 fallback) applies to the running
+  // result; 'additive' discounts/surcharges sum their percentages off the
+  // pre-adjustment base (declared per tariff clause where the tariff
+  // legislates additive stacking, e.g. Helsingborg's environmental discounts).
+  stack_method?: 'multiplicative' | 'additive';
   description: string;
 }
 
@@ -303,6 +313,18 @@ export interface Biller {
     fee_family: FeeFamily;
     percentage: number;
     exclude_families?: FeeFamily[];
+    source_reference: SourceReference;
+  };
+  // Per-biller frequency discount on the biller's fees (e.g. Sjöfartsverket:
+  // percentage of the vessel + readiness fees payable, keyed on calls at the
+  // port per calendar month). Applied to the listed families only; the
+  // discount amount is itemized as its own (negative) line.
+  frequency_discount?: {
+    id: string;
+    name: string;
+    fee_family: FeeFamily;
+    apply_families: FeeFamily[];
+    bands: { min_calls: number; max_calls: number | null; payable_pct: number }[];
     source_reference: SourceReference;
   };
 }
@@ -385,6 +407,8 @@ export interface CallInput {
   gangway_supervision_hours?: number;
   pilotage_segment_pct?: number;  // Elbe transit percentage, default 100
   towage_amount?: number;          // estimated towage amount per call (default 15,000 EUR)
+  tug_count?: number;              // number of tug assists (drives towage unit counts where billed per tug)
+  ees_rate_per_move?: number;      // Emergency Energy Surcharge per move (Helsingborg; datestamped monthly level)
   handling_rate_per_move?: number; // estimated handling rate per move (default 358 EUR)
   waste_short_sea_reduction?: boolean;          // -90% of total (application-based, off by default)
   waste_alternative_fuel_reduction?: boolean;   // -50% of MARPOL I share
@@ -395,6 +419,13 @@ export interface CallInput {
   storage_empty_days?: number;
   storage_empty_20ft_units?: number;
   storage_empty_40ft_units?: number;
+  storage_empty_30ft_units?: number;
+  storage_empty_45ft_units?: number;
+  storage_import_30ft_units?: number;
+  storage_import_45ft_units?: number;
+  storage_export_30ft_units?: number;
+  storage_export_45ft_units?: number;
+  reefer_connection_units?: number;
   container_service_reception_units?: number;
   container_service_extra_moves?: number;
   container_service_admin_fee?: boolean;
@@ -405,6 +436,11 @@ export interface CallInput {
   reefer_checks?: number;
   labelling_units?: number;
   neutralization_units?: number;
+  // Helsingborg call inputs (spec v0.2.21)
+  issc_valid?: boolean;              // valid ISSC certificate; double security fee when absent (least-favourable default)
+  clean_shipping_index_class?: string; // Clean Shipping Index class 1-5 (port discount; distinct from Sjöfartsverket A-E)
+  towage_cost_per_tug?: number;      // estimated towage SEK per tug-assist (Helsingborg)
+  sludge_extra_m3?: number;         // sludge above the 10 m3 included volume
 }
 
 // Full input for cost calculation

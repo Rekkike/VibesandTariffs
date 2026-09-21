@@ -1,6 +1,6 @@
-# Port Call Cost Analyzer — Specification v0.2.20
+# Port Call Cost Analyzer — Specification v0.2.21
 
-This document is the committed record of the project specification at version 0.2.20. It governs the data model, engine, and UI contracts of the Port Call Cost Analyzer. `docs/INTENDED_STATE.md` remains the authoritative audit document for the Gothenburg 2026 pilot data; where the two documents overlap, INTENDED_STATE.md governs the Gothenburg figures and this document governs the architecture and UI behavior.
+This document is the committed record of the project specification at version 0.2.21. It governs the data model, engine, and UI contracts of the Port Call Cost Analyzer. `docs/INTENDED_STATE.md` remains the authoritative audit document for the Gothenburg 2026 pilot data; where the two documents overlap, INTENDED_STATE.md governs the Gothenburg figures and this document governs the architecture and UI behavior.
 
 ## Versioning Policy
 
@@ -36,6 +36,7 @@ Small adjustments increment only the third decimal. Larger updates may jump more
 | 0.2.18 | 2026-09-21 | Line-labeling rule added to section 4.3 (fee family is the grouping, rule name is the line); vessel library recorded as section 3.4 (curated static YAML, autocomplete by name or IMO, pre-fill without locking, no runtime API dependency) |
 | 0.2.19 | 2026-09-21 | Vessel library schema extended with nt and draught_m (pre-fill now covers all vessel-fee-relevant inputs); estimated values flagged in source notes and marked in the form |
 | 0.2.20 | 2026-09-21 | Hamburg port file added (HPA, GDWS pilotage, HHLA, BUKEA waste; estimated handling and towage parameters); port selector and cross-port comparison view with local-currency display and optional ECB/manual conversion; towage family added to shared taxonomy |
+| 0.2.21 | 2026-09-21 | Helsingborg added as the third port (single-biller port authority, Sjöfartsverket national tables transcribed in full per the port-silo principle, towage as an estimated parameter with LOA-class tug defaults); per-biller frequency-discount mechanism; ordering-fee lead-time bands; ancillary_service family added to the shared taxonomy |
 
 ## 1. Purpose
 
@@ -396,6 +397,18 @@ The Hamburg port file (`core/data/hamburg_2026.yaml`, port id `hamburg`, currenc
 **Estimated parameters.** Two Hamburg lines carry no published tariff and are encoded as estimated parameters — user-editable inputs with their default amounts, always flagged on the result line and never rendered as verified data: container handling (terminal_handling, HHLA; default 358 EUR per move, anchored to the published Eurogate Hamburg lift charge) and towage (default 15,000 EUR per call, no published tariff). The engine emits an `estimated_parameter` quality flag on these lines regardless of user override. The engine-Tier default (build-year heuristic: 2011+ → Tier II, 2000–2010 → Tier I, earlier or unknown → Tier 0) is likewise flagged estimated unless the user enters the certified IAPP tier.
 
 **Towage fee family.** Towage is added to the shared fee-family taxonomy (segment: vessel call). Where a port does not levy towage (Gothenburg has no encoded towage rule in the 2026 pilot data), the comparison view shows "not charged" for the family rather than hiding the row. Towage is deliberately not mapped to connection_fee or any other family.
+
+### 5.4 Helsingborg 2026 Port File (v1)
+
+The Helsingborg port file (`core/data/helsingborg_2026.yaml`, port id `helsingborg`, currency SEK, effective 2026) is a self-contained silo encoded under the same schema, with three billers: **Port of Helsingborg** (Helsingborgs Hamn AB acts as both port authority and terminal operator of the West Harbour container terminal — a single biller for port dues, the waste/environmental fee, port security, cargo dues, stevedoring, storage, and ancillaries) and **Sjöfartsverket** (the national vessel fee 10 NT classes × environmental classes A–E, readiness fee, pilotage start + per-commenced-half-hour + ordering fee — the national tables transcribed in full into this file, never referenced from another port file; the engine and the fee-family vocabulary are the only shared assets). Towage is provided by commercial operators with no published tariff and is encoded as an estimated parameter.
+
+**Port-specific rules.** Flat port dues 6.85 SEK/GT (all vessel types, no banding); the waste/environmental fee as the highest of 0.75 SEK/GT versus 25,000 SEK per call (break-even 33,333 GT; the selection rule is an assumption recorded in the extraction reference); cargo due 625, port security 78 (doubled for vessels without a valid ISSC), and LO-LO stevedoring 890 SEK per unit; the Emergency Energy Surcharge encoded as a datestamped parameter with the HVO band table (September 2026 level: 35 SEK/move), never a constant; environmental discounts of 10 % (ESI ≥ 30 or Clean Shipping Index class 4) plus a further 10 % for ≥ 30 % fossil-free fuel, stacking additively to 20 %; long-stay surcharges after four days (100 SEK per commenced metre LOA per 7-day period on port dues, 4.00 on waste); storage with seven free days for full units plus the empty-unit rates. The port's Clean Shipping Index discount (class 4 on a 1–5 index scale) and Sjöfartsverket's environmental class (A–E) are two different scales and must never be conflated: they are distinct call inputs.
+
+**Estimated parameters.** Towage is a quality-flagged, user-overridable estimate (default 60,000 SEK per tug-assist) with tug-count defaults by LOA class encoded as data (< 150 m: 0; 150–250 m: 1; > 250 m: 2 — spec 3.3: defaults are suggestions, the user may always override). Pilotage default hours follow the same LOA classes (2/3/4 h) as declared suggestion values.
+
+**Not yet encoded.** Godsavgift (the Sjöfartsverket cargo fee, which needs a cargo-tonnage input), Dalshult stuffing/stripping (third party, no published rates), and OOG handling ("as per request") are surfaced as not-yet-encoded notices rather than estimates.
+
+**Sjöfartsverket frequency discount.** The percentage of the vessel + readiness fees payable by calls at the port per calendar month (1–2 calls 100 %, 3 calls 75 %, 4 calls 50 %, 5 calls 25 %, 6 or more 0 %) is encoded as a per-biller `frequency_discount` block keyed on the listed fee families, itemized as its own negative line on the biller — never folded silently into the base fees.
 
 **Per-biller surcharges (Hafenfonds).** The Hamburg Hafenfonds (port fund) levy of 1.5 % on HHLA quay-tariff fees (excluding storage and the estimated handling parameter) is encoded as a surcharge rule on the HHLA biller object in the port file, not a hardcoded line item, so a future terminal biller (e.g. Eurogate) can carry its analogous social-fund rule as data.
 

@@ -1,0 +1,2581 @@
+# Port of Helsingborg 2026 Tariff
+# Complete data file for Port Call Cost Analyzer - self-contained port silo
+# (spec: each port file is independently verifiable with zero references to any
+# other port file; the engine and fee-family vocabulary are the only shared assets)
+# All amounts in SEK, ex-VAT. Authority of record: docs/sources/sweden/helsingborg/
+# HELSINGBORG_EXTRACTION_REFERENCE.md (commit d3a9ad8); tariff PDF stored at
+# docs/sources/sweden/helsingborg/port-authority/tariff-2026.pdf
+# Not modeled in v1 (reference section 9, surfaced as notices, never estimated):
+# godsavgift (needs cargo-tonnage input) - not yet encoded;
+# Dalshult stuffing/stripping/warehousing (third party, no published rates);
+# OOG handling ("as per request", no published rate); scrubber waste actual cost;
+# pumping charge (liquid bulk only); access cards, photography, labour overtime.
+metadata:
+  id: helsingborg
+  name: Port of Helsingborg
+  country: Sweden
+  currency: SEK
+  validity_start: '2026-01-01'
+  validity_end: '2026-12-31'
+  description: 'Helsingborgs Hamn AB (556024-0979) acts as port authority and terminal operator (West Harbour container
+    terminal); Sjöfartsverket levies national fairway and pilotage fees; towage estimated. Sources: Tariff 2026
+    (S1), Sjöfartsverket prislista and lathund 2026 (S2/S3).'
+  document_url: https://www.port.helsingborg.se/wp-content/uploads/2026/04/Tariff-2026.pdf
+billers:
+- id: port_of_helsingborg
+  name: Port of Helsingborg
+  description: 'Helsingborgs Hamn AB: port dues, waste/environmental fee, port security fee, cargo dues, stevedoring,
+    storage, ancillaries (single biller)'
+  currency: SEK
+- id: sjofartsverket
+  name: Sjöfartsverket
+  description: 'Swedish Maritime Administration: national vessel fee (fartygsavgift), readiness fee (beredskapsavgift),
+    pilotage (lotsavgift), ordering fee'
+  currency: SEK
+  frequency_discount:
+    id: sfv_frequency_discount
+    name: Frequency Discount - Vessel Fee and Readiness Fee
+    fee_family: frequency_discount
+    apply_families: [vessel_fee, readiness_fee]
+    bands:
+    - min_calls: 1
+      max_calls: 2
+      payable_pct: 100
+    - min_calls: 3
+      max_calls: 3
+      payable_pct: 75
+    - min_calls: 4
+      max_calls: 4
+      payable_pct: 50
+    - min_calls: 5
+      max_calls: 5
+      payable_pct: 25
+    - min_calls: 6
+      max_calls: null
+      payable_pct: 0
+    source_reference:
+      document_name: prislista-farleds-lotsavgifter-2026.pdf
+      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+      page: 4
+      clause: Frequency discount
+      verified_on: '2026-09-21'
+      verified_by: vibe-session-helsingborg
+      document_issued: '2025-11-01'
+- id: towage_provider
+  name: Towage operator (estimated)
+  description: Commercial tug services; no published tariff - estimated parameter
+  currency: SEK
+fee_rules:
+- id: poh_port_dues
+  fee_family: port_dues
+  biller: Port of Helsingborg
+  name: Port Dues (Vessels)
+  description: Port dues per GT, all vessel types (container model). Flat 6.85 SEK/GT, no banding. Environmental
+    discounts are adjustments on this rule (additive stacking per tariff).
+  rate_structure:
+    type: per_unit
+    unit_type: gt
+    unit_rate: 6.85
+  source_reference:
+    document_name: tariff-2026.pdf
+    document_url: docs/sources/sweden/helsingborg/port-authority/tariff-2026.pdf
+    page: 5
+    clause: Port dues, vessels
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2026-01-01'
+  adjustments:
+  - type: discount
+    percentage: 10
+    condition: esi_score >= 30 || clean_shipping_index_class == '4'
+    stacking_order: 1
+    stack_method: additive
+    description: 'ESI score >= 30 or Clean Shipping Index class 4: 10% discount on port dues. Note: the port CSI
+      discount (Clean Shipping Index class 4, a 1-5 index scale) is a different scale from Sjöfartsverket''s environmental
+      class A-E.'
+  - type: discount
+    percentage: 10
+    condition: fossil_free_fuel_percentage >= 30
+    stacking_order: 2
+    stack_method: additive
+    description: '>= 30% fossil-free fuel of annual consumption: additional 10% discount, stacking additively with
+      the first (total 20% off).'
+- id: poh_long_stay_port_dues
+  fee_family: port_dues
+  biller: Port of Helsingborg
+  name: Long-Stay Additional Port Dues
+  description: 'After more than four days in port: 100.00 SEK per commenced metre LOA (non-residential area), per
+    7-day period or part thereof, on port dues.'
+  rate_structure:
+    type: per_commenced_period
+    basis: loa
+    hours_input: port_time_hours
+    fallback_hours: lay_time_hours
+    free_hours: 96
+    period_hours: 168
+    tiers:
+    - up_to_excess_hours: null
+      rate_per_period_per_basis: 100.0
+  source_reference:
+    document_name: tariff-2026.pdf
+    document_url: docs/sources/sweden/helsingborg/port-authority/tariff-2026.pdf
+    page: 5
+    clause: Port dues, vessels - additional fee after more than four days
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2026-01-01'
+- id: poh_waste_fee
+  fee_family: waste
+  biller: Port of Helsingborg
+  name: Waste and Environmental Fee
+  description: 'All vessels: 0.75 SEK per GT, alternatively 25,000 SEK per call; highest of the two applies (assumption
+    flagged in the extraction reference section 10: the tariff states the alternative without an explicit selection
+    rule; the port''s cruise clause "the option that generates the highest total amount applies" is applied by analogy;
+    break-even at 33,333 GT - vessels below pay the flat 25,000 SEK). Includes sorted waste and up to 10 m3 sludge
+    per call.'
+  rate_structure:
+    type: banded_flat
+    basis: gt
+    bands:
+    - min: null
+      max: 33333
+      amount: 25000
+    - min: 33333
+      max: null
+      rate: 0.75
+  source_reference:
+    document_name: tariff-2026.pdf
+    document_url: docs/sources/sweden/helsingborg/port-authority/tariff-2026.pdf
+    page: 5
+    clause: Waste and environmental fee
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2026-01-01'
+- id: poh_sludge_excess
+  fee_family: waste
+  biller: Port of Helsingborg
+  name: Additional Sludge (above 10 m3)
+  description: 'Sludge above 10 m3 per call: 2,075.00 SEK per m3 plus 15 percent administration fee (actual-cost
+    basis for scrubber waste). Optional call input, default 0.'
+  rate_structure:
+    type: per_unit
+    unit_type: sludge_extra_m3
+    unit_rate: 2386.25
+  source_reference:
+    document_name: tariff-2026.pdf
+    document_url: docs/sources/sweden/helsingborg/port-authority/tariff-2026.pdf
+    page: 5
+    clause: Waste and environmental fee - additional sludge
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2026-01-01'
+- id: poh_long_stay_waste
+  fee_family: waste
+  biller: Port of Helsingborg
+  name: Long-Stay Additional Waste Fee
+  description: 'After more than four days in port: 4.00 SEK per commenced metre LOA per 7-day period or part thereof
+    (waste counterpart).'
+  rate_structure:
+    type: per_commenced_period
+    basis: loa
+    hours_input: port_time_hours
+    fallback_hours: lay_time_hours
+    free_hours: 96
+    period_hours: 168
+    tiers:
+    - up_to_excess_hours: null
+      rate_per_period_per_basis: 4.0
+  source_reference:
+    document_name: tariff-2026.pdf
+    document_url: docs/sources/sweden/helsingborg/port-authority/tariff-2026.pdf
+    page: 5
+    clause: Waste and environmental fee - additional fee after more than four days
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2026-01-01'
+- id: poh_cargo_due
+  fee_family: port_dues
+  biller: Port of Helsingborg
+  name: Port Dues Cargo (per unit)
+  description: 'General cargo in containers, on loading platforms, trailers or other cargo carriers: 625.00 SEK
+    per unit.'
+  rate_structure:
+    type: per_unit
+    unit_type: container_total
+    unit_rate: 625
+  source_reference:
+    document_name: tariff-2026.pdf
+    document_url: docs/sources/sweden/helsingborg/port-authority/tariff-2026.pdf
+    page: 6
+    clause: Port dues cargo
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2026-01-01'
+- id: poh_security_fee
+  fee_family: security
+  biller: Port of Helsingborg
+  name: Port Security Fee (valid ISSC)
+  description: Port security fee 78.00 SEK per unit (containers, platforms, trailers, lorries). Applies when the
+    vessel holds a valid ISSC.
+  rate_structure:
+    type: per_unit
+    unit_type: container_total
+    unit_rate: 78
+  source_reference:
+    document_name: tariff-2026.pdf
+    document_url: docs/sources/sweden/helsingborg/port-authority/tariff-2026.pdf
+    page: 6
+    clause: Port security fee ISPS
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2026-01-01'
+  applicable_conditions:
+    issc_valid: true
+- id: poh_security_fee_no_issc
+  fee_family: security
+  biller: Port of Helsingborg
+  name: Port Security Fee (no valid ISSC - double)
+  description: 'Vessels without a valid ISSC are charged double security fee: 156.00 SEK per unit. Missing ISSC
+    status defaults to this rule (least favourable value, spec 4.4.2).'
+  rate_structure:
+    type: per_unit
+    unit_type: container_total
+    unit_rate: 156
+  source_reference:
+    document_name: tariff-2026.pdf
+    document_url: docs/sources/sweden/helsingborg/port-authority/tariff-2026.pdf
+    page: 6
+    clause: Port security fee ISPS - vessels without valid ISSC charged double
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2026-01-01'
+  applicable_conditions:
+    issc_valid: false
+- id: poh_lolo_handling
+  fee_family: terminal_handling
+  biller: Port of Helsingborg
+  name: Stevedoring LO-LO (per unit)
+  description: 'LO-LO, full or empty units, vessel to/from place of rest at the West Harbour: 890.00 SEK per unit.
+    Shifting onboard = one lift; shifting via quay = two lifts.'
+  rate_structure:
+    type: per_unit
+    unit_type: container_total
+    unit_rate: 890
+  source_reference:
+    document_name: tariff-2026.pdf
+    document_url: docs/sources/sweden/helsingborg/port-authority/tariff-2026.pdf
+    page: 7
+    clause: Stevedoring LO-LO
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2026-01-01'
+- id: poh_hatch_cover
+  fee_family: terminal_handling
+  biller: Port of Helsingborg
+  name: Hatch Cover Handling
+  description: 'Hatch cover handling: 2,255.00 SEK per unit. Optional call input, default 0.'
+  rate_structure:
+    type: per_unit
+    unit_type: hatch_cover_count
+    unit_rate: 2255
+  source_reference:
+    document_name: tariff-2026.pdf
+    document_url: docs/sources/sweden/helsingborg/port-authority/tariff-2026.pdf
+    page: 7
+    clause: Stevedoring - hatch cover handling
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2026-01-01'
+- id: poh_ees
+  fee_family: environmental_surcharge
+  biller: Port of Helsingborg
+  name: Emergency Energy Surcharge (EES)
+  description: 'Emergency Energy Surcharge on all container units handled over quay. Variable, adjusted monthly
+    on the prior-month average HVO (Neste MY Renewable Diesel) price band table (SEK per move): HVO <= 16 -> 0;
+    16.01-20 -> 15; 20.01-24 -> 35; 24.01-28 -> 55; 28.01-32 -> 75; 32.01-36 -> 95. Current level September 2026:
+    35 SEK per move (verified on the port tariff page 2026-09-21). Datestamped parameter: the rate applies from
+    its reference date until superseded by the port''s next monthly publication.'
+  rate_structure:
+    type: per_unit
+    unit_type: move
+    unit_rate: 35
+    unit_rate_input: ees_rate_per_move
+  source_reference:
+    document_name: tariff-2026.pdf
+    document_url: docs/sources/sweden/helsingborg/port-authority/tariff-2026.pdf
+    page: 7
+    clause: Emergency Energy Surcharge, EES
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2026-01-01'
+- id: poh_storage_full_import_20ft
+  fee_family: storage
+  biller: Port of Helsingborg
+  name: Storage Full Units Import 20ft
+  description: 'Storage of full units, import: free 7 calendar days including arrival day, thereafter 275.00 SEK
+    per day per 20ft unit.'
+  rate_structure:
+    type: progressive_daily
+    days_input: storage_days_import
+    container_count_input: containers_discharged_le20ft
+    free_days: 7
+    bands:
+    - min_days: 1
+      max_days: null
+      rate_per_container_per_day: 275
+  source_reference:
+    document_name: tariff-2026.pdf
+    document_url: docs/sources/sweden/helsingborg/port-authority/tariff-2026.pdf
+    page: 7
+    clause: Storage - full units
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2026-01-01'
+- id: poh_storage_full_import_30ft
+  fee_family: storage
+  biller: Port of Helsingborg
+  name: Storage Full Units Import 30ft
+  description: 'Storage of full units, import: free 7 calendar days including arrival day, thereafter 415.00 SEK
+    per day per 30ft unit. Count defaults to zero: 30ft units are billed via this rule only when the user
+    supplies the dedicated unit count (distinct from the <=20ft and >20ft buckets).'
+  rate_structure:
+    type: progressive_daily
+    days_input: storage_days_import
+    container_count_input: storage_import_30ft_units
+    free_days: 7
+    bands:
+    - min_days: 1
+      max_days: null
+      rate_per_container_per_day: 415
+  source_reference:
+    document_name: tariff-2026.pdf
+    document_url: docs/sources/sweden/helsingborg/port-authority/tariff-2026.pdf
+    page: 7
+    clause: Storage - full units
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2026-01-01'
+- id: poh_storage_full_import_40ft
+  fee_family: storage
+  biller: Port of Helsingborg
+  name: Storage Full Units Import 40ft
+  description: 'Storage of full units, import: free 7 calendar days including arrival day, thereafter 550.00 SEK
+    per day per 40ft unit.'
+  rate_structure:
+    type: progressive_daily
+    days_input: storage_days_import
+    container_count_input: containers_discharged_gt20ft
+    free_days: 7
+    bands:
+    - min_days: 1
+      max_days: null
+      rate_per_container_per_day: 550
+  source_reference:
+    document_name: tariff-2026.pdf
+    document_url: docs/sources/sweden/helsingborg/port-authority/tariff-2026.pdf
+    page: 7
+    clause: Storage - full units
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2026-01-01'
+- id: poh_storage_full_import_45ft
+  fee_family: storage
+  biller: Port of Helsingborg
+  name: Storage Full Units Import 45ft
+  description: 'Storage of full units, import: free 7 calendar days including arrival day, thereafter 620.00 SEK
+    per day per 45ft unit.'
+  rate_structure:
+    type: progressive_daily
+    days_input: storage_days_import
+    container_count_input: storage_import_45ft_units
+    free_days: 7
+    bands:
+    - min_days: 1
+      max_days: null
+      rate_per_container_per_day: 620
+  source_reference:
+    document_name: tariff-2026.pdf
+    document_url: docs/sources/sweden/helsingborg/port-authority/tariff-2026.pdf
+    page: 7
+    clause: Storage - full units
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2026-01-01'
+- id: poh_storage_full_export_20ft
+  fee_family: storage
+  biller: Port of Helsingborg
+  name: Storage Full Units Export 20ft
+  description: 'Storage of full units, export: free 7 calendar days including arrival day, thereafter 95.00 SEK
+    per day per 20ft unit.'
+  rate_structure:
+    type: progressive_daily
+    days_input: storage_days_export
+    container_count_input: containers_loaded_le20ft
+    free_days: 7
+    bands:
+    - min_days: 1
+      max_days: null
+      rate_per_container_per_day: 95
+  source_reference:
+    document_name: tariff-2026.pdf
+    document_url: docs/sources/sweden/helsingborg/port-authority/tariff-2026.pdf
+    page: 7
+    clause: Storage - full units
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2026-01-01'
+- id: poh_storage_full_export_30ft
+  fee_family: storage
+  biller: Port of Helsingborg
+  name: Storage Full Units Export 30ft
+  description: 'Storage of full units, export: free 7 calendar days including arrival day, thereafter 140.00 SEK
+    per day per 30ft unit.'
+  rate_structure:
+    type: progressive_daily
+    days_input: storage_days_export
+    container_count_input: storage_export_30ft_units
+    free_days: 7
+    bands:
+    - min_days: 1
+      max_days: null
+      rate_per_container_per_day: 140
+  source_reference:
+    document_name: tariff-2026.pdf
+    document_url: docs/sources/sweden/helsingborg/port-authority/tariff-2026.pdf
+    page: 7
+    clause: Storage - full units
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2026-01-01'
+- id: poh_storage_full_export_40ft
+  fee_family: storage
+  biller: Port of Helsingborg
+  name: Storage Full Units Export 40ft
+  description: 'Storage of full units, export: free 7 calendar days including arrival day, thereafter 190.00 SEK
+    per day per 40ft unit.'
+  rate_structure:
+    type: progressive_daily
+    days_input: storage_days_export
+    container_count_input: containers_loaded_gt20ft
+    free_days: 7
+    bands:
+    - min_days: 1
+      max_days: null
+      rate_per_container_per_day: 190
+  source_reference:
+    document_name: tariff-2026.pdf
+    document_url: docs/sources/sweden/helsingborg/port-authority/tariff-2026.pdf
+    page: 7
+    clause: Storage - full units
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2026-01-01'
+- id: poh_storage_full_export_45ft
+  fee_family: storage
+  biller: Port of Helsingborg
+  name: Storage Full Units Export 45ft
+  description: 'Storage of full units, export: free 7 calendar days including arrival day, thereafter 210.00 SEK
+    per day per 45ft unit.'
+  rate_structure:
+    type: progressive_daily
+    days_input: storage_days_export
+    container_count_input: storage_export_45ft_units
+    free_days: 7
+    bands:
+    - min_days: 1
+      max_days: null
+      rate_per_container_per_day: 210
+  source_reference:
+    document_name: tariff-2026.pdf
+    document_url: docs/sources/sweden/helsingborg/port-authority/tariff-2026.pdf
+    page: 7
+    clause: Storage - full units
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2026-01-01'
+- id: poh_storage_empty_20ft
+  fee_family: storage
+  biller: Port of Helsingborg
+  name: Storage Empty Units 20ft
+  description: 'Storage of empty units from arrival day (no free time): 42.00 SEK per day per 20ft unit. Optional
+    call inputs, default 0.'
+  rate_structure:
+    type: progressive_daily
+    days_input: storage_empty_days
+    container_count_input: storage_empty_20ft_units
+    free_days: 0
+    bands:
+    - min_days: 1
+      max_days: null
+      rate_per_container_per_day: 42
+  source_reference:
+    document_name: tariff-2026.pdf
+    document_url: docs/sources/sweden/helsingborg/port-authority/tariff-2026.pdf
+    page: 7
+    clause: Storage - empty units
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2026-01-01'
+- id: poh_storage_empty_30ft
+  fee_family: storage
+  biller: Port of Helsingborg
+  name: Storage Empty Units 30ft
+  description: 'Storage of empty units from arrival day (no free time): 64.00 SEK per day per 30ft unit. Optional
+    call inputs, default 0.'
+  rate_structure:
+    type: progressive_daily
+    days_input: storage_empty_days
+    container_count_input: storage_empty_30ft_units
+    free_days: 0
+    bands:
+    - min_days: 1
+      max_days: null
+      rate_per_container_per_day: 64
+  source_reference:
+    document_name: tariff-2026.pdf
+    document_url: docs/sources/sweden/helsingborg/port-authority/tariff-2026.pdf
+    page: 7
+    clause: Storage - empty units
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2026-01-01'
+- id: poh_storage_empty_40ft
+  fee_family: storage
+  biller: Port of Helsingborg
+  name: Storage Empty Units 40ft
+  description: 'Storage of empty units from arrival day (no free time): 84.00 SEK per day per 40ft unit. Optional
+    call inputs, default 0.'
+  rate_structure:
+    type: progressive_daily
+    days_input: storage_empty_days
+    container_count_input: storage_empty_40ft_units
+    free_days: 0
+    bands:
+    - min_days: 1
+      max_days: null
+      rate_per_container_per_day: 84
+  source_reference:
+    document_name: tariff-2026.pdf
+    document_url: docs/sources/sweden/helsingborg/port-authority/tariff-2026.pdf
+    page: 7
+    clause: Storage - empty units
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2026-01-01'
+- id: poh_storage_empty_45ft
+  fee_family: storage
+  biller: Port of Helsingborg
+  name: Storage Empty Units 45ft
+  description: 'Storage of empty units from arrival day (no free time): 94.00 SEK per day per 45ft unit. Optional
+    call inputs, default 0.'
+  rate_structure:
+    type: progressive_daily
+    days_input: storage_empty_days
+    container_count_input: storage_empty_45ft_units
+    free_days: 0
+    bands:
+    - min_days: 1
+      max_days: null
+      rate_per_container_per_day: 94
+  source_reference:
+    document_name: tariff-2026.pdf
+    document_url: docs/sources/sweden/helsingborg/port-authority/tariff-2026.pdf
+    page: 7
+    clause: Storage - empty units
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2026-01-01'
+- id: poh_fresh_water
+  fee_family: ancillary_service
+  biller: Port of Helsingborg
+  name: Fresh Water
+  description: 'Fresh water 75.00 SEK/m3, minimum 945.00 SEK per supply. Optional call input: supply
+    the volume to bill; blank means none supplied (no charge, minimum not triggered). The 945 SEK
+    minimum applies only when water is actually supplied.'
+  rate_structure:
+    type: per_unit
+    unit_type: fresh_water_m3
+    unit_rate: 75.0
+  minimum: 945
+  applicable_conditions:
+    fresh_water_m3: 'present'
+  source_reference:
+    document_name: tariff-2026.pdf
+    document_url: docs/sources/sweden/helsingborg/port-authority/tariff-2026.pdf
+    page: 8
+    clause: Ancillary services
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2026-01-01'
+- id: poh_imo_transport
+  fee_family: ancillary_service
+  biller: Port of Helsingborg
+  name: IMO-Transport
+  description: IMO-transport 510.00 SEK per unit. Optional call input, default off.
+  rate_structure:
+    type: per_unit
+    unit_type: imo_transport_units
+    unit_rate: 510.0
+  source_reference:
+    document_name: tariff-2026.pdf
+    document_url: docs/sources/sweden/helsingborg/port-authority/tariff-2026.pdf
+    page: 8
+    clause: Ancillary services
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2026-01-01'
+- id: poh_reefer_connection
+  fee_family: ancillary_service
+  biller: Port of Helsingborg
+  name: Reefer Connection
+  description: 'Reefer connection 355.00 SEK per connection plus 430.00 SEK per day (days billed by the
+    separate reefer-day rule). Optional call input: supply the connection count to bill; blank or 0 means
+    no reefer connection.'
+  rate_structure:
+    type: per_unit
+    unit_type: reefer_connection_units
+    unit_rate: 355.0
+  source_reference:
+    document_name: tariff-2026.pdf
+    document_url: docs/sources/sweden/helsingborg/port-authority/tariff-2026.pdf
+    page: 8
+    clause: Ancillary services
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2026-01-01'
+- id: poh_reefer_days
+  fee_family: ancillary_service
+  biller: Port of Helsingborg
+  name: Reefer Days
+  description: Reefer days 430.00 SEK per day. Optional call input, default off.
+  rate_structure:
+    type: per_unit
+    unit_type: reefer_days
+    unit_rate: 430.0
+  source_reference:
+    document_name: tariff-2026.pdf
+    document_url: docs/sources/sweden/helsingborg/port-authority/tariff-2026.pdf
+    page: 8
+    clause: Ancillary services
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2026-01-01'
+- id: poh_vgm
+  fee_family: ancillary_service
+  biller: Port of Helsingborg
+  name: VGM Weighing
+  description: VGM weighing 430.00 SEK pre-advised (1,175.00 not pre-advised); pre-advised rate encoded. Optional
+    call input, default off.
+  rate_structure:
+    type: per_unit
+    unit_type: vgm_units
+    unit_rate: 430.0
+  source_reference:
+    document_name: tariff-2026.pdf
+    document_url: docs/sources/sweden/helsingborg/port-authority/tariff-2026.pdf
+    page: 8
+    clause: Ancillary services
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2026-01-01'
+- id: poh_other_admin
+  fee_family: ancillary_service
+  biller: Port of Helsingborg
+  name: Other Administrative Services
+  description: Other administrative services 360.00 SEK. Optional call input, default off.
+  rate_structure:
+    type: per_unit
+    unit_type: other_admin_units
+    unit_rate: 360.0
+  source_reference:
+    document_name: tariff-2026.pdf
+    document_url: docs/sources/sweden/helsingborg/port-authority/tariff-2026.pdf
+    page: 8
+    clause: Ancillary services
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2026-01-01'
+- id: poh_customs_inspection
+  fee_family: ancillary_service
+  biller: Port of Helsingborg
+  name: Customs/Veterinary Inspection
+  description: Customs or veterinary inspection 1,015.00 SEK. Optional call input, default off.
+  rate_structure:
+    type: per_unit
+    unit_type: customs_inspection_count
+    unit_rate: 1015.0
+  source_reference:
+    document_name: tariff-2026.pdf
+    document_url: docs/sources/sweden/helsingborg/port-authority/tariff-2026.pdf
+    page: 8
+    clause: Ancillary services
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2026-01-01'
+- id: poh_port_area_transport
+  fee_family: ancillary_service
+  biller: Port of Helsingborg
+  name: Port-Area Transport
+  description: Transport within the port area 950.00 SEK. Optional call input, default off.
+  rate_structure:
+    type: per_unit
+    unit_type: port_area_transport_units
+    unit_rate: 950.0
+  source_reference:
+    document_name: tariff-2026.pdf
+    document_url: docs/sources/sweden/helsingborg/port-authority/tariff-2026.pdf
+    page: 8
+    clause: Ancillary services
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2026-01-01'
+- id: sfv_vessel_fee_class1_csi_a
+  fee_family: vessel_fee
+  biller: Sjöfartsverket
+  name: Vessel Fee - Class 1, CSI Class A
+  description: Fartygsavgift (national vessel fee) for NT class 1 (0+ NT), Sjöfartsverket environmental class A.
+  rate_structure:
+    type: flat
+    amount: 735
+  source_reference:
+    document_name: prislista-farleds-lotsavgifter-2026.pdf
+    document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+    page: 3
+    clause: Fartygsavgift Class 1
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2025-11-01'
+  applicable_conditions:
+    nt_class: 1
+    csi_class: A
+- id: sfv_vessel_fee_class1_csi_b
+  fee_family: vessel_fee
+  biller: Sjöfartsverket
+  name: Vessel Fee - Class 1, CSI Class B
+  description: Fartygsavgift (national vessel fee) for NT class 1 (0+ NT), Sjöfartsverket environmental class B.
+  rate_structure:
+    type: flat
+    amount: 1660
+  source_reference:
+    document_name: prislista-farleds-lotsavgifter-2026.pdf
+    document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+    page: 3
+    clause: Fartygsavgift Class 1
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2025-11-01'
+  applicable_conditions:
+    nt_class: 1
+    csi_class: B
+- id: sfv_vessel_fee_class1_csi_c
+  fee_family: vessel_fee
+  biller: Sjöfartsverket
+  name: Vessel Fee - Class 1, CSI Class C
+  description: Fartygsavgift (national vessel fee) for NT class 1 (0+ NT), Sjöfartsverket environmental class C.
+  rate_structure:
+    type: flat
+    amount: 3315
+  source_reference:
+    document_name: prislista-farleds-lotsavgifter-2026.pdf
+    document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+    page: 3
+    clause: Fartygsavgift Class 1
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2025-11-01'
+  applicable_conditions:
+    nt_class: 1
+    csi_class: C
+- id: sfv_vessel_fee_class1_csi_d
+  fee_family: vessel_fee
+  biller: Sjöfartsverket
+  name: Vessel Fee - Class 1, CSI Class D
+  description: Fartygsavgift (national vessel fee) for NT class 1 (0+ NT), Sjöfartsverket environmental class D.
+  rate_structure:
+    type: flat
+    amount: 3685
+  source_reference:
+    document_name: prislista-farleds-lotsavgifter-2026.pdf
+    document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+    page: 3
+    clause: Fartygsavgift Class 1
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2025-11-01'
+  applicable_conditions:
+    nt_class: 1
+    csi_class: D
+- id: sfv_vessel_fee_class1_csi_e
+  fee_family: vessel_fee
+  biller: Sjöfartsverket
+  name: Vessel Fee - Class 1, No CSI
+  description: Fartygsavgift (national vessel fee) for NT class 1 (0+ NT), Sjöfartsverket environmental class E.
+  rate_structure:
+    type: flat
+    amount: 3685
+  source_reference:
+    document_name: prislista-farleds-lotsavgifter-2026.pdf
+    document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+    page: 3
+    clause: Fartygsavgift Class 1
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2025-11-01'
+  applicable_conditions:
+    nt_class: 1
+    csi_class: E
+- id: sfv_vessel_fee_class2_csi_a
+  fee_family: vessel_fee
+  biller: Sjöfartsverket
+  name: Vessel Fee - Class 2, CSI Class A
+  description: Fartygsavgift (national vessel fee) for NT class 2 (1,000+ NT), Sjöfartsverket environmental class
+    A.
+  rate_structure:
+    type: flat
+    amount: 2810
+  source_reference:
+    document_name: prislista-farleds-lotsavgifter-2026.pdf
+    document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+    page: 3
+    clause: Fartygsavgift Class 2
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2025-11-01'
+  applicable_conditions:
+    nt_class: 2
+    csi_class: A
+- id: sfv_vessel_fee_class2_csi_b
+  fee_family: vessel_fee
+  biller: Sjöfartsverket
+  name: Vessel Fee - Class 2, CSI Class B
+  description: Fartygsavgift (national vessel fee) for NT class 2 (1,000+ NT), Sjöfartsverket environmental class
+    B.
+  rate_structure:
+    type: flat
+    amount: 6320
+  source_reference:
+    document_name: prislista-farleds-lotsavgifter-2026.pdf
+    document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+    page: 3
+    clause: Fartygsavgift Class 2
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2025-11-01'
+  applicable_conditions:
+    nt_class: 2
+    csi_class: B
+- id: sfv_vessel_fee_class2_csi_c
+  fee_family: vessel_fee
+  biller: Sjöfartsverket
+  name: Vessel Fee - Class 2, CSI Class C
+  description: Fartygsavgift (national vessel fee) for NT class 2 (1,000+ NT), Sjöfartsverket environmental class
+    C.
+  rate_structure:
+    type: flat
+    amount: 12640
+  source_reference:
+    document_name: prislista-farleds-lotsavgifter-2026.pdf
+    document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+    page: 3
+    clause: Fartygsavgift Class 2
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2025-11-01'
+  applicable_conditions:
+    nt_class: 2
+    csi_class: C
+- id: sfv_vessel_fee_class2_csi_d
+  fee_family: vessel_fee
+  biller: Sjöfartsverket
+  name: Vessel Fee - Class 2, CSI Class D
+  description: Fartygsavgift (national vessel fee) for NT class 2 (1,000+ NT), Sjöfartsverket environmental class
+    D.
+  rate_structure:
+    type: flat
+    amount: 14045
+  source_reference:
+    document_name: prislista-farleds-lotsavgifter-2026.pdf
+    document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+    page: 3
+    clause: Fartygsavgift Class 2
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2025-11-01'
+  applicable_conditions:
+    nt_class: 2
+    csi_class: D
+- id: sfv_vessel_fee_class2_csi_e
+  fee_family: vessel_fee
+  biller: Sjöfartsverket
+  name: Vessel Fee - Class 2, No CSI
+  description: Fartygsavgift (national vessel fee) for NT class 2 (1,000+ NT), Sjöfartsverket environmental class
+    E.
+  rate_structure:
+    type: flat
+    amount: 14045
+  source_reference:
+    document_name: prislista-farleds-lotsavgifter-2026.pdf
+    document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+    page: 3
+    clause: Fartygsavgift Class 2
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2025-11-01'
+  applicable_conditions:
+    nt_class: 2
+    csi_class: E
+- id: sfv_vessel_fee_class3_csi_a
+  fee_family: vessel_fee
+  biller: Sjöfartsverket
+  name: Vessel Fee - Class 3, CSI Class A
+  description: Fartygsavgift (national vessel fee) for NT class 3 (2,000+ NT), Sjöfartsverket environmental class
+    A.
+  rate_structure:
+    type: flat
+    amount: 5515
+  source_reference:
+    document_name: prislista-farleds-lotsavgifter-2026.pdf
+    document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+    page: 3
+    clause: Fartygsavgift Class 3
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2025-11-01'
+  applicable_conditions:
+    nt_class: 3
+    csi_class: A
+- id: sfv_vessel_fee_class3_csi_b
+  fee_family: vessel_fee
+  biller: Sjöfartsverket
+  name: Vessel Fee - Class 3, CSI Class B
+  description: Fartygsavgift (national vessel fee) for NT class 3 (2,000+ NT), Sjöfartsverket environmental class
+    B.
+  rate_structure:
+    type: flat
+    amount: 12410
+  source_reference:
+    document_name: prislista-farleds-lotsavgifter-2026.pdf
+    document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+    page: 3
+    clause: Fartygsavgift Class 3
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2025-11-01'
+  applicable_conditions:
+    nt_class: 3
+    csi_class: B
+- id: sfv_vessel_fee_class3_csi_c
+  fee_family: vessel_fee
+  biller: Sjöfartsverket
+  name: Vessel Fee - Class 3, CSI Class C
+  description: Fartygsavgift (national vessel fee) for NT class 3 (2,000+ NT), Sjöfartsverket environmental class
+    C.
+  rate_structure:
+    type: flat
+    amount: 24825
+  source_reference:
+    document_name: prislista-farleds-lotsavgifter-2026.pdf
+    document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+    page: 3
+    clause: Fartygsavgift Class 3
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2025-11-01'
+  applicable_conditions:
+    nt_class: 3
+    csi_class: C
+- id: sfv_vessel_fee_class3_csi_d
+  fee_family: vessel_fee
+  biller: Sjöfartsverket
+  name: Vessel Fee - Class 3, CSI Class D
+  description: Fartygsavgift (national vessel fee) for NT class 3 (2,000+ NT), Sjöfartsverket environmental class
+    D.
+  rate_structure:
+    type: flat
+    amount: 27580
+  source_reference:
+    document_name: prislista-farleds-lotsavgifter-2026.pdf
+    document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+    page: 3
+    clause: Fartygsavgift Class 3
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2025-11-01'
+  applicable_conditions:
+    nt_class: 3
+    csi_class: D
+- id: sfv_vessel_fee_class3_csi_e
+  fee_family: vessel_fee
+  biller: Sjöfartsverket
+  name: Vessel Fee - Class 3, No CSI
+  description: Fartygsavgift (national vessel fee) for NT class 3 (2,000+ NT), Sjöfartsverket environmental class
+    E.
+  rate_structure:
+    type: flat
+    amount: 27580
+  source_reference:
+    document_name: prislista-farleds-lotsavgifter-2026.pdf
+    document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+    page: 3
+    clause: Fartygsavgift Class 3
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2025-11-01'
+  applicable_conditions:
+    nt_class: 3
+    csi_class: E
+- id: sfv_vessel_fee_class4_csi_a
+  fee_family: vessel_fee
+  biller: Sjöfartsverket
+  name: Vessel Fee - Class 4, CSI Class A
+  description: Fartygsavgift (national vessel fee) for NT class 4 (3,000+ NT), Sjöfartsverket environmental class
+    A.
+  rate_structure:
+    type: flat
+    amount: 8795
+  source_reference:
+    document_name: prislista-farleds-lotsavgifter-2026.pdf
+    document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+    page: 3
+    clause: Fartygsavgift Class 4
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2025-11-01'
+  applicable_conditions:
+    nt_class: 4
+    csi_class: A
+- id: sfv_vessel_fee_class4_csi_b
+  fee_family: vessel_fee
+  biller: Sjöfartsverket
+  name: Vessel Fee - Class 4, CSI Class B
+  description: Fartygsavgift (national vessel fee) for NT class 4 (3,000+ NT), Sjöfartsverket environmental class
+    B.
+  rate_structure:
+    type: flat
+    amount: 19790
+  source_reference:
+    document_name: prislista-farleds-lotsavgifter-2026.pdf
+    document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+    page: 3
+    clause: Fartygsavgift Class 4
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2025-11-01'
+  applicable_conditions:
+    nt_class: 4
+    csi_class: B
+- id: sfv_vessel_fee_class4_csi_c
+  fee_family: vessel_fee
+  biller: Sjöfartsverket
+  name: Vessel Fee - Class 4, CSI Class C
+  description: Fartygsavgift (national vessel fee) for NT class 4 (3,000+ NT), Sjöfartsverket environmental class
+    C.
+  rate_structure:
+    type: flat
+    amount: 39575
+  source_reference:
+    document_name: prislista-farleds-lotsavgifter-2026.pdf
+    document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+    page: 3
+    clause: Fartygsavgift Class 4
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2025-11-01'
+  applicable_conditions:
+    nt_class: 4
+    csi_class: C
+- id: sfv_vessel_fee_class4_csi_d
+  fee_family: vessel_fee
+  biller: Sjöfartsverket
+  name: Vessel Fee - Class 4, CSI Class D
+  description: Fartygsavgift (national vessel fee) for NT class 4 (3,000+ NT), Sjöfartsverket environmental class
+    D.
+  rate_structure:
+    type: flat
+    amount: 43975
+  source_reference:
+    document_name: prislista-farleds-lotsavgifter-2026.pdf
+    document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+    page: 3
+    clause: Fartygsavgift Class 4
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2025-11-01'
+  applicable_conditions:
+    nt_class: 4
+    csi_class: D
+- id: sfv_vessel_fee_class4_csi_e
+  fee_family: vessel_fee
+  biller: Sjöfartsverket
+  name: Vessel Fee - Class 4, No CSI
+  description: Fartygsavgift (national vessel fee) for NT class 4 (3,000+ NT), Sjöfartsverket environmental class
+    E.
+  rate_structure:
+    type: flat
+    amount: 43975
+  source_reference:
+    document_name: prislista-farleds-lotsavgifter-2026.pdf
+    document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+    page: 3
+    clause: Fartygsavgift Class 4
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2025-11-01'
+  applicable_conditions:
+    nt_class: 4
+    csi_class: E
+- id: sfv_vessel_fee_class5_csi_a
+  fee_family: vessel_fee
+  biller: Sjöfartsverket
+  name: Vessel Fee - Class 5, CSI Class A
+  description: Fartygsavgift (national vessel fee) for NT class 5 (6,000+ NT), Sjöfartsverket environmental class
+    A.
+  rate_structure:
+    type: flat
+    amount: 16150
+  source_reference:
+    document_name: prislista-farleds-lotsavgifter-2026.pdf
+    document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+    page: 3
+    clause: Fartygsavgift Class 5
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2025-11-01'
+  applicable_conditions:
+    nt_class: 5
+    csi_class: A
+- id: sfv_vessel_fee_class5_csi_b
+  fee_family: vessel_fee
+  biller: Sjöfartsverket
+  name: Vessel Fee - Class 5, CSI Class B
+  description: Fartygsavgift (national vessel fee) for NT class 5 (6,000+ NT), Sjöfartsverket environmental class
+    B.
+  rate_structure:
+    type: flat
+    amount: 36340
+  source_reference:
+    document_name: prislista-farleds-lotsavgifter-2026.pdf
+    document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+    page: 3
+    clause: Fartygsavgift Class 5
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2025-11-01'
+  applicable_conditions:
+    nt_class: 5
+    csi_class: B
+- id: sfv_vessel_fee_class5_csi_c
+  fee_family: vessel_fee
+  biller: Sjöfartsverket
+  name: Vessel Fee - Class 5, CSI Class C
+  description: Fartygsavgift (national vessel fee) for NT class 5 (6,000+ NT), Sjöfartsverket environmental class
+    C.
+  rate_structure:
+    type: flat
+    amount: 72680
+  source_reference:
+    document_name: prislista-farleds-lotsavgifter-2026.pdf
+    document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+    page: 3
+    clause: Fartygsavgift Class 5
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2025-11-01'
+  applicable_conditions:
+    nt_class: 5
+    csi_class: C
+- id: sfv_vessel_fee_class5_csi_d
+  fee_family: vessel_fee
+  biller: Sjöfartsverket
+  name: Vessel Fee - Class 5, CSI Class D
+  description: Fartygsavgift (national vessel fee) for NT class 5 (6,000+ NT), Sjöfartsverket environmental class
+    D.
+  rate_structure:
+    type: flat
+    amount: 80755
+  source_reference:
+    document_name: prislista-farleds-lotsavgifter-2026.pdf
+    document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+    page: 3
+    clause: Fartygsavgift Class 5
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2025-11-01'
+  applicable_conditions:
+    nt_class: 5
+    csi_class: D
+- id: sfv_vessel_fee_class5_csi_e
+  fee_family: vessel_fee
+  biller: Sjöfartsverket
+  name: Vessel Fee - Class 5, No CSI
+  description: Fartygsavgift (national vessel fee) for NT class 5 (6,000+ NT), Sjöfartsverket environmental class
+    E.
+  rate_structure:
+    type: flat
+    amount: 80755
+  source_reference:
+    document_name: prislista-farleds-lotsavgifter-2026.pdf
+    document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+    page: 3
+    clause: Fartygsavgift Class 5
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2025-11-01'
+  applicable_conditions:
+    nt_class: 5
+    csi_class: E
+- id: sfv_vessel_fee_class6_csi_a
+  fee_family: vessel_fee
+  biller: Sjöfartsverket
+  name: Vessel Fee - Class 6, CSI Class A
+  description: Fartygsavgift (national vessel fee) for NT class 6 (10,000+ NT), Sjöfartsverket environmental class
+    A.
+  rate_structure:
+    type: flat
+    amount: 23475
+  source_reference:
+    document_name: prislista-farleds-lotsavgifter-2026.pdf
+    document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+    page: 3
+    clause: Fartygsavgift Class 6
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2025-11-01'
+  applicable_conditions:
+    nt_class: 6
+    csi_class: A
+- id: sfv_vessel_fee_class6_csi_b
+  fee_family: vessel_fee
+  biller: Sjöfartsverket
+  name: Vessel Fee - Class 6, CSI Class B
+  description: Fartygsavgift (national vessel fee) for NT class 6 (10,000+ NT), Sjöfartsverket environmental class
+    B.
+  rate_structure:
+    type: flat
+    amount: 52825
+  source_reference:
+    document_name: prislista-farleds-lotsavgifter-2026.pdf
+    document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+    page: 3
+    clause: Fartygsavgift Class 6
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2025-11-01'
+  applicable_conditions:
+    nt_class: 6
+    csi_class: B
+- id: sfv_vessel_fee_class6_csi_c
+  fee_family: vessel_fee
+  biller: Sjöfartsverket
+  name: Vessel Fee - Class 6, CSI Class C
+  description: Fartygsavgift (national vessel fee) for NT class 6 (10,000+ NT), Sjöfartsverket environmental class
+    C.
+  rate_structure:
+    type: flat
+    amount: 105645
+  source_reference:
+    document_name: prislista-farleds-lotsavgifter-2026.pdf
+    document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+    page: 3
+    clause: Fartygsavgift Class 6
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2025-11-01'
+  applicable_conditions:
+    nt_class: 6
+    csi_class: C
+- id: sfv_vessel_fee_class6_csi_d
+  fee_family: vessel_fee
+  biller: Sjöfartsverket
+  name: Vessel Fee - Class 6, CSI Class D
+  description: Fartygsavgift (national vessel fee) for NT class 6 (10,000+ NT), Sjöfartsverket environmental class
+    D.
+  rate_structure:
+    type: flat
+    amount: 117385
+  source_reference:
+    document_name: prislista-farleds-lotsavgifter-2026.pdf
+    document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+    page: 3
+    clause: Fartygsavgift Class 6
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2025-11-01'
+  applicable_conditions:
+    nt_class: 6
+    csi_class: D
+- id: sfv_vessel_fee_class6_csi_e
+  fee_family: vessel_fee
+  biller: Sjöfartsverket
+  name: Vessel Fee - Class 6, No CSI
+  description: Fartygsavgift (national vessel fee) for NT class 6 (10,000+ NT), Sjöfartsverket environmental class
+    E.
+  rate_structure:
+    type: flat
+    amount: 117385
+  source_reference:
+    document_name: prislista-farleds-lotsavgifter-2026.pdf
+    document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+    page: 3
+    clause: Fartygsavgift Class 6
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2025-11-01'
+  applicable_conditions:
+    nt_class: 6
+    csi_class: E
+- id: sfv_vessel_fee_class7_csi_a
+  fee_family: vessel_fee
+  biller: Sjöfartsverket
+  name: Vessel Fee - Class 7, CSI Class A
+  description: Fartygsavgift (national vessel fee) for NT class 7 (15,000+ NT), Sjöfartsverket environmental class
+    A.
+  rate_structure:
+    type: flat
+    amount: 30060
+  source_reference:
+    document_name: prislista-farleds-lotsavgifter-2026.pdf
+    document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+    page: 3
+    clause: Fartygsavgift Class 7
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2025-11-01'
+  applicable_conditions:
+    nt_class: 7
+    csi_class: A
+- id: sfv_vessel_fee_class7_csi_b
+  fee_family: vessel_fee
+  biller: Sjöfartsverket
+  name: Vessel Fee - Class 7, CSI Class B
+  description: Fartygsavgift (national vessel fee) for NT class 7 (15,000+ NT), Sjöfartsverket environmental class
+    B.
+  rate_structure:
+    type: flat
+    amount: 67640
+  source_reference:
+    document_name: prislista-farleds-lotsavgifter-2026.pdf
+    document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+    page: 3
+    clause: Fartygsavgift Class 7
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2025-11-01'
+  applicable_conditions:
+    nt_class: 7
+    csi_class: B
+- id: sfv_vessel_fee_class7_csi_c
+  fee_family: vessel_fee
+  biller: Sjöfartsverket
+  name: Vessel Fee - Class 7, CSI Class C
+  description: Fartygsavgift (national vessel fee) for NT class 7 (15,000+ NT), Sjöfartsverket environmental class
+    C.
+  rate_structure:
+    type: flat
+    amount: 135275
+  source_reference:
+    document_name: prislista-farleds-lotsavgifter-2026.pdf
+    document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+    page: 3
+    clause: Fartygsavgift Class 7
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2025-11-01'
+  applicable_conditions:
+    nt_class: 7
+    csi_class: C
+- id: sfv_vessel_fee_class7_csi_d
+  fee_family: vessel_fee
+  biller: Sjöfartsverket
+  name: Vessel Fee - Class 7, CSI Class D
+  description: Fartygsavgift (national vessel fee) for NT class 7 (15,000+ NT), Sjöfartsverket environmental class
+    D.
+  rate_structure:
+    type: flat
+    amount: 150310
+  source_reference:
+    document_name: prislista-farleds-lotsavgifter-2026.pdf
+    document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+    page: 3
+    clause: Fartygsavgift Class 7
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2025-11-01'
+  applicable_conditions:
+    nt_class: 7
+    csi_class: D
+- id: sfv_vessel_fee_class7_csi_e
+  fee_family: vessel_fee
+  biller: Sjöfartsverket
+  name: Vessel Fee - Class 7, No CSI
+  description: Fartygsavgift (national vessel fee) for NT class 7 (15,000+ NT), Sjöfartsverket environmental class
+    E.
+  rate_structure:
+    type: flat
+    amount: 150310
+  source_reference:
+    document_name: prislista-farleds-lotsavgifter-2026.pdf
+    document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+    page: 3
+    clause: Fartygsavgift Class 7
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2025-11-01'
+  applicable_conditions:
+    nt_class: 7
+    csi_class: E
+- id: sfv_vessel_fee_class8_csi_a
+  fee_family: vessel_fee
+  biller: Sjöfartsverket
+  name: Vessel Fee - Class 8, CSI Class A
+  description: Fartygsavgift (national vessel fee) for NT class 8 (30,000+ NT), Sjöfartsverket environmental class
+    A.
+  rate_structure:
+    type: flat
+    amount: 34475
+  source_reference:
+    document_name: prislista-farleds-lotsavgifter-2026.pdf
+    document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+    page: 3
+    clause: Fartygsavgift Class 8
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2025-11-01'
+  applicable_conditions:
+    nt_class: 8
+    csi_class: A
+- id: sfv_vessel_fee_class8_csi_b
+  fee_family: vessel_fee
+  biller: Sjöfartsverket
+  name: Vessel Fee - Class 8, CSI Class B
+  description: Fartygsavgift (national vessel fee) for NT class 8 (30,000+ NT), Sjöfartsverket environmental class
+    B.
+  rate_structure:
+    type: flat
+    amount: 77575
+  source_reference:
+    document_name: prislista-farleds-lotsavgifter-2026.pdf
+    document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+    page: 3
+    clause: Fartygsavgift Class 8
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2025-11-01'
+  applicable_conditions:
+    nt_class: 8
+    csi_class: B
+- id: sfv_vessel_fee_class8_csi_c
+  fee_family: vessel_fee
+  biller: Sjöfartsverket
+  name: Vessel Fee - Class 8, CSI Class C
+  description: Fartygsavgift (national vessel fee) for NT class 8 (30,000+ NT), Sjöfartsverket environmental class
+    C.
+  rate_structure:
+    type: flat
+    amount: 155145
+  source_reference:
+    document_name: prislista-farleds-lotsavgifter-2026.pdf
+    document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+    page: 3
+    clause: Fartygsavgift Class 8
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2025-11-01'
+  applicable_conditions:
+    nt_class: 8
+    csi_class: C
+- id: sfv_vessel_fee_class8_csi_d
+  fee_family: vessel_fee
+  biller: Sjöfartsverket
+  name: Vessel Fee - Class 8, CSI Class D
+  description: Fartygsavgift (national vessel fee) for NT class 8 (30,000+ NT), Sjöfartsverket environmental class
+    D.
+  rate_structure:
+    type: flat
+    amount: 172385
+  source_reference:
+    document_name: prislista-farleds-lotsavgifter-2026.pdf
+    document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+    page: 3
+    clause: Fartygsavgift Class 8
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2025-11-01'
+  applicable_conditions:
+    nt_class: 8
+    csi_class: D
+- id: sfv_vessel_fee_class8_csi_e
+  fee_family: vessel_fee
+  biller: Sjöfartsverket
+  name: Vessel Fee - Class 8, No CSI
+  description: Fartygsavgift (national vessel fee) for NT class 8 (30,000+ NT), Sjöfartsverket environmental class
+    E.
+  rate_structure:
+    type: flat
+    amount: 172385
+  source_reference:
+    document_name: prislista-farleds-lotsavgifter-2026.pdf
+    document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+    page: 3
+    clause: Fartygsavgift Class 8
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2025-11-01'
+  applicable_conditions:
+    nt_class: 8
+    csi_class: E
+- id: sfv_vessel_fee_class9_csi_a
+  fee_family: vessel_fee
+  biller: Sjöfartsverket
+  name: Vessel Fee - Class 9, CSI Class A
+  description: Fartygsavgift (national vessel fee) for NT class 9 (60,000+ NT), Sjöfartsverket environmental class
+    A.
+  rate_structure:
+    type: flat
+    amount: 40360
+  source_reference:
+    document_name: prislista-farleds-lotsavgifter-2026.pdf
+    document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+    page: 3
+    clause: Fartygsavgift Class 9
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2025-11-01'
+  applicable_conditions:
+    nt_class: 9
+    csi_class: A
+- id: sfv_vessel_fee_class9_csi_b
+  fee_family: vessel_fee
+  biller: Sjöfartsverket
+  name: Vessel Fee - Class 9, CSI Class B
+  description: Fartygsavgift (national vessel fee) for NT class 9 (60,000+ NT), Sjöfartsverket environmental class
+    B.
+  rate_structure:
+    type: flat
+    amount: 90815
+  source_reference:
+    document_name: prislista-farleds-lotsavgifter-2026.pdf
+    document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+    page: 3
+    clause: Fartygsavgift Class 9
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2025-11-01'
+  applicable_conditions:
+    nt_class: 9
+    csi_class: B
+- id: sfv_vessel_fee_class9_csi_c
+  fee_family: vessel_fee
+  biller: Sjöfartsverket
+  name: Vessel Fee - Class 9, CSI Class C
+  description: Fartygsavgift (national vessel fee) for NT class 9 (60,000+ NT), Sjöfartsverket environmental class
+    C.
+  rate_structure:
+    type: flat
+    amount: 181625
+  source_reference:
+    document_name: prislista-farleds-lotsavgifter-2026.pdf
+    document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+    page: 3
+    clause: Fartygsavgift Class 9
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2025-11-01'
+  applicable_conditions:
+    nt_class: 9
+    csi_class: C
+- id: sfv_vessel_fee_class9_csi_d
+  fee_family: vessel_fee
+  biller: Sjöfartsverket
+  name: Vessel Fee - Class 9, CSI Class D
+  description: Fartygsavgift (national vessel fee) for NT class 9 (60,000+ NT), Sjöfartsverket environmental class
+    D.
+  rate_structure:
+    type: flat
+    amount: 201805
+  source_reference:
+    document_name: prislista-farleds-lotsavgifter-2026.pdf
+    document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+    page: 3
+    clause: Fartygsavgift Class 9
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2025-11-01'
+  applicable_conditions:
+    nt_class: 9
+    csi_class: D
+- id: sfv_vessel_fee_class9_csi_e
+  fee_family: vessel_fee
+  biller: Sjöfartsverket
+  name: Vessel Fee - Class 9, No CSI
+  description: Fartygsavgift (national vessel fee) for NT class 9 (60,000+ NT), Sjöfartsverket environmental class
+    E.
+  rate_structure:
+    type: flat
+    amount: 201805
+  source_reference:
+    document_name: prislista-farleds-lotsavgifter-2026.pdf
+    document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+    page: 3
+    clause: Fartygsavgift Class 9
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2025-11-01'
+  applicable_conditions:
+    nt_class: 9
+    csi_class: E
+- id: sfv_vessel_fee_class10_csi_a
+  fee_family: vessel_fee
+  biller: Sjöfartsverket
+  name: Vessel Fee - Class 10, CSI Class A
+  description: Fartygsavgift (national vessel fee) for NT class 10 (100,000+ NT), Sjöfartsverket environmental class
+    A.
+  rate_structure:
+    type: flat
+    amount: 47685
+  source_reference:
+    document_name: prislista-farleds-lotsavgifter-2026.pdf
+    document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+    page: 3
+    clause: Fartygsavgift Class 10
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2025-11-01'
+  applicable_conditions:
+    nt_class: 10
+    csi_class: A
+- id: sfv_vessel_fee_class10_csi_b
+  fee_family: vessel_fee
+  biller: Sjöfartsverket
+  name: Vessel Fee - Class 10, CSI Class B
+  description: Fartygsavgift (national vessel fee) for NT class 10 (100,000+ NT), Sjöfartsverket environmental class
+    B.
+  rate_structure:
+    type: flat
+    amount: 107295
+  source_reference:
+    document_name: prislista-farleds-lotsavgifter-2026.pdf
+    document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+    page: 3
+    clause: Fartygsavgift Class 10
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2025-11-01'
+  applicable_conditions:
+    nt_class: 10
+    csi_class: B
+- id: sfv_vessel_fee_class10_csi_c
+  fee_family: vessel_fee
+  biller: Sjöfartsverket
+  name: Vessel Fee - Class 10, CSI Class C
+  description: Fartygsavgift (national vessel fee) for NT class 10 (100,000+ NT), Sjöfartsverket environmental class
+    C.
+  rate_structure:
+    type: flat
+    amount: 214590
+  source_reference:
+    document_name: prislista-farleds-lotsavgifter-2026.pdf
+    document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+    page: 3
+    clause: Fartygsavgift Class 10
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2025-11-01'
+  applicable_conditions:
+    nt_class: 10
+    csi_class: C
+- id: sfv_vessel_fee_class10_csi_d
+  fee_family: vessel_fee
+  biller: Sjöfartsverket
+  name: Vessel Fee - Class 10, CSI Class D
+  description: Fartygsavgift (national vessel fee) for NT class 10 (100,000+ NT), Sjöfartsverket environmental class
+    D.
+  rate_structure:
+    type: flat
+    amount: 238430
+  source_reference:
+    document_name: prislista-farleds-lotsavgifter-2026.pdf
+    document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+    page: 3
+    clause: Fartygsavgift Class 10
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2025-11-01'
+  applicable_conditions:
+    nt_class: 10
+    csi_class: D
+- id: sfv_vessel_fee_class10_csi_e
+  fee_family: vessel_fee
+  biller: Sjöfartsverket
+  name: Vessel Fee - Class 10, No CSI
+  description: Fartygsavgift (national vessel fee) for NT class 10 (100,000+ NT), Sjöfartsverket environmental class
+    E.
+  rate_structure:
+    type: flat
+    amount: 238430
+  source_reference:
+    document_name: prislista-farleds-lotsavgifter-2026.pdf
+    document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+    page: 3
+    clause: Fartygsavgift Class 10
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2025-11-01'
+  applicable_conditions:
+    nt_class: 10
+    csi_class: E
+- id: sfv_readiness_fee_class1
+  fee_family: readiness_fee
+  biller: Sjöfartsverket
+  name: Readiness Fee - Class 1
+  description: Beredskapsavgift (national readiness fee) for NT class 1 (0+ NT).
+  rate_structure:
+    type: flat
+    amount: 1110
+  source_reference:
+    document_name: prislista-farleds-lotsavgifter-2026.pdf
+    document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+    page: 4
+    clause: Beredskapsavgift
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2025-11-01'
+  applicable_conditions:
+    nt_class: 1
+- id: sfv_readiness_fee_class2
+  fee_family: readiness_fee
+  biller: Sjöfartsverket
+  name: Readiness Fee - Class 2
+  description: Beredskapsavgift (national readiness fee) for NT class 2 (1,000+ NT).
+  rate_structure:
+    type: flat
+    amount: 4200
+  source_reference:
+    document_name: prislista-farleds-lotsavgifter-2026.pdf
+    document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+    page: 4
+    clause: Beredskapsavgift
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2025-11-01'
+  applicable_conditions:
+    nt_class: 2
+- id: sfv_readiness_fee_class3
+  fee_family: readiness_fee
+  biller: Sjöfartsverket
+  name: Readiness Fee - Class 3
+  description: Beredskapsavgift (national readiness fee) for NT class 3 (2,000+ NT).
+  rate_structure:
+    type: flat
+    amount: 8260
+  source_reference:
+    document_name: prislista-farleds-lotsavgifter-2026.pdf
+    document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+    page: 4
+    clause: Beredskapsavgift
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2025-11-01'
+  applicable_conditions:
+    nt_class: 3
+- id: sfv_readiness_fee_class4
+  fee_family: readiness_fee
+  biller: Sjöfartsverket
+  name: Readiness Fee - Class 4
+  description: Beredskapsavgift (national readiness fee) for NT class 4 (3,000+ NT).
+  rate_structure:
+    type: flat
+    amount: 13155
+  source_reference:
+    document_name: prislista-farleds-lotsavgifter-2026.pdf
+    document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+    page: 4
+    clause: Beredskapsavgift
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2025-11-01'
+  applicable_conditions:
+    nt_class: 4
+- id: sfv_readiness_fee_class5
+  fee_family: readiness_fee
+  biller: Sjöfartsverket
+  name: Readiness Fee - Class 5
+  description: Beredskapsavgift (national readiness fee) for NT class 5 (6,000+ NT).
+  rate_structure:
+    type: flat
+    amount: 24165
+  source_reference:
+    document_name: prislista-farleds-lotsavgifter-2026.pdf
+    document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+    page: 4
+    clause: Beredskapsavgift
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2025-11-01'
+  applicable_conditions:
+    nt_class: 5
+- id: sfv_readiness_fee_class6
+  fee_family: readiness_fee
+  biller: Sjöfartsverket
+  name: Readiness Fee - Class 6
+  description: Beredskapsavgift (national readiness fee) for NT class 6 (10,000+ NT).
+  rate_structure:
+    type: flat
+    amount: 35100
+  source_reference:
+    document_name: prislista-farleds-lotsavgifter-2026.pdf
+    document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+    page: 4
+    clause: Beredskapsavgift
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2025-11-01'
+  applicable_conditions:
+    nt_class: 6
+- id: sfv_readiness_fee_class7
+  fee_family: readiness_fee
+  biller: Sjöfartsverket
+  name: Readiness Fee - Class 7
+  description: Beredskapsavgift (national readiness fee) for NT class 7 (15,000+ NT).
+  rate_structure:
+    type: flat
+    amount: 44965
+  source_reference:
+    document_name: prislista-farleds-lotsavgifter-2026.pdf
+    document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+    page: 4
+    clause: Beredskapsavgift
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2025-11-01'
+  applicable_conditions:
+    nt_class: 7
+- id: sfv_readiness_fee_class8
+  fee_family: readiness_fee
+  biller: Sjöfartsverket
+  name: Readiness Fee - Class 8
+  description: Beredskapsavgift (national readiness fee) for NT class 8 (30,000+ NT).
+  rate_structure:
+    type: flat
+    amount: 51555
+  source_reference:
+    document_name: prislista-farleds-lotsavgifter-2026.pdf
+    document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+    page: 4
+    clause: Beredskapsavgift
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2025-11-01'
+  applicable_conditions:
+    nt_class: 8
+- id: sfv_readiness_fee_class9
+  fee_family: readiness_fee
+  biller: Sjöfartsverket
+  name: Readiness Fee - Class 9
+  description: Beredskapsavgift (national readiness fee) for NT class 9 (60,000+ NT).
+  rate_structure:
+    type: flat
+    amount: 60370
+  source_reference:
+    document_name: prislista-farleds-lotsavgifter-2026.pdf
+    document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+    page: 4
+    clause: Beredskapsavgift
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2025-11-01'
+  applicable_conditions:
+    nt_class: 9
+- id: sfv_readiness_fee_class10
+  fee_family: readiness_fee
+  biller: Sjöfartsverket
+  name: Readiness Fee - Class 10
+  description: Beredskapsavgift (national readiness fee) for NT class 10 (100,000+ NT).
+  rate_structure:
+    type: flat
+    amount: 71305
+  source_reference:
+    document_name: prislista-farleds-lotsavgifter-2026.pdf
+    document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+    page: 4
+    clause: Beredskapsavgift
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2025-11-01'
+  applicable_conditions:
+    nt_class: 10
+- id: sfv_pilotage_start_class1
+  fee_family: pilotage
+  biller: Sjöfartsverket
+  name: Pilotage Start Fee - Class 1
+  description: Lotsavgift (national pilotage) start fee for NT class 1 (0+ NT).
+  rate_structure:
+    type: flat
+    amount: 9670
+  source_reference:
+    document_name: prislista-farleds-lotsavgifter-2026.pdf
+    document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+    page: 6
+    clause: Lotsavgift Class 1
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2025-11-01'
+  adjustments:
+  - type: discount
+    percentage: 40
+    condition: pilotage_hours > 7
+    stacking_order: 1
+    description: 40% discount for piloted time exceeding 7 hours
+  applicable_conditions:
+    pilotage_required: true
+    nt_class: 1
+- id: sfv_pilotage_half_hour_class1
+  fee_family: pilotage
+  biller: Sjöfartsverket
+  name: Pilotage Per Half Hour - Class 1
+  description: 'Lotsavgift per commenced half hour of piloted time for NT class 1. Default pilotage hours by LOA
+    class (declared estimate, user-overridable): LOA < 150 m: 2 h; 150-250 m: 3 h; > 250 m: 4 h.'
+  rate_structure:
+    type: per_unit
+    unit_type: pilotage_half_hour
+    unit_rate: 2160
+  source_reference:
+    document_name: prislista-farleds-lotsavgifter-2026.pdf
+    document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+    page: 6
+    clause: Lotsavgift Class 1
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2025-11-01'
+  adjustments:
+  - type: discount
+    percentage: 40
+    condition: pilotage_hours > 7
+    stacking_order: 1
+    description: 40% discount for piloted time exceeding 7 hours
+  applicable_conditions:
+    pilotage_required: true
+    nt_class: 1
+- id: sfv_pilotage_start_class2
+  fee_family: pilotage
+  biller: Sjöfartsverket
+  name: Pilotage Start Fee - Class 2
+  description: Lotsavgift (national pilotage) start fee for NT class 2 (1,000+ NT).
+  rate_structure:
+    type: flat
+    amount: 12485
+  source_reference:
+    document_name: prislista-farleds-lotsavgifter-2026.pdf
+    document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+    page: 6
+    clause: Lotsavgift Class 2
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2025-11-01'
+  adjustments:
+  - type: discount
+    percentage: 40
+    condition: pilotage_hours > 7
+    stacking_order: 1
+    description: 40% discount for piloted time exceeding 7 hours
+  applicable_conditions:
+    pilotage_required: true
+    nt_class: 2
+- id: sfv_pilotage_half_hour_class2
+  fee_family: pilotage
+  biller: Sjöfartsverket
+  name: Pilotage Per Half Hour - Class 2
+  description: 'Lotsavgift per commenced half hour of piloted time for NT class 2. Default pilotage hours by LOA
+    class (declared estimate, user-overridable): LOA < 150 m: 2 h; 150-250 m: 3 h; > 250 m: 4 h.'
+  rate_structure:
+    type: per_unit
+    unit_type: pilotage_half_hour
+    unit_rate: 2840
+  source_reference:
+    document_name: prislista-farleds-lotsavgifter-2026.pdf
+    document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+    page: 6
+    clause: Lotsavgift Class 2
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2025-11-01'
+  adjustments:
+  - type: discount
+    percentage: 40
+    condition: pilotage_hours > 7
+    stacking_order: 1
+    description: 40% discount for piloted time exceeding 7 hours
+  applicable_conditions:
+    pilotage_required: true
+    nt_class: 2
+- id: sfv_pilotage_start_class3
+  fee_family: pilotage
+  biller: Sjöfartsverket
+  name: Pilotage Start Fee - Class 3
+  description: Lotsavgift (national pilotage) start fee for NT class 3 (2,000+ NT).
+  rate_structure:
+    type: flat
+    amount: 15290
+  source_reference:
+    document_name: prislista-farleds-lotsavgifter-2026.pdf
+    document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+    page: 6
+    clause: Lotsavgift Class 3
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2025-11-01'
+  adjustments:
+  - type: discount
+    percentage: 40
+    condition: pilotage_hours > 7
+    stacking_order: 1
+    description: 40% discount for piloted time exceeding 7 hours
+  applicable_conditions:
+    pilotage_required: true
+    nt_class: 3
+- id: sfv_pilotage_half_hour_class3
+  fee_family: pilotage
+  biller: Sjöfartsverket
+  name: Pilotage Per Half Hour - Class 3
+  description: 'Lotsavgift per commenced half hour of piloted time for NT class 3. Default pilotage hours by LOA
+    class (declared estimate, user-overridable): LOA < 150 m: 2 h; 150-250 m: 3 h; > 250 m: 4 h.'
+  rate_structure:
+    type: per_unit
+    unit_type: pilotage_half_hour
+    unit_rate: 3435
+  source_reference:
+    document_name: prislista-farleds-lotsavgifter-2026.pdf
+    document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+    page: 6
+    clause: Lotsavgift Class 3
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2025-11-01'
+  adjustments:
+  - type: discount
+    percentage: 40
+    condition: pilotage_hours > 7
+    stacking_order: 1
+    description: 40% discount for piloted time exceeding 7 hours
+  applicable_conditions:
+    pilotage_required: true
+    nt_class: 3
+- id: sfv_pilotage_start_class4
+  fee_family: pilotage
+  biller: Sjöfartsverket
+  name: Pilotage Start Fee - Class 4
+  description: Lotsavgift (national pilotage) start fee for NT class 4 (3,000+ NT).
+  rate_structure:
+    type: flat
+    amount: 17300
+  source_reference:
+    document_name: prislista-farleds-lotsavgifter-2026.pdf
+    document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+    page: 6
+    clause: Lotsavgift Class 4
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2025-11-01'
+  adjustments:
+  - type: discount
+    percentage: 40
+    condition: pilotage_hours > 7
+    stacking_order: 1
+    description: 40% discount for piloted time exceeding 7 hours
+  applicable_conditions:
+    pilotage_required: true
+    nt_class: 4
+- id: sfv_pilotage_half_hour_class4
+  fee_family: pilotage
+  biller: Sjöfartsverket
+  name: Pilotage Per Half Hour - Class 4
+  description: 'Lotsavgift per commenced half hour of piloted time for NT class 4. Default pilotage hours by LOA
+    class (declared estimate, user-overridable): LOA < 150 m: 2 h; 150-250 m: 3 h; > 250 m: 4 h.'
+  rate_structure:
+    type: per_unit
+    unit_type: pilotage_half_hour
+    unit_rate: 3940
+  source_reference:
+    document_name: prislista-farleds-lotsavgifter-2026.pdf
+    document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+    page: 6
+    clause: Lotsavgift Class 4
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2025-11-01'
+  adjustments:
+  - type: discount
+    percentage: 40
+    condition: pilotage_hours > 7
+    stacking_order: 1
+    description: 40% discount for piloted time exceeding 7 hours
+  applicable_conditions:
+    pilotage_required: true
+    nt_class: 4
+- id: sfv_pilotage_start_class5
+  fee_family: pilotage
+  biller: Sjöfartsverket
+  name: Pilotage Start Fee - Class 5
+  description: Lotsavgift (national pilotage) start fee for NT class 5 (6,000+ NT).
+  rate_structure:
+    type: flat
+    amount: 19305
+  source_reference:
+    document_name: prislista-farleds-lotsavgifter-2026.pdf
+    document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+    page: 6
+    clause: Lotsavgift Class 5
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2025-11-01'
+  adjustments:
+  - type: discount
+    percentage: 40
+    condition: pilotage_hours > 7
+    stacking_order: 1
+    description: 40% discount for piloted time exceeding 7 hours
+  applicable_conditions:
+    pilotage_required: true
+    nt_class: 5
+- id: sfv_pilotage_half_hour_class5
+  fee_family: pilotage
+  biller: Sjöfartsverket
+  name: Pilotage Per Half Hour - Class 5
+  description: 'Lotsavgift per commenced half hour of piloted time for NT class 5. Default pilotage hours by LOA
+    class (declared estimate, user-overridable): LOA < 150 m: 2 h; 150-250 m: 3 h; > 250 m: 4 h.'
+  rate_structure:
+    type: per_unit
+    unit_type: pilotage_half_hour
+    unit_rate: 4400
+  source_reference:
+    document_name: prislista-farleds-lotsavgifter-2026.pdf
+    document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+    page: 6
+    clause: Lotsavgift Class 5
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2025-11-01'
+  adjustments:
+  - type: discount
+    percentage: 40
+    condition: pilotage_hours > 7
+    stacking_order: 1
+    description: 40% discount for piloted time exceeding 7 hours
+  applicable_conditions:
+    pilotage_required: true
+    nt_class: 5
+- id: sfv_pilotage_start_class6
+  fee_family: pilotage
+  biller: Sjöfartsverket
+  name: Pilotage Start Fee - Class 6
+  description: Lotsavgift (national pilotage) start fee for NT class 6 (10,000+ NT).
+  rate_structure:
+    type: flat
+    amount: 26105
+  source_reference:
+    document_name: prislista-farleds-lotsavgifter-2026.pdf
+    document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+    page: 6
+    clause: Lotsavgift Class 6
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2025-11-01'
+  adjustments:
+  - type: discount
+    percentage: 40
+    condition: pilotage_hours > 7
+    stacking_order: 1
+    description: 40% discount for piloted time exceeding 7 hours
+  applicable_conditions:
+    pilotage_required: true
+    nt_class: 6
+- id: sfv_pilotage_half_hour_class6
+  fee_family: pilotage
+  biller: Sjöfartsverket
+  name: Pilotage Per Half Hour - Class 6
+  description: 'Lotsavgift per commenced half hour of piloted time for NT class 6. Default pilotage hours by LOA
+    class (declared estimate, user-overridable): LOA < 150 m: 2 h; 150-250 m: 3 h; > 250 m: 4 h.'
+  rate_structure:
+    type: per_unit
+    unit_type: pilotage_half_hour
+    unit_rate: 5865
+  source_reference:
+    document_name: prislista-farleds-lotsavgifter-2026.pdf
+    document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+    page: 6
+    clause: Lotsavgift Class 6
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2025-11-01'
+  adjustments:
+  - type: discount
+    percentage: 40
+    condition: pilotage_hours > 7
+    stacking_order: 1
+    description: 40% discount for piloted time exceeding 7 hours
+  applicable_conditions:
+    pilotage_required: true
+    nt_class: 6
+- id: sfv_pilotage_start_class7
+  fee_family: pilotage
+  biller: Sjöfartsverket
+  name: Pilotage Start Fee - Class 7
+  description: Lotsavgift (national pilotage) start fee for NT class 7 (15,000+ NT).
+  rate_structure:
+    type: flat
+    amount: 29730
+  source_reference:
+    document_name: prislista-farleds-lotsavgifter-2026.pdf
+    document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+    page: 6
+    clause: Lotsavgift Class 7
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2025-11-01'
+  adjustments:
+  - type: discount
+    percentage: 40
+    condition: pilotage_hours > 7
+    stacking_order: 1
+    description: 40% discount for piloted time exceeding 7 hours
+  applicable_conditions:
+    pilotage_required: true
+    nt_class: 7
+- id: sfv_pilotage_half_hour_class7
+  fee_family: pilotage
+  biller: Sjöfartsverket
+  name: Pilotage Per Half Hour - Class 7
+  description: 'Lotsavgift per commenced half hour of piloted time for NT class 7. Default pilotage hours by LOA
+    class (declared estimate, user-overridable): LOA < 150 m: 2 h; 150-250 m: 3 h; > 250 m: 4 h.'
+  rate_structure:
+    type: per_unit
+    unit_type: pilotage_half_hour
+    unit_rate: 6735
+  source_reference:
+    document_name: prislista-farleds-lotsavgifter-2026.pdf
+    document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+    page: 6
+    clause: Lotsavgift Class 7
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2025-11-01'
+  adjustments:
+  - type: discount
+    percentage: 40
+    condition: pilotage_hours > 7
+    stacking_order: 1
+    description: 40% discount for piloted time exceeding 7 hours
+  applicable_conditions:
+    pilotage_required: true
+    nt_class: 7
+- id: sfv_pilotage_start_class8
+  fee_family: pilotage
+  biller: Sjöfartsverket
+  name: Pilotage Start Fee - Class 8
+  description: Lotsavgift (national pilotage) start fee for NT class 8 (30,000+ NT).
+  rate_structure:
+    type: flat
+    amount: 32540
+  source_reference:
+    document_name: prislista-farleds-lotsavgifter-2026.pdf
+    document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+    page: 6
+    clause: Lotsavgift Class 8
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2025-11-01'
+  adjustments:
+  - type: discount
+    percentage: 40
+    condition: pilotage_hours > 7
+    stacking_order: 1
+    description: 40% discount for piloted time exceeding 7 hours
+  applicable_conditions:
+    pilotage_required: true
+    nt_class: 8
+- id: sfv_pilotage_half_hour_class8
+  fee_family: pilotage
+  biller: Sjöfartsverket
+  name: Pilotage Per Half Hour - Class 8
+  description: 'Lotsavgift per commenced half hour of piloted time for NT class 8. Default pilotage hours by LOA
+    class (declared estimate, user-overridable): LOA < 150 m: 2 h; 150-250 m: 3 h; > 250 m: 4 h.'
+  rate_structure:
+    type: per_unit
+    unit_type: pilotage_half_hour
+    unit_rate: 7335
+  source_reference:
+    document_name: prislista-farleds-lotsavgifter-2026.pdf
+    document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+    page: 6
+    clause: Lotsavgift Class 8
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2025-11-01'
+  adjustments:
+  - type: discount
+    percentage: 40
+    condition: pilotage_hours > 7
+    stacking_order: 1
+    description: 40% discount for piloted time exceeding 7 hours
+  applicable_conditions:
+    pilotage_required: true
+    nt_class: 8
+- id: sfv_pilotage_start_class9
+  fee_family: pilotage
+  biller: Sjöfartsverket
+  name: Pilotage Start Fee - Class 9
+  description: Lotsavgift (national pilotage) start fee for NT class 9 (60,000+ NT).
+  rate_structure:
+    type: flat
+    amount: 35755
+  source_reference:
+    document_name: prislista-farleds-lotsavgifter-2026.pdf
+    document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+    page: 6
+    clause: Lotsavgift Class 9
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2025-11-01'
+  adjustments:
+  - type: discount
+    percentage: 40
+    condition: pilotage_hours > 7
+    stacking_order: 1
+    description: 40% discount for piloted time exceeding 7 hours
+  applicable_conditions:
+    pilotage_required: true
+    nt_class: 9
+- id: sfv_pilotage_half_hour_class9
+  fee_family: pilotage
+  biller: Sjöfartsverket
+  name: Pilotage Per Half Hour - Class 9
+  description: 'Lotsavgift per commenced half hour of piloted time for NT class 9. Default pilotage hours by LOA
+    class (declared estimate, user-overridable): LOA < 150 m: 2 h; 150-250 m: 3 h; > 250 m: 4 h.'
+  rate_structure:
+    type: per_unit
+    unit_type: pilotage_half_hour
+    unit_rate: 8105
+  source_reference:
+    document_name: prislista-farleds-lotsavgifter-2026.pdf
+    document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+    page: 6
+    clause: Lotsavgift Class 9
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2025-11-01'
+  adjustments:
+  - type: discount
+    percentage: 40
+    condition: pilotage_hours > 7
+    stacking_order: 1
+    description: 40% discount for piloted time exceeding 7 hours
+  applicable_conditions:
+    pilotage_required: true
+    nt_class: 9
+- id: sfv_pilotage_start_class10
+  fee_family: pilotage
+  biller: Sjöfartsverket
+  name: Pilotage Start Fee - Class 10
+  description: Lotsavgift (national pilotage) start fee for NT class 10 (100,000+ NT).
+  rate_structure:
+    type: flat
+    amount: 45420
+  source_reference:
+    document_name: prislista-farleds-lotsavgifter-2026.pdf
+    document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+    page: 6
+    clause: Lotsavgift Class 10
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2025-11-01'
+  adjustments:
+  - type: discount
+    percentage: 40
+    condition: pilotage_hours > 7
+    stacking_order: 1
+    description: 40% discount for piloted time exceeding 7 hours
+  applicable_conditions:
+    pilotage_required: true
+    nt_class: 10
+- id: sfv_pilotage_half_hour_class10
+  fee_family: pilotage
+  biller: Sjöfartsverket
+  name: Pilotage Per Half Hour - Class 10
+  description: 'Lotsavgift per commenced half hour of piloted time for NT class 10. Default pilotage hours by LOA
+    class (declared estimate, user-overridable): LOA < 150 m: 2 h; 150-250 m: 3 h; > 250 m: 4 h.'
+  rate_structure:
+    type: per_unit
+    unit_type: pilotage_half_hour
+    unit_rate: 10255
+  source_reference:
+    document_name: prislista-farleds-lotsavgifter-2026.pdf
+    document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+    page: 6
+    clause: Lotsavgift Class 10
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2025-11-01'
+  adjustments:
+  - type: discount
+    percentage: 40
+    condition: pilotage_hours > 7
+    stacking_order: 1
+    description: 40% discount for piloted time exceeding 7 hours
+  applicable_conditions:
+    pilotage_required: true
+    nt_class: 10
+- id: sfv_pilotage_extra_pilot
+  fee_family: pilotage
+  biller: Sjöfartsverket
+  name: Extra Pilot Fee
+  description: 'Additional fee for extra pilot: 12,620 SEK.'
+  rate_structure:
+    type: flat
+    amount: 12620
+  source_reference:
+    document_name: prislista-farleds-lotsavgifter-2026.pdf
+    document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+    page: 6
+    clause: Extra pilot
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2025-11-01'
+  applicable_conditions:
+    pilotage_required: true
+    pilotage_extra_pilot: true
+- id: sfv_ordering_fee_under_1h
+  fee_family: ordering_fee
+  biller: Sjöfartsverket
+  name: Ordering Fee - Under 1 hour
+  description: 'Beställningsavgift (ordering fee) by lead time band: Under 1 hour. Applies when pilotage is required
+    and lead time falls in this band (lower inclusive, upper exclusive).'
+  rate_structure:
+    type: flat
+    amount: 9390
+  source_reference:
+    document_name: prislista-farleds-lotsavgifter-2026.pdf
+    document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+    page: 7
+    clause: Beställningsavgift
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2025-11-01'
+  applicable_conditions:
+    pilotage_required: true
+    ordering_lead_time_band: under_1h
+- id: sfv_ordering_fee_1_2h
+  fee_family: ordering_fee
+  biller: Sjöfartsverket
+  name: Ordering Fee - 1-2 hours
+  description: 'Beställningsavgift (ordering fee) by lead time band: 1-2 hours. Applies when pilotage is required
+    and lead time falls in this band (lower inclusive, upper exclusive).'
+  rate_structure:
+    type: flat
+    amount: 7510
+  source_reference:
+    document_name: prislista-farleds-lotsavgifter-2026.pdf
+    document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+    page: 7
+    clause: Beställningsavgift
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2025-11-01'
+  applicable_conditions:
+    pilotage_required: true
+    ordering_lead_time_band: 1_2h
+- id: sfv_ordering_fee_2_3h
+  fee_family: ordering_fee
+  biller: Sjöfartsverket
+  name: Ordering Fee - 2-3 hours
+  description: 'Beställningsavgift (ordering fee) by lead time band: 2-3 hours. Applies when pilotage is required
+    and lead time falls in this band (lower inclusive, upper exclusive).'
+  rate_structure:
+    type: flat
+    amount: 5635
+  source_reference:
+    document_name: prislista-farleds-lotsavgifter-2026.pdf
+    document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+    page: 7
+    clause: Beställningsavgift
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2025-11-01'
+  applicable_conditions:
+    pilotage_required: true
+    ordering_lead_time_band: 2_3h
+- id: sfv_ordering_fee_3_4h
+  fee_family: ordering_fee
+  biller: Sjöfartsverket
+  name: Ordering Fee - 3-4 hours
+  description: 'Beställningsavgift (ordering fee) by lead time band: 3-4 hours. Applies when pilotage is required
+    and lead time falls in this band (lower inclusive, upper exclusive).'
+  rate_structure:
+    type: flat
+    amount: 3775
+  source_reference:
+    document_name: prislista-farleds-lotsavgifter-2026.pdf
+    document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+    page: 7
+    clause: Beställningsavgift
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2025-11-01'
+  applicable_conditions:
+    pilotage_required: true
+    ordering_lead_time_band: 3_4h
+- id: sfv_ordering_fee_4h_plus
+  fee_family: ordering_fee
+  biller: Sjöfartsverket
+  name: Ordering Fee - 4+ hours
+  description: 'Beställningsavgift (ordering fee) by lead time band: 4+ hours. Applies when pilotage is required
+    and lead time falls in this band (lower inclusive, upper exclusive).'
+  rate_structure:
+    type: flat
+    amount: 1880
+  source_reference:
+    document_name: prislista-farleds-lotsavgifter-2026.pdf
+    document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+    page: 7
+    clause: Beställningsavgift
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2025-11-01'
+  applicable_conditions:
+    pilotage_required: true
+    ordering_lead_time_band: 4h_plus
+- id: poh_towage_estimate
+  fee_family: towage
+  biller: Towage operator (estimated)
+  name: Towage (estimated)
+  description: 'Towage per tug-assist. No published Helsingborg tug tariff found (commercial providers). Declared
+    estimate 60,000 SEK per tug-assist; user-editable. Default tug count by LOA class (spec 3.3, defaults are data,
+    user-overridable): LOA < 150 m: 0 tugs; 150-250 m: 1; > 250 m: 2.'
+  rate_structure:
+    type: per_unit
+    unit_type: tug_count
+    unit_rate: 60000
+    unit_rate_input: towage_cost_per_tug
+    default_by_loa:
+      bands:
+      - max_m: 150
+        count: 0
+        description: 'LOA < 150 m: 0 tugs'
+      - min_m: 150
+        max_m: 250
+        count: 1
+        description: '150-250 m: 1 tug'
+      - min_m: 250
+        count: 2
+        description: '> 250 m: 2 tugs'
+  source_reference:
+    document_name: HELSINGBORG_EXTRACTION_REFERENCE.md
+    document_url: docs/sources/sweden/helsingborg/HELSINGBORG_EXTRACTION_REFERENCE.md
+    page: 5
+    clause: 5 - Estimated parameters
+    verified_on: '2026-09-21'
+    verified_by: vibe-session-helsingborg
+    document_issued: '2026-09-21'
+  estimated_parameter:
+    description: estimated; no published Helsingborg tug tariff; default 60,000 SEK per tug-assist, tug-count defaults
+      by LOA class
+    severity: info
