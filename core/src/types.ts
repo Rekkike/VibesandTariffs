@@ -6,6 +6,9 @@ export type Currency = 'SEK' | 'EUR' | 'USD' | string;
 export interface SourceReference {
   document_name: string;
   document_url: string;
+  // Spec v0.2.26: set at conversion when the repository source file is a
+  // zero-byte placeholder; the UI renders provenance text without a link.
+  document_pending?: boolean;
   document_issued: string; // ISO date
   page: string | number;
   clause: string;

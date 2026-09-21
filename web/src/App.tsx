@@ -1532,9 +1532,13 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                                                         <Typography variant="body2" className="source-ref">
                                                           Source: {fee.source_reference.document_name}
                                                           (Page {fee.source_reference.page}, {fee.source_reference.clause}) -
-                                                          <a href={fee.source_reference.document_url} target="_blank" rel="noopener noreferrer">
-                                                            View Document
-                                                          </a>
+                                                          {fee.source_reference.document_pending ? (
+                                                            <span className="status-badge status-caveat">source document pending</span>
+                                                          ) : (
+                                                            <a href={fee.source_reference.document_url} target="_blank" rel="noopener noreferrer">
+                                                              View Document
+                                                            </a>
+                                                          )}
                                                         </Typography>
 
                                                         {fee.quality_flags.map((flag: QualityFlag, index: number) => (

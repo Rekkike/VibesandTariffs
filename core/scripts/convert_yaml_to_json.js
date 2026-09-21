@@ -17,6 +17,39 @@ const DATA_DIR = path.join(__dirname, '..', 'data');
 const WEB_DATA_DIR = path.join(__dirname, '..', '..', 'web', 'src', 'data');
 const PORTS_OUTPUT = path.join(WEB_DATA_DIR, 'ports.json');
 const VESSELS_OUTPUT = path.join(WEB_DATA_DIR, 'vessel_library.json');
+const REPO_ROOT = path.join(__dirname, '..', '..');
+
+// Spec v0.2.26 source-link rule: YAML document_url values are repository-relative
+// paths (the file paths used for verification). At conversion, each is rewritten
+// to the absolute GitHub blob URL so UI hyperlinks resolve on the deployed
+// bundle, where docs/sources/ is not part of the static site. Absolute http(s)
+// URLs pass through untouched. A repository file of zero bytes marks the
+// source reference document_pending so the UI renders provenance text
+// without a hyperlink (source document pending).
+const BLOB_BASE = 'https://github.com/Rekkike/VibesandTariffs/blob/main/';
+
+function rewriteSourceUrls(node) {
+  if (Array.isArray(node)) {
+    node.forEach(rewriteSourceUrls);
+    return;
+  }
+  if (!node || typeof node !== 'object') return;
+  if ('document_url' in node) {
+    const url = node.document_url;
+    if (typeof url === 'string' && url.startsWith('docs/sources/')) {
+      node.document_url = BLOB_BASE + url;
+      try {
+        if (fs.statSync(path.join(REPO_ROOT, url)).size === 0) {
+          node.document_pending = true;
+        }
+      } catch (e) {
+        // Missing file: the core source-integrity test fails loudly on this;
+        // conversion does not silently drop provenance.
+      }
+    }
+  }
+  Object.values(node).forEach(rewriteSourceUrls);
+}
 
 function main() {
   try {
@@ -60,6 +93,12 @@ function main() {
 
     if (ports.length === 0) {
       throw new Error('No port YAML files found in ' + DATA_DIR);
+    }
+
+    // Spec v0.2.26: rewrite repository-relative document_url values to
+    // absolute GitHub blob URLs and flag zero-byte (pending) source files.
+    for (const port of ports) {
+      rewriteSourceUrls(port);
     }
 
     // Registries are deterministic: same YAML inputs always produce identical
