@@ -22,7 +22,6 @@ import {
 } from '@mui/material';
 import { KeyboardArrowDown, KeyboardArrowUp } from '@mui/icons-material';
 // Import core types and functions
-// Note: We don't import from loader since it uses Node.js fs module which isn't available in browser
 import {
   VesselInput,
   CallInput,
@@ -36,9 +35,8 @@ import {
   calculatePortCallCost
 } from '@port-cost/core';
 
-// Import the port data from canonical source
-// Using relative path for CRA compatibility; the file is copied during build
-import gothenburgYamlText from './data/gothenburg_2026.yaml';
+// Import the port data from canonical source (converted to JSON at build time)
+import gothenburgData from './data/gothenburg_2026.json';
 
 
 // Define types for our app state
@@ -62,8 +60,20 @@ const VESSEL_PRESETS = {
 };
 
 const App: React.FC = () => {
-  // Load port data
-  const [port, setPort] = useState<PortDefinition | null>(null);
+  // Load port data synchronously from JSON (converted at build time)
+  // Validate port data has required fields
+  const port: PortDefinition | null = (() => {
+    try {
+      if (!gothenburgData || !gothenburgData.fee_rules || !Array.isArray(gothenburgData.fee_rules)) {
+        console.error(`Invalid port data: fee_rules is ${typeof gothenburgData?.fee_rules}`);
+        return null;
+      }
+      return gothenburgData;
+    } catch (err) {
+      console.error('Port data validation failed:', err);
+      return null;
+    }
+  })();
   
   // App state
   const [state, setState] = useState<AppState>({
@@ -106,30 +116,6 @@ const App: React.FC = () => {
     expandedFees: new Set()
   });
 
-  // Load port data on mount
-  useEffect(() => {
-    const loadPortData = async () => {
-      try {
-        // Load the YAML file using the core loader
-        // In browser, we need to parse the YAML text directly since we can't use fs
-        const yaml = await import('js-yaml');
-        const portData = yaml.load(gothenburgYamlText) as PortDefinition;
-        
-        // Validate port data has required fields
-        if (!portData || !portData.fee_rules || !Array.isArray(portData.fee_rules)) {
-          throw new Error(`Invalid port data: fee_rules is ${typeof portData?.fee_rules}`);
-        }
-        
-        setPort(portData);
-      } catch (err) {
-        console.error('Failed to load port data:', err);
-        setState(prev => ({ ...prev, error: `Port data failed to load: ${err}` }));
-      }
-    };
-    
-    loadPortData();
-  }, []);
-
   // Calculate costs when inputs change
   useEffect(() => {
     if (!port) {
@@ -137,7 +123,7 @@ const App: React.FC = () => {
       return;
     }
     
-    const calculate = async () => {
+    const calculate = () => {
       setState(prev => ({ ...prev, isLoading: true, error: null }));
       
       try {
@@ -161,7 +147,7 @@ const App: React.FC = () => {
     // Debounce the calculation slightly
     const timer = setTimeout(calculate, 500);
     return () => clearTimeout(timer);
-  }, [port, state.vessel, state.call]);
+  }, [state.vessel, state.call]);
 
   const handleVesselChange = (field: keyof VesselInput, value: number | undefined) => {
     setState(prev => ({

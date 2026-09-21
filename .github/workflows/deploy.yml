@@ -16,13 +16,13 @@ jobs:
         with:
           node-version: 20
       
-      # Copy canonical data to web BEFORE building
-      - name: Copy canonical data to web
-        run: mkdir -p web/src/data && cp core/data/gothenburg_2026.yaml web/src/data/gothenburg_2026.yaml
+      # Install core dependencies and convert YAML to JSON
+      - name: Install core and convert YAML to JSON
+        run: cd core && npm install && node scripts/convert_yaml_to_json.js
       
-      # Install and build core module
-      - name: Install and build core
-        run: cd core && npm install && npm run build
+      # Build core module
+      - name: Build core
+        run: cd core && npm run build
       
       # Install web dependencies
       - name: Install web dependencies
