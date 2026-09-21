@@ -1015,4 +1015,26 @@ describe('Panamax Verification - Gothenburg 2026', () => {
     expect(terminalHandlingFees?.length).toBeGreaterThan(0);
     expect(totalTerminalHandling).toBe(684000);
   });
+
+  it('Hatch cover should be 0 SEK when no hatch covers are handled', () => {
+    const result = calculatePortCallCost(gothenburgPort, panamaxInput);
+    
+    const hatchCoverFee = result.billers
+      .find(b => b.biller === 'APM Terminals Gothenburg')
+      ?.fees.find(f => f.fee_family === 'hatch_cover');
+    
+    expect(hatchCoverFee).toBeDefined();
+    expect(hatchCoverFee?.amount).toBe(0);
+  });
+
+  it('Gearbox handling should be 0 SEK when no gearboxes are handled', () => {
+    const result = calculatePortCallCost(gothenburgPort, panamaxInput);
+    
+    const gearboxFee = result.billers
+      .find(b => b.biller === 'APM Terminals Gothenburg')
+      ?.fees.find(f => f.fee_family === 'gearbox_handling');
+    
+    expect(gearboxFee).toBeDefined();
+    expect(gearboxFee?.amount).toBe(0);
+  });
 });

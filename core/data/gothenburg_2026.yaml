@@ -2228,11 +2228,18 @@ fee_rules:
     fee_family: hatch_cover
     biller: APM Terminals Gothenburg
     name: Hatch Cover Charge
-    description: "Hatch cover charge per move and unit"
+    description: "Hatch cover charge per hatch cover per move and unit - only applies when hatch covers are handled"
     rate_structure:
-      type: per_unit
-      unit_rate: 3111
-      unit_type: move
+      type: flat
+      amount: 0
+    applicable_conditions:
+      hatch_cover_count: 0
+    adjustments:
+      - type: surcharge
+        amount: 3111
+        condition: "hatch_cover_count > 0"
+        unit_type: hatch_cover
+        description: "3,111 SEK per hatch cover per move"
     source_reference:
       document_name: "terminal-tariff-2026-june.pdf"
       document_url: "docs/sources/sweden/gothenburg/apm-terminals/terminal-tariff-2026-june.pdf"
@@ -2247,11 +2254,18 @@ fee_rules:
     fee_family: gearbox_handling
     biller: APM Terminals Gothenburg
     name: Gearbox Handling
-    description: "Gearbox handling charge per move and unit"
+    description: "Gearbox handling charge per gearbox unit per move - only applies when gearboxes are handled"
     rate_structure:
-      type: per_unit
-      unit_rate: 1036
-      unit_type: move
+      type: flat
+      amount: 0
+    applicable_conditions:
+      gearbox_count: 0
+    adjustments:
+      - type: surcharge
+        amount: 1036
+        condition: "gearbox_count > 0"
+        unit_type: gearbox
+        description: "1,036 SEK per gearbox per move"
     source_reference:
       document_name: "terminal-tariff-2026-june.pdf"
       document_url: "docs/sources/sweden/gothenburg/apm-terminals/terminal-tariff-2026-june.pdf"
