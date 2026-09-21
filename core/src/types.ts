@@ -196,6 +196,13 @@ export interface CallInput {
   pilotage_hours?: number;
   pilotage_extra_pilot?: boolean;
   pilotage_ordering_lead_time_hours?: number; // lead time for ordering fee
+  hatch_cover_count?: number; // number of hatch covers handled
+  gearbox_count?: number; // number of gearbox units handled
+  // OPS inputs (energy-at-berth)
+  ops_kwh_demand?: number; // kWh demand
+  ops_connected_hours?: number; // connected hours
+  ops_electricity_price_per_kwh?: number; // SEK/kWh (user-supplied, no published rate for containers)
+  ops_peak_demand_kw?: number; // registered peak demand in kW
 }
 
 // Full input for cost calculation
