@@ -134,9 +134,6 @@ const App: React.FC = () => {
   useEffect(() => {
     if (!port) {
       // Port data failed to load, don't attempt calculation
-      if (state.error === null) {
-        setState(prev => ({ ...prev, error: 'Port data not loaded' }));
-      }
       return;
     }
     
