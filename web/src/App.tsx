@@ -68,7 +68,7 @@ const App: React.FC = () => {
         console.error(`Invalid port data: fee_rules is ${typeof gothenburgData?.fee_rules}`);
         return null;
       }
-      return gothenburgData;
+      return gothenburgData as PortDefinition;
     } catch (err) {
       console.error('Port data validation failed:', err);
       return null;
@@ -147,7 +147,8 @@ const App: React.FC = () => {
     // Debounce the calculation slightly
     const timer = setTimeout(calculate, 500);
     return () => clearTimeout(timer);
-  }, [state.vessel, state.call]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.vessel, state.call, port]);
 
   const handleVesselChange = (field: keyof VesselInput, value: number | undefined) => {
     setState(prev => ({
