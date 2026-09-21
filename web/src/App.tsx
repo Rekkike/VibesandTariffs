@@ -46,11 +46,13 @@ import {
 import gothenburgData from './data/gothenburg_2026.json';
 
 // Segment metadata for the toggleable pages
-const SEGMENTS: { id: CostSegment; label: string; description: string }[] = [
+// Internal keys (CostSegment) and all logic are unchanged; labels are display-only (spec v0.2.16)
+const SEGMENTS: { id: CostSegment; label: string; description: string; subtitle?: string }[] = [
   {
     id: 'vessel_call',
     label: 'Vessel Call',
-    description: 'Port dues, fairway dues and pilotage, waste, security, lay-up, quay lifts'
+    description: 'Port dues, fairway dues and pilotage, waste, security, lay-up, quay lifts',
+    subtitle: 'Includes terminal vessel operations: lifts on/off, hatch covers, gearbox'
   },
   {
     id: 'energy_at_berth',
@@ -59,7 +61,7 @@ const SEGMENTS: { id: CostSegment; label: string; description: string }[] = [
   },
   {
     id: 'terminal_and_yard',
-    label: 'Terminal & Yard',
+    label: 'Yard & Storage',
     description: 'Storage, yard surcharges, gate hazardous, cargo-tied idle berth'
   }
 ];
@@ -621,7 +623,7 @@ const App: React.FC = () => {
 
             {/* ============ TERMINAL AND YARD SEGMENT INPUTS ============ */}
             <Typography variant="h6" component="h3" className="segment-heading terminal-heading">
-              Terminal &amp; Yard
+              Yard &amp; Storage
             </Typography>
             <Typography variant="body2" className="segment-description">
               Storage, yard surcharges, gate hazardous
@@ -842,6 +844,11 @@ const App: React.FC = () => {
                         <Typography variant="h6" className="segment-title">
                           {segment.label}
                         </Typography>
+                        {segment.subtitle && (
+                          <Typography variant="caption" className="segment-panel-subtitle">
+                            {segment.subtitle}
+                          </Typography>
+                        )}
                         <Typography variant="body2" className="segment-empty">
                           No fees in this segment for the current call inputs.
                         </Typography>
@@ -858,6 +865,11 @@ const App: React.FC = () => {
                           {formatCurrency(segmentTotals[segment.id])}
                         </span>
                       </Typography>
+                      {segment.subtitle && (
+                        <Typography variant="caption" className="segment-panel-subtitle">
+                          {segment.subtitle}
+                        </Typography>
+                      )}
 
                       {segmentBillers.map((billerBreakdown) => {
                         const isExpanded = state.expandedBillers.has(billerBreakdown.biller);

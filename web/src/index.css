@@ -413,24 +413,54 @@ code {
   padding: 10px 0;
 }
 
-/* Responsive segment layout: stacked list on narrow viewports,
-   side-by-side columns on wide (laptop/desktop) viewports.
-   Display-only: the total strip and toggle behavior are unchanged. */
+/* Responsive segment layout (spec v0.2.15): stacked list on narrow
+   viewports; side-by-side columns on wide viewports. Column count
+   depends on viewport width: two panels share a row from 1200px; a
+   third panel joins the row only from 1600px — below that it wraps
+   to a second row. Panels never compress below a readable width to
+   force a single row. Display-only: the total strip and toggle
+   behavior are unchanged. */
 .segments-container {
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 
+/* Readable floor for a segment panel in any multi-column layout */
+.segments-container > .segment-section {
+  flex: 1 1 380px;
+  min-width: 320px;
+}
+
 @media (min-width: 1200px) {
   .segments-container {
     flex-direction: row;
+    flex-wrap: wrap;
     align-items: flex-start;
   }
 
-  /* Visible segments share the row equally as parallel panels */
+  /* Two active panels sit side by side; a third wraps below the
+     first row rather than shrinking into an unreadable column.
+     flex-basis (380px) plus the min-width floor enforce the wrap. */
   .segments-container > .segment-section {
-    flex: 1 1 0;
+    flex: 1 1 380px;
+    min-width: 320px;
+  }
+}
+
+@media (min-width: 1600px) {
+  /* Only at very wide viewports do three panels fit one row */
+  .segments-container > .segment-section {
+    flex-basis: 0;
     min-width: 0;
   }
+}
+
+/* Subtitle under a segment panel title (display-only note) */
+.segment-panel-subtitle {
+  display: block;
+  color: #777;
+  font-style: italic;
+  margin-top: -4px;
+  margin-bottom: 10px;
 }
