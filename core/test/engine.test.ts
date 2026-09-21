@@ -999,4 +999,20 @@ describe('Panamax Verification - Gothenburg 2026', () => {
     expect(readinessFee).toBeDefined();
     expect(readinessFee?.amount).toBe(51555);
   });
+
+  it('Terminal handling should be 684,000 SEK', () => {
+    const result = calculatePortCallCost(gothenburgPort, panamaxInput);
+    
+    // 750 containers <= 20ft + 750 containers > 20ft discharged
+    // APM Terminal charges: 377 SEK/unit for <= 20ft, 535 SEK/unit for > 20ft
+    // 750 * 377 + 750 * 535 = 750 * (377 + 535) = 750 * 912 = 684,000
+    const apmBiller = result.billers.find(b => b.biller === 'APM Terminals Gothenburg');
+    
+    const terminalHandlingFees = apmBiller?.fees.filter(f => f.fee_family === 'terminal_handling');
+    const totalTerminalHandling = terminalHandlingFees?.reduce((sum, f) => sum + f.amount, 0);
+    
+    expect(terminalHandlingFees).toBeDefined();
+    expect(terminalHandlingFees?.length).toBeGreaterThan(0);
+    expect(totalTerminalHandling).toBe(684000);
+  });
 });

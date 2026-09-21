@@ -33,10 +33,12 @@ import {
   BillerBreakdown,
   QualityFlag,
   getNetTonnageClass,
-  calculatePortCallCost
+  calculatePortCallCost,
+  KNOWN_FEE_FAMILIES
 } from '@port-cost/core';
 
-// Import the port data - use js-yaml to parse it
+// Import the port data from canonical source
+// Using relative path for CRA compatibility; the file is copied during build
 import gothenburgYamlText from './data/gothenburg_2026.yaml';
 
 

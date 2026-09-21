@@ -481,6 +481,8 @@ export function calculatePortCallCost(
 ): CostCalculationResult {
   const qualityFlags: QualityFlag[] = [];
   const feeResults: FeeResult[] = [];
+  const matchedFeeFamilies = new Set<string>();
+  const allExpectedFamilies = new Set<string>();
   
   // Calculate NT if not provided (conservative estimate)
   let nt = input.vessel.nt;
@@ -495,7 +497,12 @@ export function calculatePortCallCost(
     });
   }
   
-  // Calculate NT class for Sjfartsverket
+  // Collect all expected fee families from the ports rules
+  for (const rule of port.fee_rules) {
+    allExpectedFamilies.add(rule.fee_family);
+  }
+  
+  // Calculate NT class for Sjöfartsverket
   const ntClass = getNetTonnageClass(nt);
   
   // Process each fee rule
@@ -503,12 +510,24 @@ export function calculatePortCallCost(
     const result = evaluateFeeRule(rule, input, [...qualityFlags]);
     if (result) {
       feeResults.push(result);
+      matchedFeeFamilies.add(rule.fee_family);
       // Merge quality flags
       qualityFlags.push(...result.quality_flags);
     }
   }
   
-  // Group by biller
+  // Check for unmatched expected fee families (section 4.3 validation)
+  for (const family of allExpectedFamilies) {
+    if (!matchedFeeFamilies.has(family)) {
+      qualityFlags.push({
+        type: 'unmatched_fee_family',
+        description: `Fee family '${family}' has no matching rule for the current input conditions`,
+        severity: 'warning'
+      });
+    }
+  }
+  
+  // Group by biller  // Group by biller
   const billerMap = new Map<string, BillerBreakdown>();
   
   for (const fee of feeResults) {

@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+core/dist/
+core/coverage/
+web/build/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Generated data copy for web (canonical is in core/data/)
+web/src/data/

@@ -2225,7 +2225,7 @@ fee_rules:
 
   # --- Hatch Cover Charge ---
   - id: apm_terminals_hatch_cover
-    fee_family: terminal_handling
+    fee_family: hatch_cover
     biller: APM Terminals Gothenburg
     name: Hatch Cover Charge
     description: "Hatch cover charge per move and unit"
@@ -2244,7 +2244,7 @@ fee_rules:
 
   # --- Gearbox Handling ---
   - id: apm_terminals_gearbox
-    fee_family: terminal_handling
+    fee_family: gearbox_handling
     biller: APM Terminals Gothenburg
     name: Gearbox Handling
     description: "Gearbox handling charge per move and unit"
