@@ -412,3 +412,25 @@ code {
   font-style: italic;
   padding: 10px 0;
 }
+
+/* Responsive segment layout: stacked list on narrow viewports,
+   side-by-side columns on wide (laptop/desktop) viewports.
+   Display-only: the total strip and toggle behavior are unchanged. */
+.segments-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+@media (min-width: 1200px) {
+  .segments-container {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+
+  /* Visible segments share the row equally as parallel panels */
+  .segments-container > .segment-section {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+}

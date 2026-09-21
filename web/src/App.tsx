@@ -812,7 +812,8 @@ const App: React.FC = () => {
                   </Typography>
                 </Box>
 
-                {/* Per-segment fee display */}
+                {/* Per-segment fee display - stacked on narrow viewports, columns on wide */}
+                <Box className="segments-container">
                 {SEGMENTS.map(segment => {
                   // Toggling a page filters display only - never the computed total
                   if (!visibleSegments.includes(segment.id)) {
@@ -997,6 +998,7 @@ const App: React.FC = () => {
                     </Box>
                   );
                 })}
+                </Box>
 
                 {/* Quality Flags Summary */}
                 {state.result.quality_flags.length > 0 && (
