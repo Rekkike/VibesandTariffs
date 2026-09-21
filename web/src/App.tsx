@@ -252,6 +252,18 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
     }).format(amount);
   };
 
+  // Line labeling (spec v0.2.18 section 4.3): the fee family is the grouping
+  // and the rule name is the line. Every fee line is labeled by its distinct
+  // rule name, resolved from the port's own fee rules — presentation only.
+  const ruleNameById = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const rule of port.fee_rules) {
+      map.set(rule.id, rule.name);
+    }
+    return map;
+  }, [port]);
+  const feeLineLabel = (fee: FeeResult) => ruleNameById.get(fee.fee_rule_id) ?? fee.fee_family;
+
   const getCsiClassColor = (csiClass: string | undefined) => {
     if (!csiClass) return '#999';
     const colors = { A: '#4caf50', B: '#8bc34a', C: '#ffeb3b', D: '#ff9800', E: '#f44336' };
@@ -942,7 +954,7 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                                                 >
                                                   <TableCell>
                                                     <Box display="flex" alignItems="center">
-                                                      {fee.fee_family}
+                                                      {feeLineLabel(fee)}
                                                       {fee.quality_flags.length > 0 && (
                                                         <span className="status-badge status-warning" style={{ marginLeft: '10px' }}>
                                                           {fee.quality_flags.length} flag{fee.quality_flags.length > 1 ? 's' : ''}

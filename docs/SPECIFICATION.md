@@ -1,4 +1,4 @@
-# Port Call Cost Analyzer — Specification v0.2.17
+# Port Call Cost Analyzer — Specification v0.2.18
 
 This document is the committed record of the project specification at version 0.2.17. It governs the data model, engine, and UI contracts of the Port Call Cost Analyzer. `docs/INTENDED_STATE.md` remains the authoritative audit document for the Gothenburg 2026 pilot data; where the two documents overlap, INTENDED_STATE.md governs the Gothenburg figures and this document governs the architecture and UI behavior.
 
@@ -33,6 +33,7 @@ Small adjustments increment only the third decimal. Larger updates may jump more
 | 0.2.15 | 2026-09-21 | Layout rule refined after three-panel cramping: column count adapts to active-segment count as well as viewport width — two panels side by side from ~1200px, three-across only from ~1600px, wrapping rather than shrinking below readable panel width. terminal_handling confirmed in the vessel-call segment (quay lifts to place of rest), correcting a mapping defect |
 | 0.2.16 | 2026-09-21 | Segment display names finalized: "Vessel Call" (subtitle noting terminal vessel operations are included), "Energy at Berth", "Yard & Storage" — replacing the misleading "Terminal & Yard" label, since the terminal's charges are split by activity across segments and only the by-biller view shows a biller's complete charges. Internal mapping key unchanged |
 | 0.2.17 | 2026-09-21 | Added section 4.3.1: multi-port navigation (per-port pages with a persistent port selector, required as soon as a second port loads) and the cross-port comparison view — one column per selected port, rows by cost segment and fee family, list-price default with marked overrides, explicit "not charged" for absent functions, and data-quality flags carried through. Comparison is a presentation over multiple single-port computations, not a separate calculation path |
+| 0.2.18 | 2026-09-21 | Line-labeling rule added to section 4.3 (fee family is the grouping, rule name is the line); vessel library recorded as section 3.4 (curated static YAML, autocomplete by name or IMO, pre-fill without locking, no runtime API dependency) |
 
 ## 1. Purpose
 
@@ -92,7 +93,7 @@ Towage cost depends on the number of tugs, which varies by port, vessel size, we
 
 ### 3.4 Vessel Library
 
-A curated, versioned static file of named vessels and their particulars (name, IMO, type, flag, built year, GT, LOA, beam, TEU capacity, class note). The library is authored as YAML and consumed as JSON at build time, exactly like the tariff data — no runtime API calls. Every entry carries a `source_note` recording where the particulars were verified. In the UI, a search/typeahead field matches on name or IMO; selecting a vessel pre-fills the form's inputs. Pre-filled values remain editable — selection is a convenience, not a lock.
+A curated, versioned static file of named vessels and their particulars: `core/data/vessel_library.yaml`, holding name, imo, vessel_type, flag, built, gt, loa_m, beam_m, teu_capacity, class_note, and a `source_note` with provenance. The library is versioned like the tariff data — YAML authored, JSON at build time, no runtime API dependency. Entries are validated at conversion (name, imo, gt, and source_note required) and locked by tests. In the UI, a search/typeahead field matches on name or IMO and pre-fills the form's vessel inputs (gt, loa_m, vessel_type, flag, built year, teu_capacity where the form has those inputs). Pre-filled values remain editable — selection is a convenience, not a lock.
 
 ## 4. Tariff Rule Language
 
@@ -230,6 +231,8 @@ The data layer and the presentation layer are strictly decoupled.
 Data layer: a rich, normalized model of cost items — every individual charge as a distinct record carrying its biller, fee family, formula, conditions, currency, and source reference. The model is deliberately over-specified relative to any single UI need, so that views, upgrades, and tariff changes never require data restructuring. Physically, in version 1, this model is stored as versioned structured files (YAML for authoring, JSON as the interchange format the application consumes), reviewable on GitHub. A database may be introduced later without redesign.
 
 Presentation layer: the GUI derives all views from the data layer's output contract. The default view is a simple overview (port totals and top-level groupings); any grouping — by biller, fee family, or port — can be collapsed, expanded, or drilled into on request. Detail (individual clauses, tariff documents, calculation traces) is retrievable on demand rather than shown by default.
+
+Line-labeling rule. In any results rendering, the fee family is the grouping and the rule name is the line: when more than one rule of a family is active on a call, each line is labeled by its distinct rule name (e.g. Solid Waste Dues and Sludge Waste Dues), never collapsed to the family label alone. This holds for all families and all views, including the comparison view's drill-down. Whether waste should further split into separate fee families (waste_solid / waste_sludge) is deferred until a second port is extracted, since family taxonomy is a cross-port decision.
 
 The exact interaction design of the GUI is deferred. What is normative now is that the data model must be sophisticated enough that no future presentation choice is constrained by it.
 
