@@ -33,8 +33,7 @@ import {
   BillerBreakdown,
   QualityFlag,
   getNetTonnageClass,
-  calculatePortCallCost,
-  KNOWN_FEE_FAMILIES
+  calculatePortCallCost
 } from '@port-cost/core';
 
 // Import the port data from canonical source
