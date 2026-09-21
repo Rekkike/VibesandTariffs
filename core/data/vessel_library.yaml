@@ -1,0 +1,54 @@
+# Vessel Library — curated named-vessel table (spec section 3.1 / 3.4)
+# Versioned static data, consumed like tariff data: YAML authored, JSON at build.
+# No runtime API calls; public fleet registries are consulted at data-entry time.
+# Every entry carries a source_note for provenance.
+#
+# Schema:
+#   name:          vessel name (display + match key)
+#   imo:           IMO number (match key)
+#   vessel_type:   e.g. container, tanker
+#   flag:          flag state (display)
+#   built:         build year
+#   gt:            gross tonnage
+#   loa_m:         length overall in meters
+#   beam_m:        beam in meters
+#   teu_capacity:  container capacity in TEU
+#   class_note:    free-text size-class note
+#   source_note:   provenance — where the particulars were verified
+
+vessels:
+  - name: HELGAFELL
+    imo: "9306017"
+    vessel_type: container
+    flag: Faroe Islands
+    built: 2005
+    gt: 8890
+    loa_m: 137
+    beam_m: 22
+    teu_capacity: 909
+    class_note: "Feeder (North Atlantic / North Europe feeder routes)"
+    source_note: "Particulars cross-checked via VesselFinder (IMO 9306017) and Flexport Atlas vessel registry, 2026-09-21."
+
+  - name: VISTULA MAERSK
+    imo: "9775737"
+    vessel_type: container
+    flag: Denmark
+    built: 2018
+    gt: 34882
+    loa_m: 200
+    beam_m: 35.2
+    teu_capacity: 3596
+    class_note: "Panamax / ice-class intra-Europe (Seago Line Baltic service)"
+    source_note: "Particulars cross-checked via VesselFinder (IMO 9775737), Flexport Atlas, and VesselTracking registries, 2026-09-21."
+
+  - name: MAREN MAERSK
+    imo: "9632129"
+    vessel_type: container
+    flag: Denmark
+    built: 2014
+    gt: 194849
+    loa_m: 399
+    beam_m: 60
+    teu_capacity: 19076
+    class_note: "Ultra-large (Triple-E class, Asia-Europe)"
+    source_note: "Particulars cross-checked via VesselFinder (IMO 9632129) and Flexport Atlas vessel registry, 2026-09-21."

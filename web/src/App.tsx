@@ -27,6 +27,7 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
+  Autocomplete,
   Divider
 } from '@mui/material';
 import { KeyboardArrowDown, KeyboardArrowUp, ExpandMore } from '@mui/icons-material';
@@ -48,11 +49,30 @@ import {
 // Import the port registry from canonical sources (converted to JSON at build time).
 // The registry contains every port loaded from core/data/*.yaml (spec v0.2.17 section 4.3.1).
 import portsRegistry from './data/ports.json';
+// Vessel library: curated named-vessel table (spec section 3.4), converted to
+// JSON at build time — no runtime API calls.
+import vesselLibrary from './data/vessel_library.json';
 
 // Loaded ports; adding a port is a data edit (drop a YAML in core/data/), never a code change
 const LOADED_PORTS: PortDefinition[] = ((portsRegistry as any).ports ?? []).filter(
   (p: any) => p && p.fee_rules && Array.isArray(p.fee_rules)
 );
+
+// Vessel library entries (name, imo, particulars, source_note provenance)
+interface LibraryVessel {
+  name: string;
+  imo: string;
+  vessel_type: string;
+  flag: string;
+  built: number;
+  gt: number;
+  loa_m: number;
+  beam_m: number;
+  teu_capacity: number;
+  class_note: string;
+  source_note: string;
+}
+const LOADED_VESSELS: LibraryVessel[] = (vesselLibrary as any).vessels ?? [];
 
 // Navigation pages per spec v0.2.17 section 4.3.1: per-port workspaces plus a
 // distinct comparison screen. Per-port separation is required as soon as a
@@ -178,6 +198,27 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
     onVesselChange({ ...vessel, ...presetData });
   };
 
+  // Selecting a library vessel pre-fills the form's inputs — a convenience,
+  // not a lock: pre-filled values remain editable (spec section 3.4)
+  const applyLibraryVessel = (selected: LibraryVessel | null) => {
+    if (!selected) {
+      return;
+    }
+    onVesselChange({
+      ...vessel,
+      name: selected.name,
+      imo: selected.imo,
+      gt: selected.gt,
+      loa_m: selected.loa_m,
+      beam_m: selected.beam_m,
+      teu_capacity: selected.teu_capacity
+    });
+    onCallChange({
+      ...call,
+      vessel_type: selected.vessel_type
+    });
+  };
+
   const toggleBiller = (biller: string) => {
     setState(prev => {
       const newSet = new Set(prev.expandedBillers);
@@ -269,6 +310,28 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
           <Paper className="form-section" elevation={2}>
             {/* Vessel Details (shared, always visible) */}
             <Typography variant="h5" component="h2">Vessel Details</Typography>
+
+            {/* Vessel library search/typeahead (spec section 3.4): matches on
+                name or IMO; selection pre-fills the inputs below, which stay
+                editable */}
+            {LOADED_VESSELS.length > 0 && (
+              <Autocomplete
+                className="vessel-search"
+                options={LOADED_VESSELS}
+                getOptionLabel={(option: LibraryVessel) =>
+                  `${option.name} (IMO ${option.imo})`
+                }
+                onChange={(_, value: LibraryVessel | null) => applyLibraryVessel(value)}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Search vessel library (name or IMO)"
+                    placeholder="e.g. HELGAFELL or 9306017"
+                    margin="normal"
+                  />
+                )}
+              />
+            )}
 
             <Box className="preset-buttons">
               {Object.entries(VESSEL_PRESETS).map(([key, preset]) => (
