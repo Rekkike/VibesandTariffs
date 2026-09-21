@@ -43,7 +43,10 @@ function main() {
       throw new Error('No port YAML files found in ' + DATA_DIR);
     }
 
-    const registry = { generated_at: new Date().toISOString(), ports };
+    // The registry is deterministic: same YAML inputs always produce identical
+    // output, so the web bundle content hash is reproducible and a served
+    // bundle can be matched to a commit (spec section 7 verification).
+    const registry = { ports };
     const jsonContent = JSON.stringify(registry, null, 2);
     fs.writeFileSync(JSON_OUTPUT, jsonContent, 'utf8');
     console.log(`Successfully converted ${yamlFiles.length} port file(s) -> ${JSON_OUTPUT}`);
