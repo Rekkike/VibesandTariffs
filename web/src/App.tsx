@@ -28,7 +28,9 @@ import {
   AccordionSummary,
   AccordionDetails,
   Autocomplete,
-  Divider
+  Divider,
+  ThemeProvider,
+  createTheme
 } from '@mui/material';
 import { KeyboardArrowDown, KeyboardArrowUp, ExpandMore } from '@mui/icons-material';
 // Import core types and functions
@@ -52,11 +54,106 @@ import portsRegistry from './data/ports.json';
 // Vessel library: curated named-vessel table (spec section 3.4), converted to
 // JSON at build time — no runtime API calls.
 import vesselLibrary from './data/vessel_library.json';
+// Theme preference logic + progressive-disclosure defaults (spec v0.2.25)
+import { getInitialTheme, persistTheme, FORM_SECTION_DEFAULTS } from './theme';
+import type { ThemeMode } from './theme';
 
 // Loaded ports; adding a port is a data edit (drop a YAML in core/data/), never a code change
 const LOADED_PORTS: PortDefinition[] = ((portsRegistry as any).ports ?? []).filter(
   (p: any) => p && p.fee_rules && Array.isArray(p.fee_rules)
 );
+
+// Theme (spec v0.2.25 Presentation Principles): semantic CSS tokens on :root,
+// dark default, light mapped over the same token names. The stored preference
+// wins; absent one, prefers-color-scheme: light is honored, else dark.
+// Preference logic lives in theme.ts (pure, injectable storage) so the
+// persistence contract is unit-tested there; the hook wires it to the DOM.
+const useAppTheme = (): [ThemeMode, () => void] => {
+  const [mode, setMode] = useState<ThemeMode>(() =>
+    getInitialTheme(localStorage, () =>
+      typeof window !== 'undefined' && window.matchMedia
+        ? window.matchMedia('(prefers-color-scheme: light)').matches
+        : false
+    )
+  );
+  useEffect(() => {
+    persistTheme(localStorage, mode);
+    document.documentElement.dataset.theme = mode;
+  }, [mode]);
+  const toggle = () => setMode(m => (m === 'dark' ? 'light' : 'dark'));
+  return [mode, toggle];
+};
+// MUI palette bridged to the same tokens so MUI components follow the theme
+const muiThemeFor = (mode: ThemeMode) => createTheme({
+  palette: {
+    mode,
+    primary: { main: mode === 'dark' ? '#6ea8fe' : '#0b57d0' },
+    background: {
+      default: mode === 'dark' ? '#16191d' : '#f4f5f6',
+      paper: mode === 'dark' ? '#1f2429' : '#ffffff'
+    },
+    text: {
+      primary: mode === 'dark' ? '#eceeef' : '#1a1e22',
+      secondary: mode === 'dark' ? '#a7b0b7' : '#4d5860'
+    },
+    divider: mode === 'dark' ? '#3a4148' : '#cdd2d8'
+  },
+  typography: {
+    fontFamily: "'IBM Plex Sans', -apple-system, 'Segoe UI', Roboto, sans-serif",
+    h1: { fontSize: '20px', fontWeight: 600 },
+    h2: { fontSize: '16px', fontWeight: 600 },
+    h3: { fontSize: '16px', fontWeight: 600 },
+    h5: { fontSize: '16px', fontWeight: 600 },
+    h6: { fontSize: '16px', fontWeight: 600 },
+    subtitle1: { fontSize: '14px' },
+    subtitle2: { fontSize: '12px' },
+    body1: { fontSize: '14px' },
+    body2: { fontSize: '12px' },
+    caption: { fontSize: '12px' }
+  },
+  shape: { borderRadius: 4 },
+  components: {
+    MuiPaper: { styleOverrides: { root: { backgroundImage: 'none' } } },
+    MuiTab: { styleOverrides: { root: { minHeight: 48 } } },
+    MuiToggleButton: { styleOverrides: { root: { minHeight: 40 } } }
+  }
+});
+
+// Progressive-disclosure card (spec v0.2.25): staged form sections as
+// expandable disclosures with keyboard-operable headers, visible focus,
+// and 48px targets. Presentation only; the inputs are unchanged.
+const DisclosureCard: React.FC<{
+  title: string;
+  summary?: string;
+  defaultOpen?: boolean;
+  children: React.ReactNode;
+}> = ({ title, summary, defaultOpen = false, children }) => {
+  const [open, setOpen] = useState(defaultOpen);
+  const panelId = 'disclosure-' + title.replace(/\W+/g, '-').toLowerCase();
+  return (
+    <Box className="disclosure-card">
+      <button
+        type="button"
+        className="disclosure-header"
+        aria-expanded={open}
+        aria-controls={panelId}
+        onClick={() => setOpen(o => !o)}
+      >
+        <Box>
+          {title}
+          {summary && <span className="disclosure-header-summary">{summary}</span>}
+        </Box>
+        <KeyboardArrowDown
+          className="disclosure-chevron"
+          style={{ transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 150ms' }}
+        />
+      </button>
+      <div id={panelId} className="disclosure-body" hidden={!open}>
+        {children}
+      </div>
+    </Box>
+  );
+};
 
 // Vessel library entries (name, imo, particulars, source_note provenance)
 interface LibraryVessel {
@@ -339,9 +436,13 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
       <Grid container spacing={3} className="form-container">
         {/* Input Form - grouped by segment */}
         <Grid item xs={12} md={6}>
-          <Paper className="form-section" elevation={2}>
-            {/* Vessel Details (shared, always visible) */}
-            <Typography variant="h5" component="h2">Vessel Details</Typography>
+          <Paper className="form-section" elevation={0}>
+            {/* Progressive disclosure (spec v0.2.25): staged form sections.
+                Vessel and Call are open by default; Port-Specific Parameters
+                starts collapsed. Inputs, defaults, and quality flags are
+                unchanged - presentation only. */}
+            <DisclosureCard title="Vessel" summary="Particulars; typeahead from the vessel library" defaultOpen>
+            <Typography variant="h6" component="h2" className="sr-only">Vessel</Typography>
 
             {/* Vessel library search/typeahead (spec section 3.4): matches on
                 name or IMO; selection pre-fills the inputs below, which stay
@@ -481,7 +582,8 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                 </Grid>
               )}
             </Grid>
-
+            </DisclosureCard>
+            <DisclosureCard title="Call" summary="Vessel call parameters" defaultOpen>
             {/* ============ VESSEL CALL SEGMENT INPUTS ============ */}
             <Typography variant="h6" component="h3" className="segment-heading vessel-call-heading">
               Vessel Call
@@ -643,6 +745,8 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                 repair (fresh water, sludge excess, scrubber waste, break-bulk)
                 plus the gated idle-berth service are optional inputs; blank
                 values never fire the rules (presence-gated in the data). */}
+            </DisclosureCard>
+            <DisclosureCard title="Port-Specific Parameters" summary={portLabel(port) + ' only'}>
             {port.metadata.id === 'gothenburg' && (
               <>
                 <Typography variant="h6" component="h3" className="segment-heading vessel-call-heading">
@@ -1005,6 +1109,8 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                 </Grid>
               </>
             )}
+            </DisclosureCard>
+            <DisclosureCard title="Call (continued)" summary="Energy at berth; yard & storage" defaultOpen>
             {/* ============ ENERGY AT BERTH SEGMENT INPUTS ============ */}
             <Typography variant="h6" component="h3" className="segment-heading energy-heading">
               Energy at Berth
@@ -1173,6 +1279,7 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
               </Grid>
             </Grid>
 
+            </DisclosureCard>
             {/* Optional details (low-relevance inputs) */}
             <Box sx={{ mt: 3 }}>
               <Accordion>
@@ -1362,7 +1469,6 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                                     <Typography
                                       variant="subtitle2"
                                       className="fee-family-header"
-                                      sx={{ fontWeight: 'bold', color: '#555' }}
                                     >
                                       {feeFamily.replace(/_/g, ' ')}
                                     </Typography>
@@ -1380,15 +1486,21 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                                                   onClick={() => toggleFee(fee.fee_rule_id)}
                                                 >
                                                   <TableCell>
-                                                    <Box display="flex" alignItems="center">
+                                                    <Box display="flex" alignItems="center" sx={{ gap: 1, flexWrap: 'wrap' }}>
                                                       {feeLineLabel(fee)}
-                                                      {fee.quality_flags.length > 0 && (
-                                                        <span className="status-badge status-warning" style={{ marginLeft: '10px' }}>
-                                                          {fee.quality_flags.length} flag{fee.quality_flags.length > 1 ? 's' : ''}
+                                                      {fee.quality_flags.some(f => f.type === 'estimated_parameter' || f.type === 'estimated_engine_tier' || f.type === 'fallback_value') && (
+                                                        <span className="status-badge status-warning">est.</span>
+                                                      )}
+                                                      {fee.quality_flags.some(f => f.type === 'contract_vs_published') && (
+                                                        <span className="status-badge status-caveat">contract rate may differ</span>
+                                                      )}
+                                                      {fee.quality_flags.filter(f => !['estimated_parameter', 'estimated_engine_tier', 'fallback_value', 'contract_vs_published'].includes(f.type)).length > 0 && (
+                                                        <span className="status-badge status-info">
+                                                          {fee.quality_flags.filter(f => !['estimated_parameter', 'estimated_engine_tier', 'fallback_value', 'contract_vs_published'].includes(f.type)).length} flag{fee.quality_flags.filter(f => !['estimated_parameter', 'estimated_engine_tier', 'fallback_value', 'contract_vs_published'].includes(f.type)).length > 1 ? 's' : ''}
                                                         </span>
                                                       )}
                                                     </Box>
-                                                    <Box sx={{ fontSize: '0.8rem', color: '#666', mt: 0.5 }}>
+                                                    <Box className="source-ref" sx={{ mt: 0.5 }}>
                                                       {fee.band_or_basis}
                                                     </Box>
                                                   </TableCell>
@@ -1405,7 +1517,7 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                                                 <TableRow className="detail-row">
                                                   <TableCell colSpan={3} style={{ padding: 0 }}>
                                                     <Collapse in={isExpanded}>
-                                                      <Box sx={{ p: 2, backgroundColor: '#f9f9f9' }}>
+                                                      <Box sx={{ p: 2 }} className="detail-row">
                                                         <Typography variant="body2" sx={{ mb: 1 }}>
                                                           <strong>Rate Applied:</strong> {fee.rate_applied}
                                                         </Typography>
@@ -1429,13 +1541,8 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                                                           <Typography
                                                             key={index}
                                                             variant="body2"
-                                                            sx={{
-                                                              mt: 1,
-                                                              p: 1,
-                                                              backgroundColor: flag.severity === 'error' ? '#ffebee' : flag.severity === 'warning' ? '#fff3cd' : '#e3f2fd',
-                                                              borderRadius: '4px',
-                                                              fontSize: '0.8rem'
-                                                            }}
+                                                            className={flag.severity === 'error' ? 'status-badge status-error' : flag.severity === 'warning' ? 'status-badge status-warning' : 'status-badge status-info'}
+                                                            sx={{ mt: 1 }}
                                                           >
                                                             [{flag.severity.toUpperCase()}] {flag.description}
                                                           </Typography>
@@ -1472,9 +1579,7 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                     <ul>
                       {state.result.quality_flags.map((flag: QualityFlag, index: number) => (
                         <li key={index}>
-                          <span style={{
-                            color: flag.severity === 'error' ? '#dc3545' : flag.severity === 'warning' ? '#856404' : '#0c5460'
-                          }}>
+                          <span className={flag.severity === 'error' ? 'status-badge status-error' : flag.severity === 'warning' ? 'status-badge status-warning' : 'status-badge status-info'}>
                             [{flag.severity.toUpperCase()}] {flag.description}
                           </span>
                         </li>
@@ -2070,9 +2175,7 @@ const ComparisonView: React.FC<ComparisonViewProps> = ({
                   (pr.result?.quality_flags ?? []).map((flag: QualityFlag, index: number) => (
                     <li key={`${pr.port.metadata.id}-${index}`}>
                       <strong>{pr.port.metadata.name}:</strong>{' '}
-                      <span style={{
-                        color: flag.severity === 'error' ? '#dc3545' : flag.severity === 'warning' ? '#856404' : '#0c5460'
-                      }}>
+                      <span className={flag.severity === 'error' ? 'status-badge status-error' : flag.severity === 'warning' ? 'status-badge status-warning' : 'status-badge status-info'}>
                         [{flag.severity.toUpperCase()}] {flag.description}
                       </span>
                     </li>
@@ -2109,6 +2212,7 @@ const PORT_SPECIFIC_CALL_FIELDS = [
 ];
 
 const App: React.FC = () => {
+  const [themeMode, toggleTheme] = useAppTheme();
   const activePort = LOADED_PORTS[0];
 
   const [page, setPage] = useState<Page>(
@@ -2155,14 +2259,26 @@ const App: React.FC = () => {
   );
 
   return (
-    <Box>
-      <Paper className="header" elevation={3}>
-        <Typography variant="h1" component="h1">
-          Port Call Cost Analyzer
-        </Typography>
-        <Typography variant="subtitle1">
-          Ports are data, not code - every figure traceable to a source tariff
-        </Typography>
+    <ThemeProvider theme={muiThemeFor(themeMode)}>
+    <Box className="app-shell">
+      <Paper className="header" elevation={0}>
+        <Box className="header-left">
+          <Typography variant="h1" component="h1">
+            Port Call Cost Analyzer
+          </Typography>
+          <Typography variant="subtitle1">
+            Ports are data, not code - every figure traceable to a source tariff
+          </Typography>
+        </Box>
+        <button
+          type="button"
+          className="theme-toggle"
+          onClick={toggleTheme}
+          aria-pressed={themeMode === 'light'}
+          title="Toggle dark / light theme"
+        >
+          {themeMode === 'dark' ? '☽ Light' : '☀ Dark'}
+        </button>
       </Paper>
 
       {/* Persistent port selector: one tab per loaded port, plus the
@@ -2205,6 +2321,7 @@ const App: React.FC = () => {
         />
       ) : null}
     </Box>
+    </ThemeProvider>
   );
 };
 
