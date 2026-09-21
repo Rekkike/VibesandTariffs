@@ -327,3 +327,88 @@ code {
   background: #f5f5f5;
   border-radius: 4px;
 }
+
+/* Persistent total strip */
+.total-strip {
+  padding: 12px 20px;
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  border-left: 4px solid #1976d2;
+}
+
+.total-strip-main {
+  font-weight: bold;
+}
+
+.total-strip-segments {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.total-strip-segment {
+  color: #555;
+}
+
+.total-strip-segment-label {
+  font-weight: 600;
+  color: #333;
+}
+
+/* Segment headings in the form and results */
+.segment-heading {
+  margin-top: 24px;
+  margin-bottom: 4px;
+  padding-bottom: 6px;
+  border-bottom: 2px solid;
+}
+
+.vessel-call-heading {
+  border-bottom-color: #1976d2;
+  color: #1976d2;
+}
+
+.energy-heading {
+  border-bottom-color: #2e7d32;
+  color: #2e7d32;
+}
+
+.terminal-heading {
+  border-bottom-color: #ed6c02;
+  color: #ed6c02;
+}
+
+.segment-description {
+  color: #666;
+  margin-bottom: 12px;
+}
+
+/* Segment sections in results */
+.segment-section {
+  margin-bottom: 10px;
+}
+
+.segment-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #333;
+  border-bottom: 1px solid #e0e0e0;
+  padding-bottom: 6px;
+  margin-bottom: 10px;
+}
+
+.segment-subtotal {
+  font-weight: bold;
+  color: #1976d2;
+}
+
+.segment-empty {
+  color: #999;
+  font-style: italic;
+  padding: 10px 0;
+}

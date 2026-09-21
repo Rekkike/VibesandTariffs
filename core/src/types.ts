@@ -35,6 +35,34 @@ export type FeeFamily =
   | 'idle_berth'
   | string;
 
+// Cost segments for UI grouping
+export type CostSegment = 'vessel_call' | 'energy_at_berth' | 'terminal_and_yard';
+
+// Mapping from fee_family to cost segment
+export const FEE_FAMILY_TO_SEGMENT: Record<FeeFamily, CostSegment> = {
+  'port_dues': 'vessel_call',
+  'environmental_surcharge': 'vessel_call',
+  'waste': 'vessel_call',
+  'security': 'vessel_call',
+  'lay_up': 'vessel_call',
+  'connection_fee': 'energy_at_berth',
+  'vessel_fee': 'vessel_call',
+  'readiness_fee': 'vessel_call',
+  'cargo_fee': 'vessel_call',
+  'pilotage': 'vessel_call',
+  'ordering_fee': 'vessel_call',
+  'terminal_handling': 'terminal_and_yard',
+  'storage': 'terminal_and_yard',
+  'yard_surcharge': 'terminal_and_yard',
+  'gate_hazardous': 'terminal_and_yard',
+  'idle_berth': 'terminal_and_yard',
+  'hatch_cover': 'vessel_call',
+  'gearbox_handling': 'vessel_call',
+  'fairway_dues': 'vessel_call',
+  'towage': 'vessel_call',
+  '': 'vessel_call'
+};
+
 // Rate structure types
 export type RateStructureType = 
   | 'flat'
@@ -176,6 +204,7 @@ export interface VesselInput {
 export interface CallInput {
   port_id: string;
   date: string; // ISO date
+  vessel_type?: string; // e.g. 'container', 'tanker' - gates segment-specific rules (e.g. Energy Port OPS)
   containers_loaded_le20ft: number;
   containers_loaded_gt20ft: number;
   containers_discharged_le20ft: number;

@@ -875,6 +875,115 @@ describe('Port Call Cost Analyzer Engine', () => {
       // 200m * 45 * 4 days = 36,000
       expect(result.total).toBe(200 * 45 * 4);
     });
+
+    it('should render lay-up basis and chargeable days for non-zero lay-up', () => {
+      const port = createTestPort();
+      port.fee_rules = [
+        {
+          id: 'layup_fee',
+          fee_family: 'lay_up',
+          biller: 'Port Authority',
+          name: 'Lay-up Fee',
+          rate_structure: {
+            type: 'per_commenced_day',
+            daily_rate: 45,
+            basis: 'loa_m'
+          },
+          source_reference: {
+            document_name: 'Test Tariff',
+            document_url: 'http://example.com/test',
+            document_issued: '2026-01-01',
+            page: 1,
+            clause: '1.1',
+            verified_on: '2026-01-01',
+            verified_by: 'Test User'
+          }
+        }
+      ];
+
+      const input = createTestInput(
+        { loa_m: 290 },
+        { lay_up_days: 2 }
+      );
+      const result = calculatePortCallCost(port, input);
+
+      const layupFee = result.billers[0].fees[0];
+      // 290m * 45 * 2 days = 26,100
+      expect(layupFee.amount).toBe(290 * 45 * 2);
+      expect(layupFee.band_or_basis).toBe('loa_m=290, days=2 (2 chargeable)');
+      expect(layupFee.rate_applied).toBe('Per commenced day: 2 * 45 * 290 (loa_m)');
+    });
+  });
+
+  describe('Banded Band Display', () => {
+    it('should render single-band (0 to unbounded) banded rules as per basis', () => {
+      const port = createTestPort();
+      port.fee_rules = [
+        {
+          id: 'single_band_fee',
+          fee_family: 'waste',
+          biller: 'Port Authority',
+          name: 'Single Band Fee',
+          rate_structure: {
+            type: 'banded',
+            basis: 'gt',
+            bands: [
+              { min: 0, max: null, rate: 0.21 }
+            ]
+          },
+          source_reference: {
+            document_name: 'Test Tariff',
+            document_url: 'http://example.com/test',
+            document_issued: '2026-01-01',
+            page: 1,
+            clause: '1.1',
+            verified_on: '2026-01-01',
+            verified_by: 'Test User'
+          }
+        }
+      ];
+
+      const input = createTestInput({ gt: 55000 });
+      const result = calculatePortCallCost(port, input);
+
+      const fee = result.billers[0].fees[0];
+      expect(fee.band_or_basis).toBe('per gt');
+    });
+
+    it('should render multi-band banded rules with the band range', () => {
+      const port = createTestPort();
+      port.fee_rules = [
+        {
+          id: 'multi_band_fee',
+          fee_family: 'port_dues',
+          biller: 'Port Authority',
+          name: 'Multi Band Fee',
+          rate_structure: {
+            type: 'banded',
+            basis: 'gt',
+            bands: [
+              { min: 0, max: 10000, rate: 1.0 },
+              { min: 10000, max: null, rate: 2.0 }
+            ]
+          },
+          source_reference: {
+            document_name: 'Test Tariff',
+            document_url: 'http://example.com/test',
+            document_issued: '2026-01-01',
+            page: 1,
+            clause: '1.1',
+            verified_on: '2026-01-01',
+            verified_by: 'Test User'
+          }
+        }
+      ];
+
+      const input = createTestInput({ gt: 55000 });
+      const result = calculatePortCallCost(port, input);
+
+      const fee = result.billers[0].fees[0];
+      expect(fee.band_or_basis).toBe('Band: 10000-\u221e');
+    });
   });
 });
 
@@ -1074,5 +1183,44 @@ describe('Panamax Verification - Gothenburg 2026', () => {
     
     expect(gearboxFee).toBeDefined();
     expect(gearboxFee?.amount).toBe(25 * 1036);
+  });
+
+  it('Tanker connection fee should fire on a tanker call with OPS at the Energy Port', () => {
+    const tankerInput = createTestInput(
+      { gt: 55000, nt: 30250 },
+      {
+        ...panamaxInput.call,
+        ops_usage: true,
+        vessel_type: 'tanker',
+        port_id: 'gothenburg'
+      }
+    );
+    const result = calculatePortCallCost(gothenburgPort, tankerInput);
+    
+    const connectionFee = result.billers
+      .find(b => b.biller === 'Port of Gothenburg')
+      ?.fees.find(f => f.fee_family === 'connection_fee');
+    
+    expect(connectionFee).toBeDefined();
+    expect(connectionFee?.amount).toBe(7000);
+  });
+
+  it('Connection fee should not fire on a container call even with OPS checked', () => {
+    const containerOpsInput = createTestInput(
+      { gt: 55000, nt: 30250 },
+      {
+        ...panamaxInput.call,
+        ops_usage: true,
+        vessel_type: 'container',
+        port_id: 'gothenburg'
+      }
+    );
+    const result = calculatePortCallCost(gothenburgPort, containerOpsInput);
+    
+    const connectionFee = result.billers
+      .find(b => b.biller === 'Port of Gothenburg')
+      ?.fees.find(f => f.fee_family === 'connection_fee');
+    
+    expect(connectionFee).toBeUndefined();
   });
 });

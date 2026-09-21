@@ -65,11 +65,19 @@ export function evaluateFeeRule(
       }
     }
     
-    // Handle NT class condition for Sjfartsverket
+    // Handle NT class condition for Sjöfartsverket
     if (rule.applicable_conditions.nt_class) {
       const nt = vessel.nt !== undefined ? vessel.nt : vessel.gt * 0.55;
       const ntClass = getNetTonnageClass(nt);
       if (ntClass !== rule.applicable_conditions.nt_class) {
+        return null;
+      }
+    }
+    
+    // Handle vessel type condition (e.g. tanker-only OPS at Energy Port jetties)
+    if (rule.applicable_conditions.vessel_type) {
+      const allowedTypes = rule.applicable_conditions.vessel_type;
+      if (!call.vessel_type || !allowedTypes.includes(call.vessel_type)) {
         return null;
       }
     }
@@ -138,11 +146,11 @@ export function evaluateFeeRule(
         const lastBand = banded.bands[banded.bands.length - 1];
         baseAmount = lastBand.rate * basisValue;
         rateApplied = `Banded rate: ${lastBand.rate} * ${basisValue}`;
-        bandOrBasis = `Band: ${lastBand.min ?? 0}-${lastBand.max ?? '\u221e'}`;
+        bandOrBasis = lastBand.min === 0 && lastBand.max === null ? `per ${banded.basis}` : `Band: ${lastBand.min ?? 0}-${lastBand.max ?? '\u221e'}`;
       } else {
         baseAmount = applicableBand.rate * basisValue;
         rateApplied = `Banded rate: ${applicableBand.rate} * ${basisValue}`;
-        bandOrBasis = `Band: ${applicableBand.min ?? 0}-${applicableBand.max ?? '\u221e'}`;
+        bandOrBasis = applicableBand.min === 0 && applicableBand.max === null ? `per ${banded.basis}` : `Band: ${applicableBand.min ?? 0}-${applicableBand.max ?? '\u221e'}`;
       }
       break;
     }
@@ -453,7 +461,7 @@ function evaluateCondition(condition: string, input: CostCalculationInput): bool
 }
 
 /**
- * Calculates the net tonnage class for Sjfartsverket
+ * Calculates the net tonnage class for Sjöfartsverket
  * Classes: 1:0, 2:1000, 3:2000, 4:3000, 5:6000, 6:10000, 7:15000, 8:30000, 9:60000, 10:100000
  */
 export function getNetTonnageClass(nt: number): number {

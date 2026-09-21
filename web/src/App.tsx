@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   TextField,
   Select,
@@ -18,9 +18,15 @@ import {
   TableContainer,
   TableRow,
   Collapse,
-  IconButton
+  IconButton,
+  ToggleButton,
+  ToggleButtonGroup,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  Divider
 } from '@mui/material';
-import { KeyboardArrowDown, KeyboardArrowUp } from '@mui/icons-material';
+import { KeyboardArrowDown, KeyboardArrowUp, ExpandMore } from '@mui/icons-material';
 // Import core types and functions
 import {
   VesselInput,
@@ -29,8 +35,9 @@ import {
   CostCalculationResult,
   PortDefinition,
   FeeResult,
-  BillerBreakdown,
   QualityFlag,
+  CostSegment,
+  FEE_FAMILY_TO_SEGMENT,
   getNetTonnageClass,
   calculatePortCallCost
 } from '@port-cost/core';
@@ -38,6 +45,24 @@ import {
 // Import the port data from canonical source (converted to JSON at build time)
 import gothenburgData from './data/gothenburg_2026.json';
 
+// Segment metadata for the toggleable pages
+const SEGMENTS: { id: CostSegment; label: string; description: string }[] = [
+  {
+    id: 'vessel_call',
+    label: 'Vessel Call',
+    description: 'Port dues, fairway dues and pilotage, waste, security, lay-up, quay lifts'
+  },
+  {
+    id: 'energy_at_berth',
+    label: 'Energy at Berth',
+    description: 'OPS connection and shore-power components'
+  },
+  {
+    id: 'terminal_and_yard',
+    label: 'Terminal & Yard',
+    description: 'Storage, yard surcharges, gate hazardous, cargo-tied idle berth'
+  }
+];
 
 // Define types for our app state
 interface AppState {
@@ -74,7 +99,13 @@ const App: React.FC = () => {
       return null;
     }
   })();
-  
+
+  // Which result page(s) are visible - display filter only, never affects computation
+  const [visibleSegments, setVisibleSegments] = useState<CostSegment[]>([
+    'vessel_call',
+    'energy_at_berth'
+  ]);
+
   // App state
   const [state, setState] = useState<AppState>({
     vessel: {
@@ -94,6 +125,7 @@ const App: React.FC = () => {
       containers_discharged_gt20ft: 500,
       calls_this_month: 1,
       flag_state: 'EU',
+      vessel_type: 'container',
       esi_score: 40,
       csi_class: 'A',
       fossil_free_fuel_percentage: 0,
@@ -125,32 +157,30 @@ const App: React.FC = () => {
   // Calculate costs when inputs change
   useEffect(() => {
     if (!port) {
-      // Port data failed to load, don't attempt calculation
       return;
     }
-    
+
     const calculate = () => {
       setState(prev => ({ ...prev, isLoading: true, error: null }));
-      
+
       try {
         const input: CostCalculationInput = {
           vessel: state.vessel,
           call: state.call
         };
-        
+
         const result = calculatePortCallCost(port, input);
         setState(prev => ({ ...prev, result, isLoading: false }));
       } catch (err) {
         console.error('Calculation error:', err);
-        setState(prev => ({ 
-          ...prev, 
+        setState(prev => ({
+          ...prev,
           error: `Calculation failed: ${err}`,
-          isLoading: false 
+          isLoading: false
         }));
       }
     };
-    
-    // Debounce the calculation slightly
+
     const timer = setTimeout(calculate, 500);
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -226,6 +256,24 @@ const App: React.FC = () => {
     return colors[csiClass as keyof typeof colors] || '#999';
   };
 
+  // Segment subtotals derived from fee_family membership (no manual tagging)
+  const segmentTotals = useMemo(() => {
+    const totals: Record<CostSegment, number> = {
+      vessel_call: 0,
+      energy_at_berth: 0,
+      terminal_and_yard: 0
+    };
+    if (state.result) {
+      for (const biller of state.result.billers) {
+        for (const fee of biller.fees) {
+          const segment = FEE_FAMILY_TO_SEGMENT[fee.fee_family] || 'vessel_call';
+          totals[segment] += fee.amount;
+        }
+      }
+    }
+    return totals;
+  }, [state.result]);
+
   if (!port) {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh">
@@ -246,13 +294,31 @@ const App: React.FC = () => {
         </Typography>
       </Paper>
 
+      {/* Persistent total strip - always visible regardless of toggled page */}
+      <Paper className="total-strip" elevation={2}>
+        <Box className="total-strip-main">
+          <Typography variant="h6" component="div">
+            Grand Total: <strong>{formatCurrency(state.result?.total ?? 0)}</strong>
+          </Typography>
+        </Box>
+        <Box className="total-strip-segments">
+          {SEGMENTS.map(segment => (
+            <Typography key={segment.id} variant="body2" className="total-strip-segment">
+              <span className="total-strip-segment-label">{segment.label}:</span>{' '}
+              {formatCurrency(segmentTotals[segment.id])}
+            </Typography>
+          ))}
+        </Box>
+      </Paper>
+
       {/* Main Content */}
       <Grid container spacing={3} className="form-container">
-        {/* Input Form */}
+        {/* Input Form - grouped by segment */}
         <Grid item xs={12} md={6}>
           <Paper className="form-section" elevation={2}>
+            {/* Vessel Details (shared, always visible) */}
             <Typography variant="h5" component="h2">Vessel Details</Typography>
-            
+
             <Box className="preset-buttons">
               {Object.entries(VESSEL_PRESETS).map(([key, preset]) => (
                 <Button
@@ -333,10 +399,29 @@ const App: React.FC = () => {
                   InputLabelProps={{ shrink: true }}
                 />
               </Grid>
+              <Grid item xs={6}>
+                <FormControl fullWidth>
+                  <InputLabel>Vessel Type</InputLabel>
+                  <Select
+                    value={state.call.vessel_type || 'container'}
+                    onChange={(e) => handleCallChange('vessel_type', e.target.value as string)}
+                    label="Vessel Type"
+                  >
+                    <MenuItem value="container">Container</MenuItem>
+                    <MenuItem value="tanker">Tanker (Energy Port jetties 519-521)</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
             </Grid>
 
-            <Typography variant="h6" component="h3" sx={{ mt: 3, mb: 2 }}>Call Details</Typography>
-            
+            {/* ============ VESSEL CALL SEGMENT INPUTS ============ */}
+            <Typography variant="h6" component="h3" className="segment-heading vessel-call-heading">
+              Vessel Call
+            </Typography>
+            <Typography variant="body2" className="segment-description">
+              Port dues, fairway dues and pilotage, waste, security, lay-up, quay lifts
+            </Typography>
+
             <Grid container spacing={2}>
               <Grid item xs={6}>
                 <TextField
@@ -408,51 +493,74 @@ const App: React.FC = () => {
                   InputLabelProps={{ shrink: true }}
                 />
               </Grid>
+              <Grid item xs={6}>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={state.call.pilotage_required}
+                      onChange={(e) => handleCallChange('pilotage_required', e.target.checked)}
+                    />
+                  }
+                  label="Pilotage Required"
+                />
+              </Grid>
+              {state.call.pilotage_required && (
+                <>
+                  <Grid item xs={6}>
+                    <TextField
+                      label="Pilotage Hours"
+                      type="number"
+                      value={state.call.pilotage_hours || ''}
+                      onChange={(e) => handleCallChange('pilotage_hours', parseFloat(e.target.value) || undefined)}
+                      fullWidth
+                      InputLabelProps={{ shrink: true }}
+                    />
+                  </Grid>
+                  <Grid item xs={6}>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={state.call.pilotage_extra_pilot || false}
+                          onChange={(e) => handleCallChange('pilotage_extra_pilot', e.target.checked)}
+                        />
+                      }
+                      label="Extra Pilot"
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <TextField
+                      label="Pilotage Ordering Lead Time (hours)"
+                      type="number"
+                      value={state.call.pilotage_ordering_lead_time_hours || ''}
+                      onChange={(e) => handleCallChange('pilotage_ordering_lead_time_hours', parseFloat(e.target.value) || undefined)}
+                      fullWidth
+                      InputLabelProps={{ shrink: true }}
+                    />
+                  </Grid>
+                </>
+              )}
+              <Grid item xs={6}>
+                <TextField
+                  label="Lay-up Days (idle, not working cargo)"
+                  type="number"
+                  value={state.call.lay_up_days || ''}
+                  onChange={(e) => handleCallChange('lay_up_days', parseFloat(e.target.value) || undefined)}
+                  fullWidth
+                  InputLabelProps={{ shrink: true }}
+                  helperText="0 for normal calls"
+                />
+              </Grid>
             </Grid>
 
-            <Typography variant="h6" component="h3" sx={{ mt: 3, mb: 2 }}>Cargo & Operations</Typography>
-            
+            {/* ============ ENERGY AT BERTH SEGMENT INPUTS ============ */}
+            <Typography variant="h6" component="h3" className="segment-heading energy-heading">
+              Energy at Berth
+            </Typography>
+            <Typography variant="body2" className="segment-description">
+              OPS connection and shore-power components
+            </Typography>
+
             <Grid container spacing={2}>
-              <Grid item xs={6}>
-                <TextField
-                  label="Containers Loaded ≤20ft"
-                  type="number"
-                  value={state.call.containers_loaded_le20ft}
-                  onChange={(e) => handleCallChange('containers_loaded_le20ft', parseInt(e.target.value) || 0)}
-                  fullWidth
-                  InputLabelProps={{ shrink: true }}
-                />
-              </Grid>
-              <Grid item xs={6}>
-                <TextField
-                  label="Containers Loaded >20ft"
-                  type="number"
-                  value={state.call.containers_loaded_gt20ft}
-                  onChange={(e) => handleCallChange('containers_loaded_gt20ft', parseInt(e.target.value) || 0)}
-                  fullWidth
-                  InputLabelProps={{ shrink: true }}
-                />
-              </Grid>
-              <Grid item xs={6}>
-                <TextField
-                  label="Containers Discharged ≤20ft"
-                  type="number"
-                  value={state.call.containers_discharged_le20ft}
-                  onChange={(e) => handleCallChange('containers_discharged_le20ft', parseInt(e.target.value) || 0)}
-                  fullWidth
-                  InputLabelProps={{ shrink: true }}
-                />
-              </Grid>
-              <Grid item xs={6}>
-                <TextField
-                  label="Containers Discharged >20ft"
-                  type="number"
-                  value={state.call.containers_discharged_gt20ft}
-                  onChange={(e) => handleCallChange('containers_discharged_gt20ft', parseInt(e.target.value) || 0)}
-                  fullWidth
-                  InputLabelProps={{ shrink: true }}
-                />
-              </Grid>
               <Grid item xs={6}>
                 <FormControlLabel
                   control={
@@ -509,58 +617,53 @@ const App: React.FC = () => {
                   </Grid>
                 </>
               )}
-              <Grid item xs={6}>
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={state.call.pilotage_required}
-                      onChange={(e) => handleCallChange('pilotage_required', e.target.checked)}
-                    />
-                  }
-                  label="Pilotage Required"
-                />
-              </Grid>
-              {state.call.pilotage_required && (
-                <>
-                  <Grid item xs={6}>
-                    <TextField
-                      label="Pilotage Hours"
-                      type="number"
-                      value={state.call.pilotage_hours || ''}
-                      onChange={(e) => handleCallChange('pilotage_hours', parseFloat(e.target.value) || undefined)}
-                      fullWidth
-                      InputLabelProps={{ shrink: true }}
-                    />
-                  </Grid>
-                  <Grid item xs={6}>
-                    <FormControlLabel
-                      control={
-                        <Checkbox
-                          checked={state.call.pilotage_extra_pilot || false}
-                          onChange={(e) => handleCallChange('pilotage_extra_pilot', e.target.checked)}
-                        />
-                      }
-                      label="Extra Pilot"
-                    />
-                  </Grid>
-                  <Grid item xs={12}>
-                    <TextField
-                      label="Pilotage Ordering Lead Time (hours)"
-                      type="number"
-                      value={state.call.pilotage_ordering_lead_time_hours || ''}
-                      onChange={(e) => handleCallChange('pilotage_ordering_lead_time_hours', parseFloat(e.target.value) || undefined)}
-                      fullWidth
-                      InputLabelProps={{ shrink: true }}
-                    />
-                  </Grid>
-                </>
-              )}
+            </Grid>
+
+            {/* ============ TERMINAL AND YARD SEGMENT INPUTS ============ */}
+            <Typography variant="h6" component="h3" className="segment-heading terminal-heading">
+              Terminal &amp; Yard
+            </Typography>
+            <Typography variant="body2" className="segment-description">
+              Storage, yard surcharges, gate hazardous
+            </Typography>
+
+            <Grid container spacing={2}>
               <Grid item xs={6}>
                 <TextField
-                  label="Lay-up Days"
+                  label="Containers Loaded ≤20ft"
                   type="number"
-                  value={state.call.lay_up_days || ''}
-                  onChange={(e) => handleCallChange('lay_up_days', parseFloat(e.target.value) || undefined)}
+                  value={state.call.containers_loaded_le20ft}
+                  onChange={(e) => handleCallChange('containers_loaded_le20ft', parseInt(e.target.value) || 0)}
+                  fullWidth
+                  InputLabelProps={{ shrink: true }}
+                />
+              </Grid>
+              <Grid item xs={6}>
+                <TextField
+                  label="Containers Loaded >20ft"
+                  type="number"
+                  value={state.call.containers_loaded_gt20ft}
+                  onChange={(e) => handleCallChange('containers_loaded_gt20ft', parseInt(e.target.value) || 0)}
+                  fullWidth
+                  InputLabelProps={{ shrink: true }}
+                />
+              </Grid>
+              <Grid item xs={6}>
+                <TextField
+                  label="Containers Discharged ≤20ft"
+                  type="number"
+                  value={state.call.containers_discharged_le20ft}
+                  onChange={(e) => handleCallChange('containers_discharged_le20ft', parseInt(e.target.value) || 0)}
+                  fullWidth
+                  InputLabelProps={{ shrink: true }}
+                />
+              </Grid>
+              <Grid item xs={6}>
+                <TextField
+                  label="Containers Discharged >20ft"
+                  type="number"
+                  value={state.call.containers_discharged_gt20ft}
+                  onChange={(e) => handleCallChange('containers_discharged_gt20ft', parseInt(e.target.value) || 0)}
                   fullWidth
                   InputLabelProps={{ shrink: true }}
                 />
@@ -615,35 +718,64 @@ const App: React.FC = () => {
                   InputLabelProps={{ shrink: true }}
                 />
               </Grid>
-              <Grid item xs={6}>
-                <TextField
-                  label="Hatch Cover Count"
-                  type="number"
-                  value={state.call.hatch_cover_count || ''}
-                  onChange={(e) => handleCallChange('hatch_cover_count', parseInt(e.target.value) || 0)}
-                  fullWidth
-                  InputLabelProps={{ shrink: true }}
-                />
-              </Grid>
-              <Grid item xs={6}>
-                <TextField
-                  label="Gearbox Count"
-                  type="number"
-                  value={state.call.gearbox_count || ''}
-                  onChange={(e) => handleCallChange('gearbox_count', parseInt(e.target.value) || 0)}
-                  fullWidth
-                  InputLabelProps={{ shrink: true }}
-                />
-              </Grid>
             </Grid>
+
+            {/* Optional details (low-relevance inputs) */}
+            <Box sx={{ mt: 3 }}>
+              <Accordion>
+                <AccordionSummary expandIcon={<ExpandMore />}>
+                  <Typography>Optional Details</Typography>
+                </AccordionSummary>
+                <AccordionDetails>
+                  <Grid container spacing={2}>
+                    <Grid item xs={6}>
+                      <TextField
+                        label="Hatch Cover Count"
+                        type="number"
+                        value={state.call.hatch_cover_count || ''}
+                        onChange={(e) => handleCallChange('hatch_cover_count', parseInt(e.target.value) || 0)}
+                        fullWidth
+                        InputLabelProps={{ shrink: true }}
+                      />
+                    </Grid>
+                    <Grid item xs={6}>
+                      <TextField
+                        label="Gearbox Count"
+                        type="number"
+                        value={state.call.gearbox_count || ''}
+                        onChange={(e) => handleCallChange('gearbox_count', parseInt(e.target.value) || 0)}
+                        fullWidth
+                        InputLabelProps={{ shrink: true }}
+                      />
+                    </Grid>
+                  </Grid>
+                </AccordionDetails>
+              </Accordion>
+            </Box>
           </Paper>
         </Grid>
 
-        {/* Results */}
+        {/* Results - segmented pages */}
         <Grid item xs={12} md={6}>
           <Paper className="results-section" elevation={2}>
             <Typography variant="h5" component="h2">Cost Breakdown</Typography>
-            
+
+            {/* Segment page toggles - filter display only */}
+            <ToggleButtonGroup
+              value={visibleSegments}
+              onChange={(_, newValue: CostSegment[]) => setVisibleSegments(newValue)}
+              aria-label="Cost segments"
+              className="segment-toggle"
+              size="small"
+              sx={{ mt: 2, mb: 2 }}
+            >
+              {SEGMENTS.map(segment => (
+                <ToggleButton key={segment.id} value={segment.id} aria-label={segment.label}>
+                  {segment.label}
+                </ToggleButton>
+              ))}
+            </ToggleButtonGroup>
+
             {state.isLoading ? (
               <Typography>Calculating...</Typography>
             ) : state.error ? (
@@ -680,146 +812,191 @@ const App: React.FC = () => {
                   </Typography>
                 </Box>
 
-                {/* Billers */}
-                {state.result.billers.map((biller: BillerBreakdown) => {
-                  const isExpanded = state.expandedBillers.has(biller.biller);
-                  
-                  return (
-                    <Box key={biller.biller} className="biller-section">
-                      <Box 
-                        className="biller-header"
-                        onClick={() => toggleBiller(biller.biller)}
-                        sx={{ cursor: 'pointer' }}
-                      >
-                        <Typography variant="h6" className="biller-name">
-                          {biller.biller}
+                {/* Per-segment fee display */}
+                {SEGMENTS.map(segment => {
+                  // Toggling a page filters display only - never the computed total
+                  if (!visibleSegments.includes(segment.id)) {
+                    return null;
+                  }
+
+                  const currentResult = state.result;
+                  if (!currentResult) {
+                    return null;
+                  }
+
+                  // Collect all fees in this segment, grouped by biller
+                  const segmentBillers = currentResult.billers
+                    .map(biller => ({
+                      biller: biller.biller,
+                      currency: biller.currency,
+                      fees: biller.fees.filter(
+                        fee => (FEE_FAMILY_TO_SEGMENT[fee.fee_family] || 'vessel_call') === segment.id
+                      )
+                    }))
+                    .filter(b => b.fees.length > 0);
+
+                  if (segmentBillers.length === 0) {
+                    return (
+                      <Box key={segment.id} className="segment-section">
+                        <Typography variant="h6" className="segment-title">
+                          {segment.label}
                         </Typography>
-                        <Typography variant="h6" className="biller-subtotal">
-                          {formatCurrency(biller.subtotal)}
+                        <Typography variant="body2" className="segment-empty">
+                          No fees in this segment for the current call inputs.
                         </Typography>
-                        <IconButton size="small" onClick={(e) => { e.stopPropagation(); toggleBiller(biller.biller); }}>
-                          {isExpanded ? <KeyboardArrowUp /> : <KeyboardArrowDown />}
-                        </IconButton>
+                        <Divider sx={{ my: 2 }} />
                       </Box>
-                      
-                      <Collapse in={isExpanded}>
-                        {/* Group by fee family */}
-                        <Box sx={{ pl: 2 }}>
-                          {Object.entries(
-                            biller.fees.reduce((acc, fee) => {
-                              if (!acc[fee.fee_family]) {
-                                acc[fee.fee_family] = [];
-                              }
-                              acc[fee.fee_family].push(fee);
-                              return acc;
-                            }, {} as Record<string, FeeResult[]>)
-                          ).map(([feeFamily, fees]) => (
-                            <Box key={feeFamily} className="fee-family-group">
-                              <Typography 
-                                variant="subtitle2" 
-                                className="fee-family-header"
-                                sx={{ fontWeight: 'bold', color: '#555' }}
-                              >
-                                {feeFamily.replace(/_/g, ' ')}
+                    );
+                  }
+
+                  return (
+                    <Box key={segment.id} className="segment-section">
+                      <Typography variant="h6" className="segment-title">
+                        {segment.label}
+                        <span className="segment-subtotal">
+                          {formatCurrency(segmentTotals[segment.id])}
+                        </span>
+                      </Typography>
+
+                      {segmentBillers.map((billerBreakdown) => {
+                        const isExpanded = state.expandedBillers.has(billerBreakdown.biller);
+                        const billerSubtotal = billerBreakdown.fees.reduce(
+                          (sum, fee) => sum + fee.amount,
+                          0
+                        );
+
+                        return (
+                          <Box key={billerBreakdown.biller} className="biller-section">
+                            <Box
+                              className="biller-header"
+                              onClick={() => toggleBiller(billerBreakdown.biller)}
+                              sx={{ cursor: 'pointer' }}
+                            >
+                              <Typography variant="h6" className="biller-name">
+                                {billerBreakdown.biller}
                               </Typography>
-                              
-                              {fees.map((fee: FeeResult) => {
-                                const isExpanded = state.expandedFees.has(fee.fee_rule_id);
-                                
-                                return (
-                                  <Box key={fee.fee_rule_id} sx={{ mb: 1 }}>
-                                    <TableContainer>
-                                      <Table size="small">
-                                        <TableBody>
-                                          <TableRow 
-                                            className="expandable-row"
-                                            onClick={() => toggleFee(fee.fee_rule_id)}
-                                          >
-                                            <TableCell>
-                                              <Box display="flex" alignItems="center">
-                                                {fee.fee_family}
-                                                {fee.quality_flags.length > 0 && (
-                                                  <span className="status-badge status-warning" style={{ marginLeft: '10px' }}>
-                                                    {fee.quality_flags.length} flag{fee.quality_flags.length > 1 ? 's' : ''}
-                                                  </span>
-                                                )}
-                                              </Box>
-                                              <Box sx={{ fontSize: '0.8rem', color: '#666', mt: 0.5 }}>
-                                                {fee.band_or_basis}
-                                              </Box>
-                                            </TableCell>
-                                            <TableCell align="right" className="amount">
-                                              {formatCurrency(fee.amount)}
-                                            </TableCell>
-                                            <TableCell align="right">
-                                              <IconButton size="small" onClick={(e) => { e.stopPropagation(); toggleFee(fee.fee_rule_id); }}>
-                                                {isExpanded ? <KeyboardArrowUp /> : <KeyboardArrowDown />}
-                                              </IconButton>
-                                            </TableCell>
-                                          </TableRow>
-                                          
-                                          <TableRow className="detail-row">
-                                            <TableCell colSpan={3} style={{ padding: 0 }}>
-                                              <Collapse in={isExpanded}>
-                                                <Box sx={{ p: 2, backgroundColor: '#f9f9f9' }}>
-                                                  <Typography variant="body2" sx={{ mb: 1 }}>
-                                                    <strong>Rate Applied:</strong> {fee.rate_applied}
-                                                  </Typography>
-                                                  
-                                                  {fee.adjustments_applied.length > 0 && (
-                                                    <Typography variant="body2" sx={{ mb: 1 }}>
-                                                      <strong>Adjustments:</strong> 
-                                                      {fee.adjustments_applied.map(a => `${a.type} ${a.percentage}%`).join(', ')}
-                                                    </Typography>
-                                                  )}
-                                                  
-                                                  <Typography variant="body2" className="source-ref">
-                                                    Source: {fee.source_reference.document_name} 
-                                                    (Page {fee.source_reference.page}, {fee.source_reference.clause}) - 
-                                                    <a href={fee.source_reference.document_url} target="_blank" rel="noopener noreferrer">
-                                                      View Document
-                                                    </a>
-                                                  </Typography>
-                                                  
-                                                  {fee.quality_flags.map((flag: QualityFlag, index: number) => (
-                                                    <Typography 
-                                                      key={index}
-                                                      variant="body2" 
-                                                      sx={{ 
-                                                        mt: 1, 
-                                                        p: 1, 
-                                                        backgroundColor: flag.severity === 'error' ? '#ffebee' : flag.severity === 'warning' ? '#fff3cd' : '#e3f2fd',
-                                                        borderRadius: '4px',
-                                                        fontSize: '0.8rem'
-                                                      }}
-                                                    >
-                                                      [{flag.severity.toUpperCase()}] {flag.description}
-                                                    </Typography>
-                                                  ))}
-                                                </Box>
-                                              </Collapse>
-                                            </TableCell>
-                                          </TableRow>
-                                        </TableBody>
-                                      </Table>
-                                    </TableContainer>
-                                  </Box>
-                                );
-                              })}
+                              <Typography variant="h6" className="biller-subtotal">
+                                {formatCurrency(billerSubtotal)}
+                              </Typography>
+                              <IconButton size="small" onClick={(e) => { e.stopPropagation(); toggleBiller(billerBreakdown.biller); }}>
+                                {isExpanded ? <KeyboardArrowUp /> : <KeyboardArrowDown />}
+                              </IconButton>
                             </Box>
-                          ))}
-                        </Box>
-                      </Collapse>
+
+                            <Collapse in={isExpanded}>
+                              <Box sx={{ pl: 2 }}>
+                                {Object.entries(
+                                  billerBreakdown.fees.reduce((acc, fee) => {
+                                    if (!acc[fee.fee_family]) {
+                                      acc[fee.fee_family] = [];
+                                    }
+                                    acc[fee.fee_family].push(fee);
+                                    return acc;
+                                  }, {} as Record<string, FeeResult[]>)
+                                ).map(([feeFamily, fees]) => (
+                                  <Box key={feeFamily} className="fee-family-group">
+                                    <Typography
+                                      variant="subtitle2"
+                                      className="fee-family-header"
+                                      sx={{ fontWeight: 'bold', color: '#555' }}
+                                    >
+                                      {feeFamily.replace(/_/g, ' ')}
+                                    </Typography>
+
+                                    {fees.map((fee: FeeResult) => {
+                                      const isExpanded = state.expandedFees.has(fee.fee_rule_id);
+
+                                      return (
+                                        <Box key={fee.fee_rule_id} sx={{ mb: 1 }}>
+                                          <TableContainer>
+                                            <Table size="small">
+                                              <TableBody>
+                                                <TableRow
+                                                  className="expandable-row"
+                                                  onClick={() => toggleFee(fee.fee_rule_id)}
+                                                >
+                                                  <TableCell>
+                                                    <Box display="flex" alignItems="center">
+                                                      {fee.fee_family}
+                                                      {fee.quality_flags.length > 0 && (
+                                                        <span className="status-badge status-warning" style={{ marginLeft: '10px' }}>
+                                                          {fee.quality_flags.length} flag{fee.quality_flags.length > 1 ? 's' : ''}
+                                                        </span>
+                                                      )}
+                                                    </Box>
+                                                    <Box sx={{ fontSize: '0.8rem', color: '#666', mt: 0.5 }}>
+                                                      {fee.band_or_basis}
+                                                    </Box>
+                                                  </TableCell>
+                                                  <TableCell align="right" className="amount">
+                                                    {formatCurrency(fee.amount)}
+                                                  </TableCell>
+                                                  <TableCell align="right">
+                                                    <IconButton size="small" onClick={(e) => { e.stopPropagation(); toggleFee(fee.fee_rule_id); }}>
+                                                      {isExpanded ? <KeyboardArrowUp /> : <KeyboardArrowDown />}
+                                                    </IconButton>
+                                                  </TableCell>
+                                                </TableRow>
+
+                                                <TableRow className="detail-row">
+                                                  <TableCell colSpan={3} style={{ padding: 0 }}>
+                                                    <Collapse in={isExpanded}>
+                                                      <Box sx={{ p: 2, backgroundColor: '#f9f9f9' }}>
+                                                        <Typography variant="body2" sx={{ mb: 1 }}>
+                                                          <strong>Rate Applied:</strong> {fee.rate_applied}
+                                                        </Typography>
+
+                                                        {fee.adjustments_applied.length > 0 && (
+                                                          <Typography variant="body2" sx={{ mb: 1 }}>
+                                                            <strong>Adjustments:</strong>
+                                                            {fee.adjustments_applied.map(a => `${a.type} ${a.percentage}%`).join(', ')}
+                                                          </Typography>
+                                                        )}
+
+                                                        <Typography variant="body2" className="source-ref">
+                                                          Source: {fee.source_reference.document_name}
+                                                          (Page {fee.source_reference.page}, {fee.source_reference.clause}) -
+                                                          <a href={fee.source_reference.document_url} target="_blank" rel="noopener noreferrer">
+                                                            View Document
+                                                          </a>
+                                                        </Typography>
+
+                                                        {fee.quality_flags.map((flag: QualityFlag, index: number) => (
+                                                          <Typography
+                                                            key={index}
+                                                            variant="body2"
+                                                            sx={{
+                                                              mt: 1,
+                                                              p: 1,
+                                                              backgroundColor: flag.severity === 'error' ? '#ffebee' : flag.severity === 'warning' ? '#fff3cd' : '#e3f2fd',
+                                                              borderRadius: '4px',
+                                                              fontSize: '0.8rem'
+                                                            }}
+                                                          >
+                                                            [{flag.severity.toUpperCase()}] {flag.description}
+                                                          </Typography>
+                                                        ))}
+                                                      </Box>
+                                                    </Collapse>
+                                                  </TableCell>
+                                                </TableRow>
+                                              </TableBody>
+                                            </Table>
+                                          </TableContainer>
+                                        </Box>
+                                      );
+                                    })}
+                                  </Box>
+                                ))}
+                              </Box>
+                            </Collapse>
+                          </Box>
+                        );
+                      })}
+                      <Divider sx={{ my: 2 }} />
                     </Box>
                   );
                 })}
-
-                {/* Total */}
-                <Box className="total-row" sx={{ mt: 3, p: 2, textAlign: 'right' }}>
-                  <Typography variant="h5" component="div">
-                    <strong>Total Cost: {formatCurrency(state.result.total)}</strong>
-                  </Typography>
-                </Box>
 
                 {/* Quality Flags Summary */}
                 {state.result.quality_flags.length > 0 && (

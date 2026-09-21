@@ -261,11 +261,11 @@ fee_rules:
     fee_family: lay_up
     biller: Port of Gothenburg
     name: Lay-up Fee
-    description: "Lay-up fee per metre LOA per commenced day"
+    description: "Lay-up fee per metre LOA per commenced day (only if > 24 hours after cargo ops)"
     rate_structure:
       type: per_commenced_day
       daily_rate: 45
-      basis: lay_up_days
+      basis: loa_m
     source_reference:
       document_name: "port-tariff-2026.pdf"
       document_url: "docs/sources/sweden/gothenburg/port-authority/port-tariff-2026.pdf"
