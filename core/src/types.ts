@@ -51,7 +51,7 @@ export const FEE_FAMILY_TO_SEGMENT: Record<FeeFamily, CostSegment> = {
   'cargo_fee': 'vessel_call',
   'pilotage': 'vessel_call',
   'ordering_fee': 'vessel_call',
-  'terminal_handling': 'terminal_and_yard',
+  'terminal_handling': 'vessel_call',
   'storage': 'terminal_and_yard',
   'yard_surcharge': 'terminal_and_yard',
   'gate_hazardous': 'terminal_and_yard',

@@ -4,7 +4,7 @@ import {
   getNetTonnageClass,
   getCsiClassIndex
 } from '../src/engine';
-import { PortDefinition, VesselInput, CallInput, CostCalculationInput } from '../src/types';
+import { PortDefinition, VesselInput, CallInput, CostCalculationInput, FEE_FAMILY_TO_SEGMENT } from '../src/types';
 
 // Helper to create a test port definition
 function createTestPort(): PortDefinition {
@@ -1222,5 +1222,45 @@ describe('Panamax Verification - Gothenburg 2026', () => {
       ?.fees.find(f => f.fee_family === 'connection_fee');
     
     expect(connectionFee).toBeUndefined();
+  });
+});
+
+// ============================================================================
+// Segment Mapping Tests (spec v0.2.13 section 4.2.1)
+// ============================================================================
+
+describe('Fee Family to Segment Mapping', () => {
+  it('should map the quay-work group (terminal_handling, hatch_cover, gearbox_handling) to vessel_call', () => {
+    // The call is not complete until the boxes are at place of rest: all
+    // three lift-over-quay charges belong to the vessel call segment.
+    expect(FEE_FAMILY_TO_SEGMENT['terminal_handling']).toBe('vessel_call');
+    expect(FEE_FAMILY_TO_SEGMENT['hatch_cover']).toBe('vessel_call');
+    expect(FEE_FAMILY_TO_SEGMENT['gearbox_handling']).toBe('vessel_call');
+  });
+
+  it('should map storage, yard, gate, and cargo-tied idle berth charges to terminal_and_yard', () => {
+    expect(FEE_FAMILY_TO_SEGMENT['storage']).toBe('terminal_and_yard');
+    expect(FEE_FAMILY_TO_SEGMENT['yard_surcharge']).toBe('terminal_and_yard');
+    expect(FEE_FAMILY_TO_SEGMENT['gate_hazardous']).toBe('terminal_and_yard');
+    expect(FEE_FAMILY_TO_SEGMENT['idle_berth']).toBe('terminal_and_yard');
+  });
+
+  it('should map the OPS connection fee to energy_at_berth', () => {
+    expect(FEE_FAMILY_TO_SEGMENT['connection_fee']).toBe('energy_at_berth');
+  });
+
+  it('should map port dues, fairway, waste, security, and lay-up to vessel_call', () => {
+    expect(FEE_FAMILY_TO_SEGMENT['port_dues']).toBe('vessel_call');
+    expect(FEE_FAMILY_TO_SEGMENT['fairway_dues']).toBe('vessel_call');
+    expect(FEE_FAMILY_TO_SEGMENT['vessel_fee']).toBe('vessel_call');
+    expect(FEE_FAMILY_TO_SEGMENT['readiness_fee']).toBe('vessel_call');
+    expect(FEE_FAMILY_TO_SEGMENT['cargo_fee']).toBe('vessel_call');
+    expect(FEE_FAMILY_TO_SEGMENT['pilotage']).toBe('vessel_call');
+    expect(FEE_FAMILY_TO_SEGMENT['ordering_fee']).toBe('vessel_call');
+    expect(FEE_FAMILY_TO_SEGMENT['waste']).toBe('vessel_call');
+    expect(FEE_FAMILY_TO_SEGMENT['security']).toBe('vessel_call');
+    expect(FEE_FAMILY_TO_SEGMENT['lay_up']).toBe('vessel_call');
+    expect(FEE_FAMILY_TO_SEGMENT['environmental_surcharge']).toBe('vessel_call');
+    expect(FEE_FAMILY_TO_SEGMENT['towage']).toBe('vessel_call');
   });
 });
