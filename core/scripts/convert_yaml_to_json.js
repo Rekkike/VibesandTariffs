@@ -65,6 +65,7 @@ function main() {
 
     const ports = [];
     const vessels = [];
+    let exchangeRates = null;
 
     for (const file of yamlFiles) {
       const yamlContent = fs.readFileSync(path.join(DATA_DIR, file), 'utf8');
@@ -86,6 +87,26 @@ function main() {
         }
         ports.push(data);
         console.log(`Loaded port ${data.metadata.id} (${data.metadata.name}) from ${file}: ${data.fee_rules.length} fee rules`);
+      } else if (data && Array.isArray(data.rates) && data.rates.length > 0) {
+        // Spec v0.2.31: exchange-rate reference data (static, versioned;
+        // no runtime API calls). Emitted as exchange_rates on ports.json.
+        for (const r of data.rates) {
+          for (const field of ['from_currency', 'to_currency', 'rate', 'as_of', 'source']) {
+            if (r[field] === undefined || r[field] === null || r[field] === '') {
+              throw new Error(`Invalid exchange-rate entry in ${file}: missing ${field}`);
+            }
+          }
+          if (typeof r.rate !== 'number' || r.rate <= 0) {
+            throw new Error(`Invalid exchange-rate entry in ${file}: rate must be a positive number`);
+          }
+          // js-yaml parses ISO dates into Date objects; the registry carries
+          // the plain YYYY-MM-DD string.
+          if (r.as_of instanceof Date) {
+            r.as_of = r.as_of.toISOString().slice(0, 10);
+          }
+        }
+        exchangeRates = data.rates;
+        console.log(`Loaded ${data.rates.length} exchange rate(s) from ${file}`);
       } else {
         throw new Error(`Unrecognized data file ${file}: expected fee_rules (port) or vessels (vessel library)`);
       }
@@ -104,7 +125,7 @@ function main() {
     // Registries are deterministic: same YAML inputs always produce identical
     // output, so the web bundle content hash is reproducible and a served
     // bundle can be matched to a commit (spec section 7 verification).
-    fs.writeFileSync(PORTS_OUTPUT, JSON.stringify({ ports }, null, 2), 'utf8');
+    fs.writeFileSync(PORTS_OUTPUT, JSON.stringify({ ports, exchange_rates: exchangeRates ?? [] }, null, 2), 'utf8');
     console.log(`Wrote ${ports.length} port(s) -> ${PORTS_OUTPUT}`);
     console.log(`  Ports: ${ports.map(p => p.metadata.id).join(', ')}`);
 

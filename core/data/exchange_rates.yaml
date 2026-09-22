@@ -1,0 +1,21 @@
+# Exchange-rate reference data for the cross-currency comparison view
+# (spec v0.2.31, commit A).
+#
+# The comparison basis is SEK: the Swedish ports bill in SEK and Hamburg in
+# EUR, so the single conversion needed is EUR->SEK. The rate is static,
+# versioned data — no runtime API calls. The default below is the verified
+# ECB euro reference rate; the comparison view renders it beside every
+# converted figure, and the user may override it at the UI.
+#
+# Sources: the ECB euro foreign-exchange reference rate (SEK per EUR),
+# mirrored by the Frankfurter API. Verified at implementation time:
+#   https://api.frankfurter.app/latest?from=EUR&to=SEK
+#   { "base": "EUR", "date": "2026-09-21", "rates": { "SEK": 11.275 } }
+# The ECB publishes reference rates on TARGET business days; 2026-09-21 is
+# the most recent publication at implementation time (2026-09-22).
+rates:
+  - from_currency: EUR
+    to_currency: SEK
+    rate: 11.275
+    as_of: 2026-09-21
+    source: ECB euro reference rate (SEK per EUR)

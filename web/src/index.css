@@ -856,3 +856,15 @@ textarea:focus-visible,
   padding: var(--space-2) 0 var(--space-2) var(--space-4);
   color: var(--text-secondary);
 }
+
+/* Converted-secondary figure tag (spec v0.2.31): marks a figure as the
+   converted comparison basis (SEK) beside the native-currency primary.
+   Neutral styling — it is derived data, not a status. */
+.comparison-converted-tag {
+  font-size: 0.7rem;
+  color: var(--text-secondary, #666);
+  border: 1px solid var(--border, #ccc);
+  border-radius: 3px;
+  padding: 0 3px;
+  margin-left: 4px;
+}

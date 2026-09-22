@@ -55,6 +55,8 @@ import {
 // Import the port registry from canonical sources (converted to JSON at build time).
 // The registry contains every port loaded from core/data/*.yaml (spec v0.2.17 section 4.3.1).
 import portsRegistry from './data/ports.json';
+// Cross-currency comparison helpers (spec v0.2.31, commit A)
+import { resolveExchangeRate, toComparisonBasis, conversionLabel, formatRate, rankByConvertedBasis, DEFAULT_EXCHANGE_RATE, ExchangeRateInfo } from './conversion';
 // Vessel library: curated named-vessel table (spec section 3.4), converted to
 // JSON at build time — no runtime API calls.
 import vesselLibrary from './data/vessel_library.json';
@@ -1964,75 +1966,21 @@ const ComparisonView: React.FC<ComparisonViewProps> = ({
   onSelectionChange
 }) => {
   const selectedPorts = ports.filter(p => selectedPortIds.includes(p.metadata.id));
-  // Optional end-of-comparison conversion (spec v0.2.20): local currency
-  // throughout; conversion only here, user-triggered, ECB rates or manual
-  // entry, with rate source and date displayed alongside the converted figure.
-  const [conversionCurrency, setConversionCurrency] = useState<string>('EUR');
-  const [manualRate, setManualRate] = useState<string>('');
-  const [rateInfo, setRateInfo] = useState<{ source: string; date: string; fallback: boolean } | null>(null);
-  const [convertedTotals, setConvertedTotals] = useState<
-    { portId: string; portName: string; localAmount: number; localCurrency: string; rate: number; convertedAmount: number }[] | null
-  >(null);
-
-  // ECB daily reference rates are quoted against EUR; the rate from a local
-  // currency L to display currency D is rate(D)/rate(L). Cached with its
-  // publication date; if the feed is unreachable the last cached set is used
-  // and this is stated explicitly (spec section 6).
-  const fetchEcbRates = async () => {
-    const target = conversionCurrency;
-    const manual = parseFloat(manualRate);
-    const applyRates = (rates: Record<string, number>, source: string, date: string, fallback: boolean) => {
-      const rows = portResults
-        .filter(pr => pr.result)
-        .map(({ port, result }) => {
-          const local = result!;
-          let rate: number;
-          if (!Number.isNaN(manual) && manual > 0) {
-            rate = manual; // manual rate entered per 1 unit of local currency
-          } else {
-            const rLocal = rates[local.currency];
-            const rTarget = rates[target];
-            rate = rTarget / rLocal;
-          }
-          return {
-            portId: port.metadata.id,
-            portName: port.metadata.name,
-            localAmount: local.total,
-            localCurrency: local.currency,
-            rate,
-            convertedAmount: local.total * rate
-          };
-        });
-      setConvertedTotals(rows);
-      setRateInfo({
-        source: !Number.isNaN(manual) && manual > 0 ? 'Manual rate entered by user' : source,
-        date,
-        fallback
-      });
-    };
-
-    if (!Number.isNaN(manual) && manual > 0) {
-      applyRates({}, 'Manual', new Date().toISOString().split('T')[0], false);
-      return;
-    }
-    try {
-      const res = await fetch('https://api.frankfurter.app/latest?from=EUR');
-      if (!res.ok) throw new Error(`ECB feed HTTP ${res.status}`);
-      const data = await res.json();
-      const rates: Record<string, number> = { EUR: 1, ...data.rates };
-      localStorage.setItem('ecb_rates_cache', JSON.stringify({ rates, date: data.date }));
-      applyRates(rates, 'ECB daily reference rates (Frankfurter mirror of ECB feed)', data.date, false);
-    } catch (err) {
-      const cached = localStorage.getItem('ecb_rates_cache');
-      if (cached) {
-        const { rates, date } = JSON.parse(cached);
-        applyRates(rates, 'Last cached ECB reference rates', date, true);
-      } else {
-        setRateInfo({ source: 'unavailable', date: '-', fallback: true });
-      }
-    }
-  };
-
+  // Cross-currency comparison contract (spec v0.2.31, commit A): the
+  // comparison basis is SEK. Hamburg's EUR figures render native-primary
+  // with a converted-secondary figure; every ordering or ranking of ports
+  // uses the converted basis, never raw amounts. The rate is static,
+  // versioned data (ports.json exchange_rates, from
+  // core/data/exchange_rates.yaml) — no runtime API calls — editable at
+  // the UI, with a visible fallback flag when the default is in effect.
+  const [rateInput, setRateInput] = useState<string>('');
+  const dataRate = (portsRegistry as { exchange_rates?: { from_currency: string; to_currency: string; rate: number; as_of: string; source: string }[] }).exchange_rates?.find(
+    r => r.from_currency === 'EUR' && r.to_currency === 'SEK'
+  );
+  const rateInfo = useMemo(
+    () => resolveExchangeRate(rateInput, dataRate ? { rate: dataRate.rate, date: dataRate.as_of, source: dataRate.source } : undefined),
+    [rateInput, dataRate]
+  );
   // One calculation per selected port - the same engine and data as the
   // per-port pages; no separate calculation path.
   const portResults = useMemo(() => {
@@ -2180,33 +2128,18 @@ const ComparisonView: React.FC<ComparisonViewProps> = ({
     });
   }, [portResults]);
 
-  const cheapestTotalPortId = useMemo(() => {
-    const valid = portResults.filter(pr => pr.result);
-    if (valid.length < 2) return null;
-    let best: string | null = null;
-    let bestAmount = Infinity;
-    for (const { result } of valid) {
-      if (result!.total < bestAmount) {
-        bestAmount = result!.total;
-        best = result!.port_id;
-      }
-    }
-    return best;
-  }, [portResults]);
-
-  const mostExpensiveTotalPortId = useMemo(() => {
-    const valid = portResults.filter(pr => pr.result);
-    if (valid.length < 2) return null;
-    let worst: string | null = null;
-    let worstAmount = -Infinity;
-    for (const { result } of valid) {
-      if (result!.total > worstAmount) {
-        worstAmount = result!.total;
-        worst = result!.port_id;
-      }
-    }
-    return worst;
-  }, [portResults]);
+  // Ranking integrity (spec v0.2.31): ordering and ranking use the
+  // converted comparison basis (SEK), never raw amounts — the Swedish SEK
+  // totals and Hamburg's EUR totals are never compared numerically. The
+  // pure rankByConvertedBasis is the single tested path.
+  const ranking = useMemo(() => rankByConvertedBasis(
+    portResults
+      .filter(pr => pr.result)
+      .map(pr => ({ portId: pr.result!.port_id, amount: pr.result!.total, currency: pr.result!.currency })),
+    rateInfo
+  ), [portResults, rateInfo]);
+  const cheapestTotalPortId = ranking.cheapestPortId;
+  const mostExpensiveTotalPortId = ranking.mostExpensivePortId;
 
 
   const amountCell = (
@@ -2218,6 +2151,7 @@ const ComparisonView: React.FC<ComparisonViewProps> = ({
       // mistaken for missing data (spec 4.3.1 comparability rules)
       return <span className="comparison-not-charged">not charged</span>;
     }
+    const conv = toComparisonBasis(entry.amount, entry.currency || fallbackCurrency, rateInfo);
     return (
       <Box sx={{ textAlign: 'right' }}>
         <span>
@@ -2228,9 +2162,19 @@ const ComparisonView: React.FC<ComparisonViewProps> = ({
             </span>
           )}
         </span>
+        {conv.converted && (
+          // Converted-secondary figure (spec v0.2.31): native primary, then
+          // the converted approximation, always with its rate basis.
+          <Box sx={{ fontSize: '0.75rem', color: '#666' }}>
+            ≈ {formatCurrency(conv.amount, 'SEK')} <span className="comparison-converted-tag">converted</span>
+          </Box>
+        )}
         {entry.effective_per_gt !== undefined && (
           <Box sx={{ fontSize: '0.75rem', color: '#666' }}>
             {entry.effective_per_gt.toFixed(2)} {entry.currency || fallbackCurrency}/GT effective — derived, not a published rate
+            {conv.converted && (
+              <span> (≈ {(entry.effective_per_gt * rateInfo.rate).toFixed(2)} SEK/GT converted)</span>
+            )}
           </Box>
         )}
         {entry.lines.map((line, index) => (
@@ -2241,6 +2185,25 @@ const ComparisonView: React.FC<ComparisonViewProps> = ({
             )}
           </Box>
         ))}
+      </Box>
+    );
+  };
+
+  // Native-primary / converted-secondary aggregate cell (spec v0.2.31):
+  // the port's native-currency figure first, then the converted comparison
+  // basis (SEK) as a derived secondary figure for non-SEK ports. A converted
+  // figure never appears without its rate-and-date basis.
+  const convCell = (nativeAmount: number, currency: string) => {
+    const conv = toComparisonBasis(nativeAmount, currency, rateInfo);
+    if (!conv.converted) {
+      return <span>{formatCurrency(nativeAmount, currency)}</span>;
+    }
+    return (
+      <Box sx={{ textAlign: 'right' }}>
+        <span>{formatCurrency(nativeAmount, currency)}</span>
+        <Box sx={{ fontSize: '0.75rem', color: '#666' }}>
+          {'≈'} {formatCurrency(conv.amount, 'SEK')} <span className="comparison-converted-tag">converted {'—'} {formatRate(rateInfo)}</span>
+        </Box>
       </Box>
     );
   };
@@ -2321,7 +2284,7 @@ const ComparisonView: React.FC<ComparisonViewProps> = ({
                         return (
                           <TableCell key={port.metadata.id} align="right" className="comparison-subtotal">
                             {result
-                              ? formatCurrency(subtotals.totals[segment.id], result.currency)
+                              ? convCell(subtotals.totals[segment.id], result.currency)
                               : <span className="comparison-error">error</span>}
                           </TableCell>
                         );
@@ -2351,7 +2314,7 @@ const ComparisonView: React.FC<ComparisonViewProps> = ({
                   {portResults.map(({ port, result }) => (
                     <TableCell key={port.metadata.id} align="right" className="comparison-subtotal">
                       {result
-                        ? formatCurrency(result.total, result.currency)
+                        ? convCell(result.total, result.currency)
                         : <span className="comparison-error">error</span>}
                     </TableCell>
                   ))}
@@ -2369,7 +2332,7 @@ const ComparisonView: React.FC<ComparisonViewProps> = ({
                   {portResults.map(({ port, result }) => (
                     <TableCell key={port.metadata.id} align="right" className="comparison-subtotal">
                       {result
-                        ? formatCurrency(result.total_estimated_parameters, result.currency)
+                        ? convCell(result.total_estimated_parameters, result.currency)
                         : <span className="comparison-error">error</span>}
                     </TableCell>
                   ))}
@@ -2381,7 +2344,7 @@ const ComparisonView: React.FC<ComparisonViewProps> = ({
                   {portResults.map(({ port, result }) => (
                     <TableCell key={port.metadata.id} align="right" className="comparison-subtotal">
                       {result
-                        ? formatCurrency(result.total_without_estimates, result.currency)
+                        ? convCell(result.total_without_estimates, result.currency)
                         : <span className="comparison-error">error</span>}
                     </TableCell>
                   ))}
@@ -2398,14 +2361,25 @@ const ComparisonView: React.FC<ComparisonViewProps> = ({
                   {portResults.map(({ port, result }) => (
                     <TableCell key={port.metadata.id} align="right" className="comparison-subtotal">
                       {result?.vessel_access
-                        ? (
-                          <Box sx={{ textAlign: 'right' }}>
-                            <span>{formatCurrency(result.vessel_access.amount, result.currency)}</span>
-                            <Box sx={{ fontSize: '0.75rem', color: '#666' }}>
-                              {result.vessel_access.effective_per_gt.toFixed(2)} {result.currency}/GT effective — derived, not a published rate
-                            </Box>
-                          </Box>
-                        )
+                        ? (() => {
+                            const vaConv = toComparisonBasis(result.vessel_access.amount, result.currency, rateInfo);
+                            return (
+                              <Box sx={{ textAlign: 'right' }}>
+                                <span>{formatCurrency(result.vessel_access.amount, result.currency)}</span>
+                                {vaConv.converted && (
+                                  <Box sx={{ fontSize: '0.75rem', color: '#666' }}>
+                                    {'≈'} {formatCurrency(vaConv.amount, 'SEK')} <span className="comparison-converted-tag">converted {'—'} {formatRate(rateInfo)}</span>
+                                  </Box>
+                                )}
+                                <Box sx={{ fontSize: '0.75rem', color: '#666' }}>
+                                  {result.vessel_access.effective_per_gt.toFixed(2)} {result.currency}/GT effective — derived, not a published rate
+                                  {vaConv.converted && (
+                                    <span> ({'≈'} {(result.vessel_access.effective_per_gt * rateInfo.rate).toFixed(2)} SEK/GT converted)</span>
+                                  )}
+                                </Box>
+                              </Box>
+                            );
+                          })()
                         : <span className="comparison-error">error</span>}
                     </TableCell>
                   ))}
@@ -2418,6 +2392,7 @@ const ComparisonView: React.FC<ComparisonViewProps> = ({
                   <TableCell colSpan={portResults.length + 1}>
                     <Typography variant="caption" className="comparison-basis" sx={{ display: 'block' }}>
                       <strong>Vessel Access Charges — comparability:</strong>{' '}
+                      <span style={{ display: 'block' }}>{conversionLabel(rateInfo)}.</span>
                       {portResults.map(({ port, result }) => {
                         const agg = result?.vessel_access;
                         if (!agg) return null;
@@ -2441,85 +2416,30 @@ const ComparisonView: React.FC<ComparisonViewProps> = ({
             </Table>
           </TableContainer>
 
-          {/* Optional, user-triggered conversion (spec v0.2.20): the very end
-              of the comparison. Each port's local-currency total is expressed
-              in the chosen display currency using ECB daily reference rates
-              (or a manual rate); the rate source and date are shown with the
-              converted figure. No inline conversion anywhere else. */}
-          <Box className="comparison-conversion" sx={{ mt: 3, p: 2, border: '1px solid #e0e0e0', borderRadius: 1 }}>
+          {/* Rate input (spec v0.2.31, commit A): the exchange rate behind
+              every converted figure in this view. Static, versioned data
+              (core/data/exchange_rates.yaml — no runtime API calls);
+              the user may override it. Blank or invalid input falls back to
+              the documented default with a visible flag. */}
+          <Box className="comparison-conversion" sx={{ mt: 3, p: 2, border: '1px solid var(--border)', borderRadius: 1 }}>
             <Typography variant="h6" component="h3">
-              Optional: express totals in one currency
+              Exchange rate
             </Typography>
             <Typography variant="body2" className="comparison-basis">
-              All amounts above are in each tariff's local currency. This step converts each port's
-              total once, at the end, for display only - it never enters any calculation.
+              {conversionLabel(rateInfo)}{rateInfo.is_default ? ' — default rate in effect (editable)' : ''}
             </Typography>
-            <Grid container spacing={2} alignItems="center">
-              <Grid item xs={6} md={3}>
-                <FormControl fullWidth>
-                  <InputLabel>Display currency</InputLabel>
-                  <Select
-                    value={conversionCurrency}
-                    onChange={(e) => setConversionCurrency(e.target.value as string)}
-                    label="Display currency"
-                  >
-                    {['EUR', 'SEK', 'DKK', 'PLN', 'USD'].map(c => (
-                      <MenuItem key={c} value={c}>{c}</MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid item xs={6} md={3}>
-                <TextField
-                  label="Manual rate per 1 {conversionCurrency} (optional)"
-                  type="number"
-                  value={manualRate}
-                  onChange={(e) => setManualRate(e.target.value)}
-                  fullWidth
-                  InputLabelProps={{ shrink: true }}
-                  helperText="Overrides the ECB fetch for all ports"
-                />
-              </Grid>
-              <Grid item xs={6} md={3}>
-                <Button
-                  variant="contained"
-                  onClick={fetchEcbRates}
-                  disabled={conversionCurrency === '' || (!!manualRate)}
-                >
-                  Fetch ECB reference rates
-                </Button>
-              </Grid>
-              <Grid item xs={12} md={3}>
-                {rateInfo && (
-                  <Typography variant="body2" className="comparison-basis">
-                    Rate source: {rateInfo.source}, {rateInfo.date}
-                    {rateInfo.fallback && ' (ECB unreachable - last cached rates used)'}
-                  </Typography>
-                )}
-              </Grid>
-            </Grid>
-            {convertedTotals && (
-              <Table size="small" sx={{ mt: 2 }}>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Port</TableCell>
-                    <TableCell align="right">Local total</TableCell>
-                    <TableCell align="right">Rate ({conversionCurrency} per unit)</TableCell>
-                    <TableCell align="right">Converted total</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {convertedTotals.map(ct => (
-                    <TableRow key={ct.portId}>
-                      <TableCell>{ct.portName}</TableCell>
-                      <TableCell align="right">{formatCurrency(ct.localAmount, ct.localCurrency)}</TableCell>
-                      <TableCell align="right">{ct.rate.toFixed(4)}</TableCell>
-                      <TableCell align="right">{formatCurrency(ct.convertedAmount, conversionCurrency)}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
+            <TextField
+              label="Exchange rate (kr per EUR)"
+              type="number"
+              value={rateInput}
+              onChange={(e) => setRateInput(e.target.value)}
+              sx={{ maxWidth: 280, mt: 1 }}
+              InputLabelProps={{ shrink: true }}
+              inputProps={{ step: 'any', 'aria-label': 'Exchange rate, kronor per euro' }}
+              helperText={rateInfo.is_default
+                ? `Default: ${dataRate?.rate ?? DEFAULT_EXCHANGE_RATE.rate} kr/EUR (${dataRate?.source ?? DEFAULT_EXCHANGE_RATE.source}, ${dataRate?.as_of ?? DEFAULT_EXCHANGE_RATE.date}). Blank uses the default.`
+                : `User rate ${rateInfo.rate} kr/EUR in effect.`}
+            />
           </Box>
           {portResults.some(pr => pr.error) && (
             <Typography color="error" sx={{ mt: 2 }}>
