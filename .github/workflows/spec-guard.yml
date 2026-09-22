@@ -1,0 +1,66 @@
+name: Spec version guard
+
+on:
+  pull_request:
+  push:
+    branches: [ main ]
+
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Determine base and head refs
+        id: refs
+        run: |
+          if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
+            echo "base=${{ github.event.pull_request.base.sha }}" >> "$GITHUB_OUTPUT"
+            echo "head=${{ github.event.pull_request.head.sha }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "base=${{ github.event.before }}" >> "$GITHUB_OUTPUT"
+            echo "head=${{ github.sha }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Check spec version bump against behavior changes
+        run: node core/scripts/check_spec_version.js --base "$BASE" --head "$HEAD"
+        env:
+          BASE: ${{ steps.refs.outputs.base }}
+          HEAD: ${{ steps.refs.outputs.head }}
+
+  demonstration:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Un-bumped fixture must fail the guard
+        run: |
+          set +e
+          node core/scripts/check_spec_version.js --fixture .github/fixtures/spec-guard-unbumped
+          status=$?
+          set -e
+          if [ "$status" -eq 0 ]; then
+            echo "DEMONSTRATION FAILED: the un-bumped fixture passed the guard; the guard does not fail un-bumped behavior changes."
+            exit 1
+          fi
+          if [ "$status" -ne 1 ]; then
+            echo "DEMONSTRATION FAILED: expected exit code 1 from the fixture run, got $status."
+            exit 1
+          fi
+          echo "Demonstration passed: the deliberately un-bumped fixture failed the guard with exit code 1, as required."
+
+      - name: Bumped fixture must pass the guard
+        run: |
+          node core/scripts/check_spec_version.js --fixture .github/fixtures/spec-guard-bumped
+          echo "Demonstration passed: the fixture with a behavior change and a matching changelog row passed the guard."
+
+      - name: Spec-only fixture must pass the guard
+        run: |
+          node core/scripts/check_spec_version.js --fixture .github/fixtures/spec-guard-spec-only
+          echo "Demonstration passed: the spec-only fixture passed the guard (no behavior change, no bump required)."

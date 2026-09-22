@@ -46,6 +46,20 @@ describe('flagBadges (spec v0.2.29 badge honesty)', () => {
     expect(tierBadge.title).toContain('verified data');
   });
 
+  it('an assumed tug_count renders a parameter-specific badge carrying the flag description as its title (v0.2.35 health-check pin)', () => {
+    const badges = badgesForFlags([
+      flag('assumed_parameter', {
+        parameter: 'tug_count',
+        description: 'Tug requirement not entered; port default of 2 tugs applied; enter the actual requirement to override'
+      })
+    ]);
+    const tugBadge = badges.find(b => b.label === 'tug_count assumed');
+    expect(tugBadge).toBeDefined();
+    expect(tugBadge!.title).toBe(
+      'Tug requirement not entered; port default of 2 tugs applied; enter the actual requirement to override'
+    );
+    expect(badges.some(b => b.label === 'est.')).toBe(false);
+  });
   it('contract-vs-published keeps its caveat badge', () => {
     const badges = badgesForFlags([flag('contract_vs_published')]);
     expect(badges.some(b => b.label === 'contract rate may differ')).toBe(true);
