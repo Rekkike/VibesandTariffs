@@ -398,3 +398,58 @@ describe('Estimated-parameters subtotal composition including towage (spec v0.2.
     }
   });
 });
+
+describe('Storage-schedule boundary verification (worked-example fix pass, spec v0.2.37)', () => {
+  // Phase-2-style verification of the last unverified v0.2.33 surface: the
+  // APMT Terminal Tariff's own Yard Storage schedule (extraction reference
+  // §3, verified against the tariff document at extraction time) reconstructed
+  // day-by-day and pinned at every band boundary. Each day charges exactly
+  // once at the first band covering its day number.
+  //   Export: days 0-6 free; 7-9 @133; 10-13 @346; 14+ @578
+  //   Import: days 0-4 free; 5-7 @133; 8-11 @346; 12+ @578
+  const port = loadPort('gothenburg');
+
+  it.each([
+    // [flow, days, expected from the schedule's own day-by-day arithmetic]
+    ['export', 6, 0],                      // last free day
+    ['export', 7, 133],                    // first day beyond free
+    ['export', 9, 3 * 133],                // last day of the 133 band
+    ['export', 10, 3 * 133 + 346],         // first day of the 346 band
+    ['export', 13, 3 * 133 + 4 * 346],     // last day of the 346 band
+    ['export', 14, 3 * 133 + 4 * 346 + 578], // first day of the 578 band
+    ['export', 20, 3 * 133 + 4 * 346 + 7 * 578],
+    ['import', 4, 0],                      // last free day
+    ['import', 5, 133],                    // first day beyond free
+    ['import', 7, 3 * 133],                // last day of the 133 band
+    ['import', 8, 3 * 133 + 346],          // first day of the 346 band
+    ['import', 11, 3 * 133 + 4 * 346],     // last day of the 346 band
+    ['import', 12, 3 * 133 + 4 * 346 + 578], // first day of the 578 band
+    ['import', 15, 3 * 133 + 4 * 346 + 4 * 578]
+  ])('%s storage %i days -> %i SEK (schedule-boundary reconstruction)', (flow, days, expected) => {
+    const basis = flow === 'export' ? 'storage_days_export' : 'storage_days_import';
+    const ruleId = flow === 'export' ? 'apm_terminals_storage_export' : 'apm_terminals_storage_import';
+    const input = gotCallWith({ [basis]: days });
+    const result = calculatePortCallCost(port, input);
+    expect(feeByRule(result, ruleId).amount).toBe(expected);
+  });
+
+  it('the day beyond each boundary jumps by exactly the band-rate difference (no double-counted days)', () => {
+    // Day 7 -> 8 and day 10 -> 11 differ by one 133-unit; day 13 -> 14 and
+    // day 11 -> 12 differ by 578-346 = 232. A ladder that double-charged a
+    // boundary day or skipped one would break these deltas.
+    const amounts = (flow: string, dayList: number[]) => dayList.map(d => {
+      const basis = flow === 'export' ? 'storage_days_export' : 'storage_days_import';
+      const ruleId = flow === 'export' ? 'apm_terminals_storage_export' : 'apm_terminals_storage_import';
+      const result = calculatePortCallCost(port, gotCallWith({ [basis]: d }));
+      return feeByRule(result, ruleId).amount;
+    });
+    const e = amounts('export', [7, 8, 10, 11, 13, 14]);
+    expect(e[1] - e[0]).toBe(133);
+    expect(e[3] - e[2]).toBe(346);
+    expect(e[5] - e[4]).toBe(578);
+    const i = amounts('import', [5, 6, 8, 9, 11, 12]);
+    expect(i[1] - i[0]).toBe(133);
+    expect(i[3] - i[2]).toBe(346);
+    expect(i[5] - i[4]).toBe(578);
+  });
+});

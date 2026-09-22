@@ -272,6 +272,12 @@ export interface Adjustment {
   percentage: number; // percentage to apply (e.g., 10 for 10%)
   condition?: string; // condition for applying this adjustment
   stacking_order?: number; // custom stacking order
+  // Excess-units reduction (spec v0.2.37, SJÖFS 2025:5 §25): the discount
+  // applies only to the units beyond a threshold count (e.g. only the
+  // half-hours beyond the first 14), never to the whole line or the start
+  // fee. Whole-line discounts (the default) multiply the entire amount.
+  apply_to?: 'whole_amount' | 'excess_units';
+  threshold_units?: number; // units beyond this count are discounted
   // Multiplicative (default, spec 4.4.1 fallback) applies to the running
   // result; 'additive' discounts/surcharges sum their percentages off the
   // pre-adjustment base (declared per tariff clause where the tariff

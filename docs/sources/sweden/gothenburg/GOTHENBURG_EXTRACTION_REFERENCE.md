@@ -19,8 +19,8 @@ Tariff 2026; Sjöfartsverket price list 2026 (issued 2025-11-01).
 | ID | Document | Biller | Prices? | Repository path |
 |----|----------|--------|---------|-----------------|
 | G1 | Port of Gothenburg, Port Tariff 2026 | Port of Gothenburg | Yes | not archived — upstream: https://www.portofgothenburg.com/globalassets/dokument/port-tariff-2026.pdf |
-| G2 | APM Terminals Gothenburg, Terminal Tariff 2026 (June) | APM Terminals Gothenburg | Yes | not archived — upstream: https://assets.ctfassets.net/mivicpf5zews/5ktO1h8dk2iM4ikpGgGLwY/0a628a9eb5de141d44aae005fd4e0739/Terminal_Tariff_Gothenburg_2026.pdf |
-| G3 | Sjöfartsverket, Prislista farleds- och lotsavgifter 2026 | Sjöfartsverket | Yes | `docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf` (in repo) |
+| G2 | APM Terminals Gothenburg, Terminal Tariff 2026 (June) | APM Terminals Gothenburg | Yes | not archived — upstream: https://www.apmterminals.com/en/gothenburg/services/terminal-tariff (the publisher’s tariff page serving the Terminal Tariff 2026 PDF; the previously stored assets.ctfassets.net URL served the Gothenburg RoRo Terminal Rate Schedule 2026 and was repointed in the worked-example fix pass, spec v0.2.37) |
+| G3 | Sjöfartsverket, Prislista farleds- och lotsavgifter 2026 | Sjöfartsverket | Yes | not archived — upstream URL in the port YAML (https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf); earlier revisions of this reference claimed an in-repo archive path that never existed (fixed in the worked-example fix pass, spec v0.2.37) |
 
 G1 and G2 are not archived in the repository; the port file carries their live
 publisher URLs as `upstream_url` per the v0.2.32 source-link contract

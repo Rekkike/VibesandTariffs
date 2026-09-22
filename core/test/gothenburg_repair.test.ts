@@ -95,7 +95,7 @@ describe('Gothenburg repair pass (v0.2.22)', () => {
     const result = calculatePortCallCost(port, makeCall({}));
     const start = feeByRule(result, 'sjofartsverket_pilotage_class4_start');
     const halfHour = feeByRule(result, 'sjofartsverket_pilotage_class4_per_half_hour');
-    const ordering = feeByRule(result, 'sjofartsverket_ordering_fee_4h_plus');
+    const ordering = feeByRule(result, 'sjofartsverket_ordering_fee_4_5h');
     expect(start.amount).toBe(17300.00);
     expect(halfHour.amount).toBe(4 * 3940);
     expect(ordering.amount).toBe(1880.00);
@@ -213,16 +213,23 @@ describe('Gothenburg repair pass (v0.2.22)', () => {
     const result = calculatePortCallCost(port, makeCall({}));
     const orderingLines = feesByFamily(result, 'ordering_fee');
     expect(orderingLines).toHaveLength(1);
-    expect(orderingLines[0].fee_rule_id).toBe('sjofartsverket_ordering_fee_4h_plus');
+    expect(orderingLines[0].fee_rule_id).toBe('sjofartsverket_ordering_fee_4_5h');
   });
 
-  // Pilotage >7h discount now computes (previously a zero-amount pseudo-rule)
-  it('pilotage 40% discount for piloted time over 7 hours computes on both pilotage lines', () => {
+  // Pilotage >7h discount (SJÖFS 2025:5 §25). Re-pinned in the worked-example
+  // fix pass (spec v0.2.37): the old pin (17300*0.6 + 16*3940*0.6 = 45,840 for
+  // class 4 at 8 h) faithfully recorded the defective whole-fee derivation
+  // the extraction believed. The lathund (Sjöfartsverket LATHUND 2026, the
+  // published worked table for SJÖFS 2025:5) computes 77,188 for class 4 at
+  // 8 h: start 17,300 unreduced + first 14 half-hours full + 2 excess
+  // half-hours at 60% (docs/TARIFF_EXAMPLE_VERIFICATION.md §3.1, row 8,0 h).
+  it('pilotage 40% discount beyond 7 hours: start unreduced, first 14 half-hours full, excess at 60% (lathund class-4 row 8,0 h = 77,188)', () => {
     const result = calculatePortCallCost(port, makeCall({ pilotage_hours: 8 }));
     const start = feeByRule(result, 'sjofartsverket_pilotage_class4_start');
     const halfHour = feeByRule(result, 'sjofartsverket_pilotage_class4_per_half_hour');
-    expect(start.amount).toBe(17300 * 0.6);
-    expect(halfHour.amount).toBe(16 * 3940 * 0.6);
+    expect(start.amount).toBe(17300);
+    expect(halfHour.amount).toBe(14 * 3940 + 2 * 3940 * 0.6);
+    expect(start.amount + halfHour.amount).toBe(77188);
   });
 
   it('extra pilot fee fires when requested (previously never fired)', () => {
@@ -252,7 +259,7 @@ describe('Gothenburg repair pass (v0.2.22)', () => {
     expect(start.amount).toBe(32540);
     const halfHour = feeByRule(result, 'sjofartsverket_pilotage_class8_per_half_hour');
     expect(halfHour.amount).toBe(8 * 7335);
-    const ordering = feeByRule(result, 'sjofartsverket_ordering_fee_4h_plus');
+    const ordering = feeByRule(result, 'sjofartsverket_ordering_fee_4_5h');
     expect(ordering.amount).toBe(1880);
     // Pilotage is now present: this is the repair's delta on the panamax call
     expect(start.amount + halfHour.amount + ordering.amount).toBe(32540 + 8 * 7335 + 1880);

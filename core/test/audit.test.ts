@@ -241,7 +241,7 @@ describe('tri-port sanity check: Gothenburg decomposition (computed fresh, pinne
     expect(feeAmount(result, 'sjofartsverket_readiness_fee_class5')).toBe(24165);
     expect(feeAmount(result, 'sjofartsverket_pilotage_class5_start')).toBe(19305);
     expect(feeAmount(result, 'sjofartsverket_pilotage_class5_per_half_hour')).toBe(26400);
-    expect(feeAmount(result, 'sjofartsverket_ordering_fee_4h_plus')).toBe(1880);
+    expect(feeAmount(result, 'sjofartsverket_ordering_fee_4_5h')).toBe(1880);
     // No idle-berth line: the service was not ordered
     const ids = result.billers.flatMap(b => b.fees).map(f => f.fee_rule_id);
     expect(ids).not.toContain('apm_terminals_idle_berth');

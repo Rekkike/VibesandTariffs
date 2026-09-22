@@ -129,8 +129,9 @@ export function evaluateFeeRule(
     
     // Ordering-fee lead-time band (best\u00e4llningsavgift): a national bracket
     // derived from the call's ordering lead time, analogous to nt_class.
-    // Brackets are lower-inclusive / upper-exclusive except the last, which
-    // is 4+ hours inclusive (\u22654 h pays the lowest fee).
+    // Bands are lower-inclusive / upper-exclusive (<1, 1-2, 2-3, 3-4, 4-5 h);
+    // a lead of 5 h or more charges nothing (SJOFS 2025:5 sec 11) and
+    // matches no ordering-fee rule.
     if (rule.applicable_conditions.ordering_lead_time_band) {
       const hours = call.pilotage_ordering_lead_time_hours;
       const band = getOrderingLeadTimeBandId(hours);
@@ -247,6 +248,11 @@ export function evaluateFeeRule(
   let bandOrBasis = '';
   let pendingComponents: { label: string; amount: number }[] | undefined = undefined;
   let pendingBandRows: BandRow[] | undefined = undefined;
+  // Per-unit context for excess-units reductions (spec v0.2.37): the unit
+  // count and unit rate behind the base amount, so an adjustment can
+  // discount only the units beyond a threshold (SJÖFS 2025:5 §25).
+  let ruleUnitCount: number | undefined = undefined;
+  let ruleUnitRate: number | undefined = undefined;
   
   const rate = rule.rate_structure;
   
@@ -539,6 +545,8 @@ export function evaluateFeeRule(
       baseAmount = unitCount * effectiveRate;
       rateApplied += `Per unit: ${unitCount} * ${effectiveRate}`;
       bandOrBasis = `${perUnit.unit_type}=${unitCount}`;
+      ruleUnitCount = unitCount;
+      ruleUnitRate = effectiveRate;
       break;
     }
     
@@ -934,6 +942,23 @@ export function evaluateFeeRule(
         } else if (adjustment.type === 'surcharge') {
           additiveSurchargePct += adjustment.percentage;
         }
+      } else if (adjustment.apply_to === 'excess_units') {
+        // Excess-units reduction (spec v0.2.37, SJÖFS 2025:5 §25): only the
+        // units beyond the threshold are discounted; the first
+        // threshold_units bill at the full rate, and the start fee is
+        // never touched by this adjustment.
+        const threshold = adjustment.threshold_units ?? 0;
+        if (ruleUnitCount !== undefined && ruleUnitRate !== undefined) {
+          const excess = Math.max(0, ruleUnitCount - threshold);
+          if (excess > 0) {
+            const excessFactor = adjustment.type === 'discount'
+              ? (1 - adjustment.percentage / 100)
+              : (1 + adjustment.percentage / 100);
+            adjustedAmount -= excess * ruleUnitRate;
+            adjustedAmount += excess * ruleUnitRate * excessFactor;
+            rateApplied += ` (excess-units ${adjustment.type}: ${excess} units beyond ${threshold} at ${adjustment.percentage}%)`;
+          }
+        }
       } else if (adjustment.type === 'discount') {
         adjustedAmount *= (1 - adjustment.percentage / 100);
       } else if (adjustment.type === 'surcharge') {
@@ -1094,12 +1119,19 @@ function evaluateCondition(condition: string, input: CostCalculationInput): bool
  * Missing lead time falls back to the least favourable band (spec 4.4.2).
  */
 export function getOrderingLeadTimeBandId(hours: number | undefined): string {
+  // SJÖFS 2025:5 §11: the ordering fee is charged only when the pilot is
+  // ordered less than 5 hours before the desired time. Bands: <1 h, 1-2 h,
+  // 2-3 h, 3-4 h, 4-5 h (lower-inclusive, upper-exclusive); a lead of
+  // 5 hours or more charges nothing — '5h_plus' matches no ordering-fee
+  // rule. Missing lead time falls back to the least favourable band
+  // (spec 4.4.2).
   if (typeof hours !== 'number' || isNaN(hours) || hours < 0) return 'under_1h';
   if (hours < 1) return 'under_1h';
   if (hours < 2) return '1_2h';
   if (hours < 3) return '2_3h';
   if (hours < 4) return '3_4h';
-  return '4h_plus';
+  if (hours < 5) return '4_5h';
+  return '5h_plus';
 }
 
 /**

@@ -60,7 +60,7 @@ describe('Functional classification (spec v0.2.30)', () => {
       expect(classifyRule(`${prefix}_vessel_fee_class4_csi_a`)!.functional_class).toBe('waterway_fairway_access');
       expect(classifyRule(`${prefix}_readiness_fee_class4`)!.functional_class).toBe('readiness_safety_capacity');
       expect(classifyRule(`${prefix}_pilotage_class4_start`)!.functional_class).toBe('purchased_service');
-      expect(classifyRule(`${prefix}_ordering_fee_4h_plus`)!.functional_class).toBe('purchased_service');
+      expect(classifyRule(`${prefix}_ordering_fee_4_5h`)!.functional_class).toBe('purchased_service');
     }
   });
 

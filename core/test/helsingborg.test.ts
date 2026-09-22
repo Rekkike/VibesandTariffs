@@ -141,7 +141,7 @@ describe('CP1 - HELGAFELL (8,890 GT, NT 3,200 class 4, 137 m, 400 moves, 2 pilot
   it('pilotage: start 17,300 + 4 half-hours x 3,940 + ordering 1,880 = 34,940', () => {
     expect(feeByRule(result, 'sfv_pilotage_start_class4').amount).toBe(17300);
     expect(feeByRule(result, 'sfv_pilotage_half_hour_class4').amount).toBe(15760);
-    expect(feeByRule(result, 'sfv_ordering_fee_4h_plus').amount).toBe(1880);
+    expect(feeByRule(result, 'sfv_ordering_fee_4_5h').amount).toBe(1880);
     expect(familyTotal(result, 'pilotage') + familyTotal(result, 'ordering_fee')).toBe(34940);
   });
   it('towage estimate renders 0.00 at LOA 137 m (0 tugs by LOA class)', () => {
@@ -407,17 +407,22 @@ describe('Boundary behaviour', () => {
     expect(result.billers.some(b => b.fees.some(f => f.fee_rule_id === 'poh_security_fee'))).toBe(false);
   });
 
-  it('pilotage discount: 40% for piloted time over 7 hours, applied on the pilotage lines', () => {
+  it('pilotage discount: 40% beyond 7 hours on the half-hour fee only — lathund class-4 row 8,0 h = 77,188', () => {
     const result = calculatePortCallCost(port, makeCall({
       gt: 8890, nt: 3200, loa_m: 137,
       containers_discharged_le20ft: 400,
       pilotage_hours: 8,
       csi_class: 'E'
     }));
-    // start 17,300 + 16 half-hours x 3,940 = 80,340; -40% => 48,204.00 total
-    expect(feeByRule(result, 'sfv_pilotage_start_class4').amount).toBe(17300 * 0.6);
-    expect(feeByRule(result, 'sfv_pilotage_half_hour_class4').amount).toBe(63040 * 0.6);
-    expect(familyTotal(result, 'pilotage')).toBe(48204.00);
+    // Re-pinned in the worked-example fix pass (spec v0.2.37). The old pin
+    // (48,204 total) recorded the defective whole-fee derivation. SJÖFS
+    // 2025:5 §25 reduces the per-half-hour fee only, on the portion beyond
+    // 7 hours: start 17,300 unreduced + first 14 half-hours full + 2 excess
+    // half-hours at 60% — the lathund's published class-4 row for 8,0 h is
+    // 77,188 (docs/TARIFF_EXAMPLE_VERIFICATION.md §3.1).
+    expect(feeByRule(result, 'sfv_pilotage_start_class4').amount).toBe(17300);
+    expect(feeByRule(result, 'sfv_pilotage_half_hour_class4').amount).toBe(14 * 3940 + 2 * 3940 * 0.6);
+    expect(familyTotal(result, 'pilotage')).toBe(77188.00);
   });
 
   it('storage: 7 free days, then 275/day per 20ft import unit', () => {
