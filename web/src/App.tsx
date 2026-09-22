@@ -685,7 +685,7 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                     onChange={(e) => handleVesselChange('built_year', parseFloat(e.target.value) || undefined)}
                     fullWidth
                     InputLabelProps={{ shrink: true }}
-                    helperText="Drives the engine-Tier default (2011+ → Tier II, 2000–2010 → Tier I, earlier → Tier 0)"
+                    helperText="Used only by the explicit 'infer from build year' action on the NOx Tier field; the Tier default is Tier 0 regardless of build year (spec v0.2.29)"
                   />
                 </Grid>
               )}
