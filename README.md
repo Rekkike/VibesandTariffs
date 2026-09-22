@@ -199,7 +199,7 @@ fee_rules:
      unit_type: container_le20ft
    ```
 
-6. **`banded_by_time`** - Escalating daily rates with free time
+6. **`banded_by_time`** - Escalating daily rates with free time (ladder semantics, spec v0.2.33: each day charges exactly once at the first band covering that day number; days below a band minimum — including zero — charge zero)
    ```yaml
    rate_structure:
      type: banded_by_time
