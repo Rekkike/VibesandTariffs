@@ -45,7 +45,9 @@ import {
   CostSegment,
   FEE_FAMILY_TO_SEGMENT,
   getNetTonnageClass,
-  calculatePortCallCost
+  calculatePortCallCost,
+  DEFAULT_VESSEL,
+  defaultCall
 } from '@port-cost/core';
 
 // Import the port registry from canonical sources (converted to JSON at build time).
@@ -644,6 +646,7 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                   onChange={(e) => handleCallChange('esi_score', parseFloat(e.target.value) || undefined)}
                   fullWidth
                   InputLabelProps={{ shrink: true }}
+                  helperText="Blank = not entered (no discount); never treated as a score"
                 />
               </Grid>
               <Grid item xs={6}>
@@ -671,6 +674,7 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                   onChange={(e) => handleCallChange('fossil_free_fuel_percentage', parseFloat(e.target.value) || undefined)}
                   fullWidth
                   InputLabelProps={{ shrink: true }}
+                  helperText="Blank = not entered (no discount); discount needs ≥ 30%"
                 />
               </Grid>
               {(port.metadata.id === 'gothenburg' || port.metadata.id === 'helsingborg') && (
@@ -875,7 +879,7 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                       onChange={(e) => handleCallChange('esi_score', parseFloat(e.target.value) || undefined)}
                       fullWidth
                       InputLabelProps={{ shrink: true }}
-                      helperText="Only if registered in the IAPH database; no default"
+                      helperText="Only if registered in the IAPH database; blank = not entered (no discount), never treated as a score"
                     />
                   </Grid>
                   <Grid item xs={6}>
@@ -1707,85 +1711,10 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
   );
 };
 
-// Shared form defaults (spec v0.2.17 section 4.3.1: parameters entered once,
-// mapped to each port's rules in the comparison view)
-const DEFAULT_VESSEL: VesselInput = {
-  gt: 55000,
-  nt: 30250,
-  loa_m: 290,
-  beam_m: 32,
-  draft_m: 12,
-  teu_capacity: 4000
-};
-
-const defaultCall = (portId: string): CallInput => ({
-  port_id: portId,
-  date: new Date().toISOString().split('T')[0],
-  containers_loaded_le20ft: 500,
-  containers_loaded_gt20ft: 500,
-  containers_discharged_le20ft: 500,
-  containers_discharged_gt20ft: 500,
-  calls_this_month: 1,
-  flag_state: 'EU',
-  vessel_type: 'container',
-  esi_score: 40,
-  // Default E (not registered): the least favourable Sjöfartsverket class and
-  // the documented conservative default (Helsingborg reference §10.2; engine
-  // fallback is also E). A user-set class overrides; this is a documented
-  // default, not an accident — class A vs E swings the vessel fee by ~64,600
-  // SEK for a mid-size vessel.
-  csi_class: 'E',
-  fossil_free_fuel_percentage: 0,
-  ops_usage: false,
-  lay_up_days: 0,
-  storage_days_export: 5,
-  storage_days_import: 3,
-  reefer_units: 100,
-  oog_units: 10,
-  dangerous_goods_units: 20,
-  hatch_cover_count: 0,
-  gearbox_count: 0,
-  pilotage_required: true,
-  pilotage_hours: 4,
-  pilotage_extra_pilot: false,
-  pilotage_ordering_lead_time_hours: 2,
-  ops_kwh_demand: 0,
-  ops_connected_hours: 0,
-  ops_electricity_price_per_kwh: 0,
-  ops_peak_demand_kw: 0,
-  // Hamburg parameters (spec v0.2.20). Lay time 16 h mid-range default
-  // (50 h for ULCV); gangway one per call, class default overseas with the
-  // feeder default applied from the vessel library for feeder-class ships;
-  // pilotage full Elbe transit; estimated-parameter defaults seeded so the
-  // estimate-flagged lines render with their default amounts.
-  // Helsingborg parameters (spec v0.2.21). List-price defaults: valid ISSC,
-  // EES at the September 2026 level, towage estimate with LOA-class tug
-  // defaults applied by the engine when no tug count is supplied.
-  ...(portId === 'helsingborg' ? {
-    issc_valid: true,
-    ees_rate_per_move: 35,
-    towage_cost_per_tug: 60000,
-    tug_count: undefined,
-    clean_shipping_index_class: undefined
-  } : {}),
-  ...(portId === 'hamburg' ? {
-    lay_time_hours: 16,
-    gangway_class: 'overseas',
-    gangway_count: 1,
-    gangway_supervision_hours: 0,
-    pilotage_segment_pct: 100,
-    towage_amount: 15000,
-    handling_rate_per_move: 358,
-    hpa_berth_usage: false,
-    berth_type: 'quay',
-    berth_hours: 0,
-    esi_noise_score: undefined,
-    quantum_prior_year_gt: 0,
-    waste_short_sea_reduction: false,
-    waste_alternative_fuel_reduction: false,
-    waste_sustainable_waste_reduction: false
-  } : {})
-});
+// Default form state lives in core (DEFAULT_VESSEL / defaultCall, spec
+// v0.2.28 default-call contract) so the core suite pins the actual initial
+// form values: the default call is the worst-case published-rate call, with
+// every environmental lever blank = not entered (never a seeded score).
 
 // Port display name with tariff validity year for headers and tabs
 const portLabel = (port: PortDefinition): string => {
