@@ -57,6 +57,8 @@ import vesselLibrary from './data/vessel_library.json';
 // Theme preference logic + progressive-disclosure defaults (spec v0.2.25)
 import { getInitialTheme, persistTheme, FORM_SECTION_DEFAULTS } from './theme';
 import type { ThemeMode } from './theme';
+// Zero-line collapse classification (spec v0.2.27), presentation only
+import { partitionFees } from './zeroCollapse';
 
 // Loaded ports; adding a port is a data edit (drop a YAML in core/data/), never a code change
 const LOADED_PORTS: PortDefinition[] = ((portsRegistry as any).ports ?? []).filter(
@@ -211,6 +213,9 @@ interface AppState {
   error: string | null;
   expandedBillers: Set<string>;
   expandedFees: Set<string>;
+  // Zero-line collapse disclosure (spec v0.2.27): collapsed lines render as one
+  // expandable row; this is presentation state only, never affects computation.
+  zeroLinesExpanded: boolean;
 }
 
 // Vessel presets
@@ -245,7 +250,8 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
     isLoading: false,
     error: null,
     expandedBillers: new Set(),
-    expandedFees: new Set()
+    expandedFees: new Set(),
+    zeroLinesExpanded: false
   });
 
   // Keep workspace state synchronized with shared (parent) inputs
@@ -376,6 +382,20 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
     const map = new Map<string, string>();
     for (const rule of port.fee_rules) {
       map.set(rule.id, rule.name);
+    }
+    return map;
+  }, [port]);
+  // Rule attributes that decide the zero-line collapse classification
+  // (spec v0.2.27): minimum floors, condition gates, estimate/caveat markers.
+  const ruleAttributesById = useMemo(() => {
+    const map = new Map<string, { minimum?: number; applicable_conditions?: Record<string, unknown>; estimated_parameter?: unknown; contract_vs_published?: unknown }>();
+    for (const rule of port.fee_rules) {
+      map.set(rule.id, {
+        minimum: rule.minimum,
+        applicable_conditions: rule.applicable_conditions,
+        estimated_parameter: rule.estimated_parameter,
+        contract_vs_published: rule.contract_vs_published
+      });
     }
     return map;
   }, [port]);
@@ -1385,8 +1405,13 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                     return null;
                   }
 
-                  // Collect all fees in this segment, grouped by biller
-                  const segmentBillers = currentResult.billers
+                  // Collect all fees in this segment, grouped by biller.
+                  // Zero-line collapse (spec v0.2.27): a zero-amount line with
+                  // no user-relevant information collapses out of the main
+                  // itemization into the per-segment disclosure row; subtotals
+                  // and biller breakdowns are computed figures and stay
+                  // untouched. Display only - never the computed total.
+                  const segmentBillersRaw = currentResult.billers
                     .map(biller => ({
                       biller: biller.biller,
                       currency: biller.currency,
@@ -1395,8 +1420,64 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                       )
                     }))
                     .filter(b => b.fees.length > 0);
-
-                  if (segmentBillers.length === 0) {
+                  const segmentBillers = segmentBillersRaw.map(b => {
+                    const { visible } = partitionFees(b.fees, ruleAttributesById);
+                    return { ...b, fees: visible };
+                  }).filter(b => b.fees.length > 0);
+                  const collapsedZeroLines = segmentBillersRaw.flatMap(b =>
+                    partitionFees(b.fees, ruleAttributesById).collapsed
+                  );
+                  // Collapsed zero lines render as one keyboard-operable
+                  // disclosure row (spec v0.2.27), aria-expanded/aria-controls
+                  // per the v0.2.25 disclosure pattern; expanded lines keep all
+                  // presentational styling (badges, source refs, alignment).
+                  const zeroLinesOpen = state.zeroLinesExpanded;
+                  const ZeroLinesDisclosure = collapsedZeroLines.length > 0 ? (
+                    <Box className="zero-lines-disclosure">
+                      <button
+                        type="button"
+                        className="disclosure-header zero-lines-toggle"
+                        aria-expanded={zeroLinesOpen}
+                        aria-controls={`zero-lines-${segment.id}`}
+                        onClick={() => setState(prev => ({ ...prev, zeroLinesExpanded: !prev.zeroLinesExpanded }))}
+                      >
+                        <Box>
+                          {collapsedZeroLines.length} charge{collapsedZeroLines.length > 1 ? 's' : ''} not applicable to this call (0 kr / 0 €)
+                        </Box>
+                        <KeyboardArrowDown
+                          className="disclosure-chevron"
+                          style={{ transform: zeroLinesOpen ? 'rotate(180deg)' : 'none', transition: 'transform 150ms' }}
+                        />
+                      </button>
+                      <div id={`zero-lines-${segment.id}`} className="zero-lines-body" hidden={!zeroLinesOpen}>
+                        {collapsedZeroLines.map(fee => (
+                          <Box key={fee.fee_rule_id} sx={{ mb: 1 }}>
+                            <TableContainer>
+                              <Table size="small">
+                                <TableBody>
+                                  <TableRow>
+                                    <TableCell>
+                                      <Box display="flex" alignItems="center" sx={{ gap: 1, flexWrap: 'wrap' }}>
+                                        {feeLineLabel(fee)}
+                                      </Box>
+                                      <Box className="source-ref" sx={{ mt: 0.5 }}>
+                                        {fee.band_or_basis}
+                                      </Box>
+                                    </TableCell>
+                                    <TableCell align="right" className="amount">
+                                      {formatCurrency(fee.amount)}
+                                    </TableCell>
+                                    <TableCell align="right" />
+                                  </TableRow>
+                                </TableBody>
+                              </Table>
+                            </TableContainer>
+                          </Box>
+                        ))}
+                      </div>
+                    </Box>
+                  ) : null;
+                  if (segmentBillers.length === 0 && collapsedZeroLines.length === 0) {
                     return (
                       <Box key={segment.id} className="segment-section">
                         <Typography variant="h6" className="segment-title">
@@ -1410,6 +1491,25 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                         <Typography variant="body2" className="segment-empty">
                           No fees in this segment for the current call inputs.
                         </Typography>
+                        <Divider sx={{ my: 2 }} />
+                      </Box>
+                    );
+                  }
+                  if (segmentBillers.length === 0 && collapsedZeroLines.length > 0) {
+                    return (
+                      <Box key={segment.id} className="segment-section">
+                        <Typography variant="h6" className="segment-title">
+                          {segment.label}
+                          <span className="segment-subtotal">
+                            {formatCurrency(segmentTotals[segment.id])}
+                          </span>
+                        </Typography>
+                        {segment.subtitle && (
+                          <Typography variant="caption" className="segment-panel-subtitle">
+                            {segment.subtitle}
+                          </Typography>
+                        )}
+                        {ZeroLinesDisclosure}
                         <Divider sx={{ my: 2 }} />
                       </Box>
                     );
@@ -1568,6 +1668,7 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                           </Box>
                         );
                       })}
+                      {ZeroLinesDisclosure}
                       <Divider sx={{ my: 2 }} />
                     </Box>
                   );
@@ -1814,6 +1915,27 @@ const ComparisonView: React.FC<ComparisonViewProps> = ({
     }
     return map;
   }, [ports]);
+  // Rule attributes per port for the zero-line collapse classification
+  // (spec v0.2.27): the comparison collapses only true zero lines (no flags,
+  // no floor, no condition gate), and only within cells - the family row and
+  // its columns remain, so table symmetry, "not charged", and "not yet
+  // encoded" stay distinct visible values.
+  const ruleAttributesByPortAndId = useMemo(() => {
+    const map = new Map<string, Map<string, { minimum?: number; applicable_conditions?: Record<string, unknown>; estimated_parameter?: unknown; contract_vs_published?: unknown }>>();
+    for (const port of ports) {
+      const inner = new Map<string, { minimum?: number; applicable_conditions?: Record<string, unknown>; estimated_parameter?: unknown; contract_vs_published?: unknown }>();
+      for (const rule of port.fee_rules) {
+        inner.set(rule.id, {
+          minimum: rule.minimum,
+          applicable_conditions: rule.applicable_conditions,
+          estimated_parameter: rule.estimated_parameter,
+          contract_vs_published: rule.contract_vs_published
+        });
+      }
+      map.set(port.metadata.id, inner);
+    }
+    return map;
+  }, [ports]);
   // Union of fee families actually charged across the selected ports, in
   // segment order, so a function absent at one port still shows "not charged".
   // Each cell carries the family subtotal plus its per-rule lines (rule name,
@@ -1827,8 +1949,23 @@ const ComparisonView: React.FC<ComparisonViewProps> = ({
     }>>();
     for (const { port, result } of portResults) {
       if (!result) continue;
-      for (const biller of result.billers) {
-        for (const fee of biller.fees) {
+      // Zero-line collapse (spec v0.2.27): true zero lines collapse out of
+      // the cell lines; informative zeros (flags, floors, condition gates,
+      // estimate markers) stay visible. The family row itself is never
+      // removed, so every fee family remains a row across all ports.
+      const ruleAttrs = ruleAttributesByPortAndId.get(result.port_id);
+      const { visible: visibleFees } = partitionFees(
+        result.billers.flatMap(b => b.fees),
+        ruleAttrs ?? new Map()
+      );
+      const feesByFamily = new Map<string, typeof visibleFees>();
+      for (const fee of visibleFees) {
+        const arr = feesByFamily.get(fee.fee_family) ?? [];
+        arr.push(fee);
+        feesByFamily.set(fee.fee_family, arr);
+      }
+      for (const fees of Array.from(feesByFamily.values())) {
+        for (const fee of fees) {
           if (!familyTotals.has(fee.fee_family)) {
             familyTotals.set(fee.fee_family, new Map());
           }
@@ -1857,7 +1994,7 @@ const ComparisonView: React.FC<ComparisonViewProps> = ({
         .filter(([family]) => (FEE_FAMILY_TO_SEGMENT[family] || 'vessel_call') === segment.id)
         .map(([family, perPort]) => ({ family, perPort }))
     })).filter(group => group.families.length > 0);
-  }, [portResults, ruleNameByPortAndId]);
+  }, [portResults, ruleNameByPortAndId, ruleAttributesByPortAndId]);
 
   const segmentSubtotals = useMemo(() => {
     return portResults.map(({ port, result }) => {

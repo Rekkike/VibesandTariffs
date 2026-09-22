@@ -834,3 +834,25 @@ textarea:focus-visible,
   outline: 2px solid var(--focus-ring);
   outline-offset: 2px;
 }
+
+/* Zero-line collapse disclosure (spec v0.2.27): collapsed zero-amount lines
+   render as one quiet row; the button reuses the disclosure-header pattern
+   (keyboard-operable, aria-expanded/aria-controls, visible focus). */
+.zero-lines-disclosure {
+  margin-top: var(--space-4);
+}
+
+.zero-lines-toggle {
+  width: 100%;
+  color: var(--text-secondary);
+  border-style: dashed;
+}
+
+.zero-lines-toggle:hover {
+  color: var(--text-primary);
+}
+
+.zero-lines-body {
+  padding: var(--space-2) 0 var(--space-2) var(--space-4);
+  color: var(--text-secondary);
+}
