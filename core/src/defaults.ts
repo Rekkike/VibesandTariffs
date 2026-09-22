@@ -41,15 +41,28 @@ export function defaultCall(portId: string): CallInput {
     lay_up_days: 0,
     storage_days_export: 5,
     storage_days_import: 3,
-    reefer_units: 100,
-    oog_units: 10,
-    dangerous_goods_units: 20,
+    // Special-cargo unit counts default blank (spec v0.2.33): a count that
+    // drives charges is never seeded - the default vessel carries no reefer,
+    // OOG, dangerous-goods, or overdue units, and a seeded count would
+    // manufacture charges no user entered (the ESI-40 defect class). Blank
+    // means "not entered" and charges zero; a user-entered zero is a value.
+    reefer_units: undefined,
+    oog_units: undefined,
+    dangerous_goods_units: undefined,
+    overdue_dangerous_units: undefined,
     hatch_cover_count: 0,
     gearbox_count: 0,
     pilotage_required: true,
     pilotage_hours: 4,
     pilotage_extra_pilot: false,
     pilotage_ordering_lead_time_hours: 2,
+    // Gothenburg towage (spec v0.2.33): estimated parameter mirroring the
+    // Helsingborg pattern — no published tariff, LOA-class tug defaults
+    // applied by the engine when no tug count is supplied, estimate-flagged.
+    ...(portId === 'gothenburg' ? {
+      towage_cost_per_tug: 60000,
+      tug_count: undefined
+    } : {}),
     // Hamburg parameters (spec v0.2.20). Lay time 16 h mid-range default
     // (50 h for ULCV); gangway one per call, class default overseas with the
     // feeder default applied from the vessel library for feeder-class ships;

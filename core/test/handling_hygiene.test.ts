@@ -178,10 +178,13 @@ describe('handling hygiene c: estimated-parameter separation, symmetric across p
     expect(r.total_without_estimates).toBeCloseTo(r.total - 74000.00, 2);
   });
 
-  it('Gothenburg carries no estimated-parameter lines in this scenario', () => {
+  it('Gothenburg separates towage (60,000.00: LOA 171.92 m, 1 tug by LOA-class default) into the estimate subtotal (spec v0.2.33)', () => {
+    // Pre-towage pass this pinned zero estimated lines at Gothenburg; the
+    // towage-symmetry pass adds the estimated towage lever, so the pin is now
+    // the towage estimate itself (a flagged estimate, never verified data).
     const r = results['gothenburg'];
-    expect(r.total_estimated_parameters).toBe(0);
-    expect(r.total_without_estimates).toBe(r.total);
+    expect(r.total_estimated_parameters).toBe(60000.00);
+    expect(r.total_without_estimates).toBeCloseTo(r.total - 60000.00, 2);
   });
 
   it('excludes zero-amount estimated lines so the subtotal cannot drift on blank inputs', () => {

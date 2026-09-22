@@ -56,6 +56,10 @@ billers:
     name: APM Terminals Gothenburg
     description: "Terminal operator at Port of Gothenburg"
     currency: SEK
+  - id: towage_provider
+    name: Towage operator (estimated)
+    description: "Commercial tug services at Port of Gothenburg; no published tariff - estimated parameter (spec v0.2.33)"
+    currency: SEK
 
 # ============================================================================
 # PORT OF GOTHENBURG FEES
@@ -2506,61 +2510,29 @@ fee_rules:
       verified_on: "2025-12-15"
       verified_by: "Port Cost Analyzer Team"
 
-  # --- Yard Storage ---
-  # Export/Transhipment: 0-6 free, 7-9 at 133, 10-13 at 346, >13 at 578
-  - id: apm_terminals_storage_export_7_9_days
+  # --- Yard Storage (ladder form, spec v0.2.33) ---
+  # Free time is an explicit zero-rate band, matching the shape the engine
+  # test pins and the tariff's own schedule: Export/Transhipment 0-6 free,
+  # 7-9 at 133, 10-13 at 346, >13 at 578; Import/Domestic 0-4 free, 5-7 at
+  # 133, 8-11 at 346, >11 at 578.
+  - id: apm_terminals_storage_export
     fee_family: storage
     biller: APM Terminals Gothenburg
-    name: Yard Storage - Export/Transhipment 7-9 days
-    description: "Yard storage for export/transhipment units, days 7-9"
+    name: Yard Storage - Export/Transhipment
+    description: "Yard storage for export/transhipment units per calendar day: days 0-6 free, 7-9 at 133, 10-13 at 346, >13 at 578"
     rate_structure:
       type: banded_by_time
       basis: storage_days_export
       bands:
+        - min_days: 0
+          max_days: 6
+          daily_rate: 0
         - min_days: 7
           max_days: 9
           daily_rate: 133
-    source_reference:
-      document_name: "terminal-tariff-2026-june.pdf"
-      document_url: "docs/sources/sweden/gothenburg/apm-terminals/terminal-tariff-2026-june.pdf"
-      upstream_url: "https://assets.ctfassets.net/mivicpf5zews/5ktO1h8dk2iM4ikpGgGLwY/0a628a9eb5de141d44aae005fd4e0739/Terminal_Tariff_Gothenburg_2026.pdf"
-      document_issued: "2025-12-01"
-      page: 4
-      clause: "Yard Storage"
-      verified_on: "2025-12-15"
-      verified_by: "Port Cost Analyzer Team"
-
-  - id: apm_terminals_storage_export_10_13_days
-    fee_family: storage
-    biller: APM Terminals Gothenburg
-    name: Yard Storage - Export/Transhipment 10-13 days
-    description: "Yard storage for export/transhipment units, days 10-13"
-    rate_structure:
-      type: banded_by_time
-      basis: storage_days_export
-      bands:
         - min_days: 10
           max_days: 13
           daily_rate: 346
-    source_reference:
-      document_name: "terminal-tariff-2026-june.pdf"
-      document_url: "docs/sources/sweden/gothenburg/apm-terminals/terminal-tariff-2026-june.pdf"
-      upstream_url: "https://assets.ctfassets.net/mivicpf5zews/5ktO1h8dk2iM4ikpGgGLwY/0a628a9eb5de141d44aae005fd4e0739/Terminal_Tariff_Gothenburg_2026.pdf"
-      document_issued: "2025-12-01"
-      page: 4
-      clause: "Yard Storage"
-      verified_on: "2025-12-15"
-      verified_by: "Port Cost Analyzer Team"
-
-  - id: apm_terminals_storage_export_over_13_days
-    fee_family: storage
-    biller: APM Terminals Gothenburg
-    name: Yard Storage - Export/Transhipment >13 days
-    description: "Yard storage for export/transhipment units, >13 days"
-    rate_structure:
-      type: banded_by_time
-      basis: storage_days_export
-      bands:
         - min_days: 14
           max_days: null
           daily_rate: 578
@@ -2574,60 +2546,24 @@ fee_rules:
       verified_on: "2025-12-15"
       verified_by: "Port Cost Analyzer Team"
 
-  # Import/Domestic: 0-4 free, 5-7 at 133, 8-11 at 346, >11 at 578
-  - id: apm_terminals_storage_import_5_7_days
+  - id: apm_terminals_storage_import
     fee_family: storage
     biller: APM Terminals Gothenburg
-    name: Yard Storage - Import/Domestic 5-7 days
-    description: "Yard storage for import/domestic units, days 5-7"
+    name: Yard Storage - Import/Domestic
+    description: "Yard storage for import/domestic units per calendar day: days 0-4 free, 5-7 at 133, 8-11 at 346, >11 at 578"
     rate_structure:
       type: banded_by_time
       basis: storage_days_import
       bands:
+        - min_days: 0
+          max_days: 4
+          daily_rate: 0
         - min_days: 5
           max_days: 7
           daily_rate: 133
-    source_reference:
-      document_name: "terminal-tariff-2026-june.pdf"
-      document_url: "docs/sources/sweden/gothenburg/apm-terminals/terminal-tariff-2026-june.pdf"
-      upstream_url: "https://assets.ctfassets.net/mivicpf5zews/5ktO1h8dk2iM4ikpGgGLwY/0a628a9eb5de141d44aae005fd4e0739/Terminal_Tariff_Gothenburg_2026.pdf"
-      document_issued: "2025-12-01"
-      page: 4
-      clause: "Yard Storage"
-      verified_on: "2025-12-15"
-      verified_by: "Port Cost Analyzer Team"
-
-  - id: apm_terminals_storage_import_8_11_days
-    fee_family: storage
-    biller: APM Terminals Gothenburg
-    name: Yard Storage - Import/Domestic 8-11 days
-    description: "Yard storage for import/domestic units, days 8-11"
-    rate_structure:
-      type: banded_by_time
-      basis: storage_days_import
-      bands:
         - min_days: 8
           max_days: 11
           daily_rate: 346
-    source_reference:
-      document_name: "terminal-tariff-2026-june.pdf"
-      document_url: "docs/sources/sweden/gothenburg/apm-terminals/terminal-tariff-2026-june.pdf"
-      upstream_url: "https://assets.ctfassets.net/mivicpf5zews/5ktO1h8dk2iM4ikpGgGLwY/0a628a9eb5de141d44aae005fd4e0739/Terminal_Tariff_Gothenburg_2026.pdf"
-      document_issued: "2025-12-01"
-      page: 4
-      clause: "Yard Storage"
-      verified_on: "2025-12-15"
-      verified_by: "Port Cost Analyzer Team"
-
-  - id: apm_terminals_storage_import_over_11_days
-    fee_family: storage
-    biller: APM Terminals Gothenburg
-    name: Yard Storage - Import/Domestic >11 days
-    description: "Yard storage for import/domestic units, >11 days"
-    rate_structure:
-      type: banded_by_time
-      basis: storage_days_import
-      bands:
         - min_days: 12
           max_days: null
           daily_rate: 578
@@ -2646,11 +2582,13 @@ fee_rules:
     fee_family: yard_surcharge
     biller: APM Terminals Gothenburg
     name: OOG Surcharge
-    description: "Out of Gauge surcharge per unit per calendar day"
+    description: "Out of Gauge surcharge per OOG unit per commenced calendar day; blank unit count = no OOG units, charges zero (spec v0.2.33)"
     rate_structure:
       type: per_commenced_day
       daily_rate: 437
       basis: storage_days_export
+      unit_input: oog_units
+      unit_type: oog_units
     source_reference:
       document_name: "terminal-tariff-2026-june.pdf"
       document_url: "docs/sources/sweden/gothenburg/apm-terminals/terminal-tariff-2026-june.pdf"
@@ -2665,11 +2603,13 @@ fee_rules:
     fee_family: yard_surcharge
     biller: APM Terminals Gothenburg
     name: Reefer Surcharge
-    description: "Reefer surcharge per unit per calendar day (incl. handling, monitoring, power)"
+    description: "Reefer surcharge per reefer unit per commenced calendar day (incl. handling, monitoring, power); blank unit count = no reefer units, charges zero (spec v0.2.33)"
     rate_structure:
       type: per_commenced_day
       daily_rate: 709
       basis: storage_days_export
+      unit_input: reefer_units
+      unit_type: reefer_units
     source_reference:
       document_name: "terminal-tariff-2026-june.pdf"
       document_url: "docs/sources/sweden/gothenburg/apm-terminals/terminal-tariff-2026-june.pdf"
@@ -2684,11 +2624,13 @@ fee_rules:
     fee_family: yard_surcharge
     biller: APM Terminals Gothenburg
     name: Dangerous Goods Surcharge
-    description: "Dangerous goods surcharge per unit per calendar day"
+    description: "Dangerous goods surcharge per dangerous-goods unit per commenced calendar day; blank unit count = no dangerous-goods units, charges zero (spec v0.2.33)"
     rate_structure:
       type: per_commenced_day
       daily_rate: 382
       basis: storage_days_export
+      unit_input: dangerous_goods_units
+      unit_type: dangerous_goods_units
     source_reference:
       document_name: "terminal-tariff-2026-june.pdf"
       document_url: "docs/sources/sweden/gothenburg/apm-terminals/terminal-tariff-2026-june.pdf"
@@ -2703,11 +2645,13 @@ fee_rules:
     fee_family: yard_surcharge
     biller: APM Terminals Gothenburg
     name: Overdue Dangerous Cargo Penalty
-    description: "Overdue dangerous cargo penalty per unit per calendar day"
+    description: "Overdue dangerous cargo penalty per unit per commenced calendar day; gated behind an explicit overdue unit count"
     rate_structure:
       type: per_commenced_day
       daily_rate: 1025
       basis: storage_days_export
+      unit_input: overdue_dangerous_units
+      unit_type: overdue_dangerous_units
     source_reference:
       document_name: "terminal-tariff-2026-june.pdf"
       document_url: "docs/sources/sweden/gothenburg/apm-terminals/terminal-tariff-2026-june.pdf"
@@ -2759,3 +2703,40 @@ fee_rules:
       clause: "Idle Berth Service"
       verified_on: "2025-12-15"
       verified_by: "Port Cost Analyzer Team"
+
+  # ===========================================================================
+  # Estimated Parameters - Towage (spec v0.2.33; no published tariff)
+  # ===========================================================================
+  - id: gothenburg_towage_estimate
+    fee_family: towage
+    biller: Towage operator (estimated)
+    name: Towage (estimated)
+    description: "Towage per tug-assist at Gothenburg. No published tug tariff found (commercial operators: e.g. Buksér og Berging, Svitzer, active in the Swedish West Coast / Kattegat market). Declared estimate 60,000 SEK per tug-assist, anchored to the Helsingborg estimate (60,000 SEK per tug-assist, HELSINGBORG_EXTRACTION_REFERENCE.md §5): the two ports sit in the same Swedish towage market, and a large-vessel harbour assist is a comparable operation; the figure remains a user-editable estimate, never verified data. Default tug count by LOA class (spec 3.3, defaults are data, user-overridable): LOA < 150 m: 0 tugs; 150-250 m: 1; > 250 m: 2. A user-entered zero tug count is a value, not a missing entry."
+    rate_structure:
+      type: per_unit
+      unit_type: tug_count
+      unit_rate: 60000
+      unit_rate_input: towage_cost_per_tug
+      default_by_loa:
+        bands:
+        - max_m: 150
+          count: 0
+          description: 'LOA < 150 m: 0 tugs'
+        - min_m: 150
+          max_m: 250
+          count: 1
+          description: '150-250 m: 1 tug'
+        - min_m: 250
+          count: 2
+          description: '> 250 m: 2 tugs'
+    estimated_parameter:
+      description: "estimated; no published Gothenburg tug tariff (commercial operators); declared 60,000 SEK per tug-assist, Helsingborg-market anchored"
+      severity: info
+    source_reference:
+      document_name: "GOTHENBURG_EXTRACTION_REFERENCE.md"
+      document_url: "docs/sources/sweden/gothenburg/GOTHENBURG_EXTRACTION_REFERENCE.md"
+      document_issued: "2026-09-23"
+      page: 6
+      clause: "6 - Estimated parameters"
+      verified_on: "2026-09-23"
+      verified_by: "vibe-session-storage-towage"

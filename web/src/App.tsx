@@ -950,6 +950,33 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                     />
                   </Grid>
                 </Grid>
+                <Typography variant="h6" component="h3" className="segment-heading vessel-call-heading">
+                  Gothenburg Towage (estimated)
+                </Typography>
+                <Grid container spacing={2}>
+                  <Grid item xs={6}>
+                    <TextField
+                      label="Towage per Tug-Assist (SEK) — est."
+                      type="number"
+                      value={state.call.towage_cost_per_tug ?? 60000}
+                      onChange={(e) => handleCallChange('towage_cost_per_tug', parseFloat(e.target.value) || undefined)}
+                      fullWidth
+                      InputLabelProps={{ shrink: true }}
+                      helperText="Estimated; no published Gothenburg tug tariff (Helsingborg-market anchored)"
+                    />
+                  </Grid>
+                  <Grid item xs={6}>
+                    <TextField
+                      label="Tug Count (blank: LOA-class default)"
+                      type="number"
+                      value={state.call.tug_count ?? ''}
+                      onChange={(e) => handleCallChange('tug_count', parseFloat(e.target.value) || undefined)}
+                      fullWidth
+                      InputLabelProps={{ shrink: true }}
+                      helperText="<150 m: 0; 150–250 m: 1; >250 m: 2 — suggestion, always overridable"
+                    />
+                  </Grid>
+                </Grid>
               </>
             )}
             {/* ============ HAMBURG-SPECIFIC CALL INPUTS ============ */}
@@ -1379,30 +1406,44 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                 <TextField
                   label="Reefer Units"
                   type="number"
-                  value={state.call.reefer_units || ''}
-                  onChange={(e) => handleCallChange('reefer_units', parseInt(e.target.value) || undefined)}
+                  value={state.call.reefer_units ?? ''}
+                  onChange={(e) => handleCallChange('reefer_units', e.target.value === '' ? undefined : parseInt(e.target.value))}
                   fullWidth
                   InputLabelProps={{ shrink: true }}
+                  helperText="Blank = no reefer units (no reefer surcharge); yard surcharges are per unit per day"
                 />
               </Grid>
               <Grid item xs={6}>
                 <TextField
                   label="OOG Units"
                   type="number"
-                  value={state.call.oog_units || ''}
-                  onChange={(e) => handleCallChange('oog_units', parseInt(e.target.value) || undefined)}
+                  value={state.call.oog_units ?? ''}
+                  onChange={(e) => handleCallChange('oog_units', e.target.value === '' ? undefined : parseInt(e.target.value))}
                   fullWidth
                   InputLabelProps={{ shrink: true }}
+                  helperText="Blank = no out-of-gauge units (no OOG surcharge)"
                 />
               </Grid>
               <Grid item xs={6}>
                 <TextField
                   label="Dangerous Goods Units"
                   type="number"
-                  value={state.call.dangerous_goods_units || ''}
-                  onChange={(e) => handleCallChange('dangerous_goods_units', parseInt(e.target.value) || undefined)}
+                  value={state.call.dangerous_goods_units ?? ''}
+                  onChange={(e) => handleCallChange('dangerous_goods_units', e.target.value === '' ? undefined : parseInt(e.target.value))}
                   fullWidth
                   InputLabelProps={{ shrink: true }}
+                  helperText="Blank = no dangerous-goods units (no DG yard surcharge or gate fee)"
+                />
+              </Grid>
+              <Grid item xs={6}>
+                <TextField
+                  label="Overdue Dangerous Units"
+                  type="number"
+                  value={state.call.overdue_dangerous_units ?? ''}
+                  onChange={(e) => handleCallChange('overdue_dangerous_units', e.target.value === '' ? undefined : parseInt(e.target.value))}
+                  fullWidth
+                  InputLabelProps={{ shrink: true }}
+                  helperText="Units left overdue in the yard (penalty rate); blank = none"
                 />
               </Grid>
             </Grid>

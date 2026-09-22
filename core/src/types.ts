@@ -122,6 +122,12 @@ export interface PerCommencedDayRate {
   daily_rate: number;
   free_days?: number; // optional free days
   basis: string;
+  // Optional per-unit multiplication (spec v0.2.33): the tariff may price per
+  // unit per commenced day (e.g. APMT yard surcharges per OOG/reefer/DG unit
+  // per day). Absent means the daily rate stands alone. A blank or zero unit
+  // input charges zero, never a seeded count.
+  unit_input?: string;
+  unit_type?: string; // label only, e.g. 'oog_units', for flag text
 }
 
 export interface PerUnitRate {
@@ -398,6 +404,7 @@ export interface CallInput {
   reefer_units?: number;
   oog_units?: number; // Out of Gauge units
   dangerous_goods_units?: number;
+  overdue_dangerous_units?: number; // units left overdue in the yard (penalty rule only)
   pilotage_required: boolean;
   pilotage_hours?: number;
   pilotage_extra_pilot?: boolean;

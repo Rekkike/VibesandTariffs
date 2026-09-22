@@ -250,15 +250,19 @@ describe('tri-port sanity check: Gothenburg decomposition (computed fresh, pinne
   it('Gothenburg totals per vessel (class E) match the independently computed expectation', () => {
     // MSC Kyungmin at class E: dues 42,584.09 + waste 12,088.45 + cargo side
     // 214,400 + ISPS 32,000 + vessel fee 80,755 + readiness 24,165 + pilotage
-    // 47,585 = 453,577.54... computed via engine below; the pin is the sum of
-    // the pinned components above plus ISPS (400 x 80).
+    // 47,585... computed via engine below; the pin is the sum of
+    // the pinned components above plus ISPS (400 x 80), plus towage
+    // (60,000 SEK: LOA 171.92 m -> 1 tug by the LOA-class default, spec v0.2.33
+    // towage-symmetry pass — a flagged estimate line, not verified data).
     const vessel = { ...LIBRARY_VESSELS['MSC KYUNGMIN'], vessel_type: 'container' } as any;
     const call = { ...triPortCall(gothenburg, 'MSC KYUNGMIN'), flag_state: 'non-EU' };
     const result = calculatePortCallCost(gothenburg, { vessel, call });
     const isps = feeAmount(result, 'apm_terminals_isps');
     const expected =
       42584.09 + 5274.96 + 6813.49 + 75400 + 107000 + isps +
-      80755 + 24165 + 19305 + 26400 + 1880;
+      80755 + 24165 + 19305 + 26400 + 1880 + 60000;
     expect(result.total).toBeCloseTo(expected, 0);
+    // The towage addition is estimate-flagged and excluded from the verified total
+    expect(result.total_estimated_parameters).toBe(60000);
   });
 });

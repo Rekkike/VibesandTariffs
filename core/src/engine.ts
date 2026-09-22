@@ -385,6 +385,18 @@ export function evaluateFeeRule(
       let freeDays = perDay.free_days ?? 0;
       const chargeableDays = Math.max(0, commencedDays - freeDays);
       
+      // Per-unit-per-day pricing (spec v0.2.33): when the rule declares a
+      // unit_input, the amount is days x rate x units. A blank unit input is
+      // "not entered" and charges zero (clean-baseline principle: the default
+      // call never manufactures special-cargo counts); a user-entered zero is
+      // a value and also charges zero.
+      const unitCountFromInput = perDay.unit_input
+        ? (call as any)[perDay.unit_input]
+        : undefined;
+      const perDayUnits = typeof unitCountFromInput === 'number' && unitCountFromInput > 0
+        ? unitCountFromInput
+        : 0;
+      
       // For vessel-based per_commenced_day, multiply by the vessel property
       if (vesselProps.includes(perDay.basis)) {
         const vesselValue = (vessel as any)[perDay.basis as keyof typeof vessel] as number | undefined;
@@ -397,6 +409,10 @@ export function evaluateFeeRule(
           rateApplied = `Per commenced day: ${chargeableDays} * ${perDay.daily_rate}`;
           bandOrBasis = `${perDay.basis}=N/A, days=${days} (${chargeableDays} chargeable)`;
         }
+      } else if (perDay.unit_input) {
+        baseAmount = chargeableDays * perDay.daily_rate * perDayUnits;
+        rateApplied = `Per commenced day: ${chargeableDays} days * ${perDay.daily_rate} * ${perDayUnits} units`;
+        bandOrBasis = `${perDay.basis}=${days} (${chargeableDays} chargeable), ${perDay.unit_input}=${perDayUnits}`;
       } else {
         baseAmount = chargeableDays * perDay.daily_rate;
         rateApplied = `Per commenced day: ${chargeableDays} * ${perDay.daily_rate}`;
@@ -494,9 +510,10 @@ export function evaluateFeeRule(
           if (band) {
             unitCount = band.count;
             qualityFlags.push({
-              type: 'estimated_parameter',
-              description: `Count defaulted to ${band.count} by LOA class${band.description ? ` (${band.description})` : ''}; user-overridable (spec 3.3)`,
-              severity: rule.estimated_parameter?.severity ?? 'info'
+              type: 'assumed_parameter',
+              parameter: perUnit.unit_type,
+              description: `Tug requirement not entered; port default of ${band.count} tugs applied; enter the actual requirement to override`,
+              severity: 'info'
             });
           }
         }
@@ -538,28 +555,37 @@ export function evaluateFeeRule(
         return null;
       }
       
-      // Find applicable band
-      const applicableBand = bandedTime.bands.find(band => {
-        const minOk = days >= band.min_days;
-        const maxOk = band.max_days === null || days <= band.max_days;
-        return minOk && maxOk;
-      });
-      
-      if (!applicableBand) {
-        // Use highest band
-        const lastBand = bandedTime.bands[bandedTime.bands.length - 1];
-        const prevBand = bandedTime.bands[bandedTime.bands.length - 2];
-        const daysInBand = days - (prevBand?.max_days ?? 0);
-        baseAmount = Math.max(0, daysInBand) * lastBand.daily_rate;
-        rateApplied = `Banded by time: ${Math.max(0, daysInBand)} * ${lastBand.daily_rate} (fallback)`;
-        bandOrBasis = `Days: ${days} (fallback to highest band)`;
-      } else {
-        // Charge only days beyond the band minimum
-        const daysInBand = days - applicableBand.min_days;
-        baseAmount = Math.max(0, daysInBand) * applicableBand.daily_rate;
-        rateApplied = `Banded by time: ${Math.max(0, daysInBand)} * ${applicableBand.daily_rate}`;
-        bandOrBasis = `Days: ${applicableBand.min_days}-${applicableBand.max_days ?? '\u221e'}`;
+      // Ladder semantics (spec v0.2.33): a storage day count is a cumulative
+      // timeline, and each day charges exactly once, at the first band whose
+      // [min_days, max_days] interval covers that day number. Days below the
+      // first band's minimum are free time and charge zero — never the full
+      // day count at a band rate. This handles both data shapes: the single
+      // ladder rule (free time encoded as a zero-rate band from day 0) and
+      // split single-band rules (free time implicit below the minimum; the
+      // rule charges only the day numbers its own band covers, so a count
+      // spanning several split rules bills each rule for its portion).
+      const sortedTimeBands = [...bandedTime.bands]
+        .sort((a, b) => a.min_days - b.min_days);
+      const firstMin = sortedTimeBands[0].min_days;
+      const commenced = Math.ceil(days);
+      let bandedAccum = 0;
+      const bandedParts: { label: string; days: number; rate: number }[] = [];
+      for (let dayNo = Math.max(1, firstMin); dayNo <= commenced; dayNo++) {
+        const band = sortedTimeBands.find(b => dayNo >= b.min_days && (b.max_days === null || dayNo <= b.max_days));
+        if (!band) continue;
+        bandedAccum += band.daily_rate;
+        const label = `${band.min_days}-${band.max_days ?? '\u221e'}`;
+        const existing = bandedParts.find(p => p.label === label);
+        if (existing) existing.days += 1; else bandedParts.push({ label, days: 1, rate: band.daily_rate });
       }
+      baseAmount = roundToCent(bandedAccum);
+      const chargeableDays = bandedParts.reduce((s, p) => s + p.days, 0);
+      if (chargeableDays > 0) {
+        rateApplied = `Banded by time: ${bandedParts.map(p => `${p.days} * ${p.rate} (days ${p.label})`).join(' + ')}`;
+      } else {
+        rateApplied = `Banded by time: 0 chargeable days (free time, first band starts at day ${firstMin})`;
+      }
+      bandOrBasis = `Days: ${days} (free through day ${Math.max(0, firstMin - 1)}, ${chargeableDays} chargeable)`;
       break;
     }
     

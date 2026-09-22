@@ -172,35 +172,20 @@ const got: Record<string, FunctionalClassInfo> = {
     basis_note: 'Gearbox handling service (APMT Terminal Tariff 2026 §4)',
     source: 'apm-terminal-tariff-2026.pdf §4'
   },
-  apm_terminals_storage_export_7_9_days: {
+  apm_terminals_storage_export: {
     functional_class: 'cargo_throughput_levy',
     basis_note: 'Storage beyond free time (APMT Terminal Tariff 2026 storage schedule)',
     source: 'apm-terminal-tariff-2026.pdf storage schedule'
   },
-  apm_terminals_storage_export_10_13_days: {
+  apm_terminals_storage_import: {
     functional_class: 'cargo_throughput_levy',
     basis_note: 'Storage beyond free time (APMT Terminal Tariff 2026 storage schedule)',
     source: 'apm-terminal-tariff-2026.pdf storage schedule'
   },
-  apm_terminals_storage_export_over_13_days: {
-    functional_class: 'cargo_throughput_levy',
-    basis_note: 'Storage beyond free time (APMT Terminal Tariff 2026 storage schedule)',
-    source: 'apm-terminal-tariff-2026.pdf storage schedule'
-  },
-  apm_terminals_storage_import_5_7_days: {
-    functional_class: 'cargo_throughput_levy',
-    basis_note: 'Storage beyond free time (APMT Terminal Tariff 2026 storage schedule)',
-    source: 'apm-terminal-tariff-2026.pdf storage schedule'
-  },
-  apm_terminals_storage_import_8_11_days: {
-    functional_class: 'cargo_throughput_levy',
-    basis_note: 'Storage beyond free time (APMT Terminal Tariff 2026 storage schedule)',
-    source: 'apm-terminal-tariff-2026.pdf storage schedule'
-  },
-  apm_terminals_storage_import_over_11_days: {
-    functional_class: 'cargo_throughput_levy',
-    basis_note: 'Storage beyond free time (APMT Terminal Tariff 2026 storage schedule)',
-    source: 'apm-terminal-tariff-2026.pdf storage schedule'
+  gothenburg_towage_estimate: {
+    functional_class: 'purchased_service',
+    basis_note: 'Towage assist service, estimated (no published tariff)',
+    source: 'estimated parameter (Gothenburg reference §6)'
   },
   apm_terminals_surcharge_oog: {
     functional_class: 'cargo_throughput_levy',
