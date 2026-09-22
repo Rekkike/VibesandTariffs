@@ -25,8 +25,10 @@ import {
   PortDefinition,
   Biller,
   Currency,
-  SourceReference
+  SourceReference,
+  BandRow
 } from './types';
+import { classifyRule } from './classification';
 
 // Round half-up to the cent (tariff-line precision). The toPrecision(12) guard
 // strips binary-float noise (e.g. 8890 * 0.0135 = 120.01499999999999) so exact
@@ -244,6 +246,7 @@ export function evaluateFeeRule(
   let rateApplied = '';
   let bandOrBasis = '';
   let pendingComponents: { label: string; amount: number }[] | undefined = undefined;
+  let pendingBandRows: BandRow[] | undefined = undefined;
   
   const rate = rule.rate_structure;
   
@@ -322,6 +325,7 @@ export function evaluateFeeRule(
       // Progressive: split across bands
       let accumulatedAmount = 0;
       const appliedBands: string[] = [];
+      const bandRows: BandRow[] = [];
       
       // Sort bands by min to handle out-of-order definitions
       const sortedBands = [...progressive.bands].sort((a, b) => (a.min ?? 0) - (b.min ?? 0));
@@ -335,13 +339,21 @@ export function evaluateFeeRule(
         // max(0, min(basisValue, bandMax) - bandMin)
         const valueInBand = Math.max(0, Math.min(basisValue, bandMax) - bandMin);
         if (valueInBand > 0) {
-          accumulatedAmount += valueInBand * band.rate;
+          const bandAmount = valueInBand * band.rate;
+          accumulatedAmount += bandAmount;
           appliedBands.push(`${bandMin}-${bandMax === Infinity ? '\u221e' : bandMax}: ${valueInBand} * ${band.rate}`);
+          bandRows.push({
+            label: `${progressive.basis} ${bandMin.toLocaleString('en-US')}\u2013${bandMax === Infinity ? '\u221e' : bandMax.toLocaleString('en-US')}`,
+            quantity: valueInBand,
+            components: [{ label: 'Rate', rate: band.rate, amount: roundToCent(bandAmount) }],
+            amount: roundToCent(bandAmount)
+          });
         }
       }
       baseAmount = accumulatedAmount;
       rateApplied = `Progressive: ${appliedBands.join(' + ')}`;
       bandOrBasis = `${progressive.basis}=${basisValue}`;
+      pendingBandRows = bandRows;
       break;
     }
     
@@ -613,15 +625,31 @@ export function evaluateFeeRule(
       const disp: Record<string, number> = {};
       const full: Record<string, number> = {};
       for (const id of compIds) { disp[id] = 0; full[id] = 0; }
+      const ctBandRows: BandRow[] = [];
       for (const tranche of ct.tranches) {
         const trancheMin = tranche.min ?? 0;
         const trancheMax = tranche.max ?? Infinity;
         const valueInTranche = Math.max(0, Math.min(gt, trancheMax) - trancheMin);
         if (valueInTranche <= 0) continue;
+        const trancheComponents: { label: string; rate: number; amount: number }[] = [];
         for (const id of compIds) {
           if (tranche.components[id] === undefined) continue;
           full[id] += valueInTranche * tranche.components[id];
-          disp[id] += roundToCent(valueInTranche * tranche.components[id]);
+          const compAmt = roundToCent(valueInTranche * tranche.components[id]);
+          disp[id] += compAmt;
+          trancheComponents.push({
+            label: ct.component_labels?.[id] ?? id,
+            rate: tranche.components[id],
+            amount: compAmt
+          });
+        }
+        if (trancheComponents.length > 0) {
+          ctBandRows.push({
+            label: `${ct.basis} ${trancheMin.toLocaleString('en-US')}\u2013${trancheMax === Infinity ? '\u221e' : trancheMax.toLocaleString('en-US')}`,
+            quantity: valueInTranche,
+            components: trancheComponents,
+            amount: trancheComponents.reduce((sum, c) => sum + c.amount, 0)
+          });
         }
       }
       
@@ -690,6 +718,7 @@ export function evaluateFeeRule(
       rateApplied = `Composite tranches${gtRaw > gtCap ? ` (GT capped at ${gtCap})` : ''}: ${stackDescriptions.length ? stackDescriptions.join('; ') : 'no adjustments'}`;
       bandOrBasis = `${ct.basis}=${gtRaw}`;
       pendingComponents = componentAmounts;
+      pendingBandRows = ctBandRows;
       break;
     }
     
@@ -896,6 +925,37 @@ export function evaluateFeeRule(
     }
   }
   
+  // Effective per-GT derived metric (spec v0.2.30): rendered on every
+  // per-GT or per-call dues-type line, labeled as derived, never a
+  // published rate. Distorting-factor notes name the basis effect where a
+  // floor, cap, or per-call class banding materially binds.
+  let effectiveRate: { effective_per_gt: number; note?: string } | undefined = undefined;
+  const gt = vessel.gt;
+  const duesLikeFamilies = new Set([
+    'port_dues', 'fairway_dues', 'vessel_fee', 'readiness_fee', 'lay_up',
+    'idle_berth', 'hafenfonds', 'connection_fee'
+  ]);
+  if (duesLikeFamilies.has(rule.fee_family) && gt > 0) {
+    const perGt = roundToCent(adjustedAmount / gt);
+    const notes: string[] = [];
+    if (rule.minimum !== undefined && roundToCent(adjustedAmount) <= rule.minimum + 1e-9 && rateApplied.includes('min applied')) {
+      notes.push(`fee at its ${rule.minimum} minimum`);
+    }
+    if (rule.maximum !== undefined && rateApplied.includes('max applied')) {
+      notes.push(`fee capped at ${rule.maximum}`);
+    }
+    const ct = rate as CompositeTrancheRate;
+    if (ct.type === 'composite_tranche' && ct.gt_cap !== undefined && getBasisValue(ct.basis) !== undefined && (getBasisValue(ct.basis) as number) > ct.gt_cap) {
+      notes.push(`GT above the ${ct.gt_cap.toLocaleString('en-US')} tranche cap`);
+    }
+    if (rule.applicable_conditions?.nt_class !== undefined) {
+      notes.push('per-call fee by NT class, not per GT');
+    }
+    effectiveRate = { effective_per_gt: perGt, note: notes.length > 0 ? notes.join('; ') : undefined };
+  }
+
+  const classification = classifyRule(rule.id);
+
   return {
     fee_rule_id: rule.id,
     fee_family: rule.fee_family,
@@ -907,7 +967,11 @@ export function evaluateFeeRule(
     source_reference: rule.source_reference,
     adjustments_applied: adjustmentsApplied,
     quality_flags: qualityFlags,
-    component_amounts: pendingComponents
+    component_amounts: pendingComponents,
+    band_rows: pendingBandRows,
+    effective_rate: effectiveRate,
+    functional_class: classification?.functional_class,
+    functional_basis_note: classification?.basis_note
   };
 }
 
@@ -1140,7 +1204,9 @@ export function calculatePortCallCost(
       band_or_basis: `${surcharge.percentage}% on non-excluded fees`,
       source_reference: surcharge.source_reference,
       adjustments_applied: [],
-      quality_flags: []
+      quality_flags: [],
+      functional_class: classifyRule(surcharge.id)?.functional_class,
+      functional_basis_note: classifyRule(surcharge.id)?.basis_note
     });
     target.subtotal += surchargeAmount;
   }
@@ -1175,7 +1241,9 @@ export function calculatePortCallCost(
       band_or_basis: `calls_this_month=${calls}, ${band.payable_pct}% of ${[...applySet].join(' + ')}`,
       source_reference: fd.source_reference,
       adjustments_applied: [],
-      quality_flags: []
+      quality_flags: [],
+      functional_class: classifyRule(fd.id)?.functional_class,
+      functional_basis_note: classifyRule(fd.id)?.basis_note
     });
     target.subtotal += discountAmount;
   }
@@ -1201,6 +1269,27 @@ export function calculatePortCallCost(
       .reduce((sum, f) => sum + f.amount, 0)
   );
   const totalWithoutEstimates = roundToCent(total - totalEstimatedParameters);
+
+  // Vessel-access aggregate (spec v0.2.30): the sum of this call's amounts
+  // for all rules classified berth/terminal infrastructure, waterway/fairway
+  // access, or readiness/safety capacity. The effective per-GT is the
+  // derived comparability bridge — the Swedish national fees are per-call
+  // by NT class, not per-GT, and the note says so where it matters.
+  const accessClasses = new Set(['berth_terminal_infrastructure', 'waterway_fairway_access', 'readiness_safety_capacity']);
+  const accessFees = billers
+    .flatMap(b => b.fees)
+    .filter(f => (f.functional_class !== undefined && accessClasses.has(f.functional_class)) && f.amount !== 0);
+  const accessAmount = roundToCent(accessFees.reduce((sum, f) => sum + f.amount, 0));
+  const accessRuleIds = accessFees.map(f => f.fee_rule_id);
+  const accessClassesPresent = Array.from(new Set(accessFees.map(f => f.functional_class!)));
+  const accessBasisNotes = Array.from(new Set(accessFees.map(f => f.functional_basis_note).filter((n): n is string => n !== undefined)));
+  const vesselAccess = input.vessel.gt > 0 ? {
+    amount: accessAmount,
+    effective_per_gt: roundToCent(accessAmount / input.vessel.gt),
+    rule_ids: accessRuleIds,
+    classes: accessClassesPresent,
+    basis_notes: accessBasisNotes
+  } : undefined;
   
   return {
     port_id: port.metadata.id,
@@ -1218,6 +1307,7 @@ export function calculatePortCallCost(
     total_estimated_parameters: totalEstimatedParameters,
     total_without_estimates: totalWithoutEstimates,
     quality_flags: qualityFlags,
+    vessel_access: vesselAccess,
     calculation_timestamp: new Date().toISOString()
   };
 }

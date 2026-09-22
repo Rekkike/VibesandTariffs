@@ -537,6 +537,20 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
               {formatCurrency(segmentTotals[segment.id])}
             </Typography>
           ))}
+          {/* Vessel-access aggregate (spec v0.2.30): berth/terminal
+              infrastructure + waterway/fairway access + readiness/safety
+              capacity. The effective per-GT is the derived comparability
+              bridge — the Swedish national fees are per-call by NT class,
+              not per-GT; the basis notes state this where it matters. */}
+          {state.result?.vessel_access && (
+            <Typography variant="body2" className="total-strip-segment">
+              <span className="total-strip-segment-label">Vessel access charges:</span>{' '}
+              {formatCurrency(state.result.vessel_access.amount)}
+              <span style={{ marginLeft: '8px' }}>
+                ({state.result.vessel_access.effective_per_gt.toFixed(2)} {state.result.currency}/GT effective — derived, not a published rate)
+              </span>
+            </Typography>
+          )}
         </Box>
       </Paper>
 
@@ -1522,6 +1536,33 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                     )}
                   </Typography>
                 </Box>
+                {/* Vessel-access aggregate (spec v0.2.30): the sum of this
+                    call's berth/terminal infrastructure + waterway/fairway
+                    access + readiness/safety capacity lines, with the
+                    effective per-GT derived comparability bridge and the
+                    per-rule basis notes. */}
+                {state.result.vessel_access && (
+                  <Box sx={{ mb: 3, p: 2, backgroundColor: '#f5f5f5', borderRadius: 1 }}>
+                    <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
+                      Vessel Access Charges
+                    </Typography>
+                    <Typography>
+                      {formatCurrency(state.result.vessel_access.amount)}
+                      <span style={{ marginLeft: '8px', fontSize: '0.85rem' }}>
+                        ({state.result.vessel_access.effective_per_gt.toFixed(2)} {state.result.currency}/GT effective — derived, not a published rate)
+                      </span>
+                    </Typography>
+                    {state.result.vessel_access.basis_notes.length > 0 && (
+                      <Box sx={{ mt: 1 }}>
+                        {state.result.vessel_access.basis_notes.map((note, i) => (
+                          <Typography key={i} variant="caption" display="block" className="source-ref">
+                            {note}
+                          </Typography>
+                        ))}
+                      </Box>
+                    )}
+                  </Box>
+                )}
 
                 {/* Per-segment fee display - stacked on narrow viewports, columns on wide */}
                 <Box className="segments-container">
@@ -1750,11 +1791,66 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                                                         <Typography variant="body2" sx={{ mb: 1 }}>
                                                           <strong>Rate Applied:</strong> {fee.rate_applied}
                                                         </Typography>
-
+                                                        {/* Effective per-GT (spec v0.2.30): every dues-type line renders its own derived per-GT — fee total ÷ vessel GT — labeled as derived, never a published rate; distorting-factor notes name the binding floor/cap/class basis. */}
+                                                        {fee.effective_rate && (
+                                                          <Typography variant="body2" sx={{ mb: 1 }}>
+                                                            <strong>Effective rate for this call</strong> (derived, not a published rate):{' '}
+                                                            {fee.effective_rate.effective_per_gt.toFixed(2)} {fee.currency}/GT
+                                                            {fee.effective_rate.note && (
+                                                              <span className="status-badge status-caveat" style={{ marginLeft: '6px' }}>
+                                                                {fee.effective_rate.note}
+                                                              </span>
+                                                            )}
+                                                          </Typography>
+                                                        )}
+                                                        {/* Band disclosure (spec v0.2.30): one row per band actually charged, rendered from the engine's per-tranche per-component computation — the UI never recomputes. Rows, then the sum, applied adjustments, cap/minimum notes (carried in rate_applied), and the fee total. */}
+                                                        {fee.band_rows && fee.band_rows.length > 0 && (
+                                                          <Box sx={{ mb: 1 }}>
+                                                            <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 0.5 }}>
+                                                              Bands charged (pre-adjustment):
+                                                            </Typography>
+                                                            <Table size="small" className="band-table">
+                                                              <TableHead>
+                                                                <TableRow>
+                                                                  <TableCell>Band</TableCell>
+                                                                  <TableCell align="right">Quantity</TableCell>
+                                                                  <TableCell>Components (rate × quantity)</TableCell>
+                                                                  <TableCell align="right">Band amount</TableCell>
+                                                                </TableRow>
+                                                              </TableHead>
+                                                              <TableBody>
+                                                                {fee.band_rows.map((row, i) => (
+                                                                  <TableRow key={i}>
+                                                                    <TableCell>{row.label}</TableCell>
+                                                                    <TableCell align="right">{row.quantity.toLocaleString('en-US')}</TableCell>
+                                                                    <TableCell>
+                                                                      {row.components.map(c => (
+                                                                        <span key={c.label} className="source-ref" style={{ display: 'block' }}>
+                                                                          {c.label}: {c.rate} × {row.quantity.toLocaleString('en-US')} = {c.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                                                                        </span>
+                                                                      ))}
+                                                                    </TableCell>
+                                                                    <TableCell align="right">{row.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}</TableCell>
+                                                                  </TableRow>
+                                                                ))}
+                                                                <TableRow>
+                                                                  <TableCell colSpan={3}><strong>Band sum</strong></TableCell>
+                                                                  <TableCell align="right"><strong>{fee.band_rows.reduce((s, r) => s + r.amount, 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</strong></TableCell>
+                                                                </TableRow>
+                                                              </TableBody>
+                                                            </Table>
+                                                          </Box>
+                                                        )}
                                                         {fee.adjustments_applied.length > 0 && (
                                                           <Typography variant="body2" sx={{ mb: 1 }}>
                                                             <strong>Adjustments:</strong>
-                                                            {fee.adjustments_applied.map(a => `${a.type} ${a.percentage}%`).join(', ')}
+                                                            {fee.adjustments_applied.map(a => `${a.description} (${a.type} ${a.percentage}%)`).join(', ')}
+                                                          </Typography>
+                                                        )}
+                                                        {fee.component_amounts && fee.component_amounts.length > 0 && (
+                                                          <Typography variant="body2" sx={{ mb: 1 }}>
+                                                            <strong>Components after adjustments:</strong>{' '}
+                                                            {fee.component_amounts.map(c => `${c.label}: ${c.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}`).join('; ')}
                                                           </Typography>
                                                         )}
 
@@ -1999,6 +2095,7 @@ const ComparisonView: React.FC<ComparisonViewProps> = ({
       amount: number;
       currency: string;
       flags: number;
+      effective_per_gt?: number;
       lines: { name: string; biller: string; amount: number; estimated: boolean }[];
     }>>();
     for (const { port, result } of portResults) {
@@ -2028,6 +2125,7 @@ const ComparisonView: React.FC<ComparisonViewProps> = ({
             amount: 0,
             currency: fee.currency,
             flags: 0,
+            effective_per_gt: undefined,
             lines: []
           };
           entry.amount += fee.amount;
@@ -2046,7 +2144,20 @@ const ComparisonView: React.FC<ComparisonViewProps> = ({
       segment,
       families: Array.from(familyTotals.entries())
         .filter(([family]) => (FEE_FAMILY_TO_SEGMENT[family] || 'vessel_call') === segment.id)
-        .map(([family, perPort]) => ({ family, perPort }))
+        .map(([family, perPort]) => {
+          // Port-dues family row carries the effective per-GT per port
+          // (spec v0.2.30): family total ÷ vessel GT, derived — never a
+          // published rate.
+          if (family === 'port_dues') {
+            for (const portId of Array.from(perPort.keys())) {
+              const entry = perPort.get(portId)!;
+              entry.effective_per_gt = vessel.gt > 0
+                ? Math.round((entry.amount / vessel.gt) * 100) / 100
+                : undefined;
+            }
+          }
+          return { family, perPort };
+        })
     })).filter(group => group.families.length > 0);
   }, [portResults, ruleNameByPortAndId, ruleAttributesByPortAndId]);
 
@@ -2099,7 +2210,7 @@ const ComparisonView: React.FC<ComparisonViewProps> = ({
 
 
   const amountCell = (
-    entry: { amount: number; currency: string; flags: number; lines: { name: string; biller: string; amount: number; estimated: boolean }[] } | undefined,
+    entry: { amount: number; currency: string; flags: number; effective_per_gt?: number; lines: { name: string; biller: string; amount: number; estimated: boolean }[] } | undefined,
     fallbackCurrency: string
   ) => {
     if (!entry) {
@@ -2117,6 +2228,11 @@ const ComparisonView: React.FC<ComparisonViewProps> = ({
             </span>
           )}
         </span>
+        {entry.effective_per_gt !== undefined && (
+          <Box sx={{ fontSize: '0.75rem', color: '#666' }}>
+            {entry.effective_per_gt.toFixed(2)} {entry.currency || fallbackCurrency}/GT effective — derived, not a published rate
+          </Box>
+        )}
         {entry.lines.map((line, index) => (
           <Box key={index} sx={{ fontSize: '0.75rem', color: '#666', mt: 0.25 }}>
             {line.name} · {line.biller}: {formatCurrency(line.amount, entry.currency || fallbackCurrency)}
@@ -2269,6 +2385,57 @@ const ComparisonView: React.FC<ComparisonViewProps> = ({
                         : <span className="comparison-error">error</span>}
                     </TableCell>
                   ))}
+                </TableRow>
+                {/* Vessel-access aggregate row (spec v0.2.30): the sum of
+                    berth/terminal infrastructure + waterway/fairway access
+                    + readiness/safety capacity lines per port, with the
+                    effective per-GT derived comparability bridge. */}
+                <TableRow className="comparison-total-row">
+                  <TableCell>
+                    <strong>Vessel Access Charges</strong>
+                    <span className="status-badge status-caveat" style={{ marginLeft: '6px' }}>derived metric</span>
+                  </TableCell>
+                  {portResults.map(({ port, result }) => (
+                    <TableCell key={port.metadata.id} align="right" className="comparison-subtotal">
+                      {result?.vessel_access
+                        ? (
+                          <Box sx={{ textAlign: 'right' }}>
+                            <span>{formatCurrency(result.vessel_access.amount, result.currency)}</span>
+                            <Box sx={{ fontSize: '0.75rem', color: '#666' }}>
+                              {result.vessel_access.effective_per_gt.toFixed(2)} {result.currency}/GT effective — derived, not a published rate
+                            </Box>
+                          </Box>
+                        )
+                        : <span className="comparison-error">error</span>}
+                    </TableCell>
+                  ))}
+                </TableRow>
+                {/* Cross-country comparability note (spec v0.2.30): derived
+                    from the functional classification — which functions each
+                    country's figure covers and which are funded elsewhere —
+                    never hard-coded prose. */}
+                <TableRow>
+                  <TableCell colSpan={portResults.length + 1}>
+                    <Typography variant="caption" className="comparison-basis" sx={{ display: 'block' }}>
+                      <strong>Vessel Access Charges — comparability:</strong>{' '}
+                      {portResults.map(({ port, result }) => {
+                        const agg = result?.vessel_access;
+                        if (!agg) return null;
+                        const fn = agg.classes
+                          .map(c => c === 'berth_terminal_infrastructure' ? 'berth/terminal infrastructure'
+                            : c === 'waterway_fairway_access' ? 'waterway/fairway access'
+                            : c === 'readiness_safety_capacity' ? 'readiness/safety capacity' : c)
+                          .join(' + ');
+                        return (
+                          <span key={port.metadata.id} style={{ display: 'block' }}>
+                            {port.metadata.name}: covers {fn}
+                            {agg.classes.length < 3 && ' (functions not listed are funded outside this call’s charges — e.g. nationally from taxation)'}
+                            .
+                          </span>
+                        );
+                      })}
+                    </Typography>
+                  </TableCell>
                 </TableRow>
               </TableBody>
             </Table>

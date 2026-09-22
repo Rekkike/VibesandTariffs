@@ -466,6 +466,26 @@ export interface CostCalculationInput {
   call: CallInput;
 }
 
+// Band-disclosure row (spec v0.2.30): one row per band actually charged
+// in a progressive or composite-tranche per-GT rule. Pre-adjustment
+// arithmetic as the engine computes it; the UI renders these rows, then the
+// sum, applied adjustments with amounts, cap/minimum notes, and the fee
+// total. Presentation data only — never changes an amount.
+export interface BandRow {
+  label: string;            // e.g. 'GT 0–20,000' or 'GT 20,001–100,000'
+  quantity: number;        // GT (or basis) charged in this band
+  components: { label: string; rate: number; amount: number }[]; // per-component rate and amount
+  amount: number;          // band total (sum of component amounts)
+}
+
+// Effective per-GT derived metric (spec v0.2.30): fee total ÷ vessel GT,
+// labeled as derived, never a published rate. Distorting-factor notes name
+// the basis effect where a floor/cap/per-call banding materially binds.
+export interface EffectiveRateInfo {
+  effective_per_gt: number;
+  note?: string; // distorting-factor note, e.g. 'fee at its 43.56 EUR minimum'
+}
+
 // Result of a single fee calculation
 export interface FeeResult {
   fee_rule_id: string;
@@ -479,6 +499,10 @@ export interface FeeResult {
   adjustments_applied: Adjustment[];
   quality_flags: QualityFlag[];
   component_amounts?: { label: string; amount: number }[]; // composite rules (e.g. HPA GT + env components)
+  band_rows?: BandRow[];        // spec v0.2.30 band disclosure (progressive/composite tranche)
+  effective_rate?: EffectiveRateInfo; // spec v0.2.30 derived per-GT metric
+  functional_class?: string;     // spec v0.2.30 functional classification key
+  functional_basis_note?: string; // spec v0.2.30 basis note from the classification
 }
 
 // Quality flags for indicating estimates or fallbacks
@@ -504,6 +528,20 @@ export interface BillerBreakdown {
   subtotal: number;
 }
 
+// Vessel-access aggregate (spec v0.2.30): the sum of this call's amounts
+// for all rules classified berth/terminal infrastructure, waterway/fairway
+// access, or readiness/safety capacity — what the vessel pays to access and
+// use the port, independent of cargo volume and purchased nautical services.
+// The effective per-GT is the derived comparability bridge (the Swedish
+// national fees are per-call by NT class, not per-GT).
+export interface VesselAccessAggregate {
+  amount: number;
+  effective_per_gt: number;
+  rule_ids: string[];       // exact composition, pinned by tests
+  classes: string[];        // functional classes present in the composition
+  basis_notes: string[];    // per-class basis notes (per-call vs per-GT)
+}
+
 // Complete cost calculation result
 export interface CostCalculationResult {
   port_id: string;
@@ -521,6 +559,7 @@ export interface CostCalculationResult {
   total_estimated_parameters: number;
   total_without_estimates: number;
   quality_flags: QualityFlag[];
+  vessel_access?: VesselAccessAggregate;
   calculation_timestamp: string;
 }
 
