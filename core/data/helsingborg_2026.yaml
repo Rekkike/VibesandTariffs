@@ -8,7 +8,9 @@
 # Not modeled in v1 (reference section 9, surfaced as notices, never estimated):
 # godsavgift (needs cargo-tonnage input) - not yet encoded;
 # Dalshult stuffing/stripping/warehousing (third party, no published rates);
-# OOG handling ("as per request", no published rate); scrubber waste actual cost;
+# OOG handling ("as per request", no published rate);
+# scrubber waste beyond the sludge allowance (actual cost; the sludge-excess rule
+# poh_sludge_excess carries the port's 2,075 SEK/m3 + 15% admin basis for it);
 # pumping charge (liquid bulk only); access cards, photography, labour overtime.
 metadata:
   id: helsingborg

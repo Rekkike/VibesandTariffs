@@ -69,3 +69,51 @@ describe('accessibility floor (WCAG 2.2 AA, v0.2.25–v0.2.32 surfaces)', () => 
     expect(conversion).toMatch(/at \$\{rate\.rate\} kr\/EUR, \$\{rate\.date\}/);
   });
 });
+
+// Mobile-DOM accessibility (spec v0.2.39 responsive contract): a responsive
+// layout that breaks keyboard navigation, reading order, or label
+// association at the stacking breakpoint is a regression the desktop-path
+// assertions above would not catch. These pins cover the transposed
+// comparison DOM: the disclosure control's operability and state wiring,
+// the section landmarks for reading order, and the hidden-converted-figure
+// tag (visible state indication).
+describe('accessibility floor: mobile DOM at the stacking breakpoint (v0.2.39)', () => {
+  it('the conversion disclosure is a native button (keyboard-operable) with dashed secondary styling', () => {
+    const idx = appSource.indexOf('aria-expanded={conversionsVisible}');
+    expect(idx).toBeGreaterThan(-1);
+    const surrounding = appSource.slice(Math.max(0, idx - 800), idx + 400);
+    expect(surrounding).toMatch(/<button\s+type="button"\s+className="disclosure-header comparison-conversion-disclosure"/);
+    expect(surrounding).toMatch(/onClick=\{\(\) => setConversionsVisible\(v => !v\)\}/);
+  });
+
+  it('the disclosure controls the mobile conversions panel by id (aria-controls target exists)', () => {
+    expect(appSource).toMatch(/aria-controls="comparison-conversions-panel"/);
+    expect(appSource).toMatch(/id="comparison-conversions-panel"/);
+  });
+
+  it('the transposed layout exposes section landmarks with explicit aria-labels (reading order)', () => {
+    expect(appSource).toMatch(/component="section" aria-label="Cross-port ranking summary"/);
+    expect(appSource).toMatch(/component="section" aria-label="Port comparison cards"/);
+  });
+
+  it('the ranking strip renders an ordered list (list semantics survive transposition)', () => {
+    expect(appSource).toMatch(/<ol className="comparison-ranking-list">/);
+  });
+
+  it('hidden converted figures carry a visible tag (state is perceivable, not color-only)', () => {
+    expect(appSource).toMatch(/comparison-converted-hidden-tag/);
+    expect(appSource).toContain('converted figure hidden');
+    expect(cssSource).toMatch(/\.comparison-converted-hidden-tag/);
+  });
+
+  it('the mobile disclosure button keeps the global focus-visible policy (focus ring at the breakpoint)', () => {
+    expect(cssSource).toMatch(/button:focus-visible/);
+    expect(cssSource).toMatch(/\.comparison-conversion-disclosure:hover/);
+  });
+
+  it('mobile disclosure state is component-local, never global (per-view contract)', () => {
+    expect(appSource).toMatch(/const \[conversionsVisible, setConversionsVisible\] = useState\(false\)/);
+    const moduleLevel = /let\s+conversionsVisible/.test(appSource);
+    expect(moduleLevel).toBe(false);
+  });
+});

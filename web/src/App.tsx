@@ -32,7 +32,8 @@ import {
   ThemeProvider,
   createTheme,
   Popover,
-  Link
+  Link,
+  useMediaQuery
 } from '@mui/material';
 import { KeyboardArrowDown, KeyboardArrowUp, ExpandMore, HelpOutline } from '@mui/icons-material';
 // Import core types and functions
@@ -62,6 +63,16 @@ import { resolveExchangeRate, toComparisonBasis, conversionLabel, formatRate, ra
 import vesselLibrary from './data/vessel_library.json';
 // Theme preference logic + progressive-disclosure defaults (spec v0.2.25)
 import { getInitialTheme, persistTheme, FORM_SECTION_DEFAULTS } from './theme';
+// Responsive layout contract (spec v0.2.39): the stacking breakpoint, the
+// minimum supported viewport, and the transposition predicates.
+import {
+  MIN_SUPPORTED_VIEWPORT_PX,
+  STACKING_BREAKPOINT_PX,
+  STACKING_MEDIA_QUERY,
+  isMobileViewport,
+  rankOrderByConvertedBasis,
+  MediaQueryHook
+} from './responsive';
 import type { ThemeMode } from './theme';
 // Zero-line collapse classification (spec v0.2.27), presentation only
 import { partitionFees } from './zeroCollapse';
@@ -96,8 +107,29 @@ const useAppTheme = (): [ThemeMode, () => void] => {
   const toggle = () => setMode(m => (m === 'dark' ? 'light' : 'dark'));
   return [mode, toggle];
 };
-// MUI palette bridged to the same tokens so MUI components follow the theme
+
+// Responsive layout (spec v0.2.39): true when the viewport is below the
+// stacking breakpoint (600 px) and the condensed stacked layout renders.
+// The MUI useMediaQuery path is live in the browser; the injected test seam
+// lets the suites exercise both rendering paths deterministically.
+let injectedMobileQuery: MediaQueryHook | null = null;
+const useIsMobile = (): boolean => {
+  const muiMatches = useMediaQuery(STACKING_MEDIA_QUERY);
+  if (injectedMobileQuery) return injectedMobileQuery(STACKING_MEDIA_QUERY);
+  return muiMatches;
+};
+export const __setMobileQueryForTests = (hook: MediaQueryHook | null) => {
+  injectedMobileQuery = hook;
+};
+// MUI palette bridged to the same tokens so MUI components follow the theme.
+// Breakpoints (spec v0.2.39 Responsive Layout): sm is the stacking threshold
+// (600 px - the responsive.ts contract constant); the minimum supported
+// viewport is 360 px. MUI xs is widened to the contract floor so grid
+// gutters never squeeze below it.
 const muiThemeFor = (mode: ThemeMode) => createTheme({
+  breakpoints: {
+    values: { xs: MIN_SUPPORTED_VIEWPORT_PX, sm: STACKING_BREAKPOINT_PX, md: 900, lg: 1200, xl: 1536 }
+  },
   palette: {
     mode,
     primary: { main: mode === 'dark' ? '#6ea8fe' : '#0b57d0' },
@@ -212,7 +244,7 @@ const SEGMENTS: { id: CostSegment; label: string; description: string; subtitle?
   {
     id: 'terminal_and_yard',
     label: 'Yard & Storage',
-    description: 'Storage, yard surcharges, gate hazardous, cargo-tied idle berth'
+    description: 'Storage, yard surcharges, cargo-tied idle berth (gate hazardous at Gothenburg only)'
   }
 ];
 
@@ -609,7 +641,7 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
             </Box>
 
             <Grid container spacing={2}>
-              <Grid item xs={6}>
+              <Grid item xs={12} sm={6}>
                 <TextField
                   label="Gross Tonnage (GT)"
                   type="number"
@@ -619,7 +651,7 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                   InputLabelProps={{ shrink: true }}
                 />
               </Grid>
-              <Grid item xs={6}>
+              <Grid item xs={12} sm={6}>
                 <TextField
                   label={estimatedFields.includes('nt') ? 'Net Tonnage (NT) — est.' : 'Net Tonnage (NT)'}
                   type="number"
@@ -634,7 +666,7 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                   }
                 />
               </Grid>
-              <Grid item xs={6}>
+              <Grid item xs={12} sm={6}>
                 <TextField
                   label="LOA (m)"
                   type="number"
@@ -644,7 +676,7 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                   InputLabelProps={{ shrink: true }}
                 />
               </Grid>
-              <Grid item xs={6}>
+              <Grid item xs={12} sm={6}>
                 <TextField
                   label="Beam (m)"
                   type="number"
@@ -654,7 +686,7 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                   InputLabelProps={{ shrink: true }}
                 />
               </Grid>
-              <Grid item xs={6}>
+              <Grid item xs={12} sm={6}>
                 <TextField
                   label={estimatedFields.includes('draught_m') ? 'Draft (m) — est.' : 'Draft (m)'}
                   type="number"
@@ -669,7 +701,7 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                   }
                 />
               </Grid>
-              <Grid item xs={6}>
+              <Grid item xs={12} sm={6}>
                 <TextField
                   label="TEU Capacity"
                   type="number"
@@ -679,7 +711,7 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                   InputLabelProps={{ shrink: true }}
                 />
               </Grid>
-              <Grid item xs={6}>
+              <Grid item xs={12} sm={6}>
                 <FormControl fullWidth>
                   <InputLabel>Vessel Type</InputLabel>
                   <Select
@@ -693,7 +725,7 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                 </FormControl>
               </Grid>
               {port.metadata.id === 'hamburg' && (
-                <Grid item xs={6}>
+                <Grid item xs={12} sm={6}>
                   <TextField
                     label="Build Year"
                     type="number"
@@ -717,7 +749,7 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
             </Typography>
 
             <Grid container spacing={2}>
-              <Grid item xs={6}>
+              <Grid item xs={12} sm={6}>
                 <TextField
                   label="Date"
                   type="date"
@@ -727,7 +759,7 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                   InputLabelProps={{ shrink: true }}
                 />
               </Grid>
-              <Grid item xs={6}>
+              <Grid item xs={12} sm={6}>
                 <FormControl fullWidth>
                   <InputLabel>Flag State</InputLabel>
                   <Select
@@ -740,7 +772,7 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                   </Select>
                 </FormControl>
               </Grid>
-              <Grid item xs={6}>
+              <Grid item xs={12} sm={6}>
                 <Box display="flex" alignItems="center">
                   <TextField
                     label="ESI Score"
@@ -754,7 +786,7 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                   <EnvGuideHelp guide={guideForInput('esi_score')} />
                 </Box>
               </Grid>
-              <Grid item xs={6}>
+              <Grid item xs={12} sm={6}>
                 <Box display="flex" alignItems="center">
                   <FormControl fullWidth>
                     <InputLabel>Sjöfartsverket Environmental Class</InputLabel>
@@ -774,7 +806,7 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                   <EnvGuideHelp guide={guideForInput('csi_class')} />
                 </Box>
               </Grid>
-              <Grid item xs={6}>
+              <Grid item xs={12} sm={6}>
                 <Box display="flex" alignItems="center">
                   <TextField
                     label="Fossil-Free Fuel %"
@@ -789,7 +821,7 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                 </Box>
               </Grid>
               {(port.metadata.id === 'gothenburg' || port.metadata.id === 'helsingborg') && (
-                <Grid item xs={6}>
+                <Grid item xs={12} sm={6}>
                   <Box display="flex" alignItems="center">
                     <FormControl fullWidth>
                       <InputLabel>Clean Shipping Index Class (port discount)</InputLabel>
@@ -810,7 +842,7 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                   </Box>
                 </Grid>
               )}
-              <Grid item xs={6}>
+              <Grid item xs={12} sm={6}>
                 <TextField
                   label="Calls This Month"
                   type="number"
@@ -820,7 +852,7 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                   InputLabelProps={{ shrink: true }}
                 />
               </Grid>
-              <Grid item xs={6}>
+              <Grid item xs={12} sm={6}>
                 <FormControlLabel
                   control={
                     <Checkbox
@@ -833,7 +865,7 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
               </Grid>
               {state.call.pilotage_required && (
                 <>
-                  <Grid item xs={6}>
+                  <Grid item xs={12} sm={6}>
                     <TextField
                       label="Pilotage Hours"
                       type="number"
@@ -843,7 +875,7 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                       InputLabelProps={{ shrink: true }}
                     />
                   </Grid>
-                  <Grid item xs={6}>
+                  <Grid item xs={12} sm={6}>
                     <FormControlLabel
                       control={
                         <Checkbox
@@ -866,7 +898,7 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                   </Grid>
                 </>
               )}
-              <Grid item xs={6}>
+              <Grid item xs={12} sm={6}>
                 <TextField
                   label="Lay-up Days (idle, not working cargo)"
                   type="number"
@@ -894,7 +926,7 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                   Gothenburg Ancillary Services (optional)
                 </Typography>
                 <Grid container spacing={2}>
-                  <Grid item xs={6}>
+                  <Grid item xs={12} sm={6}>
                     <TextField
                       label="Fresh Water Above 50 m³ (m³)"
                       type="number"
@@ -905,7 +937,7 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                       helperText="0 SEK up to 50 m³; 50 SEK/m³ above; blank = not supplied"
                     />
                   </Grid>
-                  <Grid item xs={6}>
+                  <Grid item xs={12} sm={6}>
                     <TextField
                       label="Sludge Exceeding 11 m³ (m³)"
                       type="number"
@@ -916,7 +948,7 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                       helperText="2,400 SEK/m³ above the included volume; blank = none"
                     />
                   </Grid>
-                  <Grid item xs={6}>
+                  <Grid item xs={12} sm={6}>
                     <FormControlLabel
                       control={
                         <Checkbox
@@ -927,7 +959,7 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                       label="Scrubber waste disposal (800 SEK admin; actual cost separate)"
                     />
                   </Grid>
-                  <Grid item xs={6}>
+                  <Grid item xs={12} sm={6}>
                     <TextField
                       label="Break Bulk (1,000 kg units)"
                       type="number"
@@ -938,7 +970,7 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                       helperText="54 SEK per 1,000 kg; blank = none"
                     />
                   </Grid>
-                  <Grid item xs={6}>
+                  <Grid item xs={12} sm={6}>
                     <TextField
                       label="Idle Berth Service Hours"
                       type="number"
@@ -954,7 +986,7 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                   Gothenburg Towage (estimated)
                 </Typography>
                 <Grid container spacing={2}>
-                  <Grid item xs={6}>
+                  <Grid item xs={12} sm={6}>
                     <TextField
                       label="Towage per Tug-Assist (SEK) — est."
                       type="number"
@@ -965,7 +997,7 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                       helperText="Estimated; no published Gothenburg tug tariff (Helsingborg-market anchored)"
                     />
                   </Grid>
-                  <Grid item xs={6}>
+                  <Grid item xs={12} sm={6}>
                     <TextField
                       label="Tug Count (blank: LOA-class default)"
                       type="number"
@@ -990,7 +1022,7 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                   Hamburg Call Parameters
                 </Typography>
                 <Grid container spacing={2}>
-                  <Grid item xs={6}>
+                  <Grid item xs={12} sm={6}>
                     <Box display="flex" alignItems="center">
                       <FormControl fullWidth>
                         <InputLabel>Engine Tier (IAPP, most polluting engine)</InputLabel>
@@ -1029,7 +1061,7 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                       <EnvGuideHelp guide={guideForInput('engine_tier')} />
                     </Box>
                   </Grid>
-                  <Grid item xs={6}>
+                  <Grid item xs={12} sm={6}>
                     <Box display="flex" alignItems="center">
                       <TextField
                         label="ESI Air Score (0–100)"
@@ -1043,7 +1075,7 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                       <EnvGuideHelp guide={guideForInput('esi_score')} />
                     </Box>
                   </Grid>
-                  <Grid item xs={6}>
+                  <Grid item xs={12} sm={6}>
                     <Box display="flex" alignItems="center">
                       <TextField
                         label="ESI Noise Score (0–100)"
@@ -1057,7 +1089,7 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                       <EnvGuideHelp guide={guideForInput('esi_noise_score')} />
                     </Box>
                   </Grid>
-                  <Grid item xs={6}>
+                  <Grid item xs={12} sm={6}>
                     <Box display="flex" alignItems="center">
                       <TextField
                         label="Quantum: prior-year paid GT"
@@ -1071,7 +1103,7 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                       <EnvGuideHelp guide={guideForInput('quantum_prior_year_gt')} />
                     </Box>
                   </Grid>
-                  <Grid item xs={6}>
+                  <Grid item xs={12} sm={6}>
                     <TextField
                       label="Lay Time at Berth (hours)"
                       type="number"
@@ -1082,7 +1114,7 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                       helperText="HHLA tonnage-dues basis (first 24 h full rate, then per commenced 12 h)"
                     />
                   </Grid>
-                  <Grid item xs={6}>
+                  <Grid item xs={12} sm={6}>
                     <TextField
                       label="Total Time in Port (hours)"
                       type="number"
@@ -1093,7 +1125,7 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                       helperText="Demurrage beyond the 120 h port-fee coverage; blank uses lay time"
                     />
                   </Grid>
-                  <Grid item xs={6}>
+                  <Grid item xs={12} sm={6}>
                     <TextField
                       label="Elbe Transit Segment (% of full)"
                       type="number"
@@ -1104,7 +1136,7 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                       helperText="100 = Hamburg↔Elbe buoy; partial transits (e.g. 40 Cuxhaven) scale dues and fees"
                     />
                   </Grid>
-                  <Grid item xs={6}>
+                  <Grid item xs={12} sm={6}>
                     <TextField
                       label="Towage per Call (EUR) — est."
                       type="number"
@@ -1115,7 +1147,7 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                       helperText="Estimated; no published tariff (3 tugs × ~5,000 EUR market range)"
                     />
                   </Grid>
-                  <Grid item xs={6}>
+                  <Grid item xs={12} sm={6}>
                     <TextField
                       label="Handling Rate per Move (EUR) — est."
                       type="number"
@@ -1126,7 +1158,7 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                       helperText="Estimated; HHLA unpublished, anchored to Eurogate Hamburg 5.1.1"
                     />
                   </Grid>
-                  <Grid item xs={6}>
+                  <Grid item xs={12} sm={6}>
                     <TextField
                       label="Gangways"
                       type="number"
@@ -1137,7 +1169,7 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                       helperText="One gangway per call default"
                     />
                   </Grid>
-                  <Grid item xs={6}>
+                  <Grid item xs={12} sm={6}>
                     <TextField
                       label="Gangway Supervision (hours)"
                       type="number"
@@ -1148,7 +1180,7 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                       helperText="101.30 EUR/h during operations; 0 in reference calls"
                     />
                   </Grid>
-                  <Grid item xs={6}>
+                  <Grid item xs={12} sm={6}>
                     <FormControl fullWidth>
                       <InputLabel>Gangway Class</InputLabel>
                       <Select
@@ -1174,7 +1206,7 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                   </Grid>
                   {state.call.hpa_berth_usage && (
                     <>
-                      <Grid item xs={6}>
+                      <Grid item xs={12} sm={6}>
                         <FormControl fullWidth>
                           <InputLabel>HPA Berth Type</InputLabel>
                           <Select
@@ -1187,7 +1219,7 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                           </Select>
                         </FormControl>
                       </Grid>
-                      <Grid item xs={6}>
+                      <Grid item xs={12} sm={6}>
                         <TextField
                           label="Berth Hours"
                           type="number"
@@ -1204,7 +1236,7 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                       Waste-fee reductions (application-based, off by default; combinable)
                     </Typography>
                   </Grid>
-                  <Grid item xs={4}>
+                  <Grid item xs={12} sm={4}>
                     <FormControlLabel
                       control={
                         <Checkbox
@@ -1215,7 +1247,7 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                       label="Short-sea (−90%)"
                     />
                   </Grid>
-                  <Grid item xs={4}>
+                  <Grid item xs={12} sm={4}>
                     <FormControlLabel
                       control={
                         <Checkbox
@@ -1226,7 +1258,7 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                       label="Alternative fuel (−50% MARPOL I)"
                     />
                   </Grid>
-                  <Grid item xs={4}>
+                  <Grid item xs={12} sm={4}>
                     <FormControlLabel
                       control={
                         <Checkbox
@@ -1253,7 +1285,7 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                   Helsingborg Call Parameters
                 </Typography>
                 <Grid container spacing={2}>
-                  <Grid item xs={6}>
+                  <Grid item xs={12} sm={6}>
                     <FormControlLabel
                       control={
                         <Checkbox
@@ -1264,7 +1296,7 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                       label="Valid ISSC certificate (unchecked: double security fee)"
                     />
                   </Grid>
-                  <Grid item xs={6}>
+                  <Grid item xs={12} sm={6}>
                     <TextField
                       label="EES per Move (SEK) — datestamped level"
                       type="number"
@@ -1275,7 +1307,7 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                       helperText="September 2026 level: 35 SEK/move; monthly HVO band table in the tariff"
                     />
                   </Grid>
-                  <Grid item xs={6}>
+                  <Grid item xs={12} sm={6}>
                     <TextField
                       label="Towage per Tug-Assist (SEK) — est."
                       type="number"
@@ -1286,7 +1318,7 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                       helperText="Estimated; no published Helsingborg tug tariff"
                     />
                   </Grid>
-                  <Grid item xs={6}>
+                  <Grid item xs={12} sm={6}>
                     <TextField
                       label="Tug Count (blank: LOA-class default)"
                       type="number"
@@ -1311,7 +1343,7 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
             </Typography>
 
             <Grid container spacing={2}>
-              <Grid item xs={6}>
+              <Grid item xs={12} sm={6}>
                 <Box display="flex" alignItems="center">
                   <FormControlLabel
                     control={
@@ -1338,11 +1370,11 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
               Yard &amp; Storage
             </Typography>
             <Typography variant="body2" className="segment-description">
-              Storage, yard surcharges, gate hazardous
+              Storage, yard surcharges (gate hazardous at Gothenburg only)
             </Typography>
 
             <Grid container spacing={2}>
-              <Grid item xs={6}>
+              <Grid item xs={12} sm={6}>
                 <TextField
                   label="Containers Loaded ≤20ft"
                   type="number"
@@ -1352,7 +1384,7 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                   InputLabelProps={{ shrink: true }}
                 />
               </Grid>
-              <Grid item xs={6}>
+              <Grid item xs={12} sm={6}>
                 <TextField
                   label="Containers Loaded >20ft"
                   type="number"
@@ -1362,7 +1394,7 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                   InputLabelProps={{ shrink: true }}
                 />
               </Grid>
-              <Grid item xs={6}>
+              <Grid item xs={12} sm={6}>
                 <TextField
                   label="Containers Discharged ≤20ft"
                   type="number"
@@ -1372,7 +1404,7 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                   InputLabelProps={{ shrink: true }}
                 />
               </Grid>
-              <Grid item xs={6}>
+              <Grid item xs={12} sm={6}>
                 <TextField
                   label="Containers Discharged >20ft"
                   type="number"
@@ -1382,7 +1414,7 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                   InputLabelProps={{ shrink: true }}
                 />
               </Grid>
-              <Grid item xs={6}>
+              <Grid item xs={12} sm={6}>
                 <TextField
                   label="Storage Days (Export)"
                   type="number"
@@ -1392,7 +1424,7 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                   InputLabelProps={{ shrink: true }}
                 />
               </Grid>
-              <Grid item xs={6}>
+              <Grid item xs={12} sm={6}>
                 <TextField
                   label="Storage Days (Import)"
                   type="number"
@@ -1402,7 +1434,7 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                   InputLabelProps={{ shrink: true }}
                 />
               </Grid>
-              <Grid item xs={6}>
+              <Grid item xs={12} sm={6}>
                 <TextField
                   label="Reefer Units"
                   type="number"
@@ -1413,7 +1445,7 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                   helperText="Blank = no reefer units (no reefer surcharge); yard surcharges are per unit per day"
                 />
               </Grid>
-              <Grid item xs={6}>
+              <Grid item xs={12} sm={6}>
                 <TextField
                   label="OOG Units"
                   type="number"
@@ -1424,7 +1456,7 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                   helperText="Blank = no out-of-gauge units (no OOG surcharge)"
                 />
               </Grid>
-              <Grid item xs={6}>
+              <Grid item xs={12} sm={6}>
                 <TextField
                   label="Dangerous Goods Units"
                   type="number"
@@ -1435,7 +1467,7 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                   helperText="Blank = no dangerous-goods units (no DG yard surcharge or gate fee)"
                 />
               </Grid>
-              <Grid item xs={6}>
+              <Grid item xs={12} sm={6}>
                 <TextField
                   label="Overdue Dangerous Units"
                   type="number"
@@ -1457,7 +1489,7 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                 </AccordionSummary>
                 <AccordionDetails>
                   <Grid container spacing={2}>
-                    <Grid item xs={6}>
+                    <Grid item xs={12} sm={6}>
                       <TextField
                         label="Hatch Cover Count"
                         type="number"
@@ -1467,7 +1499,7 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                         InputLabelProps={{ shrink: true }}
                       />
                     </Grid>
-                    <Grid item xs={6}>
+                    <Grid item xs={12} sm={6}>
                       <TextField
                         label="Gearbox Count"
                         type="number"
@@ -1963,7 +1995,7 @@ interface ComparisonViewProps {
 // selected port. Rows group by cost segment and fee family (economic
 // function, never biller name). Absent functions show "not charged" rather
 // than hiding. List-price basis by default; quality flags carried through.
-const ComparisonView: React.FC<ComparisonViewProps> = ({
+export const ComparisonView: React.FC<ComparisonViewProps> = ({
   ports,
   vessel,
   call,
@@ -1971,6 +2003,16 @@ const ComparisonView: React.FC<ComparisonViewProps> = ({
   onSelectionChange
 }) => {
   const selectedPorts = ports.filter(p => selectedPortIds.includes(p.metadata.id));
+  // Responsive layout (spec v0.2.39): below the stacking breakpoint the
+  // comparison table transposes to a card-per-port layout; the ranking
+  // summary strip renders in both layouts. Horizontal scrolling of the
+  // table is never the mobile answer - the transposition is the design.
+  const isMobile = useIsMobile();
+  // Conversion-figure disclosure (spec v0.2.39): on narrow screens the
+  // secondary (converted) figure collapses behind a disclosure control so
+  // the native-primary figure stays readable. The disclosure state is
+  // per-comparison-view, never global.
+  const [conversionsVisible, setConversionsVisible] = useState(false);
   // Cross-currency comparison contract (spec v0.2.31, commit A): the
   // comparison basis is SEK. Hamburg's EUR figures render native-primary
   // with a converted-secondary figure; every ordering or ranking of ports
@@ -2167,13 +2209,21 @@ const ComparisonView: React.FC<ComparisonViewProps> = ({
             </span>
           )}
         </span>
-        {conv.converted && (
+        {conv.converted && (isMobile ? (
+          // Narrow screens (spec v0.2.39): the converted figure collapses
+          // behind the view's conversion disclosure.
+          conversionsVisible && (
+            <Box sx={{ fontSize: '0.75rem', color: '#666' }}>
+              ≈ {formatCurrency(conv.amount, 'SEK')} <span className="comparison-converted-tag">converted</span>
+            </Box>
+          )
+        ) : (
           // Converted-secondary figure (spec v0.2.31): native primary, then
           // the converted approximation, always with its rate basis.
           <Box sx={{ fontSize: '0.75rem', color: '#666' }}>
             ≈ {formatCurrency(conv.amount, 'SEK')} <span className="comparison-converted-tag">converted</span>
           </Box>
-        )}
+        ))}
         {entry.effective_per_gt !== undefined && (
           <Box sx={{ fontSize: '0.75rem', color: '#666' }}>
             {entry.effective_per_gt.toFixed(2)} {entry.currency || fallbackCurrency}/GT effective — derived, not a published rate
@@ -2202,6 +2252,17 @@ const ComparisonView: React.FC<ComparisonViewProps> = ({
     const conv = toComparisonBasis(nativeAmount, currency, rateInfo);
     if (!conv.converted) {
       return <span>{formatCurrency(nativeAmount, currency)}</span>;
+    }
+    // Narrow screens (spec v0.2.39): the converted figure collapses behind
+    // the view's conversion disclosure; the native-primary figure stays
+    // readable. The disclosure state is per-comparison-view, never global.
+    if (isMobile && !conversionsVisible) {
+      return (
+        <Box sx={{ textAlign: 'right' }}>
+          <span>{formatCurrency(nativeAmount, currency)}</span>
+          <span className="comparison-converted-hidden-tag">converted figure hidden</span>
+        </Box>
+      );
     }
     return (
       <Box sx={{ textAlign: 'right' }}>
@@ -2259,6 +2320,107 @@ const ComparisonView: React.FC<ComparisonViewProps> = ({
             still line up. Data-quality flags from each port's computation are carried through.
           </Typography>
 
+          {/* Ranking summary strip (spec v0.2.39): the cross-port ranking
+              is the comparison view's headline answer and survives the
+              mobile transposition intact - cheapest first on the converted
+              comparison basis (spec v0.2.31), rendered above the table and
+              above the mobile cards in both layouts. */}
+          <Box className="comparison-ranking-strip" component="section" aria-label="Cross-port ranking summary">
+            <ol className="comparison-ranking-list">
+              {rankOrderByConvertedBasis(
+                portResults
+                  .filter(pr => pr.result)
+                  .map(pr => ({ portId: pr.result!.port_id, amount: pr.result!.total, currency: pr.result!.currency })),
+                rateInfo
+              ).map(({ portId }, index) => {
+                const pr = portResults.find(p => p.port.metadata.id === portId)!;
+                return (
+                  <li key={portId}>
+                    <span className="comparison-ranking-position">{index + 1}.</span>{' '}
+                    <span className="comparison-ranking-port">{portLabel(pr.port)}</span>{' '}
+                    {pr.result && cheapestTotalPortId === portId && (
+                      <span className="comparison-marker comparison-cheapest">cheapest</span>
+                    )}{' '}
+                    {pr.result && mostExpensiveTotalPortId === portId && (
+                      <span className="comparison-marker comparison-most-expensive">most expensive</span>
+                    )}
+                  </li>
+                );
+              })}
+            </ol>
+            {isMobile && portResults.some(pr => pr.result && toComparisonBasis(pr.result.total, pr.result.currency, rateInfo).converted) && (
+              <button
+                type="button"
+                className="disclosure-header comparison-conversion-disclosure"
+                aria-expanded={conversionsVisible}
+                aria-controls="comparison-conversions-panel"
+                onClick={() => setConversionsVisible(v => !v)}
+              >
+                {conversionsVisible ? 'Hide converted figures' : 'Show converted figures'}
+              </button>
+            )}
+          </Box>
+          {/* Mobile transposition (spec v0.2.39): below the stacking
+              breakpoint the comparison renders one card per port, fee
+              families listed with native-primary figures (converted
+              secondary behind the disclosure). Never a horizontal-scroll
+              fallback. */}
+          {isMobile && (
+            <Box id="comparison-conversions-panel" className="comparison-cards" component="section" aria-label="Port comparison cards">
+              {portResults.map(({ port, result }) => {
+                const subtotals = segmentSubtotals.find(s => s.portId === port.metadata.id)!;
+                return (
+                  <Paper key={port.metadata.id} className="comparison-port-card" elevation={1}>
+                    <Typography variant="h6" component="h3" className="comparison-card-title">
+                      {portLabel(port)}
+                      {result && cheapestTotalPortId === port.metadata.id && (
+                        <span className="comparison-marker comparison-cheapest">cheapest</span>
+                      )}
+                      {result && mostExpensiveTotalPortId === port.metadata.id && (
+                        <span className="comparison-marker comparison-most-expensive">most expensive</span>
+                      )}
+                    </Typography>
+                    {!result ? (
+                      <Typography color="error" className="comparison-not-charged">error</Typography>
+                    ) : (
+                      <Box component="dl" className="comparison-card-list">
+                        {rowsBySegment.map(({ segment, families }) => (
+                          <React.Fragment key={segment.id}>
+                            <Box component="dt" className="comparison-card-segment">{segment.label}: {convCell(subtotals.totals[segment.id], result.currency)}</Box>
+                            {families.map(({ family, perPort }) => (
+                              <Box component="dd" key={`${segment.id}-${family}`} className="comparison-card-family">
+                                <span className="comparison-card-family-name">{family.replace(/_/g, ' ')}</span>
+                                {amountCell(perPort.get(port.metadata.id), port.metadata.currency)}
+                              </Box>
+                            ))}
+                          </React.Fragment>
+                        ))}
+                        <Box component="dt" className="comparison-card-total">
+                          <strong>Grand Total</strong>
+                          {convCell(result.total, result.currency)}
+                        </Box>
+                        <Box component="dd" className="comparison-card-family">
+                          <span className="comparison-card-family-name">Estimated parameters subtotal</span>
+                          {convCell(result.total_estimated_parameters, result.currency)}
+                        </Box>
+                        <Box component="dd" className="comparison-card-family">
+                          <span className="comparison-card-family-name">Total without estimates</span>
+                          {convCell(result.total_without_estimates, result.currency)}
+                        </Box>
+                        {result.vessel_access && (
+                          <Box component="dd" className="comparison-card-family">
+                            <span className="comparison-card-family-name">Vessel Access Charges</span>
+                            {convCell(result.vessel_access.amount, result.currency)}
+                          </Box>
+                        )}
+                      </Box>
+                    )}
+                  </Paper>
+                );
+              })}
+            </Box>
+          )}
+          {!isMobile && (
           <TableContainer className="comparison-table-container">
             <Table size="small" className="comparison-table">
               <TableHead>
@@ -2420,6 +2582,7 @@ const ComparisonView: React.FC<ComparisonViewProps> = ({
               </TableBody>
             </Table>
           </TableContainer>
+          )}
 
           {/* Rate input (spec v0.2.31, commit A): the exchange rate behind
               every converted figure in this view. Static, versioned data
