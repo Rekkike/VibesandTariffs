@@ -57,19 +57,18 @@ import {
 // The registry contains every port loaded from core/data/*.yaml (spec v0.2.17 section 4.3.1).
 import portsRegistry from './data/ports.json';
 // Cross-currency comparison helpers (spec v0.2.31, commit A)
-import { resolveExchangeRate, toComparisonBasis, conversionLabel, formatRate, rankByConvertedBasis, DEFAULT_EXCHANGE_RATE, ExchangeRateInfo } from './conversion';
+import { resolveExchangeRate, toComparisonBasis, conversionLabel, formatRate, rankByConvertedBasis, DEFAULT_EXCHANGE_RATE } from './conversion';
 // Vessel library: curated named-vessel table (spec section 3.4), converted to
 // JSON at build time — no runtime API calls.
 import vesselLibrary from './data/vessel_library.json';
 // Theme preference logic + progressive-disclosure defaults (spec v0.2.25)
-import { getInitialTheme, persistTheme, FORM_SECTION_DEFAULTS } from './theme';
+import { getInitialTheme, persistTheme } from './theme';
 // Responsive layout contract (spec v0.2.39): the stacking breakpoint, the
 // minimum supported viewport, and the transposition predicates.
 import {
   MIN_SUPPORTED_VIEWPORT_PX,
   STACKING_BREAKPOINT_PX,
   STACKING_MEDIA_QUERY,
-  isMobileViewport,
   rankOrderByConvertedBasis,
   MediaQueryHook
 } from './responsive';
