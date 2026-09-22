@@ -57,9 +57,4 @@ describe('flagBadges (spec v0.2.29 badge honesty)', () => {
     expect(badges.some(b => b.label === 'est.')).toBe(false);
   });
 
-  it('legacy estimated_engine_tier flags map to the named Tier badge', () => {
-    const badges = badgesForFlags([flag('estimated_engine_tier')]);
-    expect(badges.some(b => b.label === 'NOx Tier assumed')).toBe(true);
-    expect(badges.some(b => b.label === 'est.')).toBe(false);
-  });
 });

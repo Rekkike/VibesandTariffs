@@ -1298,51 +1298,12 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                   <EnvGuideHelp guide={guideForInput('ops_usage')} />
                 </Box>
               </Grid>
-              {state.call.ops_usage && (
-                <>
-                  <Grid item xs={6}>
-                    <TextField
-                      label="OPS kWh Demand"
-                      type="number"
-                      value={state.call.ops_kwh_demand || ''}
-                      onChange={(e) => handleCallChange('ops_kwh_demand', parseFloat(e.target.value) || 0)}
-                      fullWidth
-                      InputLabelProps={{ shrink: true }}
-                    />
-                  </Grid>
-                  <Grid item xs={6}>
-                    <TextField
-                      label="OPS Connected Hours"
-                      type="number"
-                      value={state.call.ops_connected_hours || ''}
-                      onChange={(e) => handleCallChange('ops_connected_hours', parseFloat(e.target.value) || 0)}
-                      fullWidth
-                      InputLabelProps={{ shrink: true }}
-                    />
-                  </Grid>
-                  <Grid item xs={6}>
-                    <TextField
-                      label="Electricity Price (SEK/kWh)"
-                      type="number"
-                      value={state.call.ops_electricity_price_per_kwh || ''}
-                      onChange={(e) => handleCallChange('ops_electricity_price_per_kwh', parseFloat(e.target.value) || 0)}
-                      fullWidth
-                      InputLabelProps={{ shrink: true }}
-                      helperText="No published container-terminal OPS rate"
-                    />
-                  </Grid>
-                  <Grid item xs={6}>
-                    <TextField
-                      label="Peak Demand (kW)"
-                      type="number"
-                      value={state.call.ops_peak_demand_kw || ''}
-                      onChange={(e) => handleCallChange('ops_peak_demand_kw', parseFloat(e.target.value) || 0)}
-                      fullWidth
-                      InputLabelProps={{ shrink: true }}
-                    />
-                  </Grid>
-                </>
-              )}
+              {/* Spec v0.2.32 dead-control sweep: the OPS kWh / connected-hours /
+                  electricity-price / peak-demand inputs were collected but never
+                  read by the engine or any port file (no published container-
+                  terminal OPS rate exists to charge against). Removed rather than
+                  rendered non-functional; ops_usage itself is live (Hamburg OPS
+                  rebate, Gothenburg tanker connection-fee condition). */}
             </Grid>
 
             {/* ============ TERMINAL AND YARD SEGMENT INPUTS ============ */}
@@ -1859,8 +1820,11 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                                                         <Typography variant="body2" className="source-ref">
                                                           Source: {fee.source_reference.document_name}
                                                           (Page {fee.source_reference.page}, {fee.source_reference.clause}) -
-                                                          {fee.source_reference.document_pending ? (
-                                                            <span className="status-badge status-caveat">source document pending</span>
+                                                          {fee.source_reference.document_not_archived ? (
+                                                            <>
+                                                              <a href={fee.source_reference.upstream_url} target="_blank" rel="noopener noreferrer">View Document (publisher)</a>
+                                                              <span className="status-badge status-caveat">source not archived — upstream linked</span>
+                                                            </>
                                                           ) : (
                                                             <a href={fee.source_reference.document_url} target="_blank" rel="noopener noreferrer">
                                                               View Document
@@ -2082,7 +2046,7 @@ const ComparisonView: React.FC<ComparisonViewProps> = ({
             name: ruleNameByPortAndId.get(port.metadata.id)?.get(fee.fee_rule_id) ?? fee.fee_family,
             biller: fee.biller,
             amount: fee.amount,
-            estimated: fee.quality_flags.some(flag => flag.type === 'estimated_parameter' || flag.type === 'estimated_engine_tier')
+            estimated: fee.quality_flags.some(flag => flag.type === 'estimated_parameter')
           });
           perPort.set(result.port_id, entry);
         }
@@ -2487,8 +2451,7 @@ const PORT_SPECIFIC_CALL_FIELDS = [
   'gangway_supervision_hours', 'hpa_berth_usage', 'berth_type', 'berth_hours',
   'waste_short_sea_reduction', 'waste_alternative_fuel_reduction',
   'waste_sustainable_waste_reduction', 'csi_class', 'fossil_free_fuel_percentage',
-  'ops_kwh_demand', 'ops_connected_hours', 'ops_electricity_price_per_kwh',
-  'ops_peak_demand_kw', 'pilotage_hours', 'pilotage_extra_pilot',
+  'pilotage_hours', 'pilotage_extra_pilot',
   'pilotage_ordering_lead_time_hours', 'hatch_cover_count', 'gearbox_count',
   'lay_up_days'
 ];

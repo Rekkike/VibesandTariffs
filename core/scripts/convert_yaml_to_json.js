@@ -23,9 +23,15 @@ const REPO_ROOT = path.join(__dirname, '..', '..');
 // paths (the file paths used for verification). At conversion, each is rewritten
 // to the absolute GitHub blob URL so UI hyperlinks resolve on the deployed
 // bundle, where docs/sources/ is not part of the static site. Absolute http(s)
-// URLs pass through untouched. A repository file of zero bytes marks the
-// source reference document_pending so the UI renders provenance text
-// without a hyperlink (source document pending).
+// URLs pass through untouched.
+// Spec v0.2.32: sources whose archive copy is intentionally absent carry an
+// explicit upstream_url in the YAML (live publisher URL); conversion marks
+// them document_not_archived so the UI links the upstream document. No
+// source reference ever points at an empty file: zero-byte placeholders
+// were removed (the integrity test fails on any regression). A zero-byte
+// file that somehow reappears is flagged document_pending by the stat
+// branch below as a belt-and-braces guard; the integrity test is the
+// authoritative check and fails the suite before any such registry ships.
 const BLOB_BASE = 'https://github.com/Rekkike/VibesandTariffs/blob/main/';
 
 function rewriteSourceUrls(node) {
@@ -43,8 +49,9 @@ function rewriteSourceUrls(node) {
           node.document_pending = true;
         }
       } catch (e) {
-        // Missing file: the core source-integrity test fails loudly on this;
-        // conversion does not silently drop provenance.
+        // Archive copy intentionally absent (v0.2.32): mark it and require a
+        // recorded upstream_url; the integrity test fails loudly otherwise.
+        node.document_not_archived = true;
       }
     }
   }

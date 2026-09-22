@@ -6,9 +6,16 @@ export type Currency = 'SEK' | 'EUR' | 'USD' | string;
 export interface SourceReference {
   document_name: string;
   document_url: string;
-  // Spec v0.2.26: set at conversion when the repository source file is a
-  // zero-byte placeholder; the UI renders provenance text without a link.
+  // Spec v0.2.26, superseded v0.2.32: kept as a belt-and-braces guard — the
+  // converter sets it if a zero-byte file ever reappears; the integrity
+  // test is the authoritative check and fails the suite first.
   document_pending?: boolean;
+  // Spec v0.2.32: for sources not archived in the repository, the live
+  // upstream URL where the tariff document is published, and the flag set
+  // at conversion when the archive copy is absent. The reference never
+  // points at an empty file; provenance renders with the upstream link.
+  upstream_url?: string;
+  document_not_archived?: boolean;
   document_issued: string; // ISO date
   page: string | number;
   clause: string;
@@ -397,11 +404,11 @@ export interface CallInput {
   pilotage_ordering_lead_time_hours?: number; // lead time for ordering fee
   hatch_cover_count?: number; // number of hatch covers handled
   gearbox_count?: number; // number of gearbox units handled
-  // OPS inputs (energy-at-berth)
-  ops_kwh_demand?: number; // kWh demand
-  ops_connected_hours?: number; // connected hours
-  ops_electricity_price_per_kwh?: number; // SEK/kWh (user-supplied, no published rate for containers)
-  ops_peak_demand_kw?: number; // registered peak demand in kW
+  // OPS energy-at-berth note (v0.2.32): the v0.2.10 component set (per-kWh
+  // energy, demand charge, berth-hour charges) is not encoded at any port —
+  // no published container-terminal OPS rate exists. Only the ops_usage
+  // toggle is live (Hamburg OPS rebate; Gothenburg tanker connection fee).
+  // The dead kWh/hours/price/peak inputs were removed in v0.2.32.
   // Hamburg call inputs
   engine_tier?: 'Tier 0' | 'Tier I' | 'Tier II' | 'Tier III' | string; // certified IAPP tier (most polluting engine)
   engine_tier_estimated?: boolean; // true when derived by heuristic rather than certified

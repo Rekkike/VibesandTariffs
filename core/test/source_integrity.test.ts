@@ -27,6 +27,7 @@ const TERMS_ONLY_DOCS = new Set([
 interface RuleSource {
   document_name?: string;
   document_url?: string;
+  upstream_url?: string; // spec v0.2.32: live publisher URL for not-archived sources
   document_issued?: string;
   page?: string | number;
   clause?: string;
@@ -58,15 +59,21 @@ describe('Source link integrity (spec v0.2.26)', () => {
     expect(ports.map(p => p.port.metadata!.id).sort()).toEqual(['gothenburg', 'hamburg', 'helsingborg']);
   });
 
-  it('every fee rule document_url path exists in the repository (a)', () => {
+  it('every fee rule document_url path is archived or explicitly not-archived (a)', () => {
+    // Spec v0.2.32: a cited path either exists in the repository or carries
+    // the explicit upstream_url marker (checked in the not-archived test).
+    // A cited path that is absent and unmarked is a failure.
     const missing: string[] = [];
     for (const { file, port } of ports) {
       for (const rule of port.fee_rules!) {
-        const url = rule.source_reference?.document_url;
+        const sr = rule.source_reference;
+        const url = sr?.document_url;
         if (!url) continue;
         if (/^https?:\/\//.test(url)) continue; // absolute URLs pass through
         if (!fs.existsSync(path.join(REPO_ROOT, url))) {
-          missing.push(`${file} / ${rule.rule_id}: ${url}`);
+          if (!sr?.upstream_url) {
+            missing.push(`${file} / ${rule.rule_id}: ${url}`);
+          }
         }
       }
     }
@@ -93,9 +100,13 @@ describe('Source link integrity (spec v0.2.26)', () => {
     expect(caseMismatches).toEqual([]);
   });
 
-  it('price-bearing sources are non-zero bytes; zero-byte placeholders are listed (b)', () => {
+  it('price-bearing sources are non-zero bytes; no zero-byte placeholder may exist (b)', () => {
     // Scan both the rule-cited URLs and the whole docs/sources tree: a
     // price-bearing placeholder counts even if no rule currently cites it.
+    // Spec v0.2.32: the zero-byte placeholders were removed and replaced by
+    // explicit not-archived markers with upstream URLs in the YAML. The
+    // standing rule is that no source reference may point at an empty file:
+    // any zero-byte file under docs/sources is a failure, full stop.
     const zeroByte = new Set<string>();
     for (const { port } of ports) {
       for (const rule of port.fee_rules!) {
@@ -120,34 +131,63 @@ describe('Source link integrity (spec v0.2.26)', () => {
       }
     };
     walk(path.join(REPO_ROOT, 'docs/sources'));
-    // Known pending placeholders (Gothenburg PDFs, Sjöfartsverket national
-    // PDFs): recorded, not silently accepted. The assertion below lists them
-    // via the test output and must be updated when the PDFs land in the repo.
-    const knownPending = [
-      'docs/sources/sweden/gothenburg/apm-terminals/terminal-tariff-2026-june.pdf',
-      'docs/sources/sweden/gothenburg/port-authority/port-tariff-2026.pdf',
-      'docs/sources/sweden/national/sjofartsverket/lathund-lotsavgifter-2026.pdf',
-      'docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf',
-    ].sort();
-    const zeroByteList = Array.from(zeroByte).sort();
-    const newZeroByte = zeroByteList.filter(u => !knownPending.includes(u));
-    // Any placeholder outside the known set is a failure: a price-bearing
-    // source must not regress to a zero-byte placeholder unnoticed.
-    expect(newZeroByte).toEqual([]);
-    // The known set must still match reality exactly: if a placeholder gains
-    // content, remove it here; this keeps the pending list honest.
-    expect(zeroByteList).toEqual(knownPending);
+    expect(Array.from(zeroByte).sort()).toEqual([]);
   });
 
-  it('conversion rewrites relative URLs to GitHub blob URLs and flags zero-byte sources', () => {
-    // Re-run the conversion contract on one port's rules: the web registry
-    // must carry absolute blob URLs and document_pending on zero-byte files.
+  it('sources without an archive copy carry the not-archived marker and a live upstream URL', () => {
+    // Spec v0.2.32: a source may be intentionally not archived, but only via
+    // the explicit mechanism: the YAML carries upstream_url, the repository
+    // file is absent (not zero bytes), and the registry conversion marks it
+    // document_not_archived. A cited path that is neither archived nor marked
+    // is a failure.
+    const notArchived = [
+      'docs/sources/sweden/gothenburg/apm-terminals/terminal-tariff-2026-june.pdf',
+      'docs/sources/sweden/gothenburg/port-authority/port-tariff-2026.pdf',
+      'docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf',
+    ].sort();
+    const cited = new Set<string>();
+    const marked = new Set<string>();
+    for (const { port } of ports) {
+      for (const rule of port.fee_rules!) {
+        const sr = rule.source_reference;
+        if (!sr?.document_url || /^https?:\/\//.test(sr.document_url)) continue;
+        cited.add(sr.document_url);
+        if (sr.upstream_url) {
+          if (!fs.existsSync(path.join(REPO_ROOT, sr.document_url))) {
+            marked.add(sr.document_url);
+          }
+        }
+      }
+    }
+    // Every upstream_url-marked absent file is a known not-archived source
+    expect(Array.from(marked).sort()).toEqual(notArchived);
+    // Every cited-but-absent file must be marked (no silent missing sources)
+    const absentUnmarked = Array.from(cited).filter(
+      u => !fs.existsSync(path.join(REPO_ROOT, u)) && !marked.has(u)
+    );
+    expect(absentUnmarked.sort()).toEqual([]);
+    // Upstream URLs are live publisher URLs, not repository paths
+    for (const { port } of ports) {
+      for (const rule of port.fee_rules!) {
+        const sr = rule.source_reference;
+        if (sr?.upstream_url) {
+          expect(sr.upstream_url).toMatch(/^https?:\/\//);
+        }
+      }
+    }
+  });
+
+  it('conversion rewrites relative URLs to GitHub blob URLs and flags not-archived sources', () => {
+    // Re-run the conversion contract on the registry: the web registry must
+    // carry absolute blob URLs and document_not_archived on absent files
+    // (with upstream_url carrying the live publisher link).
     const registryPath = path.join(__dirname, '../../../web/src/data/ports.json');
     if (!fs.existsSync(registryPath)) return; // registry not generated in this checkout state
     const registry = JSON.parse(fs.readFileSync(registryPath, 'utf8'));
     const BLOB_BASE = 'https://github.com/Rekkike/VibesandTariffs/blob/main/';
     let blobUrls = 0;
-    let pendingFlags = 0;
+    let notArchivedFlags = 0;
+    let notArchivedWithUpstream = 0;
     for (const port of registry.ports ?? []) {
       for (const rule of port.fee_rules ?? []) {
         const sr = rule.source_reference;
@@ -156,10 +196,16 @@ describe('Source link integrity (spec v0.2.26)', () => {
         if (sr.document_url.startsWith('docs/sources/')) {
           throw new Error(`Registry still carries a repository-relative document_url: ${sr.document_url}`);
         }
-        if (sr.document_pending === true) pendingFlags++;
+        if (sr.document_not_archived === true) {
+          notArchivedFlags++;
+          if (typeof sr.upstream_url === 'string' && /^https?:\/\//.test(sr.upstream_url)) {
+            notArchivedWithUpstream++;
+          }
+        }
       }
     }
     expect(blobUrls).toBeGreaterThan(0);
-    expect(pendingFlags).toBeGreaterThan(0);
+    expect(notArchivedFlags).toBeGreaterThan(0);
+    expect(notArchivedWithUpstream).toBe(notArchivedFlags);
   });
 });

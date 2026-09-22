@@ -45,9 +45,6 @@ export function badgesForFlags(flags: QualityFlag[]): FlagBadge[] {
           title: flag.description
         });
       }
-    } else if (flag.type === 'estimated_engine_tier') {
-      // Legacy flag type (pre-v0.2.29); treated as a named Tier assumption
-      badges.push({ label: 'NOx Tier assumed', kind: 'assumed', title: flag.description });
     } else if (flag.type === 'fallback_value') {
       badges.push({ label: 'default applied', kind: 'info', title: flag.description });
     } else {

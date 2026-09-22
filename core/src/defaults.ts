@@ -50,10 +50,6 @@ export function defaultCall(portId: string): CallInput {
     pilotage_hours: 4,
     pilotage_extra_pilot: false,
     pilotage_ordering_lead_time_hours: 2,
-    ops_kwh_demand: 0,
-    ops_connected_hours: 0,
-    ops_electricity_price_per_kwh: 0,
-    ops_peak_demand_kw: 0,
     // Hamburg parameters (spec v0.2.20). Lay time 16 h mid-range default
     // (50 h for ULCV); gangway one per call, class default overseas with the
     // feeder default applied from the vessel library for feeder-class ships;
