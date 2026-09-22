@@ -9,6 +9,10 @@
 #   vessel_type:     e.g. container, tanker
 #   flag:            flag state (display)
 #   built:           build year
+#   engine_tier:     certified NOx Tier of the most polluting engine per the
+#                    IAPP certificate supplement (optional; a stored tier lets
+#                    library-selected vessels compute at Hamburg without the
+#                    worst-case Tier 0 default flag, spec v0.2.29)
 #   gt:              gross tonnage
 #   nt:              net tonnage (drives Sjöfartsverket fee classes; estimated
 #                    entries are flagged, see estimated_fields and source_note)

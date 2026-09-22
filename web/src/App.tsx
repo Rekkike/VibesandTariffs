@@ -30,9 +30,11 @@ import {
   Autocomplete,
   Divider,
   ThemeProvider,
-  createTheme
+  createTheme,
+  Popover,
+  Link
 } from '@mui/material';
-import { KeyboardArrowDown, KeyboardArrowUp, ExpandMore } from '@mui/icons-material';
+import { KeyboardArrowDown, KeyboardArrowUp, ExpandMore, HelpOutline } from '@mui/icons-material';
 // Import core types and functions
 import {
   VesselInput,
@@ -61,6 +63,11 @@ import { getInitialTheme, persistTheme, FORM_SECTION_DEFAULTS } from './theme';
 import type { ThemeMode } from './theme';
 // Zero-line collapse classification (spec v0.2.27), presentation only
 import { partitionFees } from './zeroCollapse';
+// Badge honesty (spec v0.2.29): assumed parameters get named badges, never a generic "est."
+import { badgesForFlags } from './flagBadges';
+// Environmental-input guidance (spec v0.2.29): purely informative, no auto-fill
+import { guideFor, leversForPort, makeComputer } from './envGuidance';
+import type { InputGuide } from './envGuidance';
 
 // Loaded ports; adding a port is a data edit (drop a YAML in core/data/), never a code change
 const LOADED_PORTS: PortDefinition[] = ((portsRegistry as any).ports ?? []).filter(
@@ -173,6 +180,7 @@ interface LibraryVessel {
   draught_m: number;
   teu_capacity: number;
   class_note: string;
+  engine_tier?: string;
   estimated_fields?: string[];
   source_note: string;
 }
@@ -237,6 +245,66 @@ interface PortWorkspaceProps {
   onCallChange: (call: CallInput) => void;
 }
 
+// Environmental-input guidance affordance (spec v0.2.29): a purely
+// informative help control beside each environmental input. Expands to the
+// certificate issuer, the decision rule in user terms, the port's threshold
+// bands with source references, and the money consequence of entering each
+// value on this call at this port. No auto-fill, no pre-selection, no
+// persistence; WCAG 2.2 AA (keyboard operable, aria-expanded/aria-controls).
+const EnvGuideHelp: React.FC<{ guide: InputGuide | null }> = ({ guide }) => {
+  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
+  if (!guide) return null;
+  const open = Boolean(anchorEl);
+  const panelId = `env-guide-${guide.key}`;
+  return (
+    <>
+      <IconButton
+        size="small"
+        aria-label={`About ${guide.title}`}
+        aria-expanded={open}
+        aria-controls={panelId}
+        onClick={(e) => setAnchorEl(open ? null : e.currentTarget)}
+      >
+        <HelpOutline fontSize="small" />
+      </IconButton>
+      <Popover
+        id={panelId}
+        open={open}
+        anchorEl={anchorEl}
+        onClose={() => setAnchorEl(null)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+        slotProps={{ paper: { sx: { p: 2, maxWidth: 420 } } }}
+      >
+        <Typography variant="subtitle2" gutterBottom>{guide.title}</Typography>
+        <Typography variant="body2" sx={{ mb: 1 }}>{guide.what}</Typography>
+        <Typography variant="body2" sx={{ mb: 1 }}>
+          <strong>Issued by:</strong> {guide.issuer}
+          {guide.issuerUrl && (
+            <> (<Link href={guide.issuerUrl} target="_blank" rel="noopener noreferrer">issuer site</Link>)</>
+          )}
+        </Typography>
+        <Typography variant="body2" sx={{ mb: 1 }}><strong>Decision rule:</strong> {guide.rule}</Typography>
+        <Typography variant="body2" sx={{ mb: 0.5 }}><strong>Bands (this port):</strong></Typography>
+        {guide.bands.map((b, i) => (
+          <Typography key={i} variant="caption" display="block" className="source-ref">
+            {b.label}: {b.detail} — {b.source}
+          </Typography>
+        ))}
+        <Typography variant="body2" sx={{ mt: 1, mb: 0.5 }}><strong>Money consequence (per this call, per this port):</strong></Typography>
+        {guide.deltas.map((d, i) => (
+          <Typography key={i} variant="caption" display="block">
+            {d.label}: {d.delta}
+          </Typography>
+        ))}
+        <Typography variant="caption" display="block" className="source-ref" sx={{ mt: 1 }}>
+          {guide.deltaNote} Guide is informative only — it never fills or pre-selects the input.
+        </Typography>
+      </Popover>
+    </>
+  );
+};
+
 const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVesselChange, onCallChange }) => {
   // Which result page(s) are visible - display filter only, never affects computation
   const [visibleSegments, setVisibleSegments] = useState<CostSegment[]>([
@@ -298,6 +366,18 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
   // mistaken for registry data — the field shows an "est." badge)
   const [estimatedFields, setEstimatedFields] = useState<string[]>([]);
 
+  // Environmental-input guidance (spec v0.2.29): the money deltas are computed
+  // live from the current form state against this port's engine - informative
+  // only, never mutating the call state.
+  const guidanceComputer = useMemo(
+    () => makeComputer([port], state.vessel, state.call),
+    [port, state.vessel, state.call]
+  );
+  const guideForInput = (key: string): InputGuide | null => guideFor(key, port, guidanceComputer);
+
+  // Compact per-port overview of which environmental levers apply where
+  const portLevers = useMemo(() => leversForPort(port.metadata.id), [port.metadata.id]);
+
   const handleVesselChange = (field: keyof VesselInput, value: number | undefined) => {
     // Manual edits clear the estimate badge for that field: the user has taken
     // ownership of the value
@@ -339,7 +419,13 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
       vessel_type: selected.vessel_type,
       // Gangway class default follows the service (reference §9): feeder-class
       // container vessels get the feeder rate, deep-sea the overseas rate.
-      gangway_class: selected.teu_capacity <= 1000 ? 'feeder' : 'overseas'
+      gangway_class: selected.teu_capacity <= 1000 ? 'feeder' : 'overseas',
+      // Stored NOx Tier (spec v0.2.29): a library vessel with a certified tier
+      // computes at Hamburg without the worst-case-default flag; vessels
+      // without one keep the Tier 0 default (never an inferred tier).
+      ...(selected.engine_tier
+        ? { engine_tier: selected.engine_tier, engine_tier_estimated: false, infer_engine_tier_from_build_year: false }
+        : { engine_tier: undefined, engine_tier_estimated: undefined, infer_engine_tier_from_build_year: false })
     });
     setEstimatedFields(selected.estimated_fields ?? []);
   };
@@ -639,61 +725,73 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                 </FormControl>
               </Grid>
               <Grid item xs={6}>
-                <TextField
-                  label="ESI Score"
-                  type="number"
-                  value={state.call.esi_score || ''}
-                  onChange={(e) => handleCallChange('esi_score', parseFloat(e.target.value) || undefined)}
-                  fullWidth
-                  InputLabelProps={{ shrink: true }}
-                  helperText="Blank = not entered (no discount); never treated as a score"
-                />
+                <Box display="flex" alignItems="center">
+                  <TextField
+                    label="ESI Score"
+                    type="number"
+                    value={state.call.esi_score || ''}
+                    onChange={(e) => handleCallChange('esi_score', parseFloat(e.target.value) || undefined)}
+                    fullWidth
+                    InputLabelProps={{ shrink: true }}
+                    helperText="Blank = not entered (no discount); never treated as a score"
+                  />
+                  <EnvGuideHelp guide={guideForInput('esi_score')} />
+                </Box>
               </Grid>
               <Grid item xs={6}>
-                <FormControl fullWidth>
-                  <InputLabel>Sjöfartsverket Environmental Class</InputLabel>
-                  <Select
-                    value={state.call.csi_class || ''}
-                    onChange={(e) => handleCallChange('csi_class', e.target.value as string | undefined)}
-                    label="Sjöfartsverket Environmental Class"
-                  >
-                    <MenuItem value="A">A</MenuItem>
-                    <MenuItem value="B">B</MenuItem>
-                    <MenuItem value="C">C</MenuItem>
-                    <MenuItem value="D">D</MenuItem>
-                    <MenuItem value="E">E (Not Registered)</MenuItem>
-                    <MenuItem value="">None</MenuItem>
-                  </Select>
-                </FormControl>
+                <Box display="flex" alignItems="center">
+                  <FormControl fullWidth>
+                    <InputLabel>Sjöfartsverket Environmental Class</InputLabel>
+                    <Select
+                      value={state.call.csi_class || ''}
+                      onChange={(e) => handleCallChange('csi_class', e.target.value as string | undefined)}
+                      label="Sjöfartsverket Environmental Class"
+                    >
+                      <MenuItem value="A">A</MenuItem>
+                      <MenuItem value="B">B</MenuItem>
+                      <MenuItem value="C">C</MenuItem>
+                      <MenuItem value="D">D</MenuItem>
+                      <MenuItem value="E">E (Not Registered)</MenuItem>
+                      <MenuItem value="">None</MenuItem>
+                    </Select>
+                  </FormControl>
+                  <EnvGuideHelp guide={guideForInput('csi_class')} />
+                </Box>
               </Grid>
               <Grid item xs={6}>
-                <TextField
-                  label="Fossil-Free Fuel %"
-                  type="number"
-                  value={state.call.fossil_free_fuel_percentage || ''}
-                  onChange={(e) => handleCallChange('fossil_free_fuel_percentage', parseFloat(e.target.value) || undefined)}
-                  fullWidth
-                  InputLabelProps={{ shrink: true }}
-                  helperText="Blank = not entered (no discount); discount needs ≥ 30%"
-                />
+                <Box display="flex" alignItems="center">
+                  <TextField
+                    label="Fossil-Free Fuel %"
+                    type="number"
+                    value={state.call.fossil_free_fuel_percentage || ''}
+                    onChange={(e) => handleCallChange('fossil_free_fuel_percentage', parseFloat(e.target.value) || undefined)}
+                    fullWidth
+                    InputLabelProps={{ shrink: true }}
+                    helperText="Blank = not entered (no discount); discount needs ≥ 30%"
+                  />
+                  <EnvGuideHelp guide={guideForInput('fossil_free_fuel_percentage')} />
+                </Box>
               </Grid>
               {(port.metadata.id === 'gothenburg' || port.metadata.id === 'helsingborg') && (
                 <Grid item xs={6}>
-                  <FormControl fullWidth>
-                    <InputLabel>Clean Shipping Index Class (port discount)</InputLabel>
-                    <Select
-                      value={state.call.clean_shipping_index_class || ''}
-                      onChange={(e) => handleCallChange('clean_shipping_index_class', e.target.value === '' ? undefined : e.target.value as string)}
-                      label="Clean Shipping Index Class (port discount)"
-                    >
-                      <MenuItem value="">None</MenuItem>
-                      <MenuItem value="1">1</MenuItem>
-                      <MenuItem value="2">2</MenuItem>
-                      <MenuItem value="3">3</MenuItem>
-                      <MenuItem value="4">4 (10% port-dues discount)</MenuItem>
-                      <MenuItem value="5">5</MenuItem>
-                    </Select>
-                  </FormControl>
+                  <Box display="flex" alignItems="center">
+                    <FormControl fullWidth>
+                      <InputLabel>Clean Shipping Index Class (port discount)</InputLabel>
+                      <Select
+                        value={state.call.clean_shipping_index_class || ''}
+                        onChange={(e) => handleCallChange('clean_shipping_index_class', e.target.value === '' ? undefined : e.target.value as string)}
+                        label="Clean Shipping Index Class (port discount)"
+                      >
+                        <MenuItem value="">None</MenuItem>
+                        <MenuItem value="1">1</MenuItem>
+                        <MenuItem value="2">2</MenuItem>
+                        <MenuItem value="3">3</MenuItem>
+                        <MenuItem value="4">4 (10% port-dues discount)</MenuItem>
+                        <MenuItem value="5">5</MenuItem>
+                      </Select>
+                    </FormControl>
+                    <EnvGuideHelp guide={guideForInput('clean_shipping_index_class')} />
+                  </Box>
                 </Grid>
               )}
               <Grid item xs={6}>
@@ -771,6 +869,9 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                 values never fire the rules (presence-gated in the data). */}
             </DisclosureCard>
             <DisclosureCard title="Port-Specific Parameters" summary={portLabel(port) + ' only'}>
+            <Typography variant="body2" className="segment-description">
+              Environmental levers at {port.metadata.name}: {portLevers.join(' · ') || 'none'}. All levers default to the no-discount state — the default call is the worst-case published-rate call (spec v0.2.29); only an explicit entry discounts.
+            </Typography>
             {port.metadata.id === 'gothenburg' && (
               <>
                 <Typography variant="h6" component="h3" className="segment-heading vessel-call-heading">
@@ -847,62 +948,85 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                 </Typography>
                 <Grid container spacing={2}>
                   <Grid item xs={6}>
-                    <FormControl fullWidth>
-                      <InputLabel>Engine Tier (IAPP, most polluting engine)</InputLabel>
-                      <Select
-                        value={state.call.engine_tier || 'auto'}
-                        onChange={(e) => {
-                          const v = e.target.value as string;
-                          if (v === 'auto') {
-                            handleCallChange('engine_tier', undefined);
-                            handleCallChange('engine_tier_estimated', undefined);
-                          } else {
-                            handleCallChange('engine_tier', v);
-                            handleCallChange('engine_tier_estimated', false);
-                          }
-                        }}
-                        label="Engine Tier (IAPP, most polluting engine)"
-                      >
-                        <MenuItem value="auto">Auto (build-year default, flagged estimated)</MenuItem>
-                        <MenuItem value="Tier 0">Tier 0 / no IAPP (+30%)</MenuItem>
-                        <MenuItem value="Tier I">Tier I (+25%)</MenuItem>
-                        <MenuItem value="Tier II">Tier II (+5%)</MenuItem>
-                        <MenuItem value="Tier III">Tier III+ (−20%)</MenuItem>
-                      </Select>
-                    </FormControl>
+                    <Box display="flex" alignItems="center">
+                      <FormControl fullWidth>
+                        <InputLabel>Engine Tier (IAPP, most polluting engine)</InputLabel>
+                        <Select
+                          value={state.call.engine_tier || 'tier0_default'}
+                          onChange={(e) => {
+                            const v = e.target.value as string;
+                            if (v === 'tier0_default') {
+                              handleCallChange('engine_tier', undefined);
+                              handleCallChange('engine_tier_estimated', undefined);
+                              handleCallChange('infer_engine_tier_from_build_year', false);
+                            } else if (v === 'tier0') {
+                              handleCallChange('engine_tier', 'Tier 0');
+                              handleCallChange('engine_tier_estimated', false);
+                              handleCallChange('infer_engine_tier_from_build_year', false);
+                            } else if (v === 'infer_build_year') {
+                              handleCallChange('engine_tier', undefined);
+                              handleCallChange('engine_tier_estimated', undefined);
+                              handleCallChange('infer_engine_tier_from_build_year', true);
+                            } else {
+                              handleCallChange('engine_tier', v);
+                              handleCallChange('engine_tier_estimated', false);
+                              handleCallChange('infer_engine_tier_from_build_year', false);
+                            }
+                          }}
+                          label="Engine Tier (IAPP, most polluting engine)"
+                        >
+                          <MenuItem value="tier0_default">Tier 0 — not entered (worst case; enter certified tier to override)</MenuItem>
+                          <MenuItem value="tier0">Tier 0 / no IAPP (+30%)</MenuItem>
+                          <MenuItem value="Tier I">Tier I (+25%)</MenuItem>
+                          <MenuItem value="Tier II">Tier II (+5%)</MenuItem>
+                          <MenuItem value="Tier III">Tier III+ (−20%)</MenuItem>
+                          <MenuItem value="infer_build_year">Infer from build year (explicit user action; flagged as assumption)</MenuItem>
+                        </Select>
+                      </FormControl>
+                      <EnvGuideHelp guide={guideForInput('engine_tier')} />
+                    </Box>
                   </Grid>
                   <Grid item xs={6}>
-                    <TextField
-                      label="ESI Air Score (0–100)"
-                      type="number"
-                      value={state.call.esi_score ?? ''}
-                      onChange={(e) => handleCallChange('esi_score', parseFloat(e.target.value) || undefined)}
-                      fullWidth
-                      InputLabelProps={{ shrink: true }}
-                      helperText="Only if registered in the IAPH database; blank = not entered (no discount), never treated as a score"
-                    />
+                    <Box display="flex" alignItems="center">
+                      <TextField
+                        label="ESI Air Score (0–100)"
+                        type="number"
+                        value={state.call.esi_score ?? ''}
+                        onChange={(e) => handleCallChange('esi_score', parseFloat(e.target.value) || undefined)}
+                        fullWidth
+                        InputLabelProps={{ shrink: true }}
+                        helperText="Only if registered in the IAPH database; blank = not entered (no discount), never treated as a score"
+                      />
+                      <EnvGuideHelp guide={guideForInput('esi_score')} />
+                    </Box>
                   </Grid>
                   <Grid item xs={6}>
-                    <TextField
-                      label="ESI Noise Score (0–100)"
-                      type="number"
-                      value={state.call.esi_noise_score ?? ''}
-                      onChange={(e) => handleCallChange('esi_noise_score', parseFloat(e.target.value) || undefined)}
-                      fullWidth
-                      InputLabelProps={{ shrink: true }}
-                      helperText="Separate discount; only if registered"
-                    />
+                    <Box display="flex" alignItems="center">
+                      <TextField
+                        label="ESI Noise Score (0–100)"
+                        type="number"
+                        value={state.call.esi_noise_score ?? ''}
+                        onChange={(e) => handleCallChange('esi_noise_score', parseFloat(e.target.value) || undefined)}
+                        fullWidth
+                        InputLabelProps={{ shrink: true }}
+                        helperText="Separate discount; only if registered"
+                      />
+                      <EnvGuideHelp guide={guideForInput('esi_noise_score')} />
+                    </Box>
                   </Grid>
                   <Grid item xs={6}>
-                    <TextField
-                      label="Quantum: prior-year paid GT"
-                      type="number"
-                      value={state.call.quantum_prior_year_gt ?? ''}
-                      onChange={(e) => handleCallChange('quantum_prior_year_gt', parseFloat(e.target.value) || undefined)}
-                      fullWidth
-                      InputLabelProps={{ shrink: true }}
-                      helperText=">1.5m → 2.5%, >10m → 5%, >25m → 7.5%; 0 = no discount"
-                    />
+                    <Box display="flex" alignItems="center">
+                      <TextField
+                        label="Quantum: prior-year paid GT"
+                        type="number"
+                        value={state.call.quantum_prior_year_gt ?? ''}
+                        onChange={(e) => handleCallChange('quantum_prior_year_gt', parseFloat(e.target.value) || undefined)}
+                        fullWidth
+                        InputLabelProps={{ shrink: true }}
+                        helperText=">1.5m → 2.5%, >10m → 5%, >25m → 7.5%; 0 = no discount"
+                      />
+                      <EnvGuideHelp guide={guideForInput('quantum_prior_year_gt')} />
+                    </Box>
                   </Grid>
                   <Grid item xs={6}>
                     <TextField
@@ -1145,15 +1269,18 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
 
             <Grid container spacing={2}>
               <Grid item xs={6}>
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={state.call.ops_usage}
-                      onChange={(e) => handleCallChange('ops_usage', e.target.checked)}
-                    />
-                  }
-                  label="OPS Usage"
-                />
+                <Box display="flex" alignItems="center">
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={state.call.ops_usage}
+                        onChange={(e) => handleCallChange('ops_usage', e.target.checked)}
+                      />
+                    }
+                    label="OPS Usage"
+                  />
+                  <EnvGuideHelp guide={guideForInput('ops_usage')} />
+                </Box>
               </Grid>
               {state.call.ops_usage && (
                 <>
@@ -1592,17 +1719,15 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                                                   <TableCell>
                                                     <Box display="flex" alignItems="center" sx={{ gap: 1, flexWrap: 'wrap' }}>
                                                       {feeLineLabel(fee)}
-                                                      {fee.quality_flags.some(f => f.type === 'estimated_parameter' || f.type === 'estimated_engine_tier' || f.type === 'fallback_value') && (
-                                                        <span className="status-badge status-warning">est.</span>
-                                                      )}
-                                                      {fee.quality_flags.some(f => f.type === 'contract_vs_published') && (
-                                                        <span className="status-badge status-caveat">contract rate may differ</span>
-                                                      )}
-                                                      {fee.quality_flags.filter(f => !['estimated_parameter', 'estimated_engine_tier', 'fallback_value', 'contract_vs_published'].includes(f.type)).length > 0 && (
-                                                        <span className="status-badge status-info">
-                                                          {fee.quality_flags.filter(f => !['estimated_parameter', 'estimated_engine_tier', 'fallback_value', 'contract_vs_published'].includes(f.type)).length} flag{fee.quality_flags.filter(f => !['estimated_parameter', 'estimated_engine_tier', 'fallback_value', 'contract_vs_published'].includes(f.type)).length > 1 ? 's' : ''}
+                                                      {badgesForFlags(fee.quality_flags).map((b, i) => (
+                                                        <span
+                                                          key={i}
+                                                          className={`status-badge ${b.kind === 'estimated' ? 'status-warning' : b.kind === 'assumed' ? 'status-info' : b.kind === 'caveat' ? 'status-caveat' : 'status-info'}`}
+                                                          title={b.title}
+                                                        >
+                                                          {b.label}
                                                         </span>
-                                                      )}
+                                                      ))}
                                                     </Box>
                                                     <Box className="source-ref" sx={{ mt: 0.5 }}>
                                                       {fee.band_or_basis}

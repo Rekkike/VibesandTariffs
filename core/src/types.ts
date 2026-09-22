@@ -405,6 +405,7 @@ export interface CallInput {
   // Hamburg call inputs
   engine_tier?: 'Tier 0' | 'Tier I' | 'Tier II' | 'Tier III' | string; // certified IAPP tier (most polluting engine)
   engine_tier_estimated?: boolean; // true when derived by heuristic rather than certified
+  infer_engine_tier_from_build_year?: boolean; // explicit user action (spec v0.2.29): apply the build-year heuristic and flag it as an assumption; never invoked silently
   esi_noise_score?: number;        // ESI noise score (esi_score is the ESI air score)
   quantum_prior_year_gt?: number; // prior calendar year accumulated paid GT (HPA quantum discount)
   lay_time_hours?: number;        // HHLA tonnage-dues lay time basis (hours)
@@ -492,6 +493,7 @@ export interface QualityFlag {
   type: QualityFlagType;
   description: string;
   severity: 'info' | 'warning' | 'error';
+  parameter?: string; // spec v0.2.29 badge honesty: names the assumed parameter (e.g. engine_tier)
 }
 
 // Biller breakdown in results

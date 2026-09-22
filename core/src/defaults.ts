@@ -71,6 +71,13 @@ export function defaultCall(portId: string): CallInput {
     } : {}),
     ...(portId === 'hamburg' ? {
       lay_time_hours: 16,
+      // NOx Tier (spec v0.2.29): the default is the worst case (Tier 0),
+      // flagged by the engine as an assumed parameter. The build-year
+      // heuristic is never invoked silently - only via the explicit
+      // infer_engine_tier_from_build_year user action.
+      engine_tier: undefined,
+      engine_tier_estimated: undefined,
+      infer_engine_tier_from_build_year: false,
       gangway_class: 'overseas',
       gangway_count: 1,
       gangway_supervision_hours: 0,

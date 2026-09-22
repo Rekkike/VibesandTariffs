@@ -212,16 +212,31 @@ export function evaluateFeeRule(
     }
   };
   
-  // Resolve engine Tier with the build-year heuristic fallback
+  // Resolve engine Tier (spec v0.2.29 default-call contract). Tier is a
+  // classification the tariff always applies — there is no "no Tier" state —
+  // so the clean-baseline default is the worst case: Tier 0, with a named
+  // assumed-parameter flag. The build-year heuristic is never invoked
+  // silently: it applies only when the user explicitly requests it
+  // (infer_engine_tier_from_build_year), and then flags the assumption.
   const resolveEngineTier = (): { tier: string; estimated: boolean } => {
     if (call.engine_tier) return { tier: call.engine_tier, estimated: !!call.engine_tier_estimated };
-    const inferred = inferEngineTier(vessel.built_year);
+    if (call.infer_engine_tier_from_build_year) {
+      const inferred = inferEngineTier(vessel.built_year);
+      qualityFlags.push({
+        type: 'assumed_parameter',
+        parameter: 'engine_tier',
+        description: `NOx Tier "${inferred}" inferred from build year ${vessel.built_year ?? 'unknown'} (user-requested inference); enter the certified IAPP tier to override`,
+        severity: 'info'
+      });
+      return { tier: inferred, estimated: true };
+    }
     qualityFlags.push({
-      type: 'estimated_engine_tier',
-      description: `Engine Tier "${inferred}" assumed by build-year heuristic (built ${vessel.built_year ?? 'unknown'}); enter the certified IAPP tier to override`,
+      type: 'assumed_parameter',
+      parameter: 'engine_tier',
+      description: 'NOx Tier not entered; worst case (Tier 0) applied; enter the certified IAPP tier to override',
       severity: 'info'
     });
-    return { tier: inferred, estimated: true };
+    return { tier: 'Tier 0', estimated: true };
   };
   
   // Calculate base amount based on rate structure

@@ -85,6 +85,13 @@ describe('Environmental default-call contract (spec v0.2.28)', () => {
       expect(call.ops_usage).toBe(false);
     });
 
+    it('NOx Tier defaults to worst case: not entered, inference never invoked (spec v0.2.29)', () => {
+      const call = defaultCall('hamburg');
+      expect(call.engine_tier).toBeUndefined();
+      expect(call.engine_tier_estimated).toBeUndefined();
+      expect(call.infer_engine_tier_from_build_year).toBe(false);
+    });
+
     it('Helsingborg levers default to list price: valid ISSC, EES at the tariff level', () => {
       const call = defaultCall('helsingborg');
       expect(call.issc_valid).toBe(true);
@@ -125,6 +132,51 @@ describe('Environmental default-call contract (spec v0.2.28)', () => {
       const worstCaseResult = calculatePortCallCost(port, worstCaseInput);
       expect(defaultResult.total).toBe(worstCaseResult.total);
       expect(defaultResult.total).toBeGreaterThan(0);
+    });
+
+    it('hamburg: default call yields the Tier 0 computation with a named assumed-parameter flag', () => {
+      const port = loadPort('hamburg');
+      const result = calculatePortCallCost(port, defaultInputFor(port));
+      // Worst case: Tier 0 (+30% env), regardless of any built year on the
+      // default vessel (the default vessel carries none)
+      const explicit = calculatePortCallCost(port, {
+        vessel: DEFAULT_VESSEL,
+        call: { ...defaultCall('hamburg'), engine_tier: 'Tier 0', engine_tier_estimated: false }
+      });
+      expect(result.total).toBe(explicit.total);
+      const flag = result.quality_flags.find(
+        f => f.type === 'assumed_parameter' && f.parameter === 'engine_tier'
+      );
+      expect(flag).toBeDefined();
+      expect(flag!.description).toContain('NOx Tier not entered; worst case (Tier 0) applied');
+      // The assumed-Tier flag must not contaminate the estimated-parameters
+      // subtotal: Tier is a classification, not an estimated charge
+      expect(result.total_estimated_parameters).toBe(731000);
+      const handling = result.billers.flatMap(b => b.fees).find(f => f.fee_rule_id === 'hhla_container_handling');
+      expect(handling!.quality_flags.some(f => f.type === 'estimated_parameter')).toBe(true);
+      const portFee = result.billers.flatMap(b => b.fees).find(f => f.fee_rule_id === 'hpa_port_fee')!;
+      expect(portFee.quality_flags.some(f => f.type === 'estimated_parameter')).toBe(false);
+      expect(portFee.quality_flags.some(f => f.type === 'assumed_parameter' && f.parameter === 'engine_tier')).toBe(true);
+    });
+
+    it('hamburg: entering a certified tier removes the assumed-parameter flag; inference is never invoked without explicit user action', () => {
+      const port = loadPort('hamburg');
+      // Certified tier entered: no flag, different (lower) total
+      const certified = calculatePortCallCost(port, {
+        vessel: { ...DEFAULT_VESSEL, built_year: 2024 },
+        call: { ...defaultCall('hamburg'), engine_tier: 'Tier II', engine_tier_estimated: false }
+      });
+      expect(certified.quality_flags.some(f => f.type === 'assumed_parameter' && f.parameter === 'engine_tier')).toBe(false);
+      const defaulted = calculatePortCallCost(port, {
+        vessel: { ...DEFAULT_VESSEL, built_year: 2024 },
+        call: defaultCall('hamburg')
+      });
+      expect(defaulted.total).toBeGreaterThan(certified.total);
+      // Without the explicit action, a modern build year must not silently
+      // apply the heuristic: default (Tier 0) > heuristic (Tier II)
+      expect(defaulted.quality_flags.some(
+        f => f.type === 'assumed_parameter' && f.parameter === 'engine_tier' && f.description.includes('inferred from build year')
+      )).toBe(false);
     });
 
     it.each(PORT_IDS)('%s: entering an ESI score actually discounts (guard against a dead input)', (id) => {

@@ -98,10 +98,14 @@ describe('CP1 - HPA worked example (S1 p.8, printed figures verbatim)', () => {
   });
 });
 
-describe('CP2 - Helgafell (8,890 GT, Tier I per build-year default, 16 h, 400 containers, feeder gangway)', () => {
+describe('CP2 - Helgafell (8,890 GT, Tier I per reference, 16 h, 400 containers, feeder gangway)', () => {
+  // Reference CP2: Tier I (the reference's stated tier for this fixture;
+  // entered explicitly per spec v0.2.29 - the default is worst-case Tier 0,
+  // and the build-year heuristic is never invoked without user action).
   const result = calculatePortCallCost(port, makeCall({
     gt: 8890,
-    built_year: 2005,
+    engine_tier: 'Tier I',
+    engine_tier_estimated: false,
     lay_time_hours: 16,
     containers_discharged_le20ft: 400,
     gangway_class: 'feeder'
@@ -161,7 +165,8 @@ describe('CP2 - Helgafell (8,890 GT, Tier I per build-year default, 16 h, 400 co
 describe('CP3 - MSC Kyungmin (21,979 GT, Tier II, 16 h, 400 containers, overseas gangway)', () => {
   const result = calculatePortCallCost(port, makeCall({
     gt: 21979,
-    built_year: 2024,
+    engine_tier: 'Tier II',
+    engine_tier_estimated: false,
     lay_time_hours: 16,
     containers_discharged_le20ft: 400,
     gangway_class: 'overseas'
@@ -208,7 +213,8 @@ describe('CP3 - MSC Kyungmin (21,979 GT, Tier II, 16 h, 400 containers, overseas
 describe('CP4 - Vistula Maersk (34,882 GT, Tier II, 16 h, 500 containers)', () => {
   const result = calculatePortCallCost(port, makeCall({
     gt: 34882,
-    built_year: 2018,
+    engine_tier: 'Tier II',
+    engine_tier_estimated: false,
     lay_time_hours: 16,
     containers_discharged_le20ft: 500,
     gangway_class: 'overseas'
@@ -252,7 +258,8 @@ describe('CP4 - Vistula Maersk (34,882 GT, Tier II, 16 h, 500 containers)', () =
 describe('CP5 - Maren Maersk (194,849 GT, Tier II, 50 h, 3,000 containers)', () => {
   const result = calculatePortCallCost(port, makeCall({
     gt: 194849,
-    built_year: 2014,
+    engine_tier: 'Tier II',
+    engine_tier_estimated: false,
     lay_time_hours: 50,
     containers_discharged_le20ft: 3000,
     gangway_class: 'overseas'
@@ -303,16 +310,60 @@ describe('Hamburg engine mechanics (reference sections 3-8)', () => {
     expect(inferEngineTier(undefined)).toBe('Tier 0');
   });
 
-  it('build-year heuristic applies without a user-set tier and flags it as estimated', () => {
-    const result = calculatePortCallCost(port, makeCall({
+  it('default call is worst-case Tier 0 with a named assumed-parameter flag (spec v0.2.29)', () => {
+    // No tier entered, no inference requested: the build year must NOT
+    // influence the result. The default is Tier 0 (+30% env), explicitly
+    // flagged as an assumed parameter.
+    const modern = calculatePortCallCost(port, makeCall({
       gt: 21979,
       built_year: 2024,
       lay_time_hours: 16
     }));
-    expect(result.quality_flags.some(f => f.type === 'estimated_engine_tier')).toBe(true);
-    const portFee = feeByRule(result, 'hpa_port_fee');
-    const env = portFee.component_amounts!.find(c => c.label === 'Environmental component')!;
-    expect(env.amount).toBe(604.41); // Tier II +5%
+    const legacy = calculatePortCallCost(port, makeCall({
+      gt: 21979,
+      built_year: 1995,
+      lay_time_hours: 16
+    }));
+    const tierFlag = modern.quality_flags.find(
+      f => f.type === 'assumed_parameter' && f.parameter === 'engine_tier'
+    );
+    expect(tierFlag).toBeDefined();
+    expect(tierFlag!.description).toContain('NOx Tier not entered; worst case (Tier 0) applied');
+    expect(legacy.quality_flags.some(f => f.type === 'assumed_parameter' && f.parameter === 'engine_tier')).toBe(true);
+    // Same GT, same tier outcome regardless of build year
+    expect(feeByRule(modern, 'hpa_port_fee').amount).toBe(feeByRule(legacy, 'hpa_port_fee').amount);
+    const env = feeByRule(modern, 'hpa_port_fee').component_amounts!.find(c => c.label === 'Environmental component')!;
+    // 20,000 x 0.0214 + 1,979 x 0.0746 = 575.63 base; Tier 0 +30% -> 748.32
+    expect(env.amount).toBe(748.32);
+  });
+
+  it('explicit infer-from-build-year action applies the heuristic and flags it as an assumption', () => {
+    const result = calculatePortCallCost(port, makeCall({
+      gt: 21979,
+      built_year: 2024,
+      infer_engine_tier_from_build_year: true,
+      lay_time_hours: 16
+    }));
+    const flag = result.quality_flags.find(
+      f => f.type === 'assumed_parameter' && f.parameter === 'engine_tier'
+    );
+    expect(flag).toBeDefined();
+    expect(flag!.description).toContain('inferred from build year 2024');
+    const env = feeByRule(result, 'hpa_port_fee').component_amounts!.find(c => c.label === 'Environmental component')!;
+    expect(env.amount).toBe(604.41); // Tier II +5% (heuristic value, now explicit)
+  });
+
+  it('entering a certified tier removes the assumed-parameter flag', () => {
+    const result = calculatePortCallCost(port, makeCall({
+      gt: 21979,
+      engine_tier: 'Tier II',
+      engine_tier_estimated: false,
+      lay_time_hours: 16
+    }));
+    expect(result.quality_flags.some(f => f.type === 'assumed_parameter' && f.parameter === 'engine_tier')).toBe(false);
+    expect(result.quality_flags.some(f => f.type === 'estimated_engine_tier')).toBe(false);
+    const env = feeByRule(result, 'hpa_port_fee').component_amounts!.find(c => c.label === 'Environmental component')!;
+    expect(env.amount).toBe(604.41);
   });
 
   it('Helgafell Tier II alternative: port fee ~ 960.74 (env 199.76)', () => {
@@ -381,7 +432,8 @@ describe('Hamburg engine mechanics (reference sections 3-8)', () => {
     // ESI air 20-<25: 0.35%, max 175. Small vessel: pct applies.
     const small = calculatePortCallCost(port, makeCall({
       gt: 8890,
-      built_year: 2005,
+      engine_tier: 'Tier I',
+      engine_tier_estimated: false,
       esi_score: 22
     }));
     const envSmall = feeByRule(small, 'hpa_port_fee').component_amounts!.find(c => c.label === 'Environmental component')!;
