@@ -1982,12 +1982,6 @@ fee_rules:
     verified_on: '2026-09-21'
     verified_by: vibe-session-helsingborg
     document_issued: '2025-11-01'
-  adjustments:
-  - type: discount
-    percentage: 40
-    condition: pilotage_hours > 7
-    stacking_order: 1
-    description: 40% discount for piloted time exceeding 7 hours
   applicable_conditions:
     pilotage_required: true
     nt_class: 1
@@ -2014,8 +2008,10 @@ fee_rules:
   - type: discount
     percentage: 40
     condition: pilotage_hours > 7
+    apply_to: excess_units
+    threshold_units: 14
     stacking_order: 1
-    description: 40% discount for piloted time exceeding 7 hours
+    description: 40% discount on the per-half-hour fee for time beyond 7 hours only (SJOFS 2025:5 sec 25)
   applicable_conditions:
     pilotage_required: true
     nt_class: 1
@@ -2036,12 +2032,6 @@ fee_rules:
     verified_on: '2026-09-21'
     verified_by: vibe-session-helsingborg
     document_issued: '2025-11-01'
-  adjustments:
-  - type: discount
-    percentage: 40
-    condition: pilotage_hours > 7
-    stacking_order: 1
-    description: 40% discount for piloted time exceeding 7 hours
   applicable_conditions:
     pilotage_required: true
     nt_class: 2
@@ -2068,8 +2058,10 @@ fee_rules:
   - type: discount
     percentage: 40
     condition: pilotage_hours > 7
+    apply_to: excess_units
+    threshold_units: 14
     stacking_order: 1
-    description: 40% discount for piloted time exceeding 7 hours
+    description: 40% discount on the per-half-hour fee for time beyond 7 hours only (SJOFS 2025:5 sec 25)
   applicable_conditions:
     pilotage_required: true
     nt_class: 2
@@ -2090,12 +2082,6 @@ fee_rules:
     verified_on: '2026-09-21'
     verified_by: vibe-session-helsingborg
     document_issued: '2025-11-01'
-  adjustments:
-  - type: discount
-    percentage: 40
-    condition: pilotage_hours > 7
-    stacking_order: 1
-    description: 40% discount for piloted time exceeding 7 hours
   applicable_conditions:
     pilotage_required: true
     nt_class: 3
@@ -2122,8 +2108,10 @@ fee_rules:
   - type: discount
     percentage: 40
     condition: pilotage_hours > 7
+    apply_to: excess_units
+    threshold_units: 14
     stacking_order: 1
-    description: 40% discount for piloted time exceeding 7 hours
+    description: 40% discount on the per-half-hour fee for time beyond 7 hours only (SJOFS 2025:5 sec 25)
   applicable_conditions:
     pilotage_required: true
     nt_class: 3
@@ -2144,12 +2132,6 @@ fee_rules:
     verified_on: '2026-09-21'
     verified_by: vibe-session-helsingborg
     document_issued: '2025-11-01'
-  adjustments:
-  - type: discount
-    percentage: 40
-    condition: pilotage_hours > 7
-    stacking_order: 1
-    description: 40% discount for piloted time exceeding 7 hours
   applicable_conditions:
     pilotage_required: true
     nt_class: 4
@@ -2176,8 +2158,10 @@ fee_rules:
   - type: discount
     percentage: 40
     condition: pilotage_hours > 7
+    apply_to: excess_units
+    threshold_units: 14
     stacking_order: 1
-    description: 40% discount for piloted time exceeding 7 hours
+    description: 40% discount on the per-half-hour fee for time beyond 7 hours only (SJOFS 2025:5 sec 25)
   applicable_conditions:
     pilotage_required: true
     nt_class: 4
@@ -2198,12 +2182,6 @@ fee_rules:
     verified_on: '2026-09-21'
     verified_by: vibe-session-helsingborg
     document_issued: '2025-11-01'
-  adjustments:
-  - type: discount
-    percentage: 40
-    condition: pilotage_hours > 7
-    stacking_order: 1
-    description: 40% discount for piloted time exceeding 7 hours
   applicable_conditions:
     pilotage_required: true
     nt_class: 5
@@ -2230,8 +2208,10 @@ fee_rules:
   - type: discount
     percentage: 40
     condition: pilotage_hours > 7
+    apply_to: excess_units
+    threshold_units: 14
     stacking_order: 1
-    description: 40% discount for piloted time exceeding 7 hours
+    description: 40% discount on the per-half-hour fee for time beyond 7 hours only (SJOFS 2025:5 sec 25)
   applicable_conditions:
     pilotage_required: true
     nt_class: 5
@@ -2252,12 +2232,6 @@ fee_rules:
     verified_on: '2026-09-21'
     verified_by: vibe-session-helsingborg
     document_issued: '2025-11-01'
-  adjustments:
-  - type: discount
-    percentage: 40
-    condition: pilotage_hours > 7
-    stacking_order: 1
-    description: 40% discount for piloted time exceeding 7 hours
   applicable_conditions:
     pilotage_required: true
     nt_class: 6
@@ -2284,8 +2258,10 @@ fee_rules:
   - type: discount
     percentage: 40
     condition: pilotage_hours > 7
+    apply_to: excess_units
+    threshold_units: 14
     stacking_order: 1
-    description: 40% discount for piloted time exceeding 7 hours
+    description: 40% discount on the per-half-hour fee for time beyond 7 hours only (SJOFS 2025:5 sec 25)
   applicable_conditions:
     pilotage_required: true
     nt_class: 6
@@ -2306,12 +2282,6 @@ fee_rules:
     verified_on: '2026-09-21'
     verified_by: vibe-session-helsingborg
     document_issued: '2025-11-01'
-  adjustments:
-  - type: discount
-    percentage: 40
-    condition: pilotage_hours > 7
-    stacking_order: 1
-    description: 40% discount for piloted time exceeding 7 hours
   applicable_conditions:
     pilotage_required: true
     nt_class: 7
@@ -2338,8 +2308,10 @@ fee_rules:
   - type: discount
     percentage: 40
     condition: pilotage_hours > 7
+    apply_to: excess_units
+    threshold_units: 14
     stacking_order: 1
-    description: 40% discount for piloted time exceeding 7 hours
+    description: 40% discount on the per-half-hour fee for time beyond 7 hours only (SJOFS 2025:5 sec 25)
   applicable_conditions:
     pilotage_required: true
     nt_class: 7
@@ -2360,12 +2332,6 @@ fee_rules:
     verified_on: '2026-09-21'
     verified_by: vibe-session-helsingborg
     document_issued: '2025-11-01'
-  adjustments:
-  - type: discount
-    percentage: 40
-    condition: pilotage_hours > 7
-    stacking_order: 1
-    description: 40% discount for piloted time exceeding 7 hours
   applicable_conditions:
     pilotage_required: true
     nt_class: 8
@@ -2392,8 +2358,10 @@ fee_rules:
   - type: discount
     percentage: 40
     condition: pilotage_hours > 7
+    apply_to: excess_units
+    threshold_units: 14
     stacking_order: 1
-    description: 40% discount for piloted time exceeding 7 hours
+    description: 40% discount on the per-half-hour fee for time beyond 7 hours only (SJOFS 2025:5 sec 25)
   applicable_conditions:
     pilotage_required: true
     nt_class: 8
@@ -2414,12 +2382,6 @@ fee_rules:
     verified_on: '2026-09-21'
     verified_by: vibe-session-helsingborg
     document_issued: '2025-11-01'
-  adjustments:
-  - type: discount
-    percentage: 40
-    condition: pilotage_hours > 7
-    stacking_order: 1
-    description: 40% discount for piloted time exceeding 7 hours
   applicable_conditions:
     pilotage_required: true
     nt_class: 9
@@ -2446,8 +2408,10 @@ fee_rules:
   - type: discount
     percentage: 40
     condition: pilotage_hours > 7
+    apply_to: excess_units
+    threshold_units: 14
     stacking_order: 1
-    description: 40% discount for piloted time exceeding 7 hours
+    description: 40% discount on the per-half-hour fee for time beyond 7 hours only (SJOFS 2025:5 sec 25)
   applicable_conditions:
     pilotage_required: true
     nt_class: 9
@@ -2468,12 +2432,6 @@ fee_rules:
     verified_on: '2026-09-21'
     verified_by: vibe-session-helsingborg
     document_issued: '2025-11-01'
-  adjustments:
-  - type: discount
-    percentage: 40
-    condition: pilotage_hours > 7
-    stacking_order: 1
-    description: 40% discount for piloted time exceeding 7 hours
   applicable_conditions:
     pilotage_required: true
     nt_class: 10
@@ -2500,8 +2458,10 @@ fee_rules:
   - type: discount
     percentage: 40
     condition: pilotage_hours > 7
+    apply_to: excess_units
+    threshold_units: 14
     stacking_order: 1
-    description: 40% discount for piloted time exceeding 7 hours
+    description: 40% discount on the per-half-hour fee for time beyond 7 hours only (SJOFS 2025:5 sec 25)
   applicable_conditions:
     pilotage_required: true
     nt_class: 10
@@ -2609,11 +2569,12 @@ fee_rules:
   applicable_conditions:
     pilotage_required: true
     ordering_lead_time_band: 3_4h
-- id: sfv_ordering_fee_4h_plus
+- id: sfv_ordering_fee_4_5h
   fee_family: ordering_fee
   biller: Sjöfartsverket
-  name: Ordering Fee - 4+ hours
-  description: 'Beställningsavgift (ordering fee) by lead time band: 4+ hours. Applies when pilotage is required
+  name: Ordering Fee - 4-5 hours
+  description: 'Beställningsavgift (ordering fee) by lead time band: 4 to under 5 hours (SJOFS 2025:5 sec 11:
+    no fee when the pilot is ordered 5 or more hours ahead). Applies when pilotage is required
     and lead time falls in this band (lower inclusive, upper exclusive).'
   rate_structure:
     type: flat
@@ -2629,7 +2590,7 @@ fee_rules:
     document_issued: '2025-11-01'
   applicable_conditions:
     pilotage_required: true
-    ordering_lead_time_band: 4h_plus
+    ordering_lead_time_band: 4_5h
 - id: poh_towage_estimate
   fee_family: towage
   biller: Towage operator (estimated)

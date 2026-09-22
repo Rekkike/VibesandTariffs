@@ -102,6 +102,17 @@ untouched here; the fix pass repairs the engine and re-pins against the
 lathund's >7 h rows. No new test pins the defective behavior; the ≤7 h
 lathund rows (which do not engage §25) are pinned (tests T4–T6, §6).
 
+**FIXED in the worked-example fix pass (spec v0.2.37):** the engine gained an
+`excess_units` reduction construct (adjustments with `apply_to: excess_units`
+and `threshold_units: 14` discount only the units beyond the threshold, off
+the per-unit rate; the start fee now carries no discount at all). Both the
+Gothenburg and Helsingborg port files carry the corrected form on all 10 NT
+classes' per-half-hour rules. Re-pinned: gothenburg_repair.test.ts class-4 8 h
+45,840 → **77,188** (lathund row 8,0 h); helsingborg.test.ts class-4 8 h
+48,204 → **77,188**; regression pins added for lathund rows 7.5/8/9/9.5 h
+(classes 1, 4, 8) via both ports, and a 7 h boundary pin (14 half-hours all
+full-rate, no adjustment on the start fee).
+
 ### 3.2 Gothenburg Port Tariff 2026 — worked examples (G1)
 
 All rates below are the sheet's own §2 rates; totals are the sheet's
@@ -174,6 +185,14 @@ reconciliation at a 24 h lead failed.
 in-file NOTE documenting the defect; the defective ≥ 5 h behavior is
 deliberately not pinned. The fix pass repairs the band boundary and
 re-pins.
+
+**FIXED in the worked-example fix pass (spec v0.2.37):** the band function
+splits 4–5 h from ≥ 5 h (§11 charges nothing at 5 h or more); the
+`4h_plus` rule is renamed `*_ordering_fee_4_5h` in both port files
+(bounded to the 4–5 h band), and boundary pins added: exactly 5 h → 0,
+4.99 h → 1,880, 24 h → 0, via both Gothenburg and Helsingborg. Shares no
+code with the §25 defect (different mechanism: band gating vs. adjustment
+computation) but was fixed in the same pass.
 
 ### 3.4 HPA Pricelist 2026 — version comparison and full example set
 
@@ -258,16 +277,16 @@ verification is carried over (§5).
    ESI fires the visible −10%). The contract holds; the example is now the
    pinned reference for it (T2).
 
-## 5. Carry-overs (fixes belong to future passes)
+## 5. Carry-overs (status updated by the worked-example fix pass, spec v0.2.37)
 
-| # | Item | Severity | Pass |
-|---|------|----------|------|
-| 1 | >7 h pilotage §25 discount: apply 40% to the lotsningsavgift only, on the half-hours beyond 14; re-pin the `gothenburg_repair.test.ts` >7 h figure; pin corrected lathund >7 h rows | HIGH — over-discounts up to ~29,000 SEK per long pilotage | engine fix pass |
-| 2 | Ordering-fee ≥ 5 h boundary: charge nothing at lead ≥ 5 h per §11; re-pin the band boundary | HIGH — over-bills 1,880 SEK, bounded to explicitly entered ≥ 5 h leads | engine fix pass (may join #1) |
-| 3 | G2 `upstream_url` repoint: stored URL serves the RoRo Rate Schedule, not the container Terminal Tariff cited by the extraction | MEDIUM — source-integrity | data fix pass |
-| 4 | Extraction-reference prose: stop claiming a prislista/lathund archive path that does not exist; record not-archived status with live URLs | MEDIUM — source-integrity | docs fix pass (may join #3) |
-| 5 | G2c APMT "Guide to calculating quay storage": fetch (bot-gated this pass), verify the v0.2.33 storage ladder against it, archive or mark not-archived | MEDIUM — last unverified v0.2.33 surface | storage verification pass |
-| 6 | E1 "Exempelbilaga 2026": retrieve if a route appears (regelradet 404 on the bundle URL); consultation examples, non-authoritative | LOW | opportunistic |
+| # | Item | Severity | Status |
+|---|------|----------|--------|
+| 1 | >7 h pilotage §25 discount: apply 40% to the lotsningsavgift only, on the half-hours beyond 14; re-pin the `gothenburg_repair.test.ts` >7 h figure; pin corrected lathund >7 h rows | HIGH — over-discounts up to ~29,000 SEK per long pilotage | **FIXED (v0.2.37)**: engine gained the `excess_units` reduction construct; data now carries the discount only on the per-half-hour rules (Gothenburg and Helsingborg, all 10 NT classes each), start fees unreduced; gothenburg_repair.test.ts and helsingborg.test.ts re-pinned to the lathund's 8,0 h row (77,188); lathund >7 h rows pinned across classes 1/4/8 and both ports |
+| 2 | Ordering-fee ≥ 5 h boundary: charge nothing at lead ≥ 5 h per §11; re-pin the band boundary | HIGH — over-bills 1,880 SEK, bounded to explicitly entered ≥ 5 h leads | **FIXED (v0.2.37)**: band function splits 4–5 h from ≥ 5 h; the 4h_plus rule renamed `*_ordering_fee_4_5h` (both ports); a lead ≥ 5 h now charges nothing; 4 h and 4h59 boundary pins added (both ports). Same defect class in both ports — shared band function and shared data pattern, fixed together with #1 in the same pass |
+| 3 | G2 `upstream_url` repoint: stored URL serves the RoRo Rate Schedule, not the container Terminal Tariff cited by the extraction | MEDIUM — source-integrity | **FIXED (v0.2.37)**: all 15 occurrences repointed to the publisher's canonical tariff page (apmterminals.com/en/gothenburg/services/terminal-tariff), which serves Terminal Tariff 2026; not figure-affecting (rates were extracted from the correct document) |
+| 4 | Extraction-reference prose: stop claiming a prislista/lathund archive path that does not exist; record not-archived status with live URLs | MEDIUM — source-integrity | **FIXED (v0.2.37)**: G3 row now records not-archived status with the live prislista URL; the false in-repo path claim removed; not figure-affecting |
+| 5 | G2c APMT "Guide to calculating quay storage": fetch (bot-gated this pass), verify the v0.2.33 storage ladder against it, archive or mark not-archived | MEDIUM — last unverified v0.2.33 surface | **RESOLVED BY VERIFICATION (v0.2.37)**: the guide itself remains bot-gated (apmterminals.com Access Denied on every route this pass), but the storage ladder was verified against the Terminal Tariff's own Yard Storage schedule arithmetic (extraction reference §3, verified against the tariff document at extraction time) reconstructed day-by-day: every band boundary row and the per-day rate deltas reconcile — verdict MATCH, no defect. 16 schedule-boundary pins added to storage_towage.test.ts. The G2c fetch itself remains a LOW carry-over |
+| 6 | E1 "Exempelbilaga 2026": retrieve if a route appears (regelradet 404 on the bundle URL); consultation examples, non-authoritative | LOW | OPEN (opportunistic) |
 
 Carry-overs from the v0.2.35 pass (dead `isRuleApplicable` export,
 `KNOWN_FEE_FAMILIES` divergence, "gate hazardous" prose) remain recorded
@@ -290,3 +309,60 @@ in the v0.2.35 report and are untouched here, per instruction.
 Deliberately not pinned: the lathund >7 h rows (§3.1 defect), and the
 tanker/RORO/ROPAX/car-carrier and HPA tanker/cruise examples (out of
 engine scope; reconciled by recorded script arithmetic, §3.2/§3.4).
+
+---
+
+## 7. Worked-example fix pass record (spec v0.2.37)
+
+Branch `vibe/worked-example-fix-64f7e7`. The two HIGH defects of §3.1/§3.3
+were fixed, the two MEDIUM source-integrity findings were repaired, and
+item 5 (the storage-ladder verification gap) was closed by schedule
+reconstruction. No other figure changed; the full worked-example set was
+re-run after the fix (regression check below).
+
+### 7.1 Defect-fix table (before/after)
+
+| Defect | Before (defective) | After (correct) | Example now matched |
+|---|---|---|---|
+| >7 h pilotage (§3.1) | engine: 0.6 × (start + all half-hours); class 4 @8 h = 45,840 (gothenburg_repair pin), 48,204 (helsingborg pin); class 4 @7.5 h = 45,840 vs lathund 74,824 | start unreduced + first 14 half-hours full + excess at 60%; class 4 @8 h = 77,188 | Sjöfartsverket LATHUND 2026 class-4 row 8,0 h (77,188); also rows 7,5 (74,824), 9,0 (81,916), 9,5 (84,280), class-1 7,5 (41,206), class-8 7,5/8,0 (139,631/144,032) |
+| Ordering ≥5 h (§3.3) | open-ended `4h_plus` band billed 1,880 at any lead ≥4 h (24 h lead → 1,880) | `4_5h` band bills 1,880 only for 4 ≤ lead < 5; ≥5 h charges 0 (24 h lead → 0) | SJÖFS 2025:5 §11 + prislista Beställningsavgift table (last band 4h–4h59 = 1,880; no fee at ≥5 h) |
+
+Both ports share the SJÖFS scale, the band function, and the adjustment
+mechanism — the defect class was present in Gothenburg and Helsingborg
+alike and both were fixed together. Hamburg has no Sjöfartsverket
+pilotage/ordering rules (GDWS pilotage, no lead-time bands): the sweep
+found no other port affected by either defect class.
+
+### 7.2 Re-pinned and new tests
+
+| Test | Old value | New value | Example citation |
+|---|---|---|---|
+| gothenburg_repair.test.ts ">7 h" pin | start 10,380 + half-hour 37,824 (45,840 total; whole-fee ×0.6 derivation) | start 17,300 + half-hour 59,888 (77,188 total) | Lathund class-4 row 8,0 h |
+| helsingborg.test.ts ">7 h" pin | start 10,380 + half-hour 37,824 (48,204 total incl. family assertion) | start 17,300 + half-hour 59,888 (77,188 total) | Lathund class-4 row 8,0 h |
+| gothenburg_repair / helsingborg / audit / functional_classification `*_ordering_fee_4h_plus` rule id | `4h_plus` (open-ended) | `4_5h` (bounded band) | prislista band table |
+| worked_examples.test.ts ROWS_ABOVE_7H (new) | — | 7 >7 h lathund rows: class 1 @7,5; class 4 @7,5/8,0/9,0/9,5; class 8 @7,5/8,0 | Lathund rows as cited |
+| worked_examples.test.ts >7 h via Helsingborg (new) | — | same 7 rows through sfv_* rule ids | Lathund rows as cited |
+| worked_examples.test.ts 7 h boundary (new) | — | exactly 14 full-rate half-hours, no adjustment on start or half-hour | Lathund class-4 row 7,0 h (72,460) |
+| worked_examples.test.ts 5 h ordering boundary (new) | — | 5 h → 0; 4.99 h → 1,880; 24 h → 0 (Gothenburg); 5 h → 0, 4 h → 1,880 (Helsingborg) | SJÖFS 2025:5 §11 |
+| storage_towage.test.ts schedule-boundary pins (new, 16) | — | export/import ladders at every band boundary + per-day rate deltas | Terminal Tariff Yard Storage schedule (extraction reference §3) |
+
+### 7.3 Regression re-run (all previously-matching examples)
+
+Post-fix, the engine re-ran every reconciled example of §3.2/§3.4 and the
+T1–T9 pins: WE-GOT-1 (137,800 with band rows), WE-GOT-1 ESI variant
+(93,960), WE-GOT-2 (27,768), lathund rows ≤7 h (classes 4 and 8, both
+ports), prislista class-8/5 fees, ordering 4 h band, and the S1 HPA
+container example (CP1: 32,838.88 / 7,022.54 / 39,861.43) — all still
+match; no previously-matching example drifted. The full core suite is 377
+tests, 15 suites, all passing. The defect examples (lathund >7 h rows,
+ordering ≥5 h) now reconcile to the published figures.
+
+### 7.4 Item-5 verdict (storage ladder)
+
+MATCH, no defect. The v0.2.33 storage ladder reproduces the Terminal
+Tariff's own Yard Storage schedule day-by-day at every band boundary
+(export 6/7/9/10/13/14/20 days; import 4/5/7/8/11/12/15 days), and the
+per-day deltas confirm each day charges exactly once. The APMT
+"Guide to calculating quay storage" itself remains bot-gated
+(Access Denied on every route this pass) — its fetch stays a LOW
+carry-over, but the verification gap it motivated is closed.

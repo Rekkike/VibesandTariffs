@@ -304,7 +304,7 @@ fee_rules:
     source_reference:
       document_name: "terminal-tariff-2026-june.pdf"
       document_url: "docs/sources/sweden/gothenburg/apm-terminals/terminal-tariff-2026-june.pdf"
-      upstream_url: "https://assets.ctfassets.net/mivicpf5zews/5ktO1h8dk2iM4ikpGgGLwY/0a628a9eb5de141d44aae005fd4e0739/Terminal_Tariff_Gothenburg_2026.pdf"
+      upstream_url: "https://www.apmterminals.com/en/gothenburg/services/terminal-tariff"
       document_issued: "2025-12-01"
       page: 2
       clause: "Terminal Charges on Goods - break bulk"
@@ -1712,12 +1712,6 @@ fee_rules:
     applicable_conditions:
       pilotage_required: true
       nt_class: 1
-    adjustments:
-      - type: discount
-        percentage: 40
-        condition: "pilotage_hours > 7"
-        description: "40% discount for piloted time exceeding 7 hours"
-        stacking_order: 1
     rate_structure:
       type: flat
       amount: 9670
@@ -1743,7 +1737,9 @@ fee_rules:
       - type: discount
         percentage: 40
         condition: "pilotage_hours > 7"
-        description: "40% discount for piloted time exceeding 7 hours"
+        apply_to: excess_units
+        threshold_units: 14
+        description: "40% discount on the per-half-hour fee for time beyond 7 hours only (SJOFS 2025:5 sec 25)"
         stacking_order: 1
     rate_structure:
       type: per_unit
@@ -1767,12 +1763,6 @@ fee_rules:
     applicable_conditions:
       pilotage_required: true
       nt_class: 2
-    adjustments:
-      - type: discount
-        percentage: 40
-        condition: "pilotage_hours > 7"
-        description: "40% discount for piloted time exceeding 7 hours"
-        stacking_order: 1
     rate_structure:
       type: flat
       amount: 12485
@@ -1798,7 +1788,9 @@ fee_rules:
       - type: discount
         percentage: 40
         condition: "pilotage_hours > 7"
-        description: "40% discount for piloted time exceeding 7 hours"
+        apply_to: excess_units
+        threshold_units: 14
+        description: "40% discount on the per-half-hour fee for time beyond 7 hours only (SJOFS 2025:5 sec 25)"
         stacking_order: 1
     rate_structure:
       type: per_unit
@@ -1822,12 +1814,6 @@ fee_rules:
     applicable_conditions:
       pilotage_required: true
       nt_class: 3
-    adjustments:
-      - type: discount
-        percentage: 40
-        condition: "pilotage_hours > 7"
-        description: "40% discount for piloted time exceeding 7 hours"
-        stacking_order: 1
     rate_structure:
       type: flat
       amount: 15290
@@ -1853,7 +1839,9 @@ fee_rules:
       - type: discount
         percentage: 40
         condition: "pilotage_hours > 7"
-        description: "40% discount for piloted time exceeding 7 hours"
+        apply_to: excess_units
+        threshold_units: 14
+        description: "40% discount on the per-half-hour fee for time beyond 7 hours only (SJOFS 2025:5 sec 25)"
         stacking_order: 1
     rate_structure:
       type: per_unit
@@ -1877,12 +1865,6 @@ fee_rules:
     applicable_conditions:
       pilotage_required: true
       nt_class: 4
-    adjustments:
-      - type: discount
-        percentage: 40
-        condition: "pilotage_hours > 7"
-        description: "40% discount for piloted time exceeding 7 hours"
-        stacking_order: 1
     rate_structure:
       type: flat
       amount: 17300
@@ -1908,7 +1890,9 @@ fee_rules:
       - type: discount
         percentage: 40
         condition: "pilotage_hours > 7"
-        description: "40% discount for piloted time exceeding 7 hours"
+        apply_to: excess_units
+        threshold_units: 14
+        description: "40% discount on the per-half-hour fee for time beyond 7 hours only (SJOFS 2025:5 sec 25)"
         stacking_order: 1
     rate_structure:
       type: per_unit
@@ -1932,12 +1916,6 @@ fee_rules:
     applicable_conditions:
       pilotage_required: true
       nt_class: 5
-    adjustments:
-      - type: discount
-        percentage: 40
-        condition: "pilotage_hours > 7"
-        description: "40% discount for piloted time exceeding 7 hours"
-        stacking_order: 1
     rate_structure:
       type: flat
       amount: 19305
@@ -1963,7 +1941,9 @@ fee_rules:
       - type: discount
         percentage: 40
         condition: "pilotage_hours > 7"
-        description: "40% discount for piloted time exceeding 7 hours"
+        apply_to: excess_units
+        threshold_units: 14
+        description: "40% discount on the per-half-hour fee for time beyond 7 hours only (SJOFS 2025:5 sec 25)"
         stacking_order: 1
     rate_structure:
       type: per_unit
@@ -1987,12 +1967,6 @@ fee_rules:
     applicable_conditions:
       pilotage_required: true
       nt_class: 6
-    adjustments:
-      - type: discount
-        percentage: 40
-        condition: "pilotage_hours > 7"
-        description: "40% discount for piloted time exceeding 7 hours"
-        stacking_order: 1
     rate_structure:
       type: flat
       amount: 26105
@@ -2018,7 +1992,9 @@ fee_rules:
       - type: discount
         percentage: 40
         condition: "pilotage_hours > 7"
-        description: "40% discount for piloted time exceeding 7 hours"
+        apply_to: excess_units
+        threshold_units: 14
+        description: "40% discount on the per-half-hour fee for time beyond 7 hours only (SJOFS 2025:5 sec 25)"
         stacking_order: 1
     rate_structure:
       type: per_unit
@@ -2042,12 +2018,6 @@ fee_rules:
     applicable_conditions:
       pilotage_required: true
       nt_class: 7
-    adjustments:
-      - type: discount
-        percentage: 40
-        condition: "pilotage_hours > 7"
-        description: "40% discount for piloted time exceeding 7 hours"
-        stacking_order: 1
     rate_structure:
       type: flat
       amount: 29730
@@ -2073,7 +2043,9 @@ fee_rules:
       - type: discount
         percentage: 40
         condition: "pilotage_hours > 7"
-        description: "40% discount for piloted time exceeding 7 hours"
+        apply_to: excess_units
+        threshold_units: 14
+        description: "40% discount on the per-half-hour fee for time beyond 7 hours only (SJOFS 2025:5 sec 25)"
         stacking_order: 1
     rate_structure:
       type: per_unit
@@ -2097,12 +2069,6 @@ fee_rules:
     applicable_conditions:
       pilotage_required: true
       nt_class: 8
-    adjustments:
-      - type: discount
-        percentage: 40
-        condition: "pilotage_hours > 7"
-        description: "40% discount for piloted time exceeding 7 hours"
-        stacking_order: 1
     rate_structure:
       type: flat
       amount: 32540
@@ -2128,7 +2094,9 @@ fee_rules:
       - type: discount
         percentage: 40
         condition: "pilotage_hours > 7"
-        description: "40% discount for piloted time exceeding 7 hours"
+        apply_to: excess_units
+        threshold_units: 14
+        description: "40% discount on the per-half-hour fee for time beyond 7 hours only (SJOFS 2025:5 sec 25)"
         stacking_order: 1
     rate_structure:
       type: per_unit
@@ -2152,12 +2120,6 @@ fee_rules:
     applicable_conditions:
       pilotage_required: true
       nt_class: 9
-    adjustments:
-      - type: discount
-        percentage: 40
-        condition: "pilotage_hours > 7"
-        description: "40% discount for piloted time exceeding 7 hours"
-        stacking_order: 1
     rate_structure:
       type: flat
       amount: 35755
@@ -2183,7 +2145,9 @@ fee_rules:
       - type: discount
         percentage: 40
         condition: "pilotage_hours > 7"
-        description: "40% discount for piloted time exceeding 7 hours"
+        apply_to: excess_units
+        threshold_units: 14
+        description: "40% discount on the per-half-hour fee for time beyond 7 hours only (SJOFS 2025:5 sec 25)"
         stacking_order: 1
     rate_structure:
       type: per_unit
@@ -2207,12 +2171,6 @@ fee_rules:
     applicable_conditions:
       pilotage_required: true
       nt_class: 10
-    adjustments:
-      - type: discount
-        percentage: 40
-        condition: "pilotage_hours > 7"
-        description: "40% discount for piloted time exceeding 7 hours"
-        stacking_order: 1
     rate_structure:
       type: flat
       amount: 45420
@@ -2238,7 +2196,9 @@ fee_rules:
       - type: discount
         percentage: 40
         condition: "pilotage_hours > 7"
-        description: "40% discount for piloted time exceeding 7 hours"
+        apply_to: excess_units
+        threshold_units: 14
+        description: "40% discount on the per-half-hour fee for time beyond 7 hours only (SJOFS 2025:5 sec 25)"
         stacking_order: 1
     rate_structure:
       type: per_unit
@@ -2361,14 +2321,14 @@ fee_rules:
       verified_on: "2025-12-10"
       verified_by: "Port Cost Analyzer Team"
 
-  - id: sjofartsverket_ordering_fee_4h_plus
+  - id: sjofartsverket_ordering_fee_4_5h
     fee_family: ordering_fee
     biller: Sjöfartsverket
-    name: Ordering Fee - 4+ hours
-    description: "Ordering fee for lead time 4 hours or more"
+    name: Ordering Fee - 4-5 hours
+    description: "Ordering fee for lead time 4 hours to under 5 hours (SJOFS 2025:5 sec 11: no fee when the pilot is ordered 5 or more hours ahead)"
     applicable_conditions:
       pilotage_required: true
-      ordering_lead_time_band: 4h_plus
+      ordering_lead_time_band: 4_5h
     rate_structure:
       type: flat
       amount: 1880
@@ -2402,7 +2362,7 @@ fee_rules:
     source_reference:
       document_name: "terminal-tariff-2026-june.pdf"
       document_url: "docs/sources/sweden/gothenburg/apm-terminals/terminal-tariff-2026-june.pdf"
-      upstream_url: "https://assets.ctfassets.net/mivicpf5zews/5ktO1h8dk2iM4ikpGgGLwY/0a628a9eb5de141d44aae005fd4e0739/Terminal_Tariff_Gothenburg_2026.pdf"
+      upstream_url: "https://www.apmterminals.com/en/gothenburg/services/terminal-tariff"
       document_issued: "2025-12-01"
       page: 2
       clause: "Terminal Charges"
@@ -2424,7 +2384,7 @@ fee_rules:
     source_reference:
       document_name: "terminal-tariff-2026-june.pdf"
       document_url: "docs/sources/sweden/gothenburg/apm-terminals/terminal-tariff-2026-june.pdf"
-      upstream_url: "https://assets.ctfassets.net/mivicpf5zews/5ktO1h8dk2iM4ikpGgGLwY/0a628a9eb5de141d44aae005fd4e0739/Terminal_Tariff_Gothenburg_2026.pdf"
+      upstream_url: "https://www.apmterminals.com/en/gothenburg/services/terminal-tariff"
       document_issued: "2025-12-01"
       page: 2
       clause: "Terminal Charges"
@@ -2443,7 +2403,7 @@ fee_rules:
     source_reference:
       document_name: "terminal-tariff-2026-june.pdf"
       document_url: "docs/sources/sweden/gothenburg/apm-terminals/terminal-tariff-2026-june.pdf"
-      upstream_url: "https://assets.ctfassets.net/mivicpf5zews/5ktO1h8dk2iM4ikpGgGLwY/0a628a9eb5de141d44aae005fd4e0739/Terminal_Tariff_Gothenburg_2026.pdf"
+      upstream_url: "https://www.apmterminals.com/en/gothenburg/services/terminal-tariff"
       document_issued: "2025-12-01"
       page: 2
       clause: "Terminal Charges"
@@ -2463,7 +2423,7 @@ fee_rules:
     source_reference:
       document_name: "terminal-tariff-2026-june.pdf"
       document_url: "docs/sources/sweden/gothenburg/apm-terminals/terminal-tariff-2026-june.pdf"
-      upstream_url: "https://assets.ctfassets.net/mivicpf5zews/5ktO1h8dk2iM4ikpGgGLwY/0a628a9eb5de141d44aae005fd4e0739/Terminal_Tariff_Gothenburg_2026.pdf"
+      upstream_url: "https://www.apmterminals.com/en/gothenburg/services/terminal-tariff"
       document_issued: "2025-12-01"
       page: 3
       clause: "ISPS Security"
@@ -2483,7 +2443,7 @@ fee_rules:
     source_reference:
       document_name: "terminal-tariff-2026-june.pdf"
       document_url: "docs/sources/sweden/gothenburg/apm-terminals/terminal-tariff-2026-june.pdf"
-      upstream_url: "https://assets.ctfassets.net/mivicpf5zews/5ktO1h8dk2iM4ikpGgGLwY/0a628a9eb5de141d44aae005fd4e0739/Terminal_Tariff_Gothenburg_2026.pdf"
+      upstream_url: "https://www.apmterminals.com/en/gothenburg/services/terminal-tariff"
       document_issued: "2025-12-01"
       page: 3
       clause: "Hatch Cover Charge"
@@ -2503,7 +2463,7 @@ fee_rules:
     source_reference:
       document_name: "terminal-tariff-2026-june.pdf"
       document_url: "docs/sources/sweden/gothenburg/apm-terminals/terminal-tariff-2026-june.pdf"
-      upstream_url: "https://assets.ctfassets.net/mivicpf5zews/5ktO1h8dk2iM4ikpGgGLwY/0a628a9eb5de141d44aae005fd4e0739/Terminal_Tariff_Gothenburg_2026.pdf"
+      upstream_url: "https://www.apmterminals.com/en/gothenburg/services/terminal-tariff"
       document_issued: "2025-12-01"
       page: 3
       clause: "Gearbox Handling"
@@ -2539,7 +2499,7 @@ fee_rules:
     source_reference:
       document_name: "terminal-tariff-2026-june.pdf"
       document_url: "docs/sources/sweden/gothenburg/apm-terminals/terminal-tariff-2026-june.pdf"
-      upstream_url: "https://assets.ctfassets.net/mivicpf5zews/5ktO1h8dk2iM4ikpGgGLwY/0a628a9eb5de141d44aae005fd4e0739/Terminal_Tariff_Gothenburg_2026.pdf"
+      upstream_url: "https://www.apmterminals.com/en/gothenburg/services/terminal-tariff"
       document_issued: "2025-12-01"
       page: 4
       clause: "Yard Storage"
@@ -2570,7 +2530,7 @@ fee_rules:
     source_reference:
       document_name: "terminal-tariff-2026-june.pdf"
       document_url: "docs/sources/sweden/gothenburg/apm-terminals/terminal-tariff-2026-june.pdf"
-      upstream_url: "https://assets.ctfassets.net/mivicpf5zews/5ktO1h8dk2iM4ikpGgGLwY/0a628a9eb5de141d44aae005fd4e0739/Terminal_Tariff_Gothenburg_2026.pdf"
+      upstream_url: "https://www.apmterminals.com/en/gothenburg/services/terminal-tariff"
       document_issued: "2025-12-01"
       page: 4
       clause: "Yard Storage"
@@ -2592,7 +2552,7 @@ fee_rules:
     source_reference:
       document_name: "terminal-tariff-2026-june.pdf"
       document_url: "docs/sources/sweden/gothenburg/apm-terminals/terminal-tariff-2026-june.pdf"
-      upstream_url: "https://assets.ctfassets.net/mivicpf5zews/5ktO1h8dk2iM4ikpGgGLwY/0a628a9eb5de141d44aae005fd4e0739/Terminal_Tariff_Gothenburg_2026.pdf"
+      upstream_url: "https://www.apmterminals.com/en/gothenburg/services/terminal-tariff"
       document_issued: "2025-12-01"
       page: 5
       clause: "Yard Surcharges - OOG"
@@ -2613,7 +2573,7 @@ fee_rules:
     source_reference:
       document_name: "terminal-tariff-2026-june.pdf"
       document_url: "docs/sources/sweden/gothenburg/apm-terminals/terminal-tariff-2026-june.pdf"
-      upstream_url: "https://assets.ctfassets.net/mivicpf5zews/5ktO1h8dk2iM4ikpGgGLwY/0a628a9eb5de141d44aae005fd4e0739/Terminal_Tariff_Gothenburg_2026.pdf"
+      upstream_url: "https://www.apmterminals.com/en/gothenburg/services/terminal-tariff"
       document_issued: "2025-12-01"
       page: 5
       clause: "Yard Surcharges - Reefer"
@@ -2634,7 +2594,7 @@ fee_rules:
     source_reference:
       document_name: "terminal-tariff-2026-june.pdf"
       document_url: "docs/sources/sweden/gothenburg/apm-terminals/terminal-tariff-2026-june.pdf"
-      upstream_url: "https://assets.ctfassets.net/mivicpf5zews/5ktO1h8dk2iM4ikpGgGLwY/0a628a9eb5de141d44aae005fd4e0739/Terminal_Tariff_Gothenburg_2026.pdf"
+      upstream_url: "https://www.apmterminals.com/en/gothenburg/services/terminal-tariff"
       document_issued: "2025-12-01"
       page: 5
       clause: "Yard Surcharges - Dangerous Goods"
@@ -2655,7 +2615,7 @@ fee_rules:
     source_reference:
       document_name: "terminal-tariff-2026-june.pdf"
       document_url: "docs/sources/sweden/gothenburg/apm-terminals/terminal-tariff-2026-june.pdf"
-      upstream_url: "https://assets.ctfassets.net/mivicpf5zews/5ktO1h8dk2iM4ikpGgGLwY/0a628a9eb5de141d44aae005fd4e0739/Terminal_Tariff_Gothenburg_2026.pdf"
+      upstream_url: "https://www.apmterminals.com/en/gothenburg/services/terminal-tariff"
       document_issued: "2025-12-01"
       page: 5
       clause: "Yard Surcharges - Overdue Dangerous"
@@ -2675,7 +2635,7 @@ fee_rules:
     source_reference:
       document_name: "terminal-tariff-2026-june.pdf"
       document_url: "docs/sources/sweden/gothenburg/apm-terminals/terminal-tariff-2026-june.pdf"
-      upstream_url: "https://assets.ctfassets.net/mivicpf5zews/5ktO1h8dk2iM4ikpGgGLwY/0a628a9eb5de141d44aae005fd4e0739/Terminal_Tariff_Gothenburg_2026.pdf"
+      upstream_url: "https://www.apmterminals.com/en/gothenburg/services/terminal-tariff"
       document_issued: "2025-12-01"
       page: 5
       clause: "Gate Hazardous"
@@ -2697,7 +2657,7 @@ fee_rules:
     source_reference:
       document_name: "terminal-tariff-2026-june.pdf"
       document_url: "docs/sources/sweden/gothenburg/apm-terminals/terminal-tariff-2026-june.pdf"
-      upstream_url: "https://assets.ctfassets.net/mivicpf5zews/5ktO1h8dk2iM4ikpGgGLwY/0a628a9eb5de141d44aae005fd4e0739/Terminal_Tariff_Gothenburg_2026.pdf"
+      upstream_url: "https://www.apmterminals.com/en/gothenburg/services/terminal-tariff"
       document_issued: "2025-12-01"
       page: 6
       clause: "Idle Berth Service"
