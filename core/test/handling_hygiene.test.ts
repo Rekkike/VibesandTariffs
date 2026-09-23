@@ -1,8 +1,12 @@
 /**
- * v0.2.24 Hamburg handling-hygiene tests. The Hamburg model is a deliberate
- * hybrid (HHLA terminal call, handling default anchored to Eurogate's
- * published lift charge) and must be impossible to misread as an Eurogate
- * call. Locked constraints:
+ * v0.2.24 Hamburg handling-hygiene tests, amended v0.2.49 (terminal scope).
+ * The Hamburg model is a deliberate hybrid (HHLA terminal call, handling
+ * default anchored to Eurogate's published lift charge) and must be
+ * impossible to misread as an Eurogate call. The v0.2.24 deferral state
+ * (no Eurogate biller) is discharged: Eurogate is now modeled per the
+ * v0.2.49 terminal scope, so the anti-mixing constraint is mutual
+ * exclusion within one call (HHLA items only for HHLA calls, Eurogate
+ * items only for Eurogate calls). Locked constraints:
  *  - line label: the rule name reads "Container Handling (est., Eurogate
  *    anchor)" so estimate status and source are visible in every rendering
  *  - terminal hygiene: exactly one terminal_handling rule, estimated_parameter
@@ -66,10 +70,20 @@ describe('handling hygiene a: line label carries the estimate and its anchor', (
 });
 
 describe('handling hygiene b: terminal-hygiene constraint (no Eurogate mixing)', () => {
-  it('exactly one terminal_handling rule exists in the Hamburg file', () => {
-    const handlingRules = hamburg.fee_rules.filter(r => r.fee_family === 'terminal_handling');
-    expect(handlingRules.length).toBe(1);
-    expect(handlingRules[0].id).toBe('hhla_container_handling');
+  it('exactly one HHLA and one Eurogate terminal_handling rule exist, each operator-gated (v0.2.49 re-pin)', () => {
+    // v0.2.24 pinned one handling rule with no Eurogate biller (deferral
+    // state). v0.2.49 models the Eurogate call per the terminal-scope
+    // contract, so the pin is now: one handling rule per operator, and the
+    // two can never co-fire in one call.
+    const handlingRules = hamburg.fee_rules
+      .filter(r => r.fee_family === 'terminal_handling')
+      .map(r => r.id)
+      .sort();
+    expect(handlingRules).toEqual(['eurogate_container_handling', 'hhla_container_handling']);
+    for (const id of handlingRules) {
+      const rule = hamburg.fee_rules.find(r => r.id === id)!;
+      expect(rule.applicable_conditions?.terminal_operator).toBeDefined();
+    }
   });
 
   it('its biller is HHLA and it carries the estimated_parameter block', () => {
@@ -78,17 +92,27 @@ describe('handling hygiene b: terminal-hygiene constraint (no Eurogate mixing)',
     expect(rule.estimated_parameter).toBeDefined();
   });
 
-  it('no Eurogate biller exists and no rule references an Eurogate biller or lift path', () => {
+  it('every Eurogate rule is operator-gated and no Eurogate line can fire on an HHLA call (v0.2.49 re-pin)', () => {
+    // v0.2.24 pinned the absence of any Eurogate biller (deferral state).
+    // v0.2.49 models the Eurogate call, so the pin is now: the Eurogate
+    // biller exists and every Eurogate rule is gated to Eurogate calls only.
     const billerNames = (hamburg.billers ?? []).map(b => b.name);
-    expect(billerNames.some(n => /eurogate/i.test(n))).toBe(false);
-    expect(hamburg.fee_rules.some(r => /eurogate/i.test(r.biller))).toBe(false);
-    // The only Eurogate mention in a rule name is the anchor label on the
-    // handling rule itself; no second handling path may exist.
-    const eurogateRules = hamburg.fee_rules.filter(r =>
-      r.id !== 'hhla_container_handling' &&
-      (/eurogate/i.test(r.name) || /eurogate/i.test(r.id))
-    );
-    expect(eurogateRules.length).toBe(0);
+    expect(billerNames.some(n => /EUROGATE/i.test(n))).toBe(true);
+    const eurogateRules = hamburg.fee_rules.filter(r => /eurogate/i.test(r.id));
+    expect(eurogateRules.length).toBe(3);
+    for (const rule of eurogateRules) {
+      expect(rule.applicable_conditions?.terminal_operator).toBe('Eurogate');
+    }
+    // HHLA dues and Eurogate handling cannot co-fire: an HHLA call (the
+    // default) bills no Eurogate line at all.
+    const result = calculatePortCallCost(hamburg, {
+      vessel: { gt: 21979, nt: 8000, loa_m: 171.92, vessel_type: 'container', built_year: 2024 } as any,
+      call: { containers_loaded_le20ft: 0, containers_loaded_gt20ft: 0, containers_discharged_le20ft: 400, containers_discharged_gt20ft: 0, lay_time_hours: 16, terminal_operator: 'HHLA' } as any
+    });
+    const eurogateLines = result.billers
+      .flatMap(b => b.fees)
+      .filter(f => /eurogate/i.test(f.fee_rule_id ?? ''));
+    expect(eurogateLines.length).toBe(0);
   });
 
   it('no rule combination can bill an HHLA due with a non-HHLA handling line or vice versa', () => {

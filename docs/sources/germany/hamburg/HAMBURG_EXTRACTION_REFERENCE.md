@@ -1,4 +1,4 @@
-Note: this file is the authority of record for the Hamburg port file. Verified through five review passes (source fidelity, arithmetic, scope, buildability, scripted re-derivation). If the builder directive and this document differ, this document wins. Source PDFs are downloaded into the docs/sources/ paths in section 1 from the public URLs provided in the directive; S5 and S6 contain no prices and are pending user upload.
+Note: this file is the authority of record for the Hamburg port file. Verified through five review passes (source fidelity, arithmetic, scope, buildability, scripted re-derivation). If the builder directive and this document differ, this document wins. Source PDFs are downloaded into the docs/sources/ paths in section 1 from the public URLs provided in the directive; S5 and S6 contain no prices and are not archived in-repo (source-integrity contract: recorded not-archived with live upstream URLs, section 1).
 
 
 # Port Call Cost Analyzer — Hamburg Extraction Reference
@@ -26,8 +26,8 @@ Repository paths (mirroring the Gothenburg convention):
 - \`docs/sources/germany/hamburg/port-authority/stc-maritime-shipping-2026.pdf\` (S2)
 - \`docs/sources/germany/hamburg/port-authority/port-gtc-2026.pdf\` (S3)
 - \`docs/sources/germany/hamburg/hhla/quay-tariff-2026.pdf\` (S4)
-- \`docs/sources/germany/hamburg/hhla/gtcch-2017.pdf\` (S5)
-- \`docs/sources/germany/hamburg/uvhh/kaibetriebsordnung-2004.pdf\` (S6)
+- S5 (GTCCH) — **not archived in-repo**; live upstream URL: \`https://hhla.de/fileadmin/download/General_Terms_and_Conditions_for_Container_Handling_GTCCH_01112017.pdf\`
+- S6 (Kaibetriebsordnung) — **not archived in-repo**; live upstream URLs: English edition \`https://hhla.de/fileadmin/download/kaibetriebsordnung_mai_2004_ENG.pdf\`, German original \`https://www.uvhh.de/files/pdf/agb/kaibetriebsordnung_mai_2004.pdf\`
 - \`docs/sources/germany/national/gdws/pilot-tariff-2026.pdf\` (S7)
 - \`docs/sources/germany/hamburg/city-bukea/ship-waste-fees-ordinance-2025.pdf\` (S8)
 - \`docs/sources/germany/hamburg/eurogate/prices-and-conditions-2026.pdf\` (S9, reference anchor — see §8)
@@ -39,6 +39,7 @@ Repository paths (mirroring the Gothenburg convention):
 | HPA (Hamburg Port Authority) | Port dues, lay-up/demurrage, HPA berths, admin | Public-law institution; ELBA portal declarations |
 | GDWS (federal) via pilot station | Pilotage dues + pilot fees | Federal ordinance; dues go to federal funds, fees to pilots' funds |
 | HHLA (CTB/CTA/CTT, one tariff) | Ship's dues, cargo dues, storage, container services | MSC/Hamburg JV since 2024; one published tariff for all three terminals |
+| EUROGATE Container Terminal Hamburg | Berthing charge, waterside handling, security, social-fund surcharge (v0.2.49 terminal scope) | Second terminal operator; published Prices and Conditions (S9, effective 01.03.2026); modeled for Eurogate calls only |
 
 Not modeled in v1: Eurogate Hamburg (second terminal operator), towage operators (Bugsier, Petersen & Alpers, Lütgens & Reimers), waste contractors. See estimated parameters.
 
@@ -174,7 +175,7 @@ Both are user-editable, carry an "estimated" flag rendered visibly, and default 
 | Container handling rate (€/move) | 358 | EUROGATE Container Terminal Hamburg published waterside lift charge, chapter 5.1.1 (S9, effective 01.03.2026). HHLA's own rate is unpublished ("upon request", S4 §2.1.2); the competing terminal's published rate in the same port is the reference anchor. Definition: a "move" is one container lifted once (discharge or load) — a call handling 3,000 containers = 3,000 moves. Caveats: (a) Eurogate's 358 is subject to its own 1.5% social fund (S9 1.3.13), effective Eurogate rate ≈ 363.37 — the anchor stays at the published headline 358 with this noted; (b) lashing/unlashing (47 €/container, S9 5.2.1) is separate and not included — HHLA negotiated rates may bundle it |
 | Towage (€/call) | 15,000 | 3 tugs × ~5,000 €/tug, deep-sea Elbe escort market range; no published tariff (operators Bugsier, Petersen & Alpers, Lütgens & Reimers) |
 
-The comparison view must show these rows with the estimate flag, never as verified data. S9 also documents Eurogate's own vessel-side charges (berthing charge 1.04 €/GT for 24 h + 0.60 €/GT per 12 h; 1.5% social fund excluding storage, lashing materials, security) — recorded for the future Eurogate terminal scenario, not modeled in Hamburg v1 (HHLA is the reference terminal).
+The comparison view must show these rows with the estimate flag, never as verified data. S9's Eurogate vessel-side charges are now modeled for Eurogate calls per the v0.2.49 terminal scope (berthing charge 1.04 €/GT for the first 24 h + 0.60 €/GT per commenced 12 h, 5.1.1 lift, 13.1 security, 1.3.13 social fund excluding storage, lashing materials, security); HHLA remains the reference operator for the default call.
 
 ## 9. Worked Checkpoints
 
@@ -301,3 +302,47 @@ Method: all 36 checkpoint figures recomputed programmatically (scripted, not by 
 4. **Confirmed at 36/36.** After corrections, every checkpoint figure reproduces from its inputs by script. CP1's strict re-derivation also confirmed: the only divergence from S1's printed figures is the documented hidden-decimals rounding (32,838.89 strict vs 32,838.88 printed), covered by the CP1 acceptance rule.
 
 Document status: sound pending user decisions (§10 open items). The five verification passes have covered source fidelity, arithmetic, scope, buildability, and scripted re-derivation; the residual risks are the explicitly flagged assumptions (engine tiers, lay-time defaults, towage and handling estimates), each of which is a documented parameter rather than a silent constant.
+
+## 16. Sixth Review — Terminal Scope and Ship's-Dues Diagnosis (2026-09-24, v0.2.49)
+
+Scope: the three verdicts of the terminal-scope directive, decided from the archived S4 and S9 texts plus the live S5 (GTCCH) and S6 (Kaibetriebsordnung) upstream documents. All quotations verbatim.
+
+### Verdict one — HHLA Kaitarif clause 1.2 tonnage dues apply to fully cellular container vessels
+
+Decisive texts (S4 = HHLA Quay Tariff from 1st January 2026; S6 = Kaibetriebsordnung; S5 = GTCCH):
+
+- S4 §1 (basis): "Ship's wharfage dues will be charged for the use by a seagoing ship of a quayside cargo handling facility. This is based on — cargo volume discharged/loaded (weight dues) — tonnage and the seagoing vessel's lay time (tonnage dues)."
+- S4 §1.1 (the exclusion parenthetical): "Weight dues for all services rendered for the volume of cargo transhipped across the quay (excluding fully cellular container services handled at special facilities)". The parenthetical excludes fully cellular container services from **weight dues only** — "special facilities" (the container terminals) are excluded from the weight-dues chapter because their cargo moves are priced as container services, not conventional tonnage. Tonnage dues (§1.2) carry no such exclusion.
+- S4 §1.2: "Tonnage dues — 1.2.1 for the first 24 hours of lay time 1.25 €* — 1.2.2 thereafter per each 12 hours of lay time or parts thereof 0.80 €* — * Multiplied by gross tonnage (GT)".
+- S4 §9.1.1: "A vessel fee is required for the use of a quayside cargo handling facility by a seagoing vessel. This is payable by the ship's agent." — §9 speaks of the vessel fee generally; nothing confines it to non-container berths.
+- S4 §9.6: "Contracts are based on the General Terms and Conditions for Container Handling (GTCCH) of the Hamburger Hafen und Logistik Aktiengesellschaft in the relevant valid version." — the container-terminal contract relationship runs through the GTCCH and prices via the Kaitarif.
+- S5 (GTCCH) §1: "These General Terms and Conditions for Container Handling (GTCCH) shall be applied for all handling and storage of goods at the quay and all business activity on instruction of the client … in connection with handling activities for the client." §3 (Prices): "… the Company will charge for its services the prices stipulated in the actual version of the HHLA Kaitarif."
+- S6 (Kaibetriebsordnung) §1: "Quay facilities provide a service for the handling and storing of goods which have been or are to be carried by sea." — the general quay framework knows no container-vessel carve-out; the Kaitarif (per §9.6) is the container-specific price layer on top of it.
+
+**Verdict, no hedging: clause 1.2 tonnage dues apply to fully cellular container vessels at the HHLA container terminals.** The §1.1 parenthetical is a weight-dues scope rule, not a vessel-fee exemption; the vessel fee for a container vessel at a special facility is the §1.2 tonnage dues, billed to the ship's agent (§9.1.1). The existing `hhla_tonnage_dues` rule models this correctly — no over-application exists.
+
+### Verdict two — Eurogate price structure: ship's dues billed separately from handling
+
+Read of S9 (EUROGATE Container Terminal Hamburg, Prices and Conditions, effective 1st March 2026):
+
+- Ch. 2 "Vessel charges": "Vessel charges will be calculated for the use of handling facilities by a seagoing vessel in accordance with: — The gross tonnage (GRT) and lay time of the vessel (berthing charge) — The volume of cargo loaded / discharged (quay dues)."
+- §2.1: "Every ship berthed at the handling facilities must pay a berthing charge. … 2.1.1 for the first 24 hours of lay days minimum 1,04 € — 2.1.2 for every additional 12 hours or part of this period 0,60 €. … The lay time commences at the time of docking and shall be calculated uninterruptedly until the time of casting off." (§2.1.3 lay-by-berth TEU charge; §2.2 quay dues for non-containerized cargo.)
+- Ch. 5 "Handling Charges": "5.1.1 ISO-Container, empty / full — 358,00 €" per container; "All prices plus security charge (see Section 13)." §5.2 lashing is a separate per-container line (47,00 €); §5.3 IMO surcharge 87,00 €; §5.4 minimum charge 3,308 € per ship for ≤20-container calls.
+- Ch. 13: "13.1 Container full / empty — Per Container — 24,95 €."
+- §1.3.13: "A 1.5% social fund will be charged on all services. The following shall be excluded: - storage charges - materials for stowing and lashing - security charge."
+
+**Verdict, no hedging: the 5.1.1 waterside lift charge does not bundle berth time.** An Eurogate call's complete published charge structure for a container vessel is: berthing charge (2.1.1/2.1.2, GT × hours) + waterside lifts (5.1.1 × moves) + security (13.1 × containers) + optional lashing/IMO/minimum (5.2–5.4) + 1.5% social fund on all services except storage, lashing materials, and security (1.3.13). Lay-time charges are their own chapter (ch. 2), billed separately from handling (ch. 5) — exactly as HHLA's structure.
+
+### Verdict three — the hybrid is an estimate-basis disclosure, not a double count
+
+The current handling line is anchored to Eurogate 5.1.1 (358 EUR/move) while the call's ship's dues come from the HHLA Kaitarif (§1.2). Since verdict two establishes that 5.1.1 does **not** bundle berth/lay-time charges, the Eurogate anchor rate carries no lay-time component into the HHLA call. The hybrid therefore cannot double-count a lay-time component; it is an estimate-basis disclosure (HHLA's own rate is unpublished, S4 §2.1.2 "upon request"). The existing labeling contract stands: the line reads "Container Handling (est., Eurogate anchor)", never presented as an Eurogate terminal call.
+
+### Reconciliation against the CMA CGM benchmark
+
+Benchmark: ~1.5M EUR understood as a negotiated effective cost for an equivalent vessel. Default HHLA call (Maren Maersk, 194,849 GT, Tier II inferred, 50 h lay time, 4,000 moves): port fee 62,030.41 + tonnage dues 711,198.85 + security 68,000 + gangway 633.80 + handling estimate 1,432,000 + pilotage (dues+fees ~70,000) + waste (~2,745) + towage estimate 15,000 ≈ 2.36M EUR. Under verdict one the tonnage dues stand (no removal), so the raw-tariff HHLA call remains ≈ 2.36M — above the 1.5M benchmark, consistent with the raw-versus-negotiated relationship: the model prices published-tariff ceilings; a negotiated carrier realizes lower effective costs. An Eurogate call (published structure): port fee 62,030.41 + berthing 553,371.16 + handling 1,432,000 + security 99,800 + social fund 8,300.57 + pilotage ~70,000 + waste ~2,745 + towage 15,000 ≈ 2.24M EUR — likewise a raw ceiling. No verdict combination brings the raw figure below the benchmark, and none needs to: raw ≥ negotiated is the defensible relationship, now recorded in the spec's comparison philosophy.
+
+### Implementation per verdicts (this pass)
+
+- All 27 HHLA rules carry `applicable_conditions: terminal_operator: HHLA`; the three new Eurogate rules (berthing charge, handling, security + the biller's 1.5% social-fund surcharge) carry `terminal_operator: Eurogate`. Port-wide charges (HPA, GDWS, BUKEA, towage) are operator-neutral.
+- `terminal_operator` call input (default HHLA, the reference operator); absent or unrecognized values fall back to HHLA with a visible fallback flag.
+- Verdict pins: `core/test/terminal_scope.test.ts` (fallback visibility, mutual exclusion, Eurogate arithmetic at 50 h = 553,371.16, published-rate handling without estimated flag, security 99,800, social fund 8,300.57, operator-neutral demurrage and berth-fee scoping).

@@ -431,6 +431,7 @@ export interface CallInput {
   lay_time_hours?: number;        // HHLA tonnage-dues lay time basis (hours)
   port_time_hours?: number;        // total time in port (HPA demurrage basis); falls back to lay_time_hours
   hpa_berth_usage?: boolean;      // vessel at an HPA-operated berth (not a terminal berth)
+  terminal_operator?: string;    // Hamburg terminal scope (spec v0.2.49): 'HHLA' or 'Eurogate'; gates operator-scoped rules (ship's dues, security, handling); absent or unrecognized defaults to HHLA with a visible fallback flag
   berth_type?: 'quay' | 'dolphins' | string;
   berth_hours?: number;
   gangway_class?: 'feeder' | 'overseas' | string; // HHLA gangway class

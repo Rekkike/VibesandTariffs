@@ -1,9 +1,11 @@
 # Hamburg 2026 port file - Port Call Cost Analyzer
 # Extraction authority: docs/sources/germany/hamburg/HAMBURG_EXTRACTION_REFERENCE.md
-# All amounts in EUR. Billers: HPA, GDWS, HHLA, City of Hamburg (BUKEA).
-# v1 scope: HHLA terminals (CTB/CTA/CTT, one published quay tariff); Eurogate
-# Hamburg recorded but not modeled (reference terminal is HHLA). S5/S6 terms-only
-# documents pending upload.
+# All amounts in EUR. Billers: HPA, GDWS, HHLA, EUROGATE, City of Hamburg (BUKEA).
+# Terminal scope (spec v0.2.49): a Hamburg call is priced against a named terminal
+# operator. HHLA ship's-dues and terminal items apply only to HHLA calls (default);
+# EUROGATE items only to Eurogate calls. Port-wide charges (HPA, GDWS, BUKEA, towage)
+# are operator-neutral. S5/S6 terms-only documents not archived - live upstream URLs
+# in the extraction reference.
 
 metadata:
   id: hamburg
@@ -47,6 +49,27 @@ billers:
     name: City of Hamburg (BUKEA)
     description: "Free and Hanseatic City of Hamburg - Environment, Climate, Energy and Agriculture Authority (BUKEA); municipal ship waste fee under HmbSchEG 2022 / EU PRF Directive 2019/883"
     currency: EUR
+  - id: eurogate
+    name: EUROGATE Container Terminal Hamburg
+    description: "EUROGATE Hamburg - published Prices and Conditions (effective 01.03.2026): berthing charge/tonnage dues, waterside container handling, security, social-fund surcharge (spec v0.2.49 terminal scope)"
+    currency: EUR
+    surcharge:
+      id: eurogate_social_fund_surcharge
+      name: Social Fund Surcharge
+      fee_family: social_fund
+      percentage: 1.5
+      exclude_families:
+        - storage
+        - terminal_handling
+        - security
+      source_reference:
+        document_name: "prices-and-conditions-2026.pdf"
+        document_url: "docs/sources/germany/hamburg/eurogate/prices-and-conditions-2026.pdf"
+        document_issued: "2026-01-01"
+        page: 2
+        clause: "1.3.13"
+        verified_on: "2026-09-24"
+        verified_by: "vibe-session-hamburg-terminal-scope"
 
 fee_rules:
   # ==========================================================================
@@ -896,6 +919,8 @@ fee_rules:
       subsequent_tier:
         period_hours: 12
         rate_per_basis: 0.80
+    applicable_conditions:
+      terminal_operator: HHLA
     source_reference:
       document_name: "quay-tariff-2026.pdf"
       document_url: "docs/sources/germany/hamburg/hhla/quay-tariff-2026.pdf"
@@ -914,6 +939,8 @@ fee_rules:
       type: per_unit
       unit_type: container_total
       unit_rate: 17.00
+    applicable_conditions:
+      terminal_operator: HHLA
     source_reference:
       document_name: "quay-tariff-2026.pdf"
       document_url: "docs/sources/germany/hamburg/hhla/quay-tariff-2026.pdf"
@@ -938,6 +965,8 @@ fee_rules:
         - value: overseas
           amount: 633.80
       count_field: gangway_count
+    applicable_conditions:
+      terminal_operator: HHLA
     source_reference:
       document_name: "quay-tariff-2026.pdf"
       document_url: "docs/sources/germany/hamburg/hhla/quay-tariff-2026.pdf"
@@ -956,6 +985,8 @@ fee_rules:
       type: per_unit
       unit_type: gangway_supervision_hours
       unit_rate: 101.30
+    applicable_conditions:
+      terminal_operator: HHLA
     source_reference:
       document_name: "quay-tariff-2026.pdf"
       document_url: "docs/sources/germany/hamburg/hhla/quay-tariff-2026.pdf"
@@ -978,6 +1009,8 @@ fee_rules:
     estimated_parameter:
       description: "estimated; HHLA rate unpublished, default anchored to Eurogate Hamburg published lift charge 5.1.1, 01.03.2026"
       severity: info
+    applicable_conditions:
+      terminal_operator: HHLA
     source_reference:
       document_name: "prices-and-conditions-2026.pdf"
       document_url: "docs/sources/germany/hamburg/eurogate/prices-and-conditions-2026.pdf"
@@ -1007,6 +1040,8 @@ fee_rules:
         - min_days: 15
           max_days: null
           rate_per_container_per_day: 123.30
+    applicable_conditions:
+      terminal_operator: HHLA
     source_reference:
       document_name: "quay-tariff-2026.pdf"
       document_url: "docs/sources/germany/hamburg/hhla/quay-tariff-2026.pdf"
@@ -1036,6 +1071,8 @@ fee_rules:
         - min_days: 15
           max_days: null
           rate_per_container_per_day: 246.60
+    applicable_conditions:
+      terminal_operator: HHLA
     source_reference:
       document_name: "quay-tariff-2026.pdf"
       document_url: "docs/sources/germany/hamburg/hhla/quay-tariff-2026.pdf"
@@ -1062,6 +1099,8 @@ fee_rules:
         - min_days: 10
           max_days: null
           rate_per_container_per_day: 82.20
+    applicable_conditions:
+      terminal_operator: HHLA
     source_reference:
       document_name: "quay-tariff-2026.pdf"
       document_url: "docs/sources/germany/hamburg/hhla/quay-tariff-2026.pdf"
@@ -1088,6 +1127,8 @@ fee_rules:
         - min_days: 10
           max_days: null
           rate_per_container_per_day: 164.40
+    applicable_conditions:
+      terminal_operator: HHLA
     source_reference:
       document_name: "quay-tariff-2026.pdf"
       document_url: "docs/sources/germany/hamburg/hhla/quay-tariff-2026.pdf"
@@ -1111,6 +1152,8 @@ fee_rules:
         - min_days: 1
           max_days: null
           rate_per_container_per_day: 41.10
+    applicable_conditions:
+      terminal_operator: HHLA
     source_reference:
       document_name: "quay-tariff-2026.pdf"
       document_url: "docs/sources/germany/hamburg/hhla/quay-tariff-2026.pdf"
@@ -1134,6 +1177,8 @@ fee_rules:
         - min_days: 1
           max_days: null
           rate_per_container_per_day: 185.10
+    applicable_conditions:
+      terminal_operator: HHLA
     source_reference:
       document_name: "quay-tariff-2026.pdf"
       document_url: "docs/sources/germany/hamburg/hhla/quay-tariff-2026.pdf"
@@ -1157,6 +1202,8 @@ fee_rules:
         - min_days: 1
           max_days: null
           rate_per_container_per_day: 20.70
+    applicable_conditions:
+      terminal_operator: HHLA
     source_reference:
       document_name: "quay-tariff-2026.pdf"
       document_url: "docs/sources/germany/hamburg/hhla/quay-tariff-2026.pdf"
@@ -1180,6 +1227,8 @@ fee_rules:
         - min_days: 1
           max_days: null
           rate_per_container_per_day: 41.40
+    applicable_conditions:
+      terminal_operator: HHLA
     source_reference:
       document_name: "quay-tariff-2026.pdf"
       document_url: "docs/sources/germany/hamburg/hhla/quay-tariff-2026.pdf"
@@ -1209,6 +1258,8 @@ fee_rules:
         - min_days: 15
           max_days: null
           rate_per_container_per_day: 276.60
+    applicable_conditions:
+      terminal_operator: HHLA
     source_reference:
       document_name: "quay-tariff-2026.pdf"
       document_url: "docs/sources/germany/hamburg/hhla/quay-tariff-2026.pdf"
@@ -1234,6 +1285,8 @@ fee_rules:
         - min_days: 10
           max_days: null
           rate_per_container_per_day: 184.40
+    applicable_conditions:
+      terminal_operator: HHLA
     source_reference:
       document_name: "quay-tariff-2026.pdf"
       document_url: "docs/sources/germany/hamburg/hhla/quay-tariff-2026.pdf"
@@ -1251,6 +1304,8 @@ fee_rules:
       type: per_unit
       unit_type: gassing_20ft_units
       unit_rate: 176.90
+    applicable_conditions:
+      terminal_operator: HHLA
     source_reference:
       document_name: "quay-tariff-2026.pdf"
       document_url: "docs/sources/germany/hamburg/hhla/quay-tariff-2026.pdf"
@@ -1268,6 +1323,8 @@ fee_rules:
       type: per_unit
       unit_type: gassing_40ft_units
       unit_rate: 240.70
+    applicable_conditions:
+      terminal_operator: HHLA
     source_reference:
       document_name: "quay-tariff-2026.pdf"
       document_url: "docs/sources/germany/hamburg/hhla/quay-tariff-2026.pdf"
@@ -1286,6 +1343,8 @@ fee_rules:
       type: per_unit
       unit_type: container_service_reception_units
       unit_rate: 182.10
+    applicable_conditions:
+      terminal_operator: HHLA
     source_reference:
       document_name: "quay-tariff-2026.pdf"
       document_url: "docs/sources/germany/hamburg/hhla/quay-tariff-2026.pdf"
@@ -1304,6 +1363,8 @@ fee_rules:
       type: per_unit
       unit_type: container_service_extra_moves
       unit_rate: 144.70
+    applicable_conditions:
+      terminal_operator: HHLA
     source_reference:
       document_name: "quay-tariff-2026.pdf"
       document_url: "docs/sources/germany/hamburg/hhla/quay-tariff-2026.pdf"
@@ -1322,6 +1383,7 @@ fee_rules:
     name: Administration Fee
     description: "HHLA container services: administration fee 42.20 EUR (S4 8). Optional call input, default off."
     applicable_conditions:
+      terminal_operator: HHLA
       container_service_admin_fee: true
     source_reference:
       document_name: "quay-tariff-2026.pdf"
@@ -1341,6 +1403,8 @@ fee_rules:
       type: per_unit
       unit_type: vgm_weighing_units
       unit_rate: 218.10
+    applicable_conditions:
+      terminal_operator: HHLA
     source_reference:
       document_name: "quay-tariff-2026.pdf"
       document_url: "docs/sources/germany/hamburg/hhla/quay-tariff-2026.pdf"
@@ -1359,6 +1423,8 @@ fee_rules:
       type: per_unit
       unit_type: vgm_calculative_units
       unit_rate: 45.00
+    applicable_conditions:
+      terminal_operator: HHLA
     source_reference:
       document_name: "quay-tariff-2026.pdf"
       document_url: "docs/sources/germany/hamburg/hhla/quay-tariff-2026.pdf"
@@ -1377,6 +1443,8 @@ fee_rules:
       type: per_unit
       unit_type: reefer_connect_units
       unit_rate: 62.10
+    applicable_conditions:
+      terminal_operator: HHLA
     source_reference:
       document_name: "quay-tariff-2026.pdf"
       document_url: "docs/sources/germany/hamburg/hhla/quay-tariff-2026.pdf"
@@ -1395,6 +1463,8 @@ fee_rules:
       type: per_unit
       unit_type: reefer_days
       unit_rate: 117.00
+    applicable_conditions:
+      terminal_operator: HHLA
     source_reference:
       document_name: "quay-tariff-2026.pdf"
       document_url: "docs/sources/germany/hamburg/hhla/quay-tariff-2026.pdf"
@@ -1413,6 +1483,8 @@ fee_rules:
       type: per_unit
       unit_type: reefer_checks
       unit_rate: 22.50
+    applicable_conditions:
+      terminal_operator: HHLA
     source_reference:
       document_name: "quay-tariff-2026.pdf"
       document_url: "docs/sources/germany/hamburg/hhla/quay-tariff-2026.pdf"
@@ -1431,6 +1503,8 @@ fee_rules:
       type: per_unit
       unit_type: labelling_units
       unit_rate: 113.95
+    applicable_conditions:
+      terminal_operator: HHLA
     source_reference:
       document_name: "quay-tariff-2026.pdf"
       document_url: "docs/sources/germany/hamburg/hhla/quay-tariff-2026.pdf"
@@ -1449,6 +1523,8 @@ fee_rules:
       type: per_unit
       unit_type: neutralization_units
       unit_rate: 123.30
+    applicable_conditions:
+      terminal_operator: HHLA
     source_reference:
       document_name: "quay-tariff-2026.pdf"
       document_url: "docs/sources/germany/hamburg/hhla/quay-tariff-2026.pdf"
@@ -1572,7 +1648,7 @@ fee_rules:
     fee_family: towage
     biller: Towage operators (estimated)
     name: Towage (estimated)
-    description: "Towage per call. No published tariff (operators: Bugsier, Petersen & Alpers, Lutgens & Reimers). Default 15,000 EUR per call (3 tugs x ~5,000 EUR/tug, deep-sea Elbe escort market range). User-editable."
+    description: "Towage per call. No published tariff (operators: Bugsier, Petersen & Alpers, Lutgens & Reimers). Default 15,000 EUR per call (3 tugs x ~5,000 EUR/tug, deep-sea Elbe escort market range). User-editable. Operator-neutral: applies at any Hamburg terminal (spec v0.2.49 terminal scope)."
     rate_structure:
       type: flat
       amount: 15000
@@ -1588,3 +1664,70 @@ fee_rules:
       clause: "8 - Estimated Parameters"
       verified_on: "2026-09-21"
       verified_by: "vibe-session-hamburg"
+  # ==========================================================================
+  # EUROGATE Container Terminal Hamburg - Prices and Conditions (S9, 01.03.2026)
+  # Terminal scope (spec v0.2.49): these items apply only to Eurogate calls.
+  # ==========================================================================
+  - id: eurogate_berthing_charge
+    fee_family: vessel_fee
+    biller: EUROGATE Container Terminal Hamburg
+    name: Berthing Charge / Tonnage Dues
+    description: "Eurogate berthing charge (vessel charge ch. 2): every ship berthed at the handling facilities pays a berthing charge based on GT and lay time - 1.04 EUR/GT for the first 24 h of lay days, then 0.60 EUR/GT per commenced 12 h or part. Lay time runs docking to casting off, calculated uninterruptedly (S9 2.1.1-2.1.2). Ship's dues are billed separately from handling (ch. 5) - verdict two, spec v0.2.49."
+    rate_structure:
+      type: tiered_per_period
+      basis: gt
+      hours_input: lay_time_hours
+      initial_tier:
+        hours: 24
+        rate_per_basis: 1.04
+      subsequent_tier:
+        period_hours: 12
+        rate_per_basis: 0.60
+    applicable_conditions:
+      terminal_operator: Eurogate
+    source_reference:
+      document_name: "prices-and-conditions-2026.pdf"
+      document_url: "docs/sources/germany/hamburg/eurogate/prices-and-conditions-2026.pdf"
+      document_issued: "2026-01-01"
+      page: 4
+      clause: "2.1.1-2.1.2"
+      verified_on: "2026-09-24"
+      verified_by: "vibe-session-hamburg-terminal-scope"
+  - id: eurogate_container_handling
+    fee_family: terminal_handling
+    biller: EUROGATE Container Terminal Hamburg
+    name: Container Handling (waterside lift)
+    description: "Eurogate waterside handling: loading/discharging ISO containers (full or empty) from/to main vessel, feeder or barge, 358.00 EUR per container lift (S9 5.1.1). A move is one container lifted once. Published rate - no estimated-parameter flag. Does not bundle berth time; vessel charges are a separate chapter (verdict two, spec v0.2.49)."
+    rate_structure:
+      type: per_unit
+      unit_type: move
+      unit_rate: 358.00
+    applicable_conditions:
+      terminal_operator: Eurogate
+    source_reference:
+      document_name: "prices-and-conditions-2026.pdf"
+      document_url: "docs/sources/germany/hamburg/eurogate/prices-and-conditions-2026.pdf"
+      document_issued: "2026-01-01"
+      page: 6
+      clause: "5.1.1"
+      verified_on: "2026-09-24"
+      verified_by: "vibe-session-hamburg-terminal-scope"
+  - id: eurogate_security_charge
+    fee_family: security
+    biller: EUROGATE Container Terminal Hamburg
+    name: Security Charge
+    description: "Eurogate security charge: 24.95 EUR per container, full or empty (S9 13.1). Handling prices are plus security charge (S9 ch. 5 note)."
+    rate_structure:
+      type: per_unit
+      unit_type: container_total
+      unit_rate: 24.95
+    applicable_conditions:
+      terminal_operator: Eurogate
+    source_reference:
+      document_name: "prices-and-conditions-2026.pdf"
+      document_url: "docs/sources/germany/hamburg/eurogate/prices-and-conditions-2026.pdf"
+      document_issued: "2026-01-01"
+      page: 19
+      clause: "13.1"
+      verified_on: "2026-09-24"
+      verified_by: "vibe-session-hamburg-terminal-scope"

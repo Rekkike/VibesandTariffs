@@ -157,9 +157,35 @@ export function evaluateFeeRule(
       }
     }
     
+    // Hamburg terminal scope (spec v0.2.49): a Hamburg call is priced against
+    // a named terminal operator. HHLA ship's-dues items apply only to HHLA
+    // calls; EUROGATE items only to Eurogate calls. An absent or unrecognized
+    // operator falls back to HHLA, the model's reference operator, and that
+    // fallback is always visible, never silent (spec 4.4.2).
+    if (rule.applicable_conditions.terminal_operator) {
+      const required = Array.isArray(rule.applicable_conditions.terminal_operator)
+        ? rule.applicable_conditions.terminal_operator
+        : [rule.applicable_conditions.terminal_operator];
+      const known = ['HHLA', 'Eurogate'];
+      const entered = call.terminal_operator;
+      const op = entered && known.includes(entered) ? entered : 'HHLA';
+      if (!required.includes(op)) {
+        return null;
+      }
+      if (entered !== op || !entered) {
+        qualityFlags.push({
+          type: 'fallback_value',
+          description: entered
+            ? `Terminal operator "${entered}" not recognized; defaulted to HHLA (the reference operator for the Hamburg model — spec v0.2.49 terminal scope)`
+            : 'Terminal operator not selected; defaulted to HHLA (the reference operator for the Hamburg model — spec v0.2.49 terminal scope)',
+          severity: 'info'
+        });
+      }
+    }
+    
     // Generic conditions: any other key must match the call input exactly
     // (e.g. hpa_berth_usage: true, berth_type: 'quay').
-    const handled = new Set(['flag_state', 'ops_usage', 'esi_score', 'csi_class', 'fuel_percentage', 'nt_class', 'vessel_type', 'ordering_lead_time_band']);
+    const handled = new Set(['flag_state', 'ops_usage', 'esi_score', 'csi_class', 'fuel_percentage', 'nt_class', 'vessel_type', 'ordering_lead_time_band', 'terminal_operator']);
     for (const [key, value] of Object.entries(rule.applicable_conditions)) {
       if (handled.has(key)) continue;
       const callValue = (call as any)[key];

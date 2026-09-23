@@ -99,6 +99,9 @@ export function defaultCall(portId: string): CallInput {
       clean_shipping_index_class: undefined
     } : {}),
     ...(portId === 'hamburg' ? {
+      // Terminal scope (spec v0.2.49): Hamburg calls are priced against a
+      // named terminal operator; the default and reference operator is HHLA.
+      terminal_operator: 'HHLA',
       // NOx Tier (spec v0.2.29, amended v0.2.44): not entered by default;
       // the engine infers from the build year per Regulation 13 when one is
       // present (flagged), and applies the worst-case Tier 0 only when the

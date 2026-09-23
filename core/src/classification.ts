@@ -389,6 +389,26 @@ const ham: Record<string, FunctionalClassInfo> = {
     basis_note: 'Labelling service (Quay Tariff §8)',
     source: 'quay-tariff-2026.pdf §8'
   },
+  eurogate_berthing_charge: {
+    functional_class: 'berth_terminal_infrastructure',
+    basis_note: 'Berthing charge / tonnage dues for the vessel\'s use of the handling facility (Eurogate Prices and Conditions 2.1.1–2.1.2)',
+    source: 'prices-and-conditions-2026.pdf 2.1.1–2.1.2'
+  },
+  eurogate_social_fund_surcharge: {
+    functional_class: 'berth_terminal_infrastructure',
+    basis_note: 'Social fund surcharge on Eurogate services (Prices and Conditions 1.3.13)',
+    source: 'prices-and-conditions-2026.pdf 1.3.13'
+  },
+  eurogate_container_handling: {
+    functional_class: 'cargo_throughput_levy',
+    basis_note: 'Waterside container lift charge per move (Prices and Conditions 5.1.1)',
+    source: 'prices-and-conditions-2026.pdf 5.1.1'
+  },
+  eurogate_security_charge: {
+    functional_class: 'cargo_throughput_levy',
+    basis_note: 'Security charge per container handled (Prices and Conditions 13.1)',
+    source: 'prices-and-conditions-2026.pdf 13.1'
+  },
   hhla_container_service_neutralization: {
     functional_class: 'purchased_service',
     basis_note: 'Neutralization service (Quay Tariff §8)',

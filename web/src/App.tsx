@@ -1302,6 +1302,26 @@ export const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call
                 </Typography>
                 <Grid container spacing={2}>
                   <Grid item xs={12} sm={6}>
+                    <FormControl fullWidth>
+                      <InputLabel>Terminal Operator</InputLabel>
+                      <Select
+                        value={state.call.terminal_operator || 'HHLA'}
+                        onChange={(e) => handleCallChange('terminal_operator', e.target.value as string)}
+                        label="Terminal Operator"
+                      >
+                        <MenuItem value="HHLA">HHLA (CTA/CTB/CTT — reference operator)</MenuItem>
+                        <MenuItem value="Eurogate">EUROGATE Container Terminal Hamburg</MenuItem>
+                      </Select>
+                      {/* Terminal scope (spec v0.2.49): ship's dues and terminal
+                          items are gated to the named operator; port-wide
+                          charges (HPA, pilotage, waste, towage) fire either
+                          way; the comparison strip restates the operator. */}
+                      <FormHelperText>
+                        Ship's dues and terminal items are billed by the selected operator; port authority, pilotage, waste and towage apply either way.
+                      </FormHelperText>
+                    </FormControl>
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
                     <Box display="flex" alignItems="center">
                       <FormControl fullWidth>
                         <InputLabel>Engine Tier (IAPP, most polluting engine)</InputLabel>
@@ -2604,6 +2624,12 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
                   ? `${call.csi_class} (default — not registered)`
                   : `${call.csi_class} (entered)`
                 : 'not entered'}
+            </span>
+            <span className="comparison-context-item">
+              <span className="comparison-context-label">Hamburg terminal:</span>{' '}
+              {call.terminal_operator === 'Eurogate'
+                ? 'EUROGATE (entered — published Prices and Conditions)'
+                : 'HHLA (default — the reference operator)'}
             </span>
           </Box>
 
