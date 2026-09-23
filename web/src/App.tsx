@@ -1157,7 +1157,7 @@ export const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call
                       onChange={(e) => handleCallChange('lay_time_hours', parseFloat(e.target.value) || undefined)}
                       fullWidth
                       InputLabelProps={{ shrink: true }}
-                      helperText="HHLA tonnage-dues basis (first 24 h full rate, then per commenced 12 h)"
+                      helperText="Lay time runs berthing to casting off; Sundays and holidays count only if worked — modeled as a simple hours input (S4 clause 1.2). HHLA tonnage-dues basis: first 24 h full rate, then per commenced 12 h; blank = not entered (zero)"
                     />
                   </Grid>
                   <Grid item xs={12} sm={6}>

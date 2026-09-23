@@ -289,3 +289,94 @@ describe('Derivation transparency — evaluateFeeRule exposure parity', () => {
     expect(fee!.derivation!.steps[fee!.derivation!.steps.length - 1].amount).toBe(500);
   });
 });
+
+// Two-clock tier display (spec v0.2.46): tiered-per-period and
+// per-commenced-period fees expose each charged tier as its own labeled
+// derivation step — hours covered, rate, periods commenced, amount, and
+// the tariff citation — plus a composition step naming both components.
+// Presentation-only: the amounts are the arithmetic already performed.
+describe('Derivation transparency — two-clock tier display (v0.2.46)', () => {
+  const hhlaCall = (lay: number): CostCalculationInput => ({
+    vessel: DEFAULT_VESSEL,
+    call: { ...defaultCall('hamburg'), lay_time_hours: lay }
+  });
+
+  it('hhla_tonnage_dues at 50 h: initial and subsequent tiers as distinct steps with citations', () => {
+    const result = calculatePortCallCost(hamburg, hhlaCall(50));
+    const d = feeByRule(result, 'hhla_tonnage_dues').derivation!;
+    expect(d.structure_label).toBe('Tiered per period');
+    const initial = d.steps.find(s => s.label === 'Initial tier')!;
+    expect(initial.detail).toContain('First 24 hours of lay time');
+    expect(initial.detail).toContain('1.25 EUR/GT');
+    expect(initial.detail).toContain('quay-tariff-2026.pdf');
+    expect(initial.amount).toBe(68750);
+    const subsequent = d.steps.find(s => s.label === 'Subsequent tier')!;
+    expect(subsequent.detail).toContain('per commenced 12 hours thereafter');
+    expect(subsequent.detail).toContain('0.8 EUR/GT');
+    expect(subsequent.detail).toContain('3 commenced periods');
+    expect(subsequent.amount).toBe(132000);
+    const composition = d.steps.find(s => s.label === 'Components after tiers')!;
+    expect(composition.components!.map(c => c.label)).toEqual([
+      'First 24 h (1.25 EUR/GT)',
+      'per commenced 12 h thereafter (0.8 EUR/GT)'
+    ]);
+    expect(composition.amount).toBe(200750);
+    expect(d.steps[d.steps.length - 1].amount).toBe(200750);
+  });
+
+  it('hhla_tonnage_dues at 24 h: the initial tier only; no subsequent-tier step', () => {
+    const result = calculatePortCallCost(hamburg, hhlaCall(24));
+    const d = feeByRule(result, 'hhla_tonnage_dues').derivation!;
+    expect(d.steps.find(s => s.label === 'Initial tier')).toBeDefined();
+    expect(d.steps.find(s => s.label === 'Subsequent tier')).toBeUndefined();
+  });
+
+  it('hpa_demurrage at 130 h: the charged tier step carries rate, period, and citation (cat. 31 item B)', () => {
+    const result = calculatePortCallCost(hamburg, hhlaCall(130));
+    const d = feeByRule(result, 'hpa_demurrage').derivation!;
+    expect(d.structure_label).toBe('Per commenced period');
+    const tier = d.steps.find(s => s.label === 'Excess up to 120 h')!;
+    expect(tier.detail).toContain('0.0165 EUR/GT');
+    expect(tier.detail).toContain('per commenced 12 h');
+    expect(tier.detail).toContain('pricelist-maritime-shipping-2026.pdf');
+    expect(tier.amount).toBe(907.5);
+  });
+
+  it('hpa_demurrage across both tiers: the Beyond tier step fires past 120 h excess', () => {
+    // 380 h lay time: excess 260 h -> 120 h at 0.0165 (10 periods) + 140 h at 0.0255 (12 periods)
+    const result = calculatePortCallCost(hamburg, hhlaCall(380));
+    const dem = feeByRule(result, 'hpa_demurrage');
+    const d = dem.derivation!;
+    const first = d.steps.find(s => s.label === 'Excess up to 120 h')!;
+    expect(first.detail).toContain('10 periods commenced');
+    expect(first.amount).toBe(9075);
+    const beyond = d.steps.find(s => s.label === 'Beyond')!;
+    expect(beyond.detail).toContain('0.0255 EUR/GT');
+    expect(beyond.detail).toContain('12 periods commenced');
+    expect(beyond.amount).toBe(16830);
+    expect(dem.amount).toBe(25905);
+  });
+
+  it('the HPA berth fee (per-commenced-period, minimum-per-period class) still exposes its computation', () => {
+    const result = calculatePortCallCost(hamburg, {
+      vessel: DEFAULT_VESSEL,
+      call: { ...defaultCall('hamburg'), hpa_berth_usage: true, berth_type: 'quay', berth_hours: 12 }
+    });
+    const berth = feeByRule(result, 'hpa_berth_fee_quay');
+    const d = berth.derivation!;
+    expect(d.structure_label).toBe('Per commenced period');
+    const tier = d.steps.find(s => s.label === 'Beyond')!;
+    expect(tier.detail).toContain('0.0152 EUR/GT');
+    // 55,000 GT x 0.0152 x 2 commenced 6-h periods (12 h berth)
+    expect(berth.amount).toBe(1672.00);
+  });
+
+  it('the tier-adjustment detail string no longer doubles the word Tier (cosmetic fix, v0.2.46)', () => {
+    // Worst-case Tier 0: old string read "Tier Tier 0 +30% (estimated)"
+    const result = calculatePortCallCost(hamburg, hhlaCall(50));
+    const portFee = feeByRule(result, 'hpa_port_fee');
+    const tierStep = portFee.derivation!.steps.find(s => s.label.includes('Tier adjustment'))!;
+    expect(tierStep.detail).toBe('Tier 0 +30% (estimated)');
+    expect(tierStep.detail).not.toContain('Tier Tier');
+  });
+});

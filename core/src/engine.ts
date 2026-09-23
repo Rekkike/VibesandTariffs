@@ -771,11 +771,11 @@ export function evaluateFeeRule(
                 disp[compId] = roundToCent(disp[compId] - ceilToCent(disp[compId] * frac));
                 full[compId] = full[compId] * (1 - frac);
               }
-              stackDescriptions.push(`${compId}: Tier ${tier} ${pct >= 0 ? '+' : ''}${pct}%${estimated ? ' (estimated)' : ''}`);
+              stackDescriptions.push(`${compId}: ${tier} ${pct >= 0 ? '+' : ''}${pct}%${estimated ? ' (estimated)' : ''}`);
               derivationAdjustments.push({
                 kind: 'adjustment',
                 label: `${compLabel(compId)} — Tier adjustment`,
-                detail: `Tier ${tier} ${pct >= 0 ? '+' : ''}${pct}%${estimated ? ' (estimated)' : ''}`,
+                detail: `${tier} ${pct >= 0 ? '+' : ''}${pct}%${estimated ? ' (estimated)' : ''}`,
                 amount: roundToCent(disp[compId] - beforeAdj)
               });
               break;
@@ -880,14 +880,50 @@ export function evaluateFeeRule(
       if (hours <= 0) return null;
       let ratePerBasis = tp.initial_tier.rate_per_basis;
       let extraDesc = '';
+      // Two-clock tier display (spec v0.2.46): each tier is exposed as its
+      // own labeled step — the initial tier covering the first N hours at
+      // its rate, the subsequent tier per commenced period thereafter —
+      // plus a composition step naming both components. Presentation-only:
+      // the amounts are the same arithmetic already performed.
+      const initialAmount = roundToCent(basisValue * tp.initial_tier.rate_per_basis);
+      const tierCitation = `${rule.source_reference.document_name} ${rule.source_reference.clause ? `\u00a7${rule.source_reference.clause}` : ''}`.trim();
+      const tierSteps: DerivationStep[] = [{
+        kind: 'components',
+        label: 'Initial tier',
+        detail: `First ${tp.initial_tier.hours} hours of lay time — ${tp.initial_tier.rate_per_basis} ${currency}/GT (${tierCitation})`,
+        amount: initialAmount
+      }];
+      let subsequentAmount = 0;
+      let subsequentDesc = '';
       if (tp.subsequent_tier && hours > tp.initial_tier.hours) {
         const extraPeriods = Math.ceil((hours - tp.initial_tier.hours) / tp.subsequent_tier.period_hours);
         ratePerBasis += extraPeriods * tp.subsequent_tier.rate_per_basis;
         extraDesc = ` + ${extraPeriods} * ${tp.subsequent_tier.rate_per_basis}`;
+        subsequentAmount = roundToCent(basisValue * extraPeriods * tp.subsequent_tier.rate_per_basis);
+        subsequentDesc = `per commenced ${tp.subsequent_tier.period_hours} hours thereafter — ${tp.subsequent_tier.rate_per_basis} ${currency}/GT: ${hours - tp.initial_tier.hours} h beyond in ${extraPeriods} commenced period${extraPeriods === 1 ? '' : 's'} (${tierCitation})`;
+        tierSteps.push({
+          kind: 'components',
+          label: 'Subsequent tier',
+          detail: subsequentDesc,
+          amount: subsequentAmount
+        });
       }
       baseAmount = roundToCent(basisValue * ratePerBasis);
       rateApplied = `Tiered per period: ${basisValue} * ${ratePerBasis} (${hours} h: ${tp.initial_tier.rate_per_basis}${extraDesc})`;
       bandOrBasis = `${tp.basis}=${basisValue}, ${hours} h`;
+      pendingStructureLabel = 'Tiered per period';
+      pendingCompositionSteps = [
+        ...tierSteps,
+        {
+          kind: 'composition',
+          label: 'Components after tiers',
+          components: [
+            { label: `First ${tp.initial_tier.hours} h (${tp.initial_tier.rate_per_basis} ${currency}/GT)`, amount: initialAmount },
+            ...(subsequentAmount > 0 ? [{ label: `per commenced ${tp.subsequent_tier!.period_hours} h thereafter (${tp.subsequent_tier!.rate_per_basis} ${currency}/GT)`, amount: subsequentAmount }] : [])
+          ],
+          amount: baseAmount
+        }
+      ];
       break;
     }
     
@@ -908,10 +944,15 @@ export function evaluateFeeRule(
       }
       const excess = hours - pp.free_hours;
       if (excess <= 0) return null;
-      // Tiers: first tier up to up_to_excess_hours, then next tier beyond
+      // Tiers: first tier up to up_to_excess_hours, then next tier beyond.
+      // Two-clock tier display (spec v0.2.46): each charged tier is exposed
+      // as its own labeled derivation step — periods commenced, rate per
+      // period per basis, amount — so a multi-tier demurrage reads as its
+      // distinct charges. Presentation-only; the arithmetic is unchanged.
       let amount = 0;
       let remaining = excess;
       let prevBound = 0;
+      const tierSteps: DerivationStep[] = [];
       for (const tier of pp.tiers) {
         const tierSpan = tier.up_to_excess_hours === null ? remaining : Math.max(0, Math.min(remaining, tier.up_to_excess_hours - prevBound));
         if (tierSpan > 0) {
@@ -920,6 +961,14 @@ export function evaluateFeeRule(
           const perPeriodMin = pp.minimum_per_period;
           amount += perPeriodMin !== undefined ? Math.max(raw, periods * perPeriodMin) : raw;
           remaining -= tierSpan;
+          const periodCitation = `${rule.source_reference.document_name} ${rule.source_reference.clause ? `\u00a7${rule.source_reference.clause}` : ''}`.trim();
+          const basisLabel = pp.basis.toUpperCase();
+          tierSteps.push({
+            kind: 'components',
+            label: tier.up_to_excess_hours === null ? 'Beyond' : `Excess up to ${tier.up_to_excess_hours} h`,
+            detail: `${tier.rate_per_period_per_basis} ${currency}/${basisLabel} per commenced ${pp.period_hours} h — ${periods} period${periods === 1 ? '' : 's'} commenced (${periodCitation})`,
+            amount: roundToCent(perPeriodMin !== undefined ? Math.max(raw, periods * perPeriodMin) : raw)
+          });
           if (remaining <= 0) break;
           prevBound = tier.up_to_excess_hours ?? prevBound;
         }
@@ -927,6 +976,19 @@ export function evaluateFeeRule(
       baseAmount = roundToCent(amount);
       rateApplied = `Per commenced ${pp.period_hours} h: excess ${excess} h over ${pp.free_hours} h at ${pp.tiers.map(t => t.rate_per_period_per_basis).join('/')}`;
       bandOrBasis = `${pp.basis}=${basisValue}, excess ${excess} h`;
+      pendingStructureLabel = 'Per commenced period';
+      pendingCompositionSteps = [
+        ...tierSteps,
+        {
+          kind: 'composition',
+          label: 'Components after tiers',
+          components: tierSteps.map(s => ({
+            label: `${s.label} (${s.detail})`,
+            amount: s.amount!
+          })),
+          amount: baseAmount
+        }
+      ];
       break;
     }
     
