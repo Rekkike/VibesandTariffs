@@ -44,6 +44,18 @@ describe('accessibility floor (WCAG 2.2 AA, v0.2.25–v0.2.32 surfaces)', () => 
     // engine's contract, not a user action
     expect(appSource).not.toMatch(/value="infer_build_year"/);
   });
+  it('the NOx Tier field shows the applied state with distinct, labeled forms (v0.2.45)', () => {
+    // Field display contract: entered / inferred / restated worst case
+    expect(appSource).toMatch(/\$\{v\} — entered/);
+    expect(appSource).toMatch(/\$\{appliedTier\.tier\} — inferred from build year \$\{state\.vessel\.built_year\}/);
+    expect(appSource).toContain('Not entered — worst case Tier 0 applied');
+    // The effect line comes from the guidance's own tier map (one source of
+    // truth), never a duplicate copy
+    expect(appSource).toMatch(/tierEffectLine\(appliedTier\.tier\)/);
+    expect(appSource).toContain('Explicit entry wins; otherwise inferred from build year per Regulation 13; otherwise worst case Tier 0.');
+    // The applied state is derived from the engine's resolution order
+    expect(appSource).toMatch(/inferEngineTier\(builtYear\)/);
+  });
 
   it('quality-flag badges carry titles (accessible name beyond color)', () => {
     const badgeSource = fs.readFileSync(path.join(__dirname, 'flagBadges.ts'), 'utf8');

@@ -54,10 +54,22 @@ const fmt = (n: number, currency: string) => {
 };
 
 // Tier percentage ladder from the port file (hamburg_2026.yaml hpa_port_fee
-// component_adjustments.env tier_pct map) with its source reference.
-const TIER_PCT: Record<string, number> = {
+// component_adjustments.env tier_pct map) with its source reference. This is
+// the single source of truth for the tier percentages the guidance shows and
+// the tier-field effect line renders (v0.2.45): one map, no duplicate copy.
+export const TIER_PCT: Record<string, number> = {
   'Tier 0': 30, 'Tier I': 25, 'Tier II': 5, 'Tier III': -20
 };
+
+// Tier-field effect line (v0.2.45): the arithmetic consequence of the applied
+// tier in the tier's own terms — the tier percentage and the component it
+// acts on. Sourced from TIER_PCT (the guidance's own map), never a copy.
+export function tierEffectLine(tier: string): string {
+  const pct = TIER_PCT[tier];
+  if (pct === undefined) return `Tier ${tier}: no published percentage mapping`;
+  const sign = pct >= 0 ? '+' : '\u2212';
+  return `Tier ${tier}: ${sign}${Math.abs(pct)}% on the environmental component`;
+}
 
 const ESI_AIR_BANDS: GuidanceBand[] = [
   { label: 'ESI air 20–24.99', detail: '−0.35% of env subtotal, max 175 €', source: 'pricelist-maritime-shipping-2026.pdf, S2 4.1.1.1' },

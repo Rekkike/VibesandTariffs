@@ -28,6 +28,7 @@ import {
   AccordionSummary,
   AccordionDetails,
   Autocomplete,
+  FormHelperText,
   Divider,
   ThemeProvider,
   createTheme,
@@ -49,6 +50,7 @@ import {
   FEE_FAMILY_TO_SEGMENT,
   getNetTonnageClass,
   calculatePortCallCost,
+  inferEngineTier,
   DEFAULT_VESSEL,
   defaultCall
 } from '@port-cost/core';
@@ -80,7 +82,7 @@ import { badgesForFlags } from './flagBadges';
 // Derivation transparency (spec v0.2.42): engine-exposed derivation rendering
 import { DerivationDetail, condensedDerivation } from './derivation';
 // Environmental-input guidance (spec v0.2.29): purely informative, no auto-fill
-import { guideFor, leversForPort, makeComputer } from './envGuidance';
+import { guideFor, leversForPort, makeComputer, tierEffectLine } from './envGuidance';
 import type { InputGuide } from './envGuidance';
 
 // Loaded ports; adding a port is a data edit (drop a YAML in core/data/), never a code change
@@ -280,6 +282,20 @@ interface PortWorkspaceProps {
   onCallChange: (call: CallInput) => void;
 }
 
+// Tier-field visibility (spec v0.2.45): the tier the engine will actually
+// apply, derived from the same resolution order the engine's
+// resolveEngineTier uses (explicit entry > build-year inference > worst-case
+// Tier 0). The applied state mirrors the engine contract; presentation only,
+// no figure is recomputed here.
+const appliedTierState = (
+  call: CallInput,
+  builtYear: number | undefined
+): { tier: string; source: 'entered' | 'inferred' | 'worst-case' } => {
+  if (call.engine_tier) return { tier: call.engine_tier, source: 'entered' };
+  if (builtYear !== undefined) return { tier: inferEngineTier(builtYear), source: 'inferred' };
+  return { tier: 'Tier 0', source: 'worst-case' };
+};
+
 // Environmental-input guidance affordance (spec v0.2.29): a purely
 // informative help control beside each environmental input. Expands to the
 // certificate issuer, the decision rule in user terms, the port's threshold
@@ -427,6 +443,12 @@ export const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call
     // spread lost every field but the last when a handler set several).
     onCallChange({ ...call, [field]: value });
   };
+  // Tier-field visibility (spec v0.2.45): the field mirrors the tier the
+  // engine actually applies, derived from the same inputs the engine's
+  // resolveEngineTier reads (explicit entry, else build-year inference,
+  // else the v0.2.28 worst case) — presentation only, never a second
+  // computation of the fee.
+  const appliedTier = appliedTierState(state.call, state.vessel.built_year);
   const handleCallChanges = (fields: Partial<CallInput>) => {
     onCallChange({ ...call, ...fields });
   };
@@ -1046,20 +1068,41 @@ export const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call
                             // -> worst-case Tier 0 with its existing flag).
                             if (v === 'tier0_default') {
                               handleCallChanges({ engine_tier: undefined, engine_tier_estimated: undefined, infer_engine_tier_from_build_year: false });
-                            } else if (v === 'tier0') {
-                              handleCallChanges({ engine_tier: 'Tier 0', engine_tier_estimated: false, infer_engine_tier_from_build_year: false });
                             } else {
                               handleCallChanges({ engine_tier: v, engine_tier_estimated: false, infer_engine_tier_from_build_year: false });
                             }
                           }}
+                          // Tier-field visibility (spec v0.2.45): the field
+                          // shows the tier actually applied, not merely what
+                          // was typed — the rendered value states the tier and
+                          // where it came from (entered / inferred from build
+                          // year / worst-case Tier 0), so the states cannot
+                          // be confused. Derived from the same resolution the
+                          // engine applies; display only, no computation.
+                          renderValue={(selected) => {
+                            const v = selected as string;
+                            if (v !== 'tier0_default') {
+                              return `${v} — entered`;
+                            }
+                            if (appliedTier.source === 'inferred') {
+                              return `${appliedTier.tier} — inferred from build year ${state.vessel.built_year}`;
+                            }
+                            return 'Not entered — worst case Tier 0 applied';
+                          }}
                           label="Engine Tier (IAPP, most polluting engine)"
                         >
                           <MenuItem value="tier0_default">Not entered — inferred from build year per Regulation 13 (blank build year: worst case Tier 0)</MenuItem>
-                          <MenuItem value="tier0">Tier 0 / no IAPP (+30%)</MenuItem>
+                          <MenuItem value="Tier 0">Tier 0 / no IAPP (+30%)</MenuItem>
                           <MenuItem value="Tier I">Tier I (+25%)</MenuItem>
                           <MenuItem value="Tier II">Tier II (+5%)</MenuItem>
                           <MenuItem value="Tier III">Tier III+ (−20%)</MenuItem>
                         </Select>
+                        {/* Effect line (spec v0.2.45): the arithmetic consequence
+                            of the applied tier in the tier's own terms, sourced
+                            from the same tier-percentage map the guidance uses
+                            (envGuidance TIER_PCT) — one source of truth. */}
+                        <FormHelperText className="tier-effect-line">{tierEffectLine(appliedTier.tier)}</FormHelperText>
+                        <FormHelperText>Explicit entry wins; otherwise inferred from build year per Regulation 13; otherwise worst case Tier 0.</FormHelperText>
                       </FormControl>
                       <EnvGuideHelp guide={guideForInput('engine_tier')} />
                     </Box>

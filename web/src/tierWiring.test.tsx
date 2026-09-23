@@ -64,9 +64,15 @@ describe('Hamburg engine-tier wiring (spec v0.2.44)', () => {
         portSpecific.dispatchEvent(new MouseEvent('click', { bubbles: true }));
       });
     }
-    const selects = Array.from(container!.querySelectorAll('.MuiSelect-select')) as HTMLElement[];
-    const tierSelect = selects.find(s => (s.textContent ?? '').includes('Not entered')
-      || (s.textContent ?? '').includes('Tier 0 — not entered'));
+    // v0.2.45 field-display contract: the closed Select renders the applied
+    // state ("Tier X — inferred from build year YYYY" / "Tier X — entered" /
+    // "Not entered — worst case Tier 0 applied"), so the old text-based
+    // locator ("Not entered") no longer identifies the field. Locate it via
+    // its label instead — same control, same behavior pins below.
+    const tierLabel = Array.from(container!.querySelectorAll('label'))
+      .find(l => (l.textContent ?? '').includes('Engine Tier (IAPP, most polluting engine)'));
+    expect(tierLabel).toBeDefined();
+    const tierSelect = tierLabel!.closest('.MuiFormControl-root')!.querySelector('.MuiSelect-select') as HTMLElement | null;
     expect(tierSelect).toBeDefined();
     await act(async () => {
       tierSelect!.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
