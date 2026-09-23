@@ -263,13 +263,18 @@ describe('Derivation transparency — flat and simple structures', () => {
 });
 
 describe('Derivation transparency — zero figure drift (the exposure never changes an amount)', () => {
-  it('default-call Grand Totals at all three ports are unchanged to the cent', () => {
+  it('default-call Grand Totals at all three ports are unchanged to the cent (v0.2.48 default vessel: Maren Maersk)', () => {
     const { port: g } = loadAndValidatePort(path.join(__dirname, '..', 'data', 'gothenburg_2026.yaml'));
     const { port: h } = loadAndValidatePort(path.join(__dirname, '..', 'data', 'hamburg_2026.yaml'));
     const { port: x } = loadAndValidatePort(path.join(__dirname, '..', 'data', 'helsingborg_2026.yaml'));
-    expect(calculatePortCallCost(g, { vessel: DEFAULT_VESSEL, call: defaultCall('gothenburg') }).total).toBe(1622145.00);
-    expect(calculatePortCallCost(h, { vessel: DEFAULT_VESSEL, call: defaultCall('hamburg') }).total).toBe(861430.56);
-    expect(calculatePortCallCost(x, { vessel: DEFAULT_VESSEL, call: defaultCall('helsingborg') }).total).toBe(4114795.00);
+    // Re-pinned for the v0.2.48 default-vessel contract (deliberate change,
+    // not a defect): the default call is now Maren Maersk's profile —
+    // GT 55,000→194,849, lay time 16 h→50 h, moves 2,000→4,000, tier
+    // blank→Tier II (inferred from build year 2014). Old pins:
+    // GOT 1,622,145.00 / HAM 861,430.56 / HEL 4,114,795.00.
+    expect(calculatePortCallCost(g, { vessel: DEFAULT_VESSEL, call: defaultCall('gothenburg') }).total).toBe(2966132.86);
+    expect(calculatePortCallCost(h, { vessel: DEFAULT_VESSEL, call: defaultCall('hamburg') }).total).toBe(2313489.31);
+    expect(calculatePortCallCost(x, { vessel: DEFAULT_VESSEL, call: defaultCall('helsingborg') }).total).toBe(8481257.40);
   });
 });
 
@@ -309,19 +314,21 @@ describe('Derivation transparency — two-clock tier display (v0.2.46)', () => {
     expect(initial.detail).toContain('First 24 hours of lay time');
     expect(initial.detail).toContain('1.25 EUR/GT');
     expect(initial.detail).toContain('quay-tariff-2026.pdf');
-    expect(initial.amount).toBe(68750);
+    expect(initial.amount).toBe(243561.25);
     const subsequent = d.steps.find(s => s.label === 'Subsequent tier')!;
     expect(subsequent.detail).toContain('per commenced 12 hours thereafter');
     expect(subsequent.detail).toContain('0.8 EUR/GT');
     expect(subsequent.detail).toContain('3 commenced periods');
-    expect(subsequent.amount).toBe(132000);
+    // 3 commenced periods x 194,849 GT x 0.80 = 467,637.60 (v0.2.48
+    // default vessel; the old 132,000 pin was 3 x 55,000 x 0.80).
+    expect(subsequent.amount).toBe(467637.6);
     const composition = d.steps.find(s => s.label === 'Components after tiers')!;
     expect(composition.components!.map(c => c.label)).toEqual([
       'First 24 h (1.25 EUR/GT)',
       'per commenced 12 h thereafter (0.8 EUR/GT)'
     ]);
-    expect(composition.amount).toBe(200750);
-    expect(d.steps[d.steps.length - 1].amount).toBe(200750);
+    expect(composition.amount).toBe(711198.85);
+    expect(d.steps[d.steps.length - 1].amount).toBe(711198.85);
   });
 
   it('hhla_tonnage_dues at 24 h: the initial tier only; no subsequent-tier step', () => {
@@ -339,7 +346,7 @@ describe('Derivation transparency — two-clock tier display (v0.2.46)', () => {
     expect(tier.detail).toContain('0.0165 EUR/GT');
     expect(tier.detail).toContain('per commenced 12 h');
     expect(tier.detail).toContain('pricelist-maritime-shipping-2026.pdf');
-    expect(tier.amount).toBe(907.5);
+    expect(tier.amount).toBe(3215.01);
   });
 
   it('hpa_demurrage across both tiers: the Beyond tier step fires past 120 h excess', () => {
@@ -349,12 +356,12 @@ describe('Derivation transparency — two-clock tier display (v0.2.46)', () => {
     const d = dem.derivation!;
     const first = d.steps.find(s => s.label === 'Excess up to 120 h')!;
     expect(first.detail).toContain('10 periods commenced');
-    expect(first.amount).toBe(9075);
+    expect(first.amount).toBe(32150.09);
     const beyond = d.steps.find(s => s.label === 'Beyond')!;
     expect(beyond.detail).toContain('0.0255 EUR/GT');
     expect(beyond.detail).toContain('12 periods commenced');
-    expect(beyond.amount).toBe(16830);
-    expect(dem.amount).toBe(25905);
+    expect(beyond.amount).toBe(59623.79);
+    expect(dem.amount).toBe(91773.88);
   });
 
   it('the HPA berth fee (per-commenced-period, minimum-per-period class) still exposes its computation', () => {
@@ -367,16 +374,19 @@ describe('Derivation transparency — two-clock tier display (v0.2.46)', () => {
     expect(d.structure_label).toBe('Per commenced period');
     const tier = d.steps.find(s => s.label === 'Beyond')!;
     expect(tier.detail).toContain('0.0152 EUR/GT');
-    // 55,000 GT x 0.0152 x 2 commenced 6-h periods (12 h berth)
-    expect(berth.amount).toBe(1672.00);
+    // 194,849 GT x 0.0152 x 2 commenced 6-h periods (12 h berth)
+    expect(berth.amount).toBe(5923.41);
   });
 
   it('the tier-adjustment detail string no longer doubles the word Tier (cosmetic fix, v0.2.46)', () => {
-    // Worst-case Tier 0: old string read "Tier Tier 0 +30% (estimated)"
+    // Worst-case Tier 0: old string read "Tier Tier 0 +30% (estimated)".
+    // Re-pinned for the v0.2.48 default vessel (deliberate change: Maren
+    // Maersk, built 2014, infers Tier II from build year, so the default
+    // call's tier step reads Tier II +5%, not the old blank-year Tier 0).
     const result = calculatePortCallCost(hamburg, hhlaCall(50));
     const portFee = feeByRule(result, 'hpa_port_fee');
     const tierStep = portFee.derivation!.steps.find(s => s.label.includes('Tier adjustment'))!;
-    expect(tierStep.detail).toBe('Tier 0 +30% (estimated)');
+    expect(tierStep.detail).toBe('Tier II +5% (estimated)');
     expect(tierStep.detail).not.toContain('Tier Tier');
   });
 });

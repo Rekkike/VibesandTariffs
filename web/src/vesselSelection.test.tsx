@@ -68,8 +68,12 @@ describe('vessel-selection combobox: three tiers, no button strip (spec v0.2.47)
     // applyGenericSizeClass(key) which calls applyPreset(key) — the same
     // full re-seed of every parameter the preset defines.
     expect(appSource).toMatch(/const applyGenericSizeClass = \(presetKey: keyof typeof VESSEL_PRESETS\) => \{\s*applyPreset\(presetKey\);/);
-    // applyPreset seeds the vessel parameters and clears estimate badges
-    expect(appSource).toMatch(/onVesselChange\(\{ \.\.\.vessel, \.\.\.presetData \}\);/);
+    // applyPreset seeds the vessel parameters and clears estimate badges;
+    // v0.2.48: generic classes carry no library provenance, so the preset
+    // application also clears name/IMO/build year (a surviving build year
+    // would wrongly drive the Hamburg tier inference).
+    expect(appSource).toMatch(/\.\.\.vessel,\s*\.\.\.presetData,/);
+    expect(appSource).toMatch(/built_year: undefined/);
   });
 
   it('search filtering is the Autocomplete over the combined option labels — one searchable surface', () => {
@@ -215,7 +219,9 @@ describe('workspace render: selection drives the vessel, header reports live (sp
     });
     await act(async () => { await new Promise(r => setTimeout(r, 650)); });
     let text = container!.textContent ?? '';
-    expect(text).toContain('200,750'); // 24 h + 3 commenced 12-h periods at 55,000 GT
+    // v0.2.48: DEFAULT_VESSEL is Maren Maersk (194,849 GT) — 50 h tonnage
+    // dues = 194,849 × 1.25 + 3 × 194,849 × 0.8 = 243,561.25 + 467,637.60
+    expect(text).toContain('711,198');
     // change the lay time through the shared input
     const layInput = container!.querySelector('.lay-time-input input') as HTMLInputElement;
     expect(layInput).not.toBeNull();
@@ -238,7 +244,7 @@ describe('workspace render: selection drives the vessel, header reports live (sp
     });
     await act(async () => { await new Promise(r => setTimeout(r, 650)); });
     text = container!.textContent ?? '';
-    expect(text).toContain('68,750'); // first-24-h clock only at 24 h
+    expect(text).toContain('243,561'); // first-24-h clock only at 24 h (194,849 × 1.25)
   });
 
   it('the box-count inputs drive figures: changing a count changes the result', async () => {

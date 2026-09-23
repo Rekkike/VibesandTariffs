@@ -6,3 +6,5 @@ export * from './engine';
 // published-rate call; environmental levers blank = not entered)
 export * from './defaults';
 export * from './classification';
+// Per-vessel call profiles (spec v0.2.48 profile-seeding contract)
+export * from './vessel_profiles';

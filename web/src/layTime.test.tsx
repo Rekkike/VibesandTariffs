@@ -25,10 +25,14 @@ const feeByRule = (result: ReturnType<typeof calculatePortCallCost>, ruleId: str
   return fee;
 };
 
-// DEFAULT_VESSEL is 55,000 GT; defaultCall('hamburg') seeds lay_time_hours: 16.
+// v0.2.48 test-infrastructure change: DEFAULT_VESSEL is now Maren Maersk
+// (194,849 GT). The clause-1.2 pins below are per-GT arithmetic hand-computed
+// at 55,000 GT — pin them at a fixed 55,000-GT test vessel so they continue to
+// test the tariff arithmetic, not the (new) default vessel.
+const TEST_VESSEL: VesselInput = { gt: 55000, nt: 30250, loa_m: 290, beam_m: 32, draft_m: 12, teu_capacity: 4000 };
 const engineRun = (lay: number | undefined): ReturnType<typeof calculatePortCallCost> => {
   const call = { ...defaultCall('hamburg'), port_id: 'hamburg', lay_time_hours: lay } as CallInput;
-  const input: CostCalculationInput = { vessel: DEFAULT_VESSEL, call };
+  const input: CostCalculationInput = { vessel: TEST_VESSEL, call };
   return calculatePortCallCost(HAMBURG, input);
 };
 
@@ -161,7 +165,7 @@ describe('Hamburg lay-time UI wiring (spec v0.2.46)', () => {
   });
 
   it('changing the lay-time input changes the Hamburg result and the derivation renders both tiers', async () => {
-    const vessel: VesselInput = { ...DEFAULT_VESSEL };
+    const vessel: VesselInput = { ...TEST_VESSEL };
     await renderWorkspace(vessel, { ...defaultCall('hamburg'), lay_time_hours: 50 });
     await settleCalculation();
     const text = container!.textContent ?? '';

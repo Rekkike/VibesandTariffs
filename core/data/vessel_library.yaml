@@ -33,13 +33,13 @@ vessels:
     built: 2005
     gt: 8890
     nt: 3200
-    loa_m: 137
+    loa_m: 137.5
     beam_m: 22
     draught_m: 8.51
     teu_capacity: 909
-    class_note: "Feeder (North Atlantic / North Europe feeder routes)"
+    class_note: "Geared feeder (Samskip Iceland service; North Atlantic / North Europe feeder routes)"
     estimated_fields: [nt]
-    source_note: "Particulars cross-checked via VesselFinder (IMO 9306017) and Flexport Atlas vessel registry, 2026-09-21. Draught confirmed via owner fleet data. NT estimated (~36 percent of GT); fee class estimate: Class 4 (3,000+ NT) — estimate sits mid-class, low sensitivity."
+    source_note: "Particulars cross-checked via VesselFinder (IMO 9306017) and Flexport Atlas vessel registry, 2026-09-21. LOA 137.5 m per the reference record (the previous 137 m entry was a rounding defect, corrected v0.2.48). Draught confirmed via owner fleet data. NT estimated (~36 percent of GT); fee class estimate: Class 4 (3,000+ NT) — estimate sits mid-class, low sensitivity."
 
   - name: VISTULA MAERSK
     imo: "9775737"
@@ -82,6 +82,6 @@ vessels:
     beam_m: 28.4
     draught_m: 9.8
     teu_capacity: 2400
-    class_note: "Feeder (Fujian Mawei series; TEU capacity estimated, not confirmed)"
-    estimated_fields: [nt, draught_m]
-    source_note: "Particulars verified against VesselFinder vessel particulars (IMO 9967005), 2026-09-21. GT, LOA, beam, build year, and flag are registry-confirmed; TEU capacity is a series estimate. Draught estimated (typical for the Fujian Mawei 1,700-series feeder; AIS has observed 8.3 m laden). NT estimated; fee class estimate: Class 6 (10,000+ NT) — estimate sits below the Class 6 threshold; verify before relying on class placement."
+    class_note: "Feeder (Fujian Mawei series; GT and TEU capacity estimated from fleet trackers, not registry-confirmed)"
+    estimated_fields: [gt, teu_capacity, nt, draught_m]
+    source_note: "Particulars checked against VesselFinder and fleet-tracker data (IMO 9967005), 2026-09-23. LOA 171.92 m, beam 28.4 m, build year 2024, flag LR, and DWT 29,553 are registry-confirmed; GT (21,979) and TEU capacity (2,400) are tracker estimates — the basis stated per the v0.2.48 data-audit correction (the entry previously claimed GT as registry-confirmed). Draught estimated (typical for the Fujian Mawei 1,700-series feeder; AIS has observed 8.3 m laden). NT estimated; fee class estimate: Class 6 (10,000+ NT) — estimate sits below the Class 6 threshold; verify before relying on class placement."

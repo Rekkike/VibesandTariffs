@@ -6,23 +6,43 @@
 // core/test/environmental_defaults.test.ts.
 import { CallInput, VesselInput } from './types';
 
+import { defaultProfile } from './vessel_profiles';
+
+// Default vessel (spec v0.2.48 default-vessel contract): MAREN MAERSK
+// (IMO 9632129) — a fresh load prices her call until the user selects
+// otherwise, so the default figures are a real, named, verified vessel
+// rather than an abstract 55,000-GT particular set. The particulars mirror
+// the library entry; the equality is pinned. Her profile (50 h, 4,000
+// moves) seeds the default call the same way a selection would.
 export const DEFAULT_VESSEL: VesselInput = {
-  gt: 55000,
-  nt: 30250,
-  loa_m: 290,
-  beam_m: 32,
-  draft_m: 12,
-  teu_capacity: 4000
+  gt: 194849,
+  nt: 70000,
+  loa_m: 399,
+  beam_m: 60,
+  draft_m: 16,
+  teu_capacity: 19076,
+  built_year: 2014,
+  name: 'MAREN MAERSK',
+  imo: '9632129'
 };
 
 export function defaultCall(portId: string): CallInput {
   return {
     port_id: portId,
     date: new Date().toISOString().split('T')[0],
-    containers_loaded_le20ft: 500,
-    containers_loaded_gt20ft: 500,
-    containers_discharged_le20ft: 500,
-    containers_discharged_gt20ft: 500,
+    // Profile values from Maren Maersk's seeded profile (spec v0.2.48):
+    // 4,000 moves split 60/40 forty/twenty, loaded/discharged balanced.
+    // All other levers keep the v0.2.28 worst-case no-discount defaults —
+    // the profile changes the call's size, never its discount posture.
+    containers_loaded_le20ft: defaultProfile()!.containers_loaded_le20ft,
+    containers_loaded_gt20ft: defaultProfile()!.containers_loaded_gt20ft,
+    containers_discharged_le20ft: defaultProfile()!.containers_discharged_le20ft,
+    containers_discharged_gt20ft: defaultProfile()!.containers_discharged_gt20ft,
+    // Lay time is a shared input (spec v0.2.47): the default vessel's
+    // profile seeds it (50 h) — the HHLA tonnage dues and HPA demurrage
+    // read it at Hamburg and the Swedish per-commenced-period rules fall
+    // back to it.
+    lay_time_hours: defaultProfile()!.lay_time_hours,
     calls_this_month: 1,
     flag_state: 'EU',
     vessel_type: 'container',
@@ -79,7 +99,6 @@ export function defaultCall(portId: string): CallInput {
       clean_shipping_index_class: undefined
     } : {}),
     ...(portId === 'hamburg' ? {
-      lay_time_hours: 16,
       // NOx Tier (spec v0.2.29, amended v0.2.44): not entered by default;
       // the engine infers from the build year per Regulation 13 when one is
       // present (flagged), and applies the worst-case Tier 0 only when the

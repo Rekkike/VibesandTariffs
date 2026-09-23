@@ -201,6 +201,13 @@ body {
   flex: 1 1 140px;
   min-width: 0;
 }
+/* Profile-assumption helper (spec v0.2.48): seeded values read as
+   assumptions — muted, wrap-safe, adjacent to the field they qualify. */
+.profile-assumption-helper {
+  color: var(--text-secondary, rgba(0, 0, 0, 0.6));
+  font-style: italic;
+  overflow-wrap: break-word;
+}
 
 /* Theme toggle: 24x24 minimum target, visible focus */
 .theme-toggle {

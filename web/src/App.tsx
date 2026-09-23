@@ -51,7 +51,12 @@ import {
   calculatePortCallCost,
   inferEngineTier,
   DEFAULT_VESSEL,
-  defaultCall
+  defaultCall,
+  namedProfile,
+  genericProfile,
+  PROFILE_SEEDED_CALL_FIELDS,
+  DEFAULT_VESSEL_PROFILE_IMO,
+  type SeededProfile
 } from '@port-cost/core';
 
 // Import the port registry from canonical sources (converted to JSON at build time).
@@ -330,6 +335,12 @@ interface PortWorkspaceProps {
   onVesselChange: (vessel: VesselInput) => void;
   onCallChange: (call: CallInput) => void;
   onActiveVesselChange: (label: string) => void;
+  // Profile-assumption fields (spec v0.2.48), lifted to App so the
+  // comparison view's context strip states the same assumptions once.
+  // Optional with safe defaults: the App wires both, and tests that pin
+  // the flag behavior pass them explicitly.
+  assumedCallFields?: string[];
+  onAssumedCallFieldsChange?: (fields: string[]) => void;
 }
 
 // Tier-field visibility (spec v0.2.45): the tier the engine will actually
@@ -406,7 +417,7 @@ const EnvGuideHelp: React.FC<{ guide: InputGuide | null }> = ({ guide }) => {
   );
 };
 
-export const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVesselChange, onCallChange, onActiveVesselChange }) => {
+export const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVesselChange, onCallChange, onActiveVesselChange, assumedCallFields = [], onAssumedCallFieldsChange = () => {} }) => {
   // Which result page(s) are visible - display filter only, never affects computation
   const [visibleSegments, setVisibleSegments] = useState<CostSegment[]>([
     'vessel_call',
@@ -466,6 +477,44 @@ export const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call
   // whose data is marked estimated (spec v0.2.19: estimated values are never
   // mistaken for registry data — the field shows an "est." badge)
   const [estimatedFields, setEstimatedFields] = useState<string[]>([]);
+  // Profile-seeded assumption fields (spec v0.2.48): selecting a preset
+  // seeds lay time and the four container counts as class-based assumptions.
+  // Every seeded value carries an assumption flag rendered adjacent to its
+  // input; a user edit of the field takes ownership and clears its flag.
+  // The state is lifted to App so the comparison strip states the same
+  // assumptions; the build-year tier flag rides the engine's inference flag
+  // (v0.2.44), rendered adjacent per the standing contracts.
+  const [assumedFieldsLocal, setAssumedFields] = useState<string[]>(assumedCallFields);
+  const assumedFields = assumedFieldsLocal;
+  const PROFILE_ASSUMPTION_TEXT: Record<string, string> = {
+    lay_time_hours: 'lay time assumed from vessel class at Gothenburg-class productivity — adjust for your actual call',
+    containers_loaded_le20ft: 'moves assumed from vessel class (loaded share) — adjust for your actual call',
+    containers_loaded_gt20ft: 'moves assumed from vessel class (loaded share) — adjust for your actual call',
+    containers_discharged_le20ft: 'moves assumed from vessel class (discharged share) — adjust for your actual call',
+    containers_discharged_gt20ft: 'moves assumed from vessel class (discharged share) — adjust for your actual call'
+  };
+  const clearAssumedField = (field: keyof CallInput) => {
+    const next = assumedFields.filter(f => f !== field);
+    setAssumedFields(next);
+    onAssumedCallFieldsChange(next);
+  };
+  // Seeds a call profile (spec v0.2.48): the shared lay-time and box-count
+  // fields take the profile's values with their assumption flags set. A
+  // profile that fails the sanity band is never seeded.
+  const seedProfile = (profile: SeededProfile | null) => {
+    if (!profile) return;
+    onCallChange({
+      ...call,
+      lay_time_hours: profile.lay_time_hours,
+      containers_loaded_le20ft: profile.containers_loaded_le20ft,
+      containers_loaded_gt20ft: profile.containers_loaded_gt20ft,
+      containers_discharged_le20ft: profile.containers_discharged_le20ft,
+      containers_discharged_gt20ft: profile.containers_discharged_gt20ft
+    });
+    const next = [...PROFILE_SEEDED_CALL_FIELDS as string[]];
+    setAssumedFields(next);
+    onAssumedCallFieldsChange(next);
+  };
 
   // Environmental-input guidance (spec v0.2.29): the money deltas are computed
   // live from the current form state against this port's engine - informative
@@ -491,6 +540,11 @@ export const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call
     // handleCallChange calls in one handler must not clobber each other
     // (the v0.2.44 wiring defect — the old per-call `{ ...call, [field] }`
     // spread lost every field but the last when a handler set several).
+    // A user edit of a profile-seeded field takes ownership of the value:
+    // the assumption flag clears (spec v0.2.48).
+    if ((PROFILE_SEEDED_CALL_FIELDS as string[]).includes(field as string)) {
+      clearAssumedField(field);
+    }
     onCallChange({ ...call, [field]: value });
   };
   // Tier-field visibility (spec v0.2.45): the field mirrors the tier the
@@ -505,10 +559,22 @@ export const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call
 
   const applyPreset = (preset: keyof typeof VESSEL_PRESETS) => {
     const presetData = VESSEL_PRESETS[preset];
-    onVesselChange({ ...vessel, ...presetData });
+    onVesselChange({
+      ...vessel,
+      ...presetData,
+      // Generic classes carry no library provenance: clear name/IMO/build
+      // year so nothing from a previously selected named vessel survives a
+      // class switch (build year especially — it drives tier inference).
+      name: undefined,
+      imo: undefined,
+      built_year: undefined
+    });
     // Presets carry no library provenance: clear the estimate badges
     setEstimatedFields([]);
     onActiveVesselChange(GENERIC_SIZE_CLASS_LABELS[preset]);
+    // Profile seeding (spec v0.2.48): the generic class seeds its profile
+    // (class lay time × class-appropriate productivity, sanity-banded).
+    seedProfile(genericProfile(preset));
   };
 
   // Generic size-class entry (spec v0.2.47 vessel-selection contract):
@@ -556,12 +622,18 @@ export const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call
       gangway_class: selected.teu_capacity <= 1000 ? 'feeder' : 'overseas',
       // Stored NOx Tier (spec v0.2.29): a library vessel with a certified tier
       // computes at Hamburg without the worst-case-default flag; vessels
-      // without one keep the Tier 0 default (never an inferred tier).
+      // without one keep the Tier 0 default (never an inferred tier —
+      // build-year inference applies, flagged, per v0.2.44).
       ...(selected.engine_tier
         ? { engine_tier: selected.engine_tier, engine_tier_estimated: false, infer_engine_tier_from_build_year: false }
         : { engine_tier: undefined, engine_tier_estimated: undefined, infer_engine_tier_from_build_year: false })
     });
     setEstimatedFields(selected.estimated_fields ?? []);
+    // Profile seeding (spec v0.2.48): the named preset seeds its class-based
+    // call profile (lay time + the four box counts), each flagged as an
+    // assumption. No library vessel carries a certified tier today, so the
+    // build-year inference (flagged) does the tier work.
+    seedProfile(namedProfile(selected.imo));
   };
 
   const toggleBiller = (biller: string) => {
@@ -894,9 +966,15 @@ export const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call
                 onChange={(e) => handleCallChange('lay_time_hours', parseFloat(e.target.value) || undefined)}
                 fullWidth
                 InputLabelProps={{ shrink: true }}
-                helperText="Lay time runs berthing to casting off; Sundays and holidays count only if worked — modeled as a simple hours input (S4 clause 1.2). HHLA tonnage dues: first 24 h full rate, then per commenced 12 h. Blank = not entered"
+                helperText={
+                  (assumedFields.includes('lay_time_hours')
+                    ? `${PROFILE_ASSUMPTION_TEXT.lay_time_hours}. `
+                    : '') +
+                  'Lay time runs berthing to casting off; Sundays and holidays count only if worked — modeled as a simple hours input (S4 clause 1.2). HHLA tonnage dues: first 24 h full rate, then per commenced 12 h. Blank = not entered'
+                }
+                FormHelperTextProps={{ className: 'profile-assumption-helper' }}
               />
-              <Box className="box-counts-row">
+              <Box className="box-counts-row" aria-label="Container moves (loaded and discharged)">
                 <TextField
                   className="box-count-field"
                   label="20' Loaded"
@@ -904,6 +982,8 @@ export const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call
                   value={state.call.containers_loaded_le20ft}
                   onChange={(e) => handleCallChange('containers_loaded_le20ft', parseInt(e.target.value) || 0)}
                   InputLabelProps={{ shrink: true }}
+                  helperText={assumedFields.includes('containers_loaded_le20ft') ? PROFILE_ASSUMPTION_TEXT.containers_loaded_le20ft : undefined}
+                  FormHelperTextProps={{ className: 'profile-assumption-helper' }}
                 />
                 <TextField
                   className="box-count-field"
@@ -912,6 +992,8 @@ export const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call
                   value={state.call.containers_loaded_gt20ft}
                   onChange={(e) => handleCallChange('containers_loaded_gt20ft', parseInt(e.target.value) || 0)}
                   InputLabelProps={{ shrink: true }}
+                  helperText={assumedFields.includes('containers_loaded_gt20ft') ? PROFILE_ASSUMPTION_TEXT.containers_loaded_gt20ft : undefined}
+                  FormHelperTextProps={{ className: 'profile-assumption-helper' }}
                 />
                 <TextField
                   className="box-count-field"
@@ -920,6 +1002,8 @@ export const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call
                   value={state.call.containers_discharged_le20ft}
                   onChange={(e) => handleCallChange('containers_discharged_le20ft', parseInt(e.target.value) || 0)}
                   InputLabelProps={{ shrink: true }}
+                  helperText={assumedFields.includes('containers_discharged_le20ft') ? PROFILE_ASSUMPTION_TEXT.containers_discharged_le20ft : undefined}
+                  FormHelperTextProps={{ className: 'profile-assumption-helper' }}
                 />
                 <TextField
                   className="box-count-field"
@@ -928,6 +1012,8 @@ export const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call
                   value={state.call.containers_discharged_gt20ft}
                   onChange={(e) => handleCallChange('containers_discharged_gt20ft', parseInt(e.target.value) || 0)}
                   InputLabelProps={{ shrink: true }}
+                  helperText={assumedFields.includes('containers_discharged_gt20ft') ? PROFILE_ASSUMPTION_TEXT.containers_discharged_gt20ft : undefined}
+                  FormHelperTextProps={{ className: 'profile-assumption-helper' }}
                 />
               </Box>
             </Box>
@@ -2104,6 +2190,9 @@ interface ComparisonViewProps {
   selectedPortIds: string[];
   onSelectionChange: (portIds: string[]) => void;
   activeVessel: string;
+  // Profile-assumption fields (spec v0.2.48): the strip states the seeded
+  // assumptions once per the honesty contracts.
+  assumedCallFields?: string[];
 }
 
 // The comparison screen (spec v0.2.17 section 4.3.1): a presentation over
@@ -2117,7 +2206,8 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
   call,
   selectedPortIds,
   onSelectionChange,
-  activeVessel
+  activeVessel,
+  assumedCallFields = []
 }) => {
   const selectedPorts = ports.filter(p => selectedPortIds.includes(p.metadata.id));
   // Responsive layout (spec v0.2.39): below the stacking breakpoint the
@@ -2456,6 +2546,9 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
             Comparison basis: reference tariff rates (list prices). Rows group by economic function
             (fee family), never by biller name, so ports that charge the same function differently
             still line up. Data-quality flags from each port's computation are carried through.
+            The comparison prices one identical call at all three ports — same vessel, lay time, moves,
+            and classes — so the port is the only variable; per-port call-size variation is deliberately
+            excluded, and the context strip above states the call's assumptions once.
           </Typography>
 
           {/* Call-context strip (spec v0.2.47): one compact strip stating the
@@ -2484,10 +2577,15 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
               {((call.containers_loaded_le20ft || 0) + (call.containers_loaded_gt20ft || 0) +
                 (call.containers_discharged_le20ft || 0) + (call.containers_discharged_gt20ft || 0))
                 .toLocaleString('en-US')} (loaded + discharged)
+              {(assumedCallFields.includes('containers_loaded_le20ft') ||
+                assumedCallFields.includes('lay_time_hours')) &&
+                ' (assumed from vessel class — adjust for your actual call)'}
             </span>
             <span className="comparison-context-item">
               <span className="comparison-context-label">Lay time:</span>{' '}
               {call.lay_time_hours != null ? `${call.lay_time_hours} h at berth` : 'not entered'}
+              {assumedCallFields.includes('lay_time_hours') &&
+                ' (assumed from vessel class at Gothenburg-class productivity — adjust for your actual call)'}
             </span>
             <span className="comparison-context-item">
               <span className="comparison-context-label">ESI:</span>{' '}
@@ -2842,16 +2940,25 @@ const App: React.FC = () => {
     activePort ? { kind: 'port', portId: activePort.metadata.id } : { kind: 'comparison' }
   );
   const [vessel, setVessel] = useState<VesselInput>(DEFAULT_VESSEL);
-  // Active vessel label (spec v0.2.47): the app header displays the priced
-  // vessel, updating live with the selection. Until a selection is made the
-  // default call's vessel is what every figure prices, so the header names
-  // it the same way: a custom label with its GT.
-  const [activeVesselLabel, setActiveVesselLabel] = useState<string>(() => customVesselLabel(DEFAULT_VESSEL));
+  // Active vessel label (spec v0.2.47/v0.2.48): the app header displays the
+  // priced vessel, updating live with the selection. A fresh load prices
+  // the default vessel — MAREN MAERSK (the default-vessel contract) — so
+  // the header names her exactly as a selection would.
+  const [activeVesselLabel, setActiveVesselLabel] = useState<string>(
+    () => `MAREN MAERSK (IMO ${DEFAULT_VESSEL_PROFILE_IMO})`
+  );
   const [call, setCall] = useState<CallInput>(() => defaultCall(activePort ? activePort.metadata.id : ''));
   const [comparisonSelection, setComparisonSelection] = useState<string[]>(
     LOADED_PORTS.map(p => p.metadata.id)
   );
   const [lastPortId, setLastPortId] = useState<string>(activePort?.metadata.id ?? '');
+  // Profile-assumption fields (spec v0.2.48), lifted so the comparison view
+  // states the same assumptions the per-port inputs flag. A fresh load seeds
+  // the default vessel's profile (Maren Maersk), so the default call carries
+  // the profile's assumption flags from the start.
+  const [assumedCallFields, setAssumedCallFields] = useState<string[]>([
+    ...PROFILE_SEEDED_CALL_FIELDS as string[]
+  ]);
 
   // Switching ports swaps the fee-rule set: shared inputs carry over,
   // port-specific inputs reset to defaults (spec v0.2.20)
@@ -2945,6 +3052,7 @@ const App: React.FC = () => {
           selectedPortIds={comparisonSelection}
           onSelectionChange={setComparisonSelection}
           activeVessel={activeVesselLabel}
+          assumedCallFields={assumedCallFields}
         />
       ) : currentPort ? (
         <PortWorkspace
@@ -2954,6 +3062,8 @@ const App: React.FC = () => {
           onVesselChange={setVessel}
           onCallChange={setCall}
           onActiveVesselChange={setActiveVesselLabel}
+          assumedCallFields={assumedCallFields}
+          onAssumedCallFieldsChange={setAssumedCallFields}
         />
       ) : null}
     </Box>

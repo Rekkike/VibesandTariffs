@@ -50,11 +50,12 @@ describe('Vessel library data (spec section 3.4)', () => {
     for (const vessel of data.vessels) {
       const estimated = vessel.estimated_fields ?? [];
       for (const field of estimated) {
-        expect(['nt', 'draught_m']).toContain(field);
+        // v0.2.48 data audit: GT and TEU capacity may be tracker estimates
+        // (MSC Kyungmin), recorded with their basis in the source note.
+        expect(['nt', 'draught_m', 'gt', 'teu_capacity']).toContain(field);
         // The source note must surface the estimate for that field, so an
         // estimated value is never mistaken for registry data
-        const noteMentionsEstimate = vessel.source_note.toLowerCase().includes(field === 'nt' ? 'nt estimated' : 'draught estimated')
-          || vessel.source_note.toLowerCase().includes('estimated');
+        const noteMentionsEstimate = vessel.source_note.toLowerCase().includes(field === 'nt' ? 'nt estimated' : 'estimated');
         expect(noteMentionsEstimate).toBe(true);
       }
     }
@@ -74,7 +75,9 @@ describe('Vessel library data (spec section 3.4)', () => {
     expect(helgafell).toBeDefined();
     expect(helgafell!.gt).toBe(8890);
     expect(helgafell!.nt).toBe(3200);
-    expect(helgafell!.loa_m).toBe(137);
+    // LOA corrected to the reference 137.5 m in v0.2.48 (the previous 137
+    // was a rounding defect; deliberate data correction).
+    expect(helgafell!.loa_m).toBe(137.5);
     expect(helgafell!.draught_m).toBe(8.51);
     expect(helgafell!.teu_capacity).toBe(909);
     expect(helgafell!.estimated_fields).toEqual(['nt']);
@@ -108,7 +111,10 @@ describe('Vessel library data (spec section 3.4)', () => {
     expect(kyungmin!.beam_m).toBe(28.4);
     expect(kyungmin!.draught_m).toBe(9.8);
     expect(kyungmin!.teu_capacity).toBe(2400);
-    expect(kyungmin!.estimated_fields).toEqual(['nt', 'draught_m']);
+    // v0.2.48 data audit: GT and TEU capacity are tracker estimates (basis
+    // stated in the source note) — the entry previously claimed GT as
+    // registry-confirmed.
+    expect(kyungmin!.estimated_fields).toEqual(['gt', 'teu_capacity', 'nt', 'draught_m']);
     expect(kyungmin!.class_note).toContain('estimated');
   });
 });

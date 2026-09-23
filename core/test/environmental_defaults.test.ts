@@ -134,14 +134,18 @@ describe('Environmental default-call contract (spec v0.2.28)', () => {
       expect(defaultResult.total).toBeGreaterThan(0);
     });
 
-    it('hamburg: blank build year keeps the Tier 0 worst-case computation with a named assumed-parameter flag (v0.2.44)', () => {
+    it('hamburg: blank build year keeps the Tier 0 worst-case computation with a named assumed-parameter flag (v0.2.44; re-pinned v0.2.48)', () => {
       const port = loadPort('hamburg');
-      const result = calculatePortCallCost(port, defaultInputFor(port));
-      // The default vessel carries no build year, so the v0.2.28 worst-case
-      // Tier 0 default applies (spec v0.2.44: the inference needs a build
-      // year; the worst case stands for truly unknown vessels)
+      // The v0.2.48 default vessel carries a build year (Maren Maersk, 2014
+      // → inferred Tier II), so the worst-case contract is pinned with the
+      // build year removed — the blank-year case it governs. The worst case
+      // stands for truly unknown vessels (spec v0.2.44).
+      const result = calculatePortCallCost(port, {
+        vessel: { ...DEFAULT_VESSEL, built_year: undefined },
+        call: defaultCall('hamburg')
+      });
       const explicit = calculatePortCallCost(port, {
-        vessel: DEFAULT_VESSEL,
+        vessel: { ...DEFAULT_VESSEL, built_year: undefined },
         call: { ...defaultCall('hamburg'), engine_tier: 'Tier 0', engine_tier_estimated: false }
       });
       expect(result.total).toBe(explicit.total);
@@ -152,7 +156,9 @@ describe('Environmental default-call contract (spec v0.2.28)', () => {
       expect(flag!.description).toContain('NOx Tier not entered; worst case (Tier 0) applied');
       // The assumed-Tier flag must not contaminate the estimated-parameters
       // subtotal: Tier is a classification, not an estimated charge
-      expect(result.total_estimated_parameters).toBe(731000);
+      // (re-pinned for the v0.2.48 default profile: 4,000 moves x 358 =
+      // 1,432,000 handling + 15,000 towage; old pin 731,000).
+      expect(result.total_estimated_parameters).toBe(1447000);
       const handling = result.billers.flatMap(b => b.fees).find(f => f.fee_rule_id === 'hhla_container_handling');
       expect(handling!.quality_flags.some(f => f.type === 'estimated_parameter')).toBe(true);
       const portFee = result.billers.flatMap(b => b.fees).find(f => f.fee_rule_id === 'hpa_port_fee')!;
