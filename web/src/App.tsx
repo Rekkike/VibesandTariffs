@@ -7,7 +7,6 @@ import {
   InputLabel,
   Checkbox,
   FormControlLabel,
-  Button,
   Paper,
   Typography,
   Box,
@@ -71,7 +70,6 @@ import {
   MIN_SUPPORTED_VIEWPORT_PX,
   STACKING_BREAKPOINT_PX,
   STACKING_MEDIA_QUERY,
-  rankOrderByConvertedBasis,
   MediaQueryHook
 } from './responsive';
 import type { ThemeMode } from './theme';
@@ -274,12 +272,64 @@ const VESSEL_PRESETS = {
   'ultra-large': { gt: 215000, nt: 118250, loa_m: 400, beam_m: 60, draft_m: 16, teu_capacity: 20000 }
 };
 
+// Generic size-class display names for the combobox (spec v0.2.47): the
+// preset keys are internal; the entries render as vessel entries with
+// their approx. GT. One source of truth — derived from VESSEL_PRESETS, so
+// a preset edit changes the combobox with it.
+const GENERIC_SIZE_CLASS_LABELS: Record<keyof typeof VESSEL_PRESETS, string> = {
+  feeder: 'Generic feeder — approx. 8,000 GT',
+  'feeder-max': 'Generic feeder max — approx. 15,000 GT',
+  panamax: 'Generic Panamax — approx. 55,000 GT',
+  'post-panamax': 'Generic Post-Panamax — approx. 100,000 GT',
+  'ultra-large': 'Generic ultra-large — approx. 215,000 GT'
+};
+
+// Vessel-selection combobox (spec v0.2.47): one searchable control holding,
+// in order: named library presets, generic size-class entries, and the
+// "Custom vessel" entry. Typing filters across all three tiers.
+type VesselOption =
+  | { kind: 'library'; vessel: LibraryVessel }
+  | { kind: 'generic'; presetKey: keyof typeof VESSEL_PRESETS }
+  | { kind: 'custom' };
+
+const CUSTOM_VESSEL_OPTION: VesselOption = { kind: 'custom' };
+
+const vesselOptionId = (option: VesselOption): string =>
+  option.kind === 'library' ? `library:${option.vessel.imo}`
+    : option.kind === 'generic' ? `generic:${option.presetKey}`
+    : 'custom';
+
+const vesselOptionLabel = (option: VesselOption): string =>
+  option.kind === 'library' ? `${option.vessel.name} (IMO ${option.vessel.imo})`
+    : option.kind === 'generic' ? GENERIC_SIZE_CLASS_LABELS[option.presetKey]
+    : 'Custom vessel — enter particulars below';
+
+// Searchable-combobox option list (spec v0.2.47): library vessels first,
+// generic size classes beneath them, Custom vessel last. Filtering is the
+// Autocomplete's own case-insensitive substring match over these labels.
+const vesselOptions = (): VesselOption[] => [
+  ...LOADED_VESSELS.map((v): VesselOption => ({ kind: 'library', vessel: v })),
+  ...(Object.keys(VESSEL_PRESETS) as (keyof typeof VESSEL_PRESETS)[])
+    .map((presetKey): VesselOption => ({ kind: 'generic', presetKey })),
+  CUSTOM_VESSEL_OPTION
+];
+
+// The active vessel name for the app header (spec v0.2.47 active-vessel
+// contract): the last selection's display name — a library vessel's name,
+// a generic class name, or a custom label naming the entered GT. The
+// workspace owns the selection; the header reads it via a callback.
+// Custom-vessel naming follows the spec's "Custom vessel — 55,000 GT"
+// pattern, updated live with the entered particulars.
+const customVesselLabel = (vessel: VesselInput): string =>
+  `Custom vessel — ${new Intl.NumberFormat('en-US').format(Math.round(vessel.gt))} GT`;
+
 interface PortWorkspaceProps {
   port: PortDefinition;
   vessel: VesselInput;
   call: CallInput;
   onVesselChange: (vessel: VesselInput) => void;
   onCallChange: (call: CallInput) => void;
+  onActiveVesselChange: (label: string) => void;
 }
 
 // Tier-field visibility (spec v0.2.45): the tier the engine will actually
@@ -356,7 +406,7 @@ const EnvGuideHelp: React.FC<{ guide: InputGuide | null }> = ({ guide }) => {
   );
 };
 
-export const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVesselChange, onCallChange }) => {
+export const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVesselChange, onCallChange, onActiveVesselChange }) => {
   // Which result page(s) are visible - display filter only, never affects computation
   const [visibleSegments, setVisibleSegments] = useState<CostSegment[]>([
     'vessel_call',
@@ -458,6 +508,25 @@ export const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call
     onVesselChange({ ...vessel, ...presetData });
     // Presets carry no library provenance: clear the estimate badges
     setEstimatedFields([]);
+    onActiveVesselChange(GENERIC_SIZE_CLASS_LABELS[preset]);
+  };
+
+  // Generic size-class entry (spec v0.2.47 vessel-selection contract):
+  // presented as a vessel entry in the combobox, seeded from the same
+  // VESSEL_PRESETS particulars the removed button strip carried — no
+  // dependency of the old buttons is lost; behavior is identical to the
+  // button (a full re-seed of every parameter the preset defines).
+  const applyGenericSizeClass = (presetKey: keyof typeof VESSEL_PRESETS) => {
+    applyPreset(presetKey);
+  };
+
+  // "Custom vessel" (spec v0.2.47): exposes the raw parameter fields — the
+  // fields below the combobox are the custom surface. Selection is a no-op
+  // on the data (the user edits the fields directly); the entry exists so
+  // the combobox states what it prices.
+  const applyCustomVessel = () => {
+    // no data change: the raw fields below are already the input surface
+    onActiveVesselChange(customVesselLabel(vessel));
   };
 
   // Selecting a library vessel pre-fills the form's inputs — a convenience,
@@ -466,6 +535,7 @@ export const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call
     if (!selected) {
       return;
     }
+    onActiveVesselChange(`${selected.name} (IMO ${selected.imo})`);
     onVesselChange({
       ...vessel,
       name: selected.name,
@@ -630,45 +700,81 @@ export const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call
             <DisclosureCard title="Vessel" summary="Particulars; typeahead from the vessel library" defaultOpen>
             <Typography variant="h6" component="h2" className="sr-only">Vessel</Typography>
 
-            {/* Vessel library search/typeahead (spec section 3.4): matches on
-                name or IMO; selection pre-fills the inputs below, which stay
-                editable */}
+            {/* Vessel-selection combobox (spec v0.2.47): one searchable
+                control, three tiers — named library presets, generic
+                size-class entries, Custom vessel. Typing filters across
+                all three; selection pre-fills the inputs below (library,
+                generic) or leaves them for direct entry (custom). The
+                button strip and the separate free-text search are removed;
+                every dependency they carried lives in the tiers:
+                named presets (full specs + estimate badges + gangway/tier
+                call defaults), generic classes (the former buttons' full
+                parameter seeds), custom (the raw fields themselves). */}
             {LOADED_VESSELS.length > 0 && (
               <Autocomplete
-                className="vessel-search"
-                options={LOADED_VESSELS}
-                getOptionLabel={(option: LibraryVessel) =>
-                  `${option.name} (IMO ${option.imo})`
-                }
-                onChange={(_, value: LibraryVessel | null) => applyLibraryVessel(value)}
+                className="vessel-select"
+                options={vesselOptions()}
+                getOptionLabel={vesselOptionLabel}
+                isOptionEqualToValue={(option, value) => vesselOptionId(option) === vesselOptionId(value)}
+                renderOption={(props, option) => {
+                  const { key, ...rest } = props as unknown as Record<string, unknown>;
+                  return (
+                    <li key={key as React.Key} {...(rest as object)} className={
+                      option.kind === 'library' ? 'vessel-option-library'
+                        : option.kind === 'generic' ? 'vessel-option-generic'
+                        : 'vessel-option-custom'
+                    }>
+                      <span className="vessel-option-label">{vesselOptionLabel(option)}</span>
+                      {option.kind === 'library' && option.vessel.class_note && (
+                        <span className="vessel-option-note">{option.vessel.class_note}</span>
+                      )}
+                    </li>
+                  );
+                }}
+                onChange={(_, value: VesselOption | null) => {
+                  if (!value) return;
+                  if (value.kind === 'library') {
+                    applyLibraryVessel(value.vessel);
+                  } else if (value.kind === 'generic') {
+                    applyGenericSizeClass(value.presetKey);
+                  } else {
+                    applyCustomVessel();
+                  }
+                }}
                 renderInput={(params) => (
                   <TextField
                     {...params}
-                    label="Search vessel library (name or IMO)"
-                    placeholder="e.g. HELGAFELL or 9306017"
+                    label="Vessel"
+                    placeholder="Search by name, IMO, or size class — or pick Custom vessel"
                     margin="normal"
                   />
                 )}
               />
             )}
-
-            <Box className="preset-buttons">
-              {Object.entries(VESSEL_PRESETS).map(([key, preset]) => (
-                <Button
-                  key={key}
-                  variant="outlined"
-                  className="preset-btn"
-                  onClick={() => applyPreset(key as keyof typeof VESSEL_PRESETS)}
-                  sx={{
-                    borderColor: '#1976d2',
-                    color: '#1976d2',
-                    '&:hover': { borderColor: '#1976d2', backgroundColor: 'rgba(25, 118, 210, 0.04)' }
-                  }}
-                >
-                  {key.replace('-', ' ').toUpperCase()}
-                </Button>
-              ))}
-            </Box>
+            {LOADED_VESSELS.length === 0 && (
+              <Autocomplete
+                className="vessel-select"
+                options={vesselOptions()}
+                getOptionLabel={vesselOptionLabel}
+                isOptionEqualToValue={(option, value) => vesselOptionId(option) === vesselOptionId(value)}
+                onChange={(_, value: VesselOption | null) => {
+                  if (!value) return;
+                  if (value.kind === 'generic') {
+                    applyGenericSizeClass(value.presetKey);
+                  } else if (value.kind === 'custom') {
+                    applyCustomVessel();
+                  }
+                }}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Vessel"
+                    placeholder="Pick a size class — or Custom vessel"
+                    margin="normal"
+                  />
+                )}
+              />
+            )}
 
             <Grid container spacing={2}>
               <Grid item xs={12} sm={6}>
@@ -768,6 +874,63 @@ export const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call
                 </Grid>
               )}
             </Grid>
+            {/* General-information group (spec v0.2.47): shared call
+                parameters that describe the call itself, not a port's
+                specific tariff — lay time directly under the selection,
+                the four container counts as one compact secondary row.
+                Lay time is a shared input: HHLA tonnage dues and the HPA
+                demurrage read it at Hamburg (S4 clause 1.2; the port card
+                keeps its tariff caveats in its helper text), and the
+                Swedish per-commenced-period rules fall back to it. */}
+            <Box className="general-info-group" component="section" aria-label="Call general information">
+              <Typography variant="subtitle2" component="h3" className="general-info-heading">
+                General call information
+              </Typography>
+              <TextField
+                className="lay-time-input"
+                label="Lay Time at Berth (hours)"
+                type="number"
+                value={state.call.lay_time_hours ?? ''}
+                onChange={(e) => handleCallChange('lay_time_hours', parseFloat(e.target.value) || undefined)}
+                fullWidth
+                InputLabelProps={{ shrink: true }}
+                helperText="Lay time runs berthing to casting off; Sundays and holidays count only if worked — modeled as a simple hours input (S4 clause 1.2). HHLA tonnage dues: first 24 h full rate, then per commenced 12 h. Blank = not entered"
+              />
+              <Box className="box-counts-row">
+                <TextField
+                  className="box-count-field"
+                  label="20' Loaded"
+                  type="number"
+                  value={state.call.containers_loaded_le20ft}
+                  onChange={(e) => handleCallChange('containers_loaded_le20ft', parseInt(e.target.value) || 0)}
+                  InputLabelProps={{ shrink: true }}
+                />
+                <TextField
+                  className="box-count-field"
+                  label="40' Loaded"
+                  type="number"
+                  value={state.call.containers_loaded_gt20ft}
+                  onChange={(e) => handleCallChange('containers_loaded_gt20ft', parseInt(e.target.value) || 0)}
+                  InputLabelProps={{ shrink: true }}
+                />
+                <TextField
+                  className="box-count-field"
+                  label="20' Discharged"
+                  type="number"
+                  value={state.call.containers_discharged_le20ft}
+                  onChange={(e) => handleCallChange('containers_discharged_le20ft', parseInt(e.target.value) || 0)}
+                  InputLabelProps={{ shrink: true }}
+                />
+                <TextField
+                  className="box-count-field"
+                  label="40' Discharged"
+                  type="number"
+                  value={state.call.containers_discharged_gt20ft}
+                  onChange={(e) => handleCallChange('containers_discharged_gt20ft', parseInt(e.target.value) || 0)}
+                  InputLabelProps={{ shrink: true }}
+                />
+              </Box>
+            </Box>
             </DisclosureCard>
             <DisclosureCard title="Call" summary="Vessel call parameters" defaultOpen>
             {/* ============ VESSEL CALL SEGMENT INPUTS ============ */}
@@ -1149,17 +1312,10 @@ export const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call
                       <EnvGuideHelp guide={guideForInput('quantum_prior_year_gt')} />
                     </Box>
                   </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      label="Lay Time at Berth (hours)"
-                      type="number"
-                      value={state.call.lay_time_hours ?? ''}
-                      onChange={(e) => handleCallChange('lay_time_hours', parseFloat(e.target.value) || undefined)}
-                      fullWidth
-                      InputLabelProps={{ shrink: true }}
-                      helperText="Lay time runs berthing to casting off; Sundays and holidays count only if worked — modeled as a simple hours input (S4 clause 1.2). HHLA tonnage-dues basis: first 24 h full rate, then per commenced 12 h; blank = not entered (zero)"
-                    />
-                  </Grid>
+                  {/* Lay Time at Berth moved to the general-information group
+                      (spec v0.2.47): a shared input rendered once beneath the
+                      vessel selection, not per port card. The Hamburg tariff
+                      caveats travel with it in its helper text. */}
                   <Grid item xs={12} sm={6}>
                     <TextField
                       label="Total Time in Port (hours)"
@@ -1419,47 +1575,12 @@ export const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call
               Storage, yard surcharges (gate hazardous at Gothenburg only)
             </Typography>
 
+            {/* The four container counts moved to the general-information
+                group (spec v0.2.47): shared call parameters rendered once
+                beneath the vessel selection. The counts drive terminal
+                handling at all three ports, so they are shared inputs, not
+                port-specific ones. */}
             <Grid container spacing={2}>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  label="Containers Loaded ≤20ft"
-                  type="number"
-                  value={state.call.containers_loaded_le20ft}
-                  onChange={(e) => handleCallChange('containers_loaded_le20ft', parseInt(e.target.value) || 0)}
-                  fullWidth
-                  InputLabelProps={{ shrink: true }}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  label="Containers Loaded >20ft"
-                  type="number"
-                  value={state.call.containers_loaded_gt20ft}
-                  onChange={(e) => handleCallChange('containers_loaded_gt20ft', parseInt(e.target.value) || 0)}
-                  fullWidth
-                  InputLabelProps={{ shrink: true }}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  label="Containers Discharged ≤20ft"
-                  type="number"
-                  value={state.call.containers_discharged_le20ft}
-                  onChange={(e) => handleCallChange('containers_discharged_le20ft', parseInt(e.target.value) || 0)}
-                  fullWidth
-                  InputLabelProps={{ shrink: true }}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  label="Containers Discharged >20ft"
-                  type="number"
-                  value={state.call.containers_discharged_gt20ft}
-                  onChange={(e) => handleCallChange('containers_discharged_gt20ft', parseInt(e.target.value) || 0)}
-                  fullWidth
-                  InputLabelProps={{ shrink: true }}
-                />
-              </Grid>
               <Grid item xs={12} sm={6}>
                 <TextField
                   label="Storage Days (Export)"
@@ -1982,6 +2103,7 @@ interface ComparisonViewProps {
   call: CallInput;
   selectedPortIds: string[];
   onSelectionChange: (portIds: string[]) => void;
+  activeVessel: string;
 }
 
 // The comparison screen (spec v0.2.17 section 4.3.1): a presentation over
@@ -1994,7 +2116,8 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
   vessel,
   call,
   selectedPortIds,
-  onSelectionChange
+  onSelectionChange,
+  activeVessel
 }) => {
   const selectedPorts = ports.filter(p => selectedPortIds.includes(p.metadata.id));
   // Responsive layout (spec v0.2.39): below the stacking breakpoint the
@@ -2335,46 +2458,71 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
             still line up. Data-quality flags from each port's computation are carried through.
           </Typography>
 
-          {/* Ranking summary strip (spec v0.2.39): the cross-port ranking
-              is the comparison view's headline answer and survives the
-              mobile transposition intact - cheapest first on the converted
-              comparison basis (spec v0.2.31), rendered above the table and
-              above the mobile cards in both layouts. */}
-          <Box className="comparison-ranking-strip" component="section" aria-label="Cross-port ranking summary">
-            <ol className="comparison-ranking-list">
-              {rankOrderByConvertedBasis(
-                portResults
-                  .filter(pr => pr.result)
-                  .map(pr => ({ portId: pr.result!.port_id, amount: pr.result!.total, currency: pr.result!.currency })),
-                rateInfo
-              ).map(({ portId }, index) => {
-                const pr = portResults.find(p => p.port.metadata.id === portId)!;
-                return (
-                  <li key={portId}>
-                    <span className="comparison-ranking-position">{index + 1}.</span>{' '}
-                    <span className="comparison-ranking-port">{portLabel(pr.port)}</span>{' '}
-                    {pr.result && cheapestTotalPortId === portId && (
-                      <span className="comparison-marker comparison-cheapest">cheapest</span>
-                    )}{' '}
-                    {pr.result && mostExpensiveTotalPortId === portId && (
-                      <span className="comparison-marker comparison-most-expensive">most expensive</span>
-                    )}
-                  </li>
-                );
-              })}
-            </ol>
-            {isMobile && portResults.some(pr => pr.result && toComparisonBasis(pr.result.total, pr.result.currency, rateInfo).converted) && (
-              <button
-                type="button"
-                className="disclosure-header comparison-conversion-disclosure"
-                aria-expanded={conversionsVisible}
-                aria-controls="comparison-conversions-panel"
-                onClick={() => setConversionsVisible(v => !v)}
-              >
-                {conversionsVisible ? 'Hide converted figures' : 'Show converted figures'}
-              </button>
-            )}
+          {/* Call-context strip (spec v0.2.47): one compact strip stating the
+              priced call so every figure in the table reads as "this call,
+              priced at three ports." Vessel, GT, TEU capacity, total
+              container moves, lay time, and entered environmental classes;
+              defaults are shown honestly per the flag conventions ("not
+              entered" / "default E — not registered"). The ranking strip
+              (v0.2.39) is removed: the table's cheapest/most-expensive
+              badges already carry the ranking (spec v0.2.47 changelog,
+              duplication rationale). */}
+          <Box className="comparison-context-strip" component="section" aria-label="Priced call context">
+            <span className="comparison-context-item">
+              <span className="comparison-context-label">Vessel:</span>{' '}
+              <strong className="comparison-context-vessel">{activeVessel || customVesselLabel(vessel)}</strong>
+            </span>
+            <span className="comparison-context-item">
+              <span className="comparison-context-label">GT:</span> {vessel.gt.toLocaleString('en-US')}
+            </span>
+            <span className="comparison-context-item">
+              <span className="comparison-context-label">TEU capacity:</span>{' '}
+              {vessel.teu_capacity ? vessel.teu_capacity.toLocaleString('en-US') : 'not entered'}
+            </span>
+            <span className="comparison-context-item">
+              <span className="comparison-context-label">Container moves:</span>{' '}
+              {((call.containers_loaded_le20ft || 0) + (call.containers_loaded_gt20ft || 0) +
+                (call.containers_discharged_le20ft || 0) + (call.containers_discharged_gt20ft || 0))
+                .toLocaleString('en-US')} (loaded + discharged)
+            </span>
+            <span className="comparison-context-item">
+              <span className="comparison-context-label">Lay time:</span>{' '}
+              {call.lay_time_hours != null ? `${call.lay_time_hours} h at berth` : 'not entered'}
+            </span>
+            <span className="comparison-context-item">
+              <span className="comparison-context-label">ESI:</span>{' '}
+              {call.esi_score != null ? `${call.esi_score} (entered)` : 'not entered'}
+            </span>
+            <span className="comparison-context-item">
+              <span className="comparison-context-label">CSI:</span>{' '}
+              {call.clean_shipping_index_class
+                ? `${call.clean_shipping_index_class} (entered)`
+                : 'not entered'}
+            </span>
+            <span className="comparison-context-item">
+              <span className="comparison-context-label">Sjöfartsverket class:</span>{' '}
+              {call.csi_class
+                ? call.csi_class === 'E'
+                  ? `${call.csi_class} (default — not registered)`
+                  : `${call.csi_class} (entered)`
+                : 'not entered'}
+            </span>
           </Box>
+
+          {/* The conversion disclosure (the ranking strip's one unique mobile
+              element) moves here, into the table-header area above the
+              table/cards (spec v0.2.47). */}
+          {isMobile && portResults.some(pr => pr.result && toComparisonBasis(pr.result.total, pr.result.currency, rateInfo).converted) && (
+            <button
+              type="button"
+              className="disclosure-header comparison-conversion-disclosure"
+              aria-expanded={conversionsVisible}
+              aria-controls="comparison-conversions-panel"
+              onClick={() => setConversionsVisible(v => !v)}
+            >
+              {conversionsVisible ? 'Hide converted figures' : 'Show converted figures'}
+            </button>
+          )}
           {/* Mobile transposition (spec v0.2.39): below the stacking
               breakpoint the comparison renders one card per port, fee
               families listed with native-primary figures (converted
@@ -2694,6 +2842,11 @@ const App: React.FC = () => {
     activePort ? { kind: 'port', portId: activePort.metadata.id } : { kind: 'comparison' }
   );
   const [vessel, setVessel] = useState<VesselInput>(DEFAULT_VESSEL);
+  // Active vessel label (spec v0.2.47): the app header displays the priced
+  // vessel, updating live with the selection. Until a selection is made the
+  // default call's vessel is what every figure prices, so the header names
+  // it the same way: a custom label with its GT.
+  const [activeVesselLabel, setActiveVesselLabel] = useState<string>(() => customVesselLabel(DEFAULT_VESSEL));
   const [call, setCall] = useState<CallInput>(() => defaultCall(activePort ? activePort.metadata.id : ''));
   const [comparisonSelection, setComparisonSelection] = useState<string[]>(
     LOADED_PORTS.map(p => p.metadata.id)
@@ -2741,6 +2894,12 @@ const App: React.FC = () => {
           <Typography variant="h1" component="h1">
             Port Call Cost Analyzer
           </Typography>
+          {/* Active vessel (spec v0.2.47): directly under the title, updating
+              live with the selection — preset name, generic class name, or
+              the custom label naming the entered GT. */}
+          <Typography variant="subtitle1" className="header-active-vessel">
+            Active vessel: <strong>{activeVesselLabel}</strong>
+          </Typography>
           <Typography variant="subtitle1">
             Ports are data, not code - every figure traceable to a source tariff
           </Typography>
@@ -2785,6 +2944,7 @@ const App: React.FC = () => {
           call={call}
           selectedPortIds={comparisonSelection}
           onSelectionChange={setComparisonSelection}
+          activeVessel={activeVesselLabel}
         />
       ) : currentPort ? (
         <PortWorkspace
@@ -2793,6 +2953,7 @@ const App: React.FC = () => {
           call={call}
           onVesselChange={setVessel}
           onCallChange={setCall}
+          onActiveVesselChange={setActiveVesselLabel}
         />
       ) : null}
     </Box>

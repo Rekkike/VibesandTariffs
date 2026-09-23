@@ -132,6 +132,76 @@ body {
   min-width: 0;
 }
 
+/* Active vessel in the header (spec v0.2.47): directly under the title,
+   updating live with the selection. */
+.header-active-vessel {
+  color: var(--text-primary);
+}
+
+.header-active-vessel strong {
+  font-weight: 600;
+  color: var(--accent);
+}
+
+/* ================= Vessel-selection combobox (v0.2.47) ================= */
+/* One searchable control, three tiers: library vessels, generic size
+   classes, Custom vessel. Tier affordances are typographic only. */
+.vessel-select {
+  margin-bottom: var(--space-2);
+}
+
+.vessel-option-library .vessel-option-label {
+  font-weight: 600;
+}
+
+.vessel-option-generic .vessel-option-label {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.vessel-option-custom .vessel-option-label {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.vessel-option-note {
+  display: block;
+  font-size: var(--font-caption);
+  color: var(--text-secondary);
+}
+
+/* General-information group (v0.2.47): lay time directly under the
+   selection; the four container counts as one compact secondary row.
+   The row wraps at the 360 px contract floor (two 2-up pairs). */
+.general-info-group {
+  margin: var(--space-2) 0 var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.general-info-heading {
+  margin: 0;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.lay-time-input {
+  max-width: 420px;
+}
+
+.box-counts-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.box-count-field {
+  flex: 1 1 140px;
+  min-width: 0;
+}
+
 /* Theme toggle: 24x24 minimum target, visible focus */
 .theme-toggle {
   flex: none;
@@ -254,17 +324,12 @@ body {
 
 /* ============================== Form =================================== */
 
-.form-container {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--space-6);
-}
-
-@media (max-width: 900px) {
-  .form-container {
-    grid-template-columns: 1fr;
-  }
-}
+/* Per-port two-column layout (spec v0.2.47): the MUI Grid owns the column
+   split (xs=12 stacked, md=6 side-by-side from 900 px). The old static CSS
+   grid on this class fought the flex layout — its 24 px gap made the two
+   50%-basis columns wrap, so both stacked at the left and the right half
+   of the viewport sat empty at 1280 px. The rule set is intentionally
+   empty now; the MUI Grid's own spacing is the layout. */
 
 .form-row {
   margin-bottom: var(--space-3);
@@ -348,6 +413,11 @@ body {
 
 /* ============================ Status badges ============================ */
 
+/* Badges keep nowrap on short inline badges, but the long prose badges
+   (derivation flag details, contract-vs-published caveats) must wrap —
+   under the per-port two-column layout a nowrap badge overflows its
+   column (spec v0.2.47). The .derivation-flag-detail block form is
+   wrap-safe; short .status-badge inline uses stay nowrap. */
 .status-badge {
   display: inline-block;
   padding: 1px var(--space-2);
@@ -355,7 +425,11 @@ body {
   font-size: var(--font-caption);
   font-weight: 500;
   line-height: 1.6;
-  white-space: nowrap;
+}
+
+.status-badge.derivation-flag-detail {
+  white-space: normal;
+  overflow-wrap: break-word;
 }
 
 .status-warning {
@@ -451,6 +525,21 @@ body {
   background: var(--surface-sunken);
   padding: var(--space-2) var(--space-3) var(--space-2) var(--space-6);
   border-bottom: 1px solid var(--border);
+}
+
+/* Per-port fee tables fit their column (spec v0.2.47 per-port layout
+   contract): the two-column layout gives results 50% of the viewport, so
+   the fee tables must follow the column, not push past it. table-layout
+   fixed + width 100% makes each table size to its container; cells wrap
+   instead of forcing horizontal scroll. Same discipline as the v0.2.43
+   comparison-table fit contract. */
+.results-section .MuiTableContainer-root {
+  overflow-x: auto;
+}
+
+.results-section table {
+  table-layout: fixed;
+  width: 100%;
 }
 
 /* ========================== Source reference =========================== */
@@ -900,7 +989,18 @@ textarea:focus-visible,
    is prohibited at the contract floor.
    ======================================================================== */
 
-.comparison-ranking-strip {
+/* Ranking strip removed (spec v0.2.47): the table's cheapest/most-expensive
+   badges carry the ranking; the strip duplicated it. The one strip-unique
+   element — the mobile conversion disclosure — moved into the table-header
+   area. */
+
+/* Call-context strip (spec v0.2.47): one compact strip stating the priced
+   call above the comparison table, so every figure reads as "this call,
+   priced at three ports." Wraps at the 360 px contract floor. */
+.comparison-context-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-5);
   padding: var(--space-3) var(--space-4);
   margin-bottom: var(--space-4);
   border: 1px solid var(--border);
@@ -908,21 +1008,17 @@ textarea:focus-visible,
   background: var(--surface-sunken);
 }
 
-.comparison-ranking-list {
-  margin: 0;
-  padding-left: var(--space-6);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
+.comparison-context-item {
+  font-size: var(--font-caption);
+  color: var(--text-primary);
 }
 
-.comparison-ranking-position {
-  font-family: 'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace;
+.comparison-context-label {
+  font-weight: 600;
   color: var(--text-secondary);
 }
 
-.comparison-ranking-port {
-  font-weight: 600;
+.comparison-context-vessel {
   color: var(--text-primary);
 }
 

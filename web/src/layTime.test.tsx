@@ -131,6 +131,7 @@ describe('Hamburg lay-time UI wiring (spec v0.2.46)', () => {
           call={call}
           onVesselChange={() => {}}
           onCallChange={(c) => { currentCall = c; }}
+          onActiveVesselChange={() => {}}
         />
       );
     });

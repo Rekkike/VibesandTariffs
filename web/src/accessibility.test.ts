@@ -115,12 +115,22 @@ describe('accessibility floor: mobile DOM at the stacking breakpoint (v0.2.39)',
   });
 
   it('the transposed layout exposes section landmarks with explicit aria-labels (reading order)', () => {
-    expect(appSource).toMatch(/component="section" aria-label="Cross-port ranking summary"/);
+    // v0.2.47: the ranking strip is removed (the table badges carry the
+    // ranking); the call-context strip replaces it as the landmark above
+    // the table/cards.
+    expect(appSource).toMatch(/component="section" aria-label="Priced call context"/);
     expect(appSource).toMatch(/component="section" aria-label="Port comparison cards"/);
   });
 
-  it('the ranking strip renders an ordered list (list semantics survive transposition)', () => {
-    expect(appSource).toMatch(/<ol className="comparison-ranking-list">/);
+  it('the ranking strip is removed: no ordered-list ranking markup survives (spec v0.2.47 removal pin)', () => {
+    // Removal pin: the v0.2.39 ranking strip's DOM must not exist. The
+    // cheapest/most-expensive badges on the table and cards carry the
+    // ranking (duplication rationale, spec v0.2.47 changelog).
+    expect(appSource).not.toMatch(/comparison-ranking-strip/);
+    expect(appSource).not.toMatch(/comparison-ranking-list/);
+    expect(appSource).not.toMatch(/component="section" aria-label="Cross-port ranking summary"/);
+    expect(appSource).toMatch(/comparison-marker comparison-cheapest/);
+    expect(appSource).toMatch(/comparison-marker comparison-most-expensive/);
   });
 
   it('hidden converted figures carry a visible tag (state is perceivable, not color-only)', () => {

@@ -169,6 +169,7 @@ describe('comparison view responsive rendering paths', () => {
           call={call}
           selectedPortIds={LOADED_PORTS.map(p => p.metadata.id)}
           onSelectionChange={() => {}}
+          activeVessel="Custom vessel — 12,000 GT"
         />
       );
     });
@@ -201,24 +202,35 @@ describe('comparison view responsive rendering paths', () => {
     expect(container!.querySelector('.comparison-cards')).toBeNull();
   });
 
-  it('the ranking strip renders in both layouts (the headline answer survives transposition)', async () => {
+  it('the ranking strip is removed; the call-context strip renders in both layouts (spec v0.2.47)', async () => {
+    // Removal pin: the v0.2.39 ranking strip's DOM must not exist in
+    // either layout — the table's cheapest/most-expensive badges carry
+    // the ranking. The call-context strip replaces it above the
+    // table/cards, stating the priced call in both layouts.
     await renderComparison(true);
-    expect(container!.querySelector('.comparison-ranking-strip')).not.toBeNull();
-    expect(container!.querySelectorAll('.comparison-ranking-list li').length).toBe(LOADED_PORTS.length);
+    expect(container!.querySelector('.comparison-ranking-strip')).toBeNull();
+    expect(container!.querySelectorAll('.comparison-ranking-list li').length).toBe(0);
+    expect(container!.querySelector('.comparison-context-strip')).not.toBeNull();
     await renderComparison(false);
-    expect(container!.querySelector('.comparison-ranking-strip')).not.toBeNull();
-    expect(container!.querySelectorAll('.comparison-ranking-list li').length).toBe(LOADED_PORTS.length);
+    expect(container!.querySelector('.comparison-ranking-strip')).toBeNull();
+    expect(container!.querySelector('.comparison-context-strip')).not.toBeNull();
   });
 
-  it('the ranking strip order is the converted-basis order, cheapest first', async () => {
+  it('the ranking survives as the table badges: exactly one cheapest and one most-expensive marker, cheapest-first on the converted basis', async () => {
     await renderComparison(false);
-    const items = Array.from(container!.querySelectorAll('.comparison-ranking-list li'))
-      .map(li => li.textContent ?? '');
-    expect(items.length).toBe(3);
-    expect(items[0]).not.toBe(items[1]);
-    // deterministic: cheapest marker appears on the first item
-    expect(items[0]).toMatch(/cheapest/);
-    expect(items[items.length - 1]).toMatch(/most expensive/);
+    // The ranking contract is carried by the badges (spec v0.2.31: the
+    // ordering uses the converted basis; rankByConvertedBasis stays the
+    // single tested path, pinned in the conversion suite).
+    const cheapest = container!.querySelectorAll('.comparison-marker.comparison-cheapest');
+    const mostExpensive = container!.querySelectorAll('.comparison-marker.comparison-most-expensive');
+    expect(cheapest.length).toBe(1);
+    expect(mostExpensive.length).toBe(1);
+    // deterministic: with the default rate the cheapest badge sits on
+    // Gothenburg's column header and most-expensive on Hamburg's
+    const cheapestHeader = cheapest[0].closest('th') ?? cheapest[0].closest('.comparison-port-card');
+    expect((cheapestHeader?.textContent ?? '')).toContain('Gothenburg');
+    const mostExpensiveHeader = mostExpensive[0].closest('th') ?? mostExpensive[0].closest('.comparison-port-card');
+    expect((mostExpensiveHeader?.textContent ?? '')).toContain('Hamburg');
   });
 
   it('mobile: the conversion disclosure is a keyboard-operable button with per-view state', async () => {
@@ -295,6 +307,7 @@ describe('comparison view: condensed derivation in both layouts (spec v0.2.42)',
           call={call}
           selectedPortIds={LOADED_PORTS.map(p => p.metadata.id)}
           onSelectionChange={() => {}}
+          activeVessel="Custom vessel — 12,000 GT"
         />
       );
     });
@@ -413,6 +426,7 @@ describe('comparison-table fit contract (spec v0.2.43)', () => {
           call={call}
           selectedPortIds={LOADED_PORTS.map(p => p.metadata.id)}
           onSelectionChange={() => {}}
+          activeVessel="Custom vessel — 12,000 GT"
         />
       );
     });
@@ -422,7 +436,7 @@ describe('comparison-table fit contract (spec v0.2.43)', () => {
     c.remove();
     __setMobileQueryForTests(null);
   });
-  it('ranking strip, cheapest-first ordering, and markers are unchanged by the fit fix', async () => {
+  it('fit-fix regression pin (v0.2.47 form): badges carry the ranking, the context strip renders, no ranking strip returns', async () => {
     __setMobileQueryForTests(() => false);
     const c = document.createElement('div');
     document.body.appendChild(c);
@@ -435,15 +449,18 @@ describe('comparison-table fit contract (spec v0.2.43)', () => {
           call={call}
           selectedPortIds={LOADED_PORTS.map(p => p.metadata.id)}
           onSelectionChange={() => {}}
+          activeVessel="Custom vessel — 12,000 GT"
         />
       );
     });
-    expect(c.querySelector('.comparison-ranking-strip')).not.toBeNull();
-    const positions = Array.from(c.querySelectorAll('.comparison-ranking-position'))
-      .map(el => el.textContent);
-    expect(positions).toEqual(['1.', '2.', '3.']);
-    expect(c.querySelectorAll('.comparison-marker.comparison-cheapest').length).toBeGreaterThan(0);
-    expect(c.querySelectorAll('.comparison-marker.comparison-most-expensive').length).toBeGreaterThan(0);
+    // v0.2.47: the ranking strip must not return
+    expect(c.querySelector('.comparison-ranking-strip')).toBeNull();
+    // the badges carry the ranking
+    expect(c.querySelectorAll('.comparison-marker.comparison-cheapest').length).toBe(1);
+    expect(c.querySelectorAll('.comparison-marker.comparison-most-expensive').length).toBe(1);
+    // the call-context strip states the priced call above the table
+    expect(c.querySelector('.comparison-context-strip')).not.toBeNull();
+    expect((c.querySelector('.comparison-context-vessel')?.textContent ?? '')).toContain('Custom vessel — 12,000 GT');
     await act(async () => { r.unmount(); });
     c.remove();
     __setMobileQueryForTests(null);

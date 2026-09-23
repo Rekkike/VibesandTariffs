@@ -30,6 +30,7 @@ describe('Hamburg engine-tier wiring (spec v0.2.44)', () => {
           call={call}
           onVesselChange={() => {}}
           onCallChange={(c) => { currentCall = c; }}
+          onActiveVesselChange={() => {}}
         />
       );
     });

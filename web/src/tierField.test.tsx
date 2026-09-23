@@ -45,6 +45,7 @@ describe('Tier-field visibility (spec v0.2.45)', () => {
           call={call}
           onVesselChange={() => {}}
           onCallChange={() => {}}
+          onActiveVesselChange={() => {}}
         />
       );
     });
