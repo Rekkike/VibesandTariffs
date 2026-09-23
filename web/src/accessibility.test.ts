@@ -90,6 +90,15 @@ describe('accessibility floor: mobile DOM at the stacking breakpoint (v0.2.39)',
     expect(appSource).toMatch(/aria-controls="comparison-conversions-panel"/);
     expect(appSource).toMatch(/id="comparison-conversions-panel"/);
   });
+  it('the desktop derivation disclosure is a native button with per-view state and a real aria-controls target (v0.2.43)', () => {
+    const idx = appSource.indexOf('aria-expanded={derivationsVisible}');
+    expect(idx).toBeGreaterThan(-1);
+    const surrounding = appSource.slice(Math.max(0, idx - 800), idx + 400);
+    expect(surrounding).toMatch(/<button\s+type="button"\s+className="disclosure-header comparison-derivation-disclosure"/);
+    expect(surrounding).toMatch(/onClick=\{\(\) => setDerivationsVisible\(v => !v\)\}/);
+    expect(appSource).toMatch(/aria-controls="comparison-derivation-panel"/);
+    expect(appSource).toMatch(/id="comparison-derivation-panel"/);
+  });
 
   it('the transposed layout exposes section landmarks with explicit aria-labels (reading order)', () => {
     expect(appSource).toMatch(/component="section" aria-label="Cross-port ranking summary"/);

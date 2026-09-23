@@ -725,10 +725,33 @@ body {
 
 .comparison-table th,
 .comparison-table td {
-  white-space: nowrap;
   padding: var(--space-2) var(--space-3);
   border-bottom: 1px solid var(--border);
   font-variant-numeric: tabular-nums;
+}
+
+/* Fit contract (spec v0.2.43): only the figure spans keep nowrap, so a long
+   rate note or label can never push the table's intrinsic width past its
+   container. The blanket cell-level nowrap is the v0.2.42 regression cause. */
+.comparison-table .comparison-figure {
+  white-space: nowrap;
+}
+
+/* Fee-family label column (spec v0.2.43): the label wraps within a bounded
+   width so the first column no longer takes its longest label's nowrap
+   width; the column carries no fixed width, so no empty gap is forced
+   before the port columns. Vertical alignment is top for wrapped rows. */
+.comparison-table .comparison-family-cell,
+.comparison-table .comparison-segment-row td,
+.comparison-table .comparison-total-row td,
+.comparison-table .comparison-estimate-row td {
+  vertical-align: top;
+}
+
+.comparison-table .comparison-family-cell {
+  white-space: normal;
+  max-width: 180px;
+  overflow-wrap: break-word;
 }
 
 .comparison-table th {

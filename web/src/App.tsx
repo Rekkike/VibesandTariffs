@@ -1962,6 +1962,11 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
   // the native-primary figure stays readable. The disclosure state is
   // per-comparison-view, never global.
   const [conversionsVisible, setConversionsVisible] = useState(false);
+  // Table-layout derivation disclosure (spec v0.2.43): the condensed
+  // derivation is collapsed by default in the desktop table so the table
+  // fits its container without horizontal scrolling; the disclosure
+  // reveals it per-view. Mobile cards keep derivations visible by default.
+  const [derivationsVisible, setDerivationsVisible] = useState(false);
   // Cross-currency comparison contract (spec v0.2.31, commit A): the
   // comparison basis is SEK. Hamburg's EUR figures render native-primary
   // with a converted-secondary figure; every ordering or ranking of ports
@@ -2144,7 +2149,8 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
 
   const amountCell = (
     entry: { amount: number; currency: string; flags: number; effective_per_gt?: number; lines: { name: string; biller: string; amount: number; estimated: boolean; derivation?: { structure: string; composition: string; total: string } | null }[] } | undefined,
-    fallbackCurrency: string
+    fallbackCurrency: string,
+    showDerivation: boolean
   ) => {
     if (!entry) {
       // Explicit absence: never hidden, so an absence of cost is not
@@ -2154,7 +2160,7 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
     const conv = toComparisonBasis(entry.amount, entry.currency || fallbackCurrency, rateInfo);
     return (
       <Box sx={{ textAlign: 'right' }}>
-        <span>
+        <span className="comparison-figure">
           {formatCurrency(entry.amount, entry.currency || fallbackCurrency)}
           {entry.flags > 0 && (
             <span className="status-badge status-warning" style={{ marginLeft: '6px' }}>
@@ -2194,7 +2200,7 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
             {/* Condensed derivation (spec v0.2.42): the comparison states the
                 fee's structure and composition so no figure is opaque there;
                 the full band detail stays on the per-port view. */}
-            {line.derivation && (
+            {showDerivation && line.derivation && (
               <Box component="span" className="comparison-derivation-condensed" style={{ display: 'block' }}>
                 <span className="comparison-derivation-structure">{line.derivation.structure}</span>
                 {line.derivation.composition && line.derivation.composition !== line.derivation.structure && (
@@ -2215,7 +2221,7 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
   const convCell = (nativeAmount: number, currency: string) => {
     const conv = toComparisonBasis(nativeAmount, currency, rateInfo);
     if (!conv.converted) {
-      return <span>{formatCurrency(nativeAmount, currency)}</span>;
+      return <span className="comparison-figure">{formatCurrency(nativeAmount, currency)}</span>;
     }
     // Narrow screens (spec v0.2.39): the converted figure collapses behind
     // the view's conversion disclosure; the native-primary figure stays
@@ -2223,14 +2229,14 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
     if (isMobile && !conversionsVisible) {
       return (
         <Box sx={{ textAlign: 'right' }}>
-          <span>{formatCurrency(nativeAmount, currency)}</span>
+          <span className="comparison-figure">{formatCurrency(nativeAmount, currency)}</span>
           <span className="comparison-converted-hidden-tag">converted figure hidden</span>
         </Box>
       );
     }
     return (
       <Box sx={{ textAlign: 'right' }}>
-        <span>{formatCurrency(nativeAmount, currency)}</span>
+        <span className="comparison-figure">{formatCurrency(nativeAmount, currency)}</span>
         <Box sx={{ fontSize: '0.75rem', color: '#666' }}>
           {'≈'} {formatCurrency(conv.amount, 'SEK')} <span className="comparison-converted-tag">converted {'—'} {formatRate(rateInfo)}</span>
         </Box>
@@ -2354,7 +2360,7 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
                             {families.map(({ family, perPort }) => (
                               <Box component="dd" key={`${segment.id}-${family}`} className="comparison-card-family">
                                 <span className="comparison-card-family-name">{family.replace(/_/g, ' ')}</span>
-                                {amountCell(perPort.get(port.metadata.id), port.metadata.currency)}
+                                {amountCell(perPort.get(port.metadata.id), port.metadata.currency, true)}
                               </Box>
                             ))}
                           </React.Fragment>
@@ -2385,7 +2391,17 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
             </Box>
           )}
           {!isMobile && (
-          <TableContainer className="comparison-table-container">
+          <Box>
+          <button
+            type="button"
+            className="disclosure-header comparison-derivation-disclosure"
+            aria-expanded={derivationsVisible}
+            aria-controls="comparison-derivation-panel"
+            onClick={() => setDerivationsVisible(v => !v)}
+          >
+            {derivationsVisible ? 'Hide fee derivations' : 'Show fee derivations'}
+          </button>
+          <TableContainer id="comparison-derivation-panel" className="comparison-table-container">
             <Table size="small" className="comparison-table">
               <TableHead>
                 <TableRow>
@@ -2430,7 +2446,7 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
                           const entry = perPort.get(port.metadata.id);
                           return (
                             <TableCell key={port.metadata.id} align="right" className="amount">
-                              {amountCell(entry, port.metadata.currency)}
+                              {amountCell(entry, port.metadata.currency, derivationsVisible)}
                             </TableCell>
                           );
                         })}
@@ -2546,6 +2562,7 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
               </TableBody>
             </Table>
           </TableContainer>
+          </Box>
           )}
 
           {/* Rate input (spec v0.2.31, commit A): the exchange rate behind

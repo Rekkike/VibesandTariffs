@@ -325,16 +325,39 @@ describe('comparison view: condensed derivation in both layouts (spec v0.2.42)',
       .find(c => (c.textContent ?? '').includes('Hamburg'))!;
     expect(hamburgCard).toBeDefined();
     expect(hamburgCard.querySelectorAll('.comparison-derivation-condensed').length).toBeGreaterThan(0);
+    // Mobile cards keep derivations visible by default, no disclosure
+    // required (spec v0.2.43): the card layout fits without the collapse.
+    expect(container!.querySelector('.comparison-derivation-disclosure')).toBeNull();
   });
 
-  it('desktop: the table cells carry the same condensed derivation', async () => {
+  it('desktop: the condensed derivation is collapsed by default in the table layout (spec v0.2.43 fit contract)', async () => {
     await renderComparison(false);
+    // Collapsed by default: the default cell shows the native-primary figure
+    // and rate note as before v0.2.42 — no condensed block renders until the
+    // per-view disclosure is opened.
+    expect(container!.querySelectorAll('.comparison-derivation-condensed').length).toBe(0);
+    // The disclosure control is a keyboard-operable button with per-view state.
+    const btn = container!.querySelector('button.comparison-derivation-disclosure') as HTMLButtonElement | null;
+    expect(btn).not.toBeNull();
+    expect(btn!.getAttribute('aria-expanded')).toBe('false');
+    expect(btn!.getAttribute('aria-controls')).toBe('comparison-derivation-panel');
+    expect(btn!.textContent).toContain('Show fee derivations');
+    // Figure cells still carry the native figure.
+    expect(container!.querySelectorAll('.comparison-table .comparison-figure').length).toBeGreaterThan(0);
+  });
+  it('desktop: the derivation disclosure reveals the condensed derivation per-view (toggle)', async () => {
+    await renderComparison(false);
+    const btn = container!.querySelector('button.comparison-derivation-disclosure') as HTMLButtonElement;
+    await act(async () => { btn.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
     const condensed = container!.querySelectorAll('.comparison-derivation-condensed');
     expect(condensed.length).toBeGreaterThan(0);
     const hamburgCell = Array.from(condensed)
       .map(el => el.closest('tr') ?? el.closest('td') ?? el.parentElement)
       .find(el => (el?.textContent ?? '').includes('Hamburg'));
     expect(hamburgCell).toBeDefined();
+    const btn2 = container!.querySelector('button.comparison-derivation-disclosure') as HTMLButtonElement;
+    expect(btn2.getAttribute('aria-expanded')).toBe('true');
+    expect(btn2.textContent).toContain('Hide fee derivations');
   });
 
   it('the condensed derivation never leaks the raw band arithmetic string (opaque-proof, compact)', async () => {
@@ -344,5 +367,85 @@ describe('comparison view: condensed derivation in both layouts (spec v0.2.42)',
     for (const t of texts) {
       expect(t).not.toMatch(/\* 1\.96/);
     }
+  });
+});
+
+describe('comparison-table fit contract (spec v0.2.43)', () => {
+  it('the label column wraps: white-space normal with a bounded max-width', () => {
+    const m = cssSource.match(/\.comparison-table \.comparison-family-cell\s*\{[^}]*white-space:\s*normal;[^}]*\}/);
+    expect(m).not.toBeNull();
+    expect(cssSource).toMatch(/\.comparison-table \.comparison-family-cell\s*\{[^}]*max-width:\s*180px;/);
+    expect(cssSource).toMatch(/\.comparison-table \.comparison-family-cell\s*\{[^}]*overflow-wrap:\s*break-word;/);
+  });
+  it('nowrap is scoped to figure spans only — no blanket cell-level nowrap remains', () => {
+    // The v0.2.42 regression cause was the blanket nowrap on every td/th; it
+    // is removed, so a rate note or label can never force horizontal scroll.
+    expect(cssSource).not.toMatch(/\.comparison-table th,\s*\.comparison-table td\s*\{[^}]*white-space:\s*nowrap/);
+    const scoped = cssSource.match(/\.comparison-table \.comparison-figure\s*\{[^}]*white-space:\s*nowrap;[^}]*\}/);
+    expect(scoped).not.toBeNull();
+    // No rule may put nowrap on a comparison-table cell at any specificity.
+    const cellRules = cssSource.match(/\.comparison-table[^{]*\b(t[dh]?)\b[^{]*\{[^}]*\}/g) ?? [];
+    for (const rule of cellRules) {
+      expect(rule).not.toMatch(/white-space:\s*nowrap/);
+    }
+  });
+  it('no min-width forces the label-column gap (no comparison min-width exists)', () => {
+    const comparisonBlock = cssSource.slice(
+      cssSource.indexOf('.comparison-table-container'),
+      cssSource.indexOf('.comparison-estimate-row')
+    );
+    expect(comparisonBlock).not.toMatch(/min-width/);
+    const familyRules = cssSource.match(/[^{}]*comparison-family-cell[^{]*\{[^}]*\}/g) ?? [];
+    for (const rule of familyRules) {
+      expect(rule).not.toMatch(/min-width/);
+    }
+  });
+  it('the figure spans render in the table cells (scoped nowrap actually applied)', async () => {
+    __setMobileQueryForTests(() => false);
+    const c = document.createElement('div');
+    document.body.appendChild(c);
+    const r = createRoot(c);
+    await act(async () => {
+      r.render(
+        <ComparisonView
+          ports={LOADED_PORTS}
+          vessel={vessel}
+          call={call}
+          selectedPortIds={LOADED_PORTS.map(p => p.metadata.id)}
+          onSelectionChange={() => {}}
+        />
+      );
+    });
+    const figures = c.querySelectorAll('.comparison-table td .comparison-figure');
+    expect(figures.length).toBeGreaterThan(0);
+    await act(async () => { r.unmount(); });
+    c.remove();
+    __setMobileQueryForTests(null);
+  });
+  it('ranking strip, cheapest-first ordering, and markers are unchanged by the fit fix', async () => {
+    __setMobileQueryForTests(() => false);
+    const c = document.createElement('div');
+    document.body.appendChild(c);
+    const r = createRoot(c);
+    await act(async () => {
+      r.render(
+        <ComparisonView
+          ports={LOADED_PORTS}
+          vessel={vessel}
+          call={call}
+          selectedPortIds={LOADED_PORTS.map(p => p.metadata.id)}
+          onSelectionChange={() => {}}
+        />
+      );
+    });
+    expect(c.querySelector('.comparison-ranking-strip')).not.toBeNull();
+    const positions = Array.from(c.querySelectorAll('.comparison-ranking-position'))
+      .map(el => el.textContent);
+    expect(positions).toEqual(['1.', '2.', '3.']);
+    expect(c.querySelectorAll('.comparison-marker.comparison-cheapest').length).toBeGreaterThan(0);
+    expect(c.querySelectorAll('.comparison-marker.comparison-most-expensive').length).toBeGreaterThan(0);
+    await act(async () => { r.unmount(); });
+    c.remove();
+    __setMobileQueryForTests(null);
   });
 });
