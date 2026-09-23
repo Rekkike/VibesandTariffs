@@ -16,15 +16,19 @@ to amend at any time; EES level adjusted monthly).
 | ID | Document | Biller | Prices? | Repository path |
 |----|----------|--------|---------|-----------------|
 | S1 | Port of Helsingborg, Tariff 2026 (9 pages, English) | Port of Helsingborg | Yes | `docs/sources/sweden/helsingborg/port-authority/tariff-2026.pdf` |
-| S2 | Sjöfartsverket, Prislista farleds- och lotsavgifter 2026 | Sjöfartsverket | Yes | `docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf` (already in repo) |
-| S3 | Sjöfartsverket, Lathund lotsavgifter 2026 | Sjöfartsverket | Yes (pilotage detail) | `docs/sources/sweden/national/sjofartsverket/lathund-lotsavgifter-2026.pdf` (already in repo) |
+| S2 | Sjöfartsverket, Prislista farleds- och lotsavgifter 2026 | Sjöfartsverket | Yes | not archived — upstream: https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf (earlier revisions of this reference claimed an in-repo archive path that never existed; repaired in the carry-over clearance pass, spec v0.2.41, per the Gothenburg v0.2.37 pattern) |
+| S3 | Sjöfartsverket, Lathund lotsavgifter 2026 | Sjöfartsverket | Yes (pilotage detail) | not archived — upstream: https://www.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/lathund-lotsavgifter-2026.pdf (same false in-repo archive-path claim, repaired spec v0.2.41) |
 | S4 | Ports of Sweden General Conditions 1989 for terminal operations | — | No (terms) | `docs/sources/sweden/helsingborg/port-authority/ports-of-sweden-general-conditions-1989.pdf` |
 | S5 | General Terms and Conditions for the Stevedoring Operations 2011 | — | No (terms) | `docs/sources/sweden/helsingborg/port-authority/stevedoring-terms-2011.pdf` |
 
-S1 public download: https://www.port.helsingborg.se/en/tariff/ ("Tariff 2026 –
-Download as PDF"; the page also carries the current Emergency Energy Surcharge
-level). S2 and S3 are already in the repository from the Gothenburg build. S4 and
-S5 are terms-only; not needed for the build, do not block on them.
+S1 is archived in the repository; the port file carries its live public
+download page. S2 and S3 are **not archived** — the earlier claim that they
+were carried in the repository from the Gothenburg build was false (no such
+paths exist; the Gothenburg extraction reference records them as not
+archived with the same upstream URLs). Their live publisher URLs are
+recorded above and in the port YAML as `upstream_url` per the source-integrity
+contract. S4 and S5 are terms-only; not needed for the build, do not block on
+them.
 
 ## 2. Charging structure (billers)
 

@@ -33,11 +33,11 @@ live under `docs/sources/`; not-archived sources carry a live publisher
 | S9 | City of Hamburg (BUKEA) Ship Waste Fees Ordinance 2025 | 2025 | Yes | Yes | 0 |
 | G1 | Port of Gothenburg, Port Tariff 2026 (version 1) | effective 2026-01-01 | Not archived (upstream: portofgothenburg.com/globalassets/dokument/port-tariff-2026.pdf) | Yes | **5**: container EU (p.11), container non-EU (p.11), tanker EU (p.8), RORO (p.14), ROPAX (p.19); plus a car-carrier/LOLO example (p.16) mislabeled in the sheet (see §3.2.4) |
 | G2 | APM Terminals Gothenburg, Terminal Tariff 2026 (June) | June 2026 edition | Not archived (upstream URL in gothenburg_2026.yaml) | Yes (storage/yard-surcharge source) | 0 — **but the stored upstream URL serves a different document** (see §3.5) |
-| G2c | APMT "Guide to calculating quay storage" infographic (companion calculation document) | 2025 edition found | Not archived; **bot-gated this pass** (apmterminals.com returned Access Denied; see §5.2) | No (newly inventoried here) | The guide is a worked-example document (per the tariff's own pointer: "Detailed storage calculations can be found on … practical-information/terminal-tariff"); contents unverified this pass |
+| G2c | APMT "Guide to calculating quay storage" infographic (companion calculation document) | 2025 edition found | Not archived; bot-gated (apmterminals.com Access Denied on every route, re-attempted v0.2.41; see §7.5) | No (newly inventoried here) | The guide is a worked-example document (per the tariff's own pointer: "Detailed storage calculations can be found on … practical-information/terminal-tariff"); contents unverified this pass |
 | H1 | Helsingborg Port Authority, Tariff 2026 | 2026 | Yes (`docs/sources/sweden/helsingborg/port-authority/tariff-2026.pdf`) | Yes | 0 (no worked examples in the document) |
 | R1 | SJÖFS 2025:5 (regulation: pilotage fees; prislista defers to it) | in force 2026-01-01 | Not archived; remiss (consultation) text retrieved live from regelradet.se (RR 2025-215) | Deferred to (prislista cites "Relaterad föreskrift: Föreskrift 2025:5") | 0 examples; **computational rules**: §15 start fee by NT class; §17 per-commenced-half-hour, time rounded up; §25 the 40% reduction for piloted time ≥ 7 h applies **to the lotsningsavgift only, and only to the portion of time exceeding 7 hours**; §14 ordering-fee bands |
 | R2 | SJÖFS 2025:6 (regulation: fairway due) | in force 2026-01-01 | Not archived | Deferred to (prislista cites it) | 0 (the vessel-fee/reduction rules are in the prislista summary itself) |
-| E1 | Sjöfartsverket remiss "Exempelbilaga 2026" (consultation example annex, RR 2025-214/215 bundle) | 2025-06-18 | Not archived; the bundle cover letter was retrieved live; the annex itself was not directly fetchable (regelradet 404 on the separate bundle URL) | No | 2 consultation examples (Exempelanlöp 1: small vessel, Vänern long pilotage; Exempelanlöp 2: larger vessel, Gothenburg short pilotage) — 2025-vs-2026 impact illustrations, not authoritative tariff computations; **not cross-checked** (see §5.2) |
+| E1 | Sjöfartsverket remiss "Exempelbilaga 2026" (consultation example annex, RR 2025-214/215 bundle) | 2025-06-18 | Not archived; upstream: https://www.regelradet.se/download/18.6cf6c2fa198e62b192749f2/1756302990490/RR_2025_215f.pdf — cover letter and SJÖFS 2025:5 remiss text retrieved live (v0.2.41); annex numeric tables unretrievable | No | 3 consultation examples (Exempelanlöp 1: small vessel, Vänerhamn long pilotage; Exempelanlöp 2: larger vessel, Gothenburg short pilotage; Exempelanlöp 3: passenger vessel, Stockholm–Finland regular traffic, full frequency discount and pilot exemption) — 2025-vs-2026 impact illustrations, not authoritative tariff computations; closed as best-verifiable (see §7.5) |
 
 **Checkpoint-to-example mapping** (Phase 2 §3): CP1 (hamburg.test.ts "GT
 component reproduces S1 printed 32,838.88" etc.) maps to the **S1 container
@@ -286,7 +286,7 @@ verification is carried over (§5).
 | 3 | G2 `upstream_url` repoint: stored URL serves the RoRo Rate Schedule, not the container Terminal Tariff cited by the extraction | MEDIUM — source-integrity | **FIXED (v0.2.37)**: all 15 occurrences repointed to the publisher's canonical tariff page (apmterminals.com/en/gothenburg/services/terminal-tariff), which serves Terminal Tariff 2026; not figure-affecting (rates were extracted from the correct document) |
 | 4 | Extraction-reference prose: stop claiming a prislista/lathund archive path that does not exist; record not-archived status with live URLs | MEDIUM — source-integrity | **FIXED (v0.2.37)**: G3 row now records not-archived status with the live prislista URL; the false in-repo path claim removed; not figure-affecting |
 | 5 | G2c APMT "Guide to calculating quay storage": fetch (bot-gated this pass), verify the v0.2.33 storage ladder against it, archive or mark not-archived | MEDIUM — last unverified v0.2.33 surface | **RESOLVED BY VERIFICATION (v0.2.37)**: the guide itself remains bot-gated (apmterminals.com Access Denied on every route this pass), but the storage ladder was verified against the Terminal Tariff's own Yard Storage schedule arithmetic (extraction reference §3, verified against the tariff document at extraction time) reconstructed day-by-day: every band boundary row and the per-day rate deltas reconcile — verdict MATCH, no defect. 16 schedule-boundary pins added to storage_towage.test.ts. The G2c fetch itself remains a LOW carry-over |
-| 6 | E1 "Exempelbilaga 2026": retrieve if a route appears (regelradet 404 on the bundle URL); consultation examples, non-authoritative | LOW | OPEN (opportunistic) |
+| 6 | E1 "Exempelbilaga 2026": retrieve if a route appears (regelradet 404 on the bundle URL); consultation examples, non-authoritative | LOW | **RESOLVED-BY-DECLARATION (v0.2.41)**: one further fetch attempt made (regelradet.se has rebuilt its site; the old bundle link 404s; the PDF at the `download/18.6cf6c2fa198e62b192749f2/1756302990490/RR_2025_215f.pdf` route still truncates before the annex tables and the separate annex has no independent URL). Retrieved live: the cover letter and the full SJÖFS lotsavgifter remiss text (start/ordering/per-half-hour tables match the pinned lathund figures), plus the annex inventory by search-index reconstruction: **three** examples, not two (Exempelanlöp 1: small vessel, Vänerhamn, long pilotage; Exempelanlöp 2: larger vessel, Gothenburg, short pilotage; Exempelanlöp 3: passenger vessel in regular Stockholm–Finland traffic with full frequency discount and pilot exemption — 2025-vs-2026 impact illustrations, non-authoritative). The annex's own numeric tables could not be retrieved through any available route; the examples compare 2025 vs 2026 fees that the tool does not model (2025 rates) and carry consultation-stage figures superseded by the final decision (fairway +3.65%, pilotage start +15% / running +5%), so line-level checking is not possible and would not be authoritative anyway. Upstream reference: https://www.regelradet.se/download/18.6cf6c2fa198e62b192749f2/1756302990490/RR_2025_215f.pdf (RR 2025-214/215 bundle, 2025-06-18). Closed as best-verifiable; see §5.3 |
 
 Carry-overs from the v0.2.35 pass (dead `isRuleApplicable` export,
 `KNOWN_FEE_FAMILIES` divergence, "gate hazardous" prose) remain recorded
@@ -366,3 +366,81 @@ per-day deltas confirm each day charges exactly once. The APMT
 "Guide to calculating quay storage" itself remains bot-gated
 (Access Denied on every route this pass) — its fetch stays a LOW
 carry-over, but the verification gap it motivated is closed.
+
+### 7.5 Carry-over clearance pass (spec v0.2.41) — fetch re-attempts and closure
+
+**G2c (APMT "Guide to calculating quay storage").** Re-attempted with a
+plain fetch this pass: `apmterminals.com/en/gothenburg/practical-information`
+still returns Access Denied (Akamai edge, Reference #18.75de4568). The guide
+is therefore recorded as verified-by-declaration: the storage ladder it
+would illustrate was verified in the worked-example fix pass against the
+Terminal Tariff's own Yard Storage schedule arithmetic (carry-over #5,
+verdict MATCH, 16 schedule-boundary pins). Upstream reference:
+https://www.apmterminals.com/en/gothenburg/practical-information/terminal-tariff
+— closed as best-verifiable per the v0.2.41 pass instruction.
+
+**E1 ("Exempelbilaga 2026").** One further fetch attempt: regelradet.se has
+rebuilt its site (old bundle links 404); the RR 2025-215f bundle PDF at
+`download/18.6cf6c2fa198e62b192749f2/1756302990490/RR_2025_215f.pdf` serves
+the cover letter plus the full SJÖFS 2025:5 lotsavgifter remiss text but
+truncates before the annex; the annex has no independent URL. Retrieved and
+verified from the remiss text: every rate table the tool pins matches —
+§15 start fees (9,760/12,485/15,290/17,300/19,305/26,105/29,730/32,540/
+35,755/45,420), §17 per-half-hour fees, §14 ordering-fee bands (including
+the 4–4:59 = 1,880 row and the "no charge at ≥ 5 h" reading confirmed by
+§11's "senast 5 timmar" trigger), §25's 40% reduction on lotsningsavgiften
+only, beyond 7 hours, and §24's Vänern 30% / Mälaren 10% reductions.
+
+Annex inventory corrected by search-index reconstruction: **three**
+examples, not two — Exempelanlöp 1 (small vessel, Vänerhamn, long pilotage),
+Exempelanlöp 2 (larger vessel, Gothenburg, short pilotage), Exempelanlöp 3
+(passenger vessel, Stockholm–Finland regular traffic, full frequency
+discount and pilot exemption; shown with and without CSI). All are
+2025-vs-2026 consultation impact illustrations, not authoritative tariff
+computations; their numeric tables were not retrievable through any
+available route. No pinned figure is contradicted by what was retrieved;
+line-level checking of the examples is not possible and would not be
+authoritative (consultation-stage figures superseded by the final decision:
+fairway +3.65%, pilotage start +15% / running +5%). Closed as
+best-verifiable; carry-over #6 disposition: resolved-by-declaration.
+
+**Report observation (not a pass change).** The fetched remiss text's §15
+class-1 start fee is **9,760**, while the lathund (S3) and prislista-derived
+data pin **9,670** for NT class 1 (both port YAMLs; the class-1 pins in
+gothenburg_repair.test.ts and the lathund-row pins). The remaining nine
+classes match across all three documents. The 90 SEK divergence affects
+only NT class 1 (< 1,000 NT) pilotage start fee and is recorded here for the
+next substantive pass; no figure changed inside this pass per its no-figure
+discipline.
+
+## 8. Carry-over ledger (closed at v0.2.41)
+
+Every carry-over ever recorded in the specification's open items, this
+document, and the last three pass reports (v0.2.36 verification, v0.2.37 fix,
+v0.2.39 responsive / v0.2.40 hygiene), reconciled. Nothing remains in a
+"flagged, not fixed" state without an explicit deferred marker and rationale.
+
+| # | Item (origin) | Disposition |
+|---|---------------|-------------|
+| L1 | >7 h pilotage discount applied to whole fee (v0.2.36 defect) | FIXED by v0.2.37 (excess_units construct; re-pins with lathund citations) |
+| L2 | Ordering fee ≥ 5 h over-billing (v0.2.36 defect) | FIXED by v0.2.37 (4_5h terminal band; boundary pins both ports) |
+| L3 | G2 upstream URL served RoRo Rate Schedule (v0.2.36) | FIXED by v0.2.37 (repointed to APMT canonical tariff page, 15 occurrences) |
+| L4 | Gothenburg reference false prislista archive-path claim (v0.2.36) | FIXED by v0.2.37 (not-archived + live URL) |
+| L5 | G2c APMT storage guide fetch (v0.2.36, bot-gated) | RESOLVED-BY-DECLARATION this pass (v0.2.41): one further plain fetch attempted, still Akamai-gated; the ladder verified in v0.2.37 against the Terminal Tariff's own schedule (MATCH, 16 pins); URL recorded as upstream reference — §7.5 |
+| L6 | E1 "Exempelbilaga 2026" annex retrieval (v0.2.36) | RESOLVED-BY-DECLARATION this pass (v0.2.41): retrieved as far as the bundle serves; three examples inventoried; non-authoritative consultation figures; closed as best-verifiable — §7.5 |
+| L7 | Helsingborg reference false S2/S3 archive-path claims (found in v0.2.39 trace) | FIXED this pass (v0.2.41): not-archived status with live publisher URLs, per the Gothenburg v0.2.37 pattern; prose-only — YAML markers were already correct |
+| L8 | App.tsx vessel.gt memo dependency warning (v0.2.39 report) | FIXED this pass (v0.2.41): dependency declared; default-call Grand Totals identical to the cent at all three ports |
+| L9 | envGuidance.ts unused DEFAULT_VESSEL/defaultCall imports (v0.2.39 report) | FIXED this pass (v0.2.41): imports dropped; zero-warning production build |
+| L10 | Dead isRuleApplicable export (v0.2.35) | FIXED by v0.2.39 (removed; no importers) |
+| L11 | KNOWN_FEE_FAMILIES divergence (v0.2.35) | FIXED by v0.2.39 (loader's list is the single source) |
+| L12 | "gate hazardous" port-generic prose + Helsingborg YAML header echo (v0.2.35) | FIXED by v0.2.39 (Gothenburg-only prose; header fixed) |
+| L13 | Hamburg CP fixture lead-time/Tier note (v0.2.30 report) | RESOLVED by v0.2.29/v0.2.30: CP fixtures enter their reference-designated NOx tiers explicitly (figures unchanged); no live record remains |
+| L14 | NT-convention re-derivation (v0.2.32 → v0.2.35 decision) | DEFERRED with rationale — spec open item 6 holds the full decision record; any change is figure-affecting and reserved to its own pass |
+| L15 | Scenario-adjustment layer (v0.2.11) | DEFERRED by design contract — spec section 4 status paragraph |
+| L16 | Regulatory block (AFIR/FuelEU, v0.2.8) | DEFERRED by design contract — spec section (first TEN-T port encoding that needs it) |
+| L17 | Eurogate terminal variant (v0.2.24) | DEFERRED — spec section 5.3 terminal-hygiene constraint; extracted lift charges anchor the estimate |
+| L18 | Class-1 pilotage start fee 9,760 (remiss §15) vs 9,670 (lathund/prislista data) | NEW this pass, DEFERRED to the next substantive pass — recorded in §7.5; 90 SEK, NT class 1 only; figure-affecting, not touched in a no-figure pass |
+
+The standing deferred items (L14–L17) remain deferred and are listed, not
+reopened. L18 is the only new item, recorded with an explicit deferred marker
+and rationale.

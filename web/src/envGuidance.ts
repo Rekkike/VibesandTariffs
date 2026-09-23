@@ -5,7 +5,7 @@
 // consequence of entering each value on THIS call at THIS port, rendered
 // before any value is entered. No auto-fill, no pre-selection, no persistence.
 import type { CostCalculationResult, PortDefinition } from '@port-cost/core';
-import { calculatePortCallCost, DEFAULT_VESSEL, defaultCall } from '@port-cost/core';
+import { calculatePortCallCost } from '@port-cost/core';
 
 export interface GuidanceBand {
   label: string;

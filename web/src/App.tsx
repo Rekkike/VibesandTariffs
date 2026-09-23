@@ -2153,7 +2153,7 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
           return { family, perPort };
         })
     })).filter(group => group.families.length > 0);
-  }, [portResults, ruleNameByPortAndId, ruleAttributesByPortAndId]);
+  }, [portResults, ruleNameByPortAndId, ruleAttributesByPortAndId, vessel.gt]);
 
   const segmentSubtotals = useMemo(() => {
     return portResults.map(({ port, result }) => {
