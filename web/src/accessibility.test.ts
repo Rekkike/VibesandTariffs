@@ -117,3 +117,41 @@ describe('accessibility floor: mobile DOM at the stacking breakpoint (v0.2.39)',
     expect(moduleLevel).toBe(false);
   });
 });
+
+// Derivation disclosure a11y (spec v0.2.42 Derivation Transparency contract):
+// the expandable derivation controls must keep the standing disclosure
+// pattern — native button (keyboard operable), aria-expanded, aria-controls
+// bound to the panel it toggles — in both the per-port fee lines and every
+// comparison surface, desktop and mobile alike.
+describe('accessibility floor: derivation disclosure controls (v0.2.42)', () => {
+  const derivationSource = fs.readFileSync(path.join(__dirname, 'derivation.tsx'), 'utf8');
+
+  it('the per-port fee-line expansion is a native IconButton carrying aria-expanded and aria-controls', () => {
+    expect(appSource).toMatch(/className="fee-derivation-toggle"\s*\n\s*aria-expanded=\{isExpanded\}/);
+    expect(appSource).toMatch(/aria-controls=\{`fee-derivation-\$\{fee\.fee_rule_id\}`\}/);
+    // aria-controls binds to the panel actually rendered for this fee line.
+    expect(appSource).toMatch(/className="detail-row" id=\{`fee-derivation-\$\{fee\.fee_rule_id\}`\}/);
+  });
+
+  it('the expansion control names its action (Hide/Show derivation for the named rule)', () => {
+    expect(appSource).toMatch(/aria-label=\{`\$\{isExpanded \? 'Hide' : 'Show'\} derivation for/);
+  });
+
+  it('the derivation detail is a labeled section (reading order for screen readers)', () => {
+    expect(derivationSource).toMatch(/component="section" aria-label="Fee derivation"/);
+  });
+
+  it('flags render inside the derivation detail, adjacent to the figures they affected', () => {
+    expect(derivationSource).toMatch(/className="derivation-flags"/);
+    expect(derivationSource).toMatch(/derivation-flag-detail/);
+    // No distant per-fee flag prose elsewhere: flags live next to the
+    // figure (the call-level Quality Flags summary is a different, aggregate
+    // surface and keeps the state.result.quality_flags list).
+    expect(appSource).not.toMatch(/fee\.quality_flags\.map/);
+  });
+
+  it('no keyboard-inaccessible derivation surface: every mobile-path derivation markup stays wrap-safe (no fixed widths)', () => {
+    expect(cssSource).toMatch(/\.derivation-step-head\s*\{\s*display:\s*flex;\s*flex-wrap:\s*wrap;/);
+    expect(cssSource).not.toMatch(/\.derivation-detail\s*\{[^}]*width:\s*\d+px/);
+  });
+});

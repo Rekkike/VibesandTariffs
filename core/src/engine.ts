@@ -26,7 +26,9 @@ import {
   Biller,
   Currency,
   SourceReference,
-  BandRow
+  BandRow,
+  FeeDerivation,
+  DerivationStep
 } from './types';
 import { classifyRule } from './classification';
 
@@ -248,6 +250,13 @@ export function evaluateFeeRule(
   let bandOrBasis = '';
   let pendingComponents: { label: string; amount: number }[] | undefined = undefined;
   let pendingBandRows: BandRow[] | undefined = undefined;
+  // Derivation transparency (spec v0.2.42): presentation-only record of the
+  // computation steps, built alongside the arithmetic it describes. Never
+  // feeds back into any amount.
+  let pendingStructureLabel = 'Flat rate';
+  let pendingBandSteps: DerivationStep[] | undefined = undefined;
+  let pendingCompositionSteps: DerivationStep[] | undefined = undefined;
+  let pendingAdjustmentSteps: DerivationStep[] | undefined = undefined;
   // Per-unit context for excess-units reductions (spec v0.2.37): the unit
   // count and unit rate behind the base amount, so an adjustment can
   // discount only the units beyond a threshold (SJÖFS 2025:5 §25).
@@ -360,6 +369,14 @@ export function evaluateFeeRule(
       rateApplied = `Progressive: ${appliedBands.join(' + ')}`;
       bandOrBasis = `${progressive.basis}=${basisValue}`;
       pendingBandRows = bandRows;
+      pendingStructureLabel = `Progressive by ${progressive.basis.toUpperCase()}`;
+      pendingBandSteps = [{
+        kind: 'bands',
+        label: 'Bands charged',
+        detail: appliedBands.join(' + '),
+        bands: bandRows,
+        amount: roundToCent(accumulatedAmount)
+      }];
       break;
     }
     
@@ -588,10 +605,33 @@ export function evaluateFeeRule(
       }
       baseAmount = roundToCent(bandedAccum);
       const chargeableDays = bandedParts.reduce((s, p) => s + p.days, 0);
+      // Derivation transparency (spec v0.2.42): the ladder's band rows — one
+      // row per time band that actually fired, days charged in that band.
+      const ladderBandRows: BandRow[] = bandedParts.map(p => ({
+        label: `Days ${p.label}`,
+        quantity: p.days,
+        components: [{ label: 'Daily rate', rate: p.rate, amount: roundToCent(p.days * p.rate) }],
+        amount: roundToCent(p.days * p.rate)
+      }));
+      pendingStructureLabel = 'Storage day ladder';
       if (chargeableDays > 0) {
         rateApplied = `Banded by time: ${bandedParts.map(p => `${p.days} * ${p.rate} (days ${p.label})`).join(' + ')}`;
+        pendingBandSteps = [{
+          kind: 'bands',
+          label: 'Days charged per band',
+          detail: `free through day ${Math.max(0, firstMin - 1)}, ${chargeableDays} chargeable`,
+          bands: ladderBandRows,
+          amount: roundToCent(bandedAccum)
+        }];
       } else {
         rateApplied = `Banded by time: 0 chargeable days (free time, first band starts at day ${firstMin})`;
+        pendingBandSteps = [{
+          kind: 'bands',
+          label: 'Days charged per band',
+          detail: `free time, first band starts at day ${firstMin}`,
+          bands: [],
+          amount: 0
+        }];
       }
       bandOrBasis = `Days: ${days} (free through day ${Math.max(0, firstMin - 1)}, ${chargeableDays} chargeable)`;
       break;
@@ -689,10 +729,22 @@ export function evaluateFeeRule(
       
       const componentAmounts: { label: string; amount: number }[] = [];
       const stackDescriptions: string[] = [];
+      // Derivation transparency (spec v0.2.42): per-component adjustment
+      // steps in the tariff's stated order, each with the delta it produced.
+      const compLabel = (id: string) => ct.component_labels?.[id] ?? id;
+      const derivationComponents: DerivationStep[] = [];
+      const derivationAdjustments: DerivationStep[] = [];
       for (const compId of compIds) {
         const stack = ct.component_adjustments?.[compId] ?? [];
+        derivationComponents.push({
+          kind: 'components',
+          label: compLabel(compId),
+          detail: 'band sum before adjustments',
+          amount: roundToCent(disp[compId])
+        });
         for (const adj of stack) {
           if (adj.condition_input && !(call as any)[adj.condition_input]) continue;
+          const beforeAdj = disp[compId];
           switch (adj.kind) {
             case 'tier_pct': {
               const { tier, estimated } = resolveEngineTier();
@@ -710,6 +762,12 @@ export function evaluateFeeRule(
                 full[compId] = full[compId] * (1 - frac);
               }
               stackDescriptions.push(`${compId}: Tier ${tier} ${pct >= 0 ? '+' : ''}${pct}%${estimated ? ' (estimated)' : ''}`);
+              derivationAdjustments.push({
+                kind: 'adjustment',
+                label: `${compLabel(compId)} — Tier adjustment`,
+                detail: `Tier ${tier} ${pct >= 0 ? '+' : ''}${pct}%${estimated ? ' (estimated)' : ''}`,
+                amount: roundToCent(disp[compId] - beforeAdj)
+              });
               break;
             }
             case 'score_discount_pct_with_cap': {
@@ -722,6 +780,12 @@ export function evaluateFeeRule(
               disp[compId] = roundToCent(disp[compId] - ceilToCent(dDisp));
               full[compId] -= dFull;
               stackDescriptions.push(`${compId}: ${adj.description ?? adj.input} ${score} -${band.pct}% (cap ${band.cap ?? '\u221e'})`);
+              derivationAdjustments.push({
+                kind: 'adjustment',
+                label: `${compLabel(compId)} — ${adj.description ?? adj.input}`,
+                detail: `score ${score}: -${band.pct}% (cap ${band.cap ?? '\u221e'})`,
+                amount: roundToCent(disp[compId] - beforeAdj)
+              });
               break;
             }
             case 'per_gt_rebate': {
@@ -729,6 +793,12 @@ export function evaluateFeeRule(
               disp[compId] = roundToCent(disp[compId] - ceilToCent(rebate));
               full[compId] -= rebate;
               stackDescriptions.push(`${compId}: ${adj.description ?? 'rebate'} ${gt} * ${adj.rate_per_gt}`);
+              derivationAdjustments.push({
+                kind: 'adjustment',
+                label: `${compLabel(compId)} — ${adj.description ?? 'rebate'}`,
+                detail: `${gt} × ${adj.rate_per_gt} per ${ct.basis}`,
+                amount: roundToCent(disp[compId] - beforeAdj)
+              });
               break;
             }
             case 'pct_discount_banded': {
@@ -739,6 +809,12 @@ export function evaluateFeeRule(
               disp[compId] = roundToCent(disp[compId] - ceilToCent(disp[compId] * band.pct / 100));
               full[compId] = full[compId] * (1 - band.pct / 100);
               stackDescriptions.push(`${compId}: ${adj.description ?? 'discount'} ${prior} -${band.pct}%`);
+              derivationAdjustments.push({
+                kind: 'adjustment',
+                label: `${compLabel(compId)} — ${adj.description ?? 'discount'}`,
+                detail: `${prior} prior-year GT: -${band.pct}%`,
+                amount: roundToCent(disp[compId] - beforeAdj)
+              });
               break;
             }
           }
@@ -753,6 +829,24 @@ export function evaluateFeeRule(
       bandOrBasis = `${ct.basis}=${gtRaw}`;
       pendingComponents = componentAmounts;
       pendingBandRows = ctBandRows;
+      pendingStructureLabel = `Composite tranches by ${ct.basis.toUpperCase()}`;
+      pendingBandSteps = [{
+        kind: 'bands',
+        label: 'Tranche bands charged',
+        detail: gtRaw > gtCap ? `basis capped at ${gtCap.toLocaleString('en-US')}` : undefined,
+        bands: ctBandRows,
+        amount: roundToCent(ctBandRows.reduce((s, r) => s + r.amount, 0))
+      }];
+      pendingCompositionSteps = [
+        ...derivationComponents,
+        ...derivationAdjustments,
+        {
+          kind: 'composition',
+          label: 'Components after adjustments',
+          components: componentAmounts,
+          amount: roundToCent(totalDisp)
+        }
+      ];
       break;
     }
     
@@ -910,6 +1004,9 @@ export function evaluateFeeRule(
   const adjustmentsApplied: Adjustment[] = [];
   let adjustedAmount = baseAmount;
   
+  // Derivation transparency (spec v0.2.42): per-adjustment deltas recorded
+  // where they are computed.
+  const adjSteps: DerivationStep[] = [];
   if (rule.adjustments) {
     // Sort by stacking order if specified
     const sortedAdjustments = [...rule.adjustments].sort((a, b) => {
@@ -927,6 +1024,7 @@ export function evaluateFeeRule(
     let additiveSurchargePct = 0;
     
     for (const adjustment of sortedAdjustments) {
+      const beforeAdjStep = adjustedAmount;
       // Check if condition is met
       if (adjustment.condition) {
         // Simple condition evaluation
@@ -965,16 +1063,32 @@ export function evaluateFeeRule(
         adjustedAmount *= (1 + adjustment.percentage / 100);
       }
       
+      if (adjustment.stack_method !== 'additive') {
+        adjSteps.push({
+          kind: 'adjustment',
+          label: adjustment.description,
+          detail: `${adjustment.type} ${adjustment.percentage}%${adjustment.apply_to === 'excess_units' ? ` on units beyond ${adjustment.threshold_units ?? 0}` : ''}`,
+          amount: roundToCent(adjustedAmount - beforeAdjStep)
+        });
+      }
       adjustmentsApplied.push(adjustment);
     }
     
     if (additiveDiscountPct !== 0 || additiveSurchargePct !== 0) {
+      const beforeAdditive = adjustedAmount;
       adjustedAmount = baseAmount
         * (1 - additiveDiscountPct / 100)
         * (1 + additiveSurchargePct / 100)
         * (adjustedAmount / baseAmount);
+      adjSteps.push({
+        kind: 'adjustment',
+        label: 'Additive discounts/surcharges (off the pre-adjustment base)',
+        detail: `${additiveDiscountPct !== 0 ? `-${additiveDiscountPct}%` : ''}${additiveDiscountPct !== 0 && additiveSurchargePct !== 0 ? ' ' : ''}${additiveSurchargePct !== 0 ? `+${additiveSurchargePct}%` : ''} additive`,
+        amount: roundToCent(adjustedAmount - beforeAdditive)
+      });
     }
   }
+  pendingAdjustmentSteps = adjSteps.length > 0 ? adjSteps : undefined;
   
   // Effective per-GT derived metric (spec v0.2.30): rendered on every
   // per-GT or per-call dues-type line, labeled as derived, never a
@@ -1005,6 +1119,47 @@ export function evaluateFeeRule(
     effectiveRate = { effective_per_gt: perGt, note: notes.length > 0 ? notes.join('; ') : undefined };
   }
 
+  // Derivation transparency (spec v0.2.42), final assembly. The steps are
+  // presentation-only: they describe the arithmetic already performed, in
+  // order — base computation (bands where the structure is progressive or a
+  // day ladder), per-component composition where the rule is composite, the
+  // adjustment stack with each step's delta, cap/minimum notes, and the fee
+  // total. The UI renders them and never recomputes.
+  const derivation: FeeDerivation = (() => {
+    const steps: DerivationStep[] = [];
+    if (pendingBandSteps) {
+      steps.push(...pendingBandSteps);
+    }
+    if (pendingCompositionSteps) {
+      steps.push(...pendingCompositionSteps);
+    }
+    if (!pendingBandSteps && !pendingCompositionSteps) {
+      // Flat/simple structures: a single base-computation step so every fee
+      // line shows its one computation rather than an empty panel.
+      steps.push({
+        kind: 'composition',
+        label: 'Computation',
+        detail: rateApplied.split(' (')[0],
+        amount: roundToCent(baseAmount)
+      });
+    }
+    if (pendingAdjustmentSteps) {
+      steps.push(...pendingAdjustmentSteps);
+    }
+    if (rule.minimum !== undefined && rateApplied.includes('min applied')) {
+      steps.push({ kind: 'adjustment', label: 'Minimum applied', detail: `fee at its ${rule.minimum} minimum`, amount: roundToCent(rule.minimum - baseAmount) });
+    }
+    if (rule.maximum !== undefined && rateApplied.includes('max applied')) {
+      steps.push({ kind: 'adjustment', label: 'Cap applied', detail: `fee capped at ${rule.maximum}`, amount: roundToCent(rule.maximum - baseAmount) });
+    }
+    steps.push({
+      kind: 'composition',
+      label: 'Fee total',
+      components: pendingComponents,
+      amount: roundToCent(adjustedAmount)
+    });
+    return { structure_label: pendingStructureLabel, steps };
+  })();
   const classification = classifyRule(rule.id);
 
   return {
@@ -1020,6 +1175,7 @@ export function evaluateFeeRule(
     quality_flags: qualityFlags,
     component_amounts: pendingComponents,
     band_rows: pendingBandRows,
+    derivation: derivation,
     effective_rate: effectiveRate,
     functional_class: classification?.functional_class,
     functional_basis_note: classification?.basis_note
@@ -1263,6 +1419,14 @@ export function calculatePortCallCost(
       source_reference: surcharge.source_reference,
       adjustments_applied: [],
       quality_flags: [],
+      derivation: {
+        structure_label: 'Biller surcharge',
+        steps: [
+          { kind: 'components', label: 'Base (non-excluded fees)', amount: roundToCent(surchargeBase) },
+          { kind: 'adjustment', label: surcharge.name, detail: `+${surcharge.percentage}%`, amount: roundToCent(surchargeAmount) },
+          { kind: 'composition', label: 'Fee total', amount: surchargeAmount }
+        ]
+      },
       functional_class: classifyRule(surcharge.id)?.functional_class,
       functional_basis_note: classifyRule(surcharge.id)?.basis_note
     });
@@ -1300,6 +1464,14 @@ export function calculatePortCallCost(
       source_reference: fd.source_reference,
       adjustments_applied: [],
       quality_flags: [],
+      derivation: {
+        structure_label: 'Biller frequency discount',
+        steps: [
+          { kind: 'components', label: 'Base fees payable', detail: `${calls} calls this month`, amount: roundToCent(base) },
+          { kind: 'adjustment', label: fd.name, detail: `${band.payable_pct}% payable`, amount: discountAmount },
+          { kind: 'composition', label: 'Fee total', amount: discountAmount }
+        ]
+      },
       functional_class: classifyRule(fd.id)?.functional_class,
       functional_basis_note: classifyRule(fd.id)?.basis_note
     });

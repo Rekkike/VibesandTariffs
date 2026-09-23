@@ -272,3 +272,77 @@ describe('comparison view responsive rendering paths', () => {
     expect(card.textContent).toContain('Total without estimates');
   });
 });
+
+// ---------------------------------------------------------------------------
+// Derivation transparency at the breakpoint (spec v0.2.42): the condensed
+// derivation rides every comparison surface — the desktop cells and the
+// transposed mobile cards alike — so no figure is opaque at any viewport.
+// ---------------------------------------------------------------------------
+describe('comparison view: condensed derivation in both layouts (spec v0.2.42)', () => {
+  let container: HTMLDivElement | null;
+  let root: Root | null;
+
+  const renderComparison = async (mobile: boolean) => {
+    __setMobileQueryForTests(() => mobile);
+    container = document.createElement('div');
+    document.body.appendChild(container);
+    root = createRoot(container);
+    await act(async () => {
+      root!.render(
+        <ComparisonView
+          ports={LOADED_PORTS}
+          vessel={vessel}
+          call={call}
+          selectedPortIds={LOADED_PORTS.map(p => p.metadata.id)}
+          onSelectionChange={() => {}}
+        />
+      );
+    });
+  };
+
+  afterEach(async () => {
+    __setMobileQueryForTests(null);
+    if (root) {
+      await act(async () => {
+        root!.unmount();
+      });
+    }
+    container?.remove();
+    container = null;
+    root = null;
+  });
+
+  it('mobile: the card lines carry the condensed derivation (structure stated under the figure)', async () => {
+    await renderComparison(true);
+    const condensed = container!.querySelectorAll('.comparison-derivation-condensed');
+    expect(condensed.length).toBeGreaterThan(0);
+    const first = condensed[0];
+    expect(first.querySelector('.comparison-derivation-structure')).not.toBeNull();
+    expect((first.textContent ?? '')).not.toBe('');
+    // Hamburg's composite port fee states its component composition —
+    // the CP class of figure the transposition must never make opaque.
+    const hamburgCard = Array.from(container!.querySelectorAll('.comparison-port-card'))
+      .find(c => (c.textContent ?? '').includes('Hamburg'))!;
+    expect(hamburgCard).toBeDefined();
+    expect(hamburgCard.querySelectorAll('.comparison-derivation-condensed').length).toBeGreaterThan(0);
+  });
+
+  it('desktop: the table cells carry the same condensed derivation', async () => {
+    await renderComparison(false);
+    const condensed = container!.querySelectorAll('.comparison-derivation-condensed');
+    expect(condensed.length).toBeGreaterThan(0);
+    const hamburgCell = Array.from(condensed)
+      .map(el => el.closest('tr') ?? el.closest('td') ?? el.parentElement)
+      .find(el => (el?.textContent ?? '').includes('Hamburg'));
+    expect(hamburgCell).toBeDefined();
+  });
+
+  it('the condensed derivation never leaks the raw band arithmetic string (opaque-proof, compact)', async () => {
+    await renderComparison(true);
+    const texts = Array.from(container!.querySelectorAll('.comparison-derivation-condensed'))
+      .map(el => el.textContent ?? '');
+    for (const t of texts) {
+      expect(t).not.toMatch(/\* 1\.96/);
+    }
+  });
+});

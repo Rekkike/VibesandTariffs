@@ -77,6 +77,8 @@ import type { ThemeMode } from './theme';
 import { partitionFees } from './zeroCollapse';
 // Badge honesty (spec v0.2.29): assumed parameters get named badges, never a generic "est."
 import { badgesForFlags } from './flagBadges';
+// Derivation transparency (spec v0.2.42): engine-exposed derivation rendering
+import { DerivationDetail, condensedDerivation } from './derivation';
 // Environmental-input guidance (spec v0.2.29): purely informative, no auto-fill
 import { guideFor, leversForPort, makeComputer } from './envGuidance';
 import type { InputGuide } from './envGuidance';
@@ -1813,7 +1815,14 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                                                     {formatCurrency(fee.amount)}
                                                   </TableCell>
                                                   <TableCell align="right">
-                                                    <IconButton size="small" onClick={(e) => { e.stopPropagation(); toggleFee(fee.fee_rule_id); }}>
+                                                    <IconButton
+                                                      size="small"
+                                                      className="fee-derivation-toggle"
+                                                      aria-expanded={isExpanded}
+                                                      aria-controls={`fee-derivation-${fee.fee_rule_id}`}
+                                                      aria-label={`${isExpanded ? 'Hide' : 'Show'} derivation for ${fee.fee_rule_id.replace(/_/g, ' ')}`}
+                                                      onClick={(e) => { e.stopPropagation(); toggleFee(fee.fee_rule_id); }}
+                                                    >
                                                       {isExpanded ? <KeyboardArrowUp /> : <KeyboardArrowDown />}
                                                     </IconButton>
                                                   </TableCell>
@@ -1822,10 +1831,12 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                                                 <TableRow className="detail-row">
                                                   <TableCell colSpan={3} style={{ padding: 0 }}>
                                                     <Collapse in={isExpanded}>
-                                                      <Box sx={{ p: 2 }} className="detail-row">
+                                                      <Box sx={{ p: 2 }} className="detail-row" id={`fee-derivation-${fee.fee_rule_id}`}>
                                                         <Typography variant="body2" sx={{ mb: 1 }}>
                                                           <strong>Rate Applied:</strong> {fee.rate_applied}
                                                         </Typography>
+                                                        {/* Derivation transparency (spec v0.2.42): every fee line exposes its derivation — bands, components, adjustment order, flags adjacent — rendered from the engine's own step record; the UI never recomputes. */}
+                                                        <DerivationDetail fee={fee} />
                                                         {/* Effective per-GT (spec v0.2.30): every dues-type line renders its own derived per-GT — fee total ÷ vessel GT — labeled as derived, never a published rate; distorting-factor notes name the binding floor/cap/class basis. */}
                                                         {fee.effective_rate && (
                                                           <Typography variant="body2" sx={{ mb: 1 }}>
@@ -1838,57 +1849,6 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                                                             )}
                                                           </Typography>
                                                         )}
-                                                        {/* Band disclosure (spec v0.2.30): one row per band actually charged, rendered from the engine's per-tranche per-component computation — the UI never recomputes. Rows, then the sum, applied adjustments, cap/minimum notes (carried in rate_applied), and the fee total. */}
-                                                        {fee.band_rows && fee.band_rows.length > 0 && (
-                                                          <Box sx={{ mb: 1 }}>
-                                                            <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 0.5 }}>
-                                                              Bands charged (pre-adjustment):
-                                                            </Typography>
-                                                            <Table size="small" className="band-table">
-                                                              <TableHead>
-                                                                <TableRow>
-                                                                  <TableCell>Band</TableCell>
-                                                                  <TableCell align="right">Quantity</TableCell>
-                                                                  <TableCell>Components (rate × quantity)</TableCell>
-                                                                  <TableCell align="right">Band amount</TableCell>
-                                                                </TableRow>
-                                                              </TableHead>
-                                                              <TableBody>
-                                                                {fee.band_rows.map((row, i) => (
-                                                                  <TableRow key={i}>
-                                                                    <TableCell>{row.label}</TableCell>
-                                                                    <TableCell align="right">{row.quantity.toLocaleString('en-US')}</TableCell>
-                                                                    <TableCell>
-                                                                      {row.components.map(c => (
-                                                                        <span key={c.label} className="source-ref" style={{ display: 'block' }}>
-                                                                          {c.label}: {c.rate} × {row.quantity.toLocaleString('en-US')} = {c.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                                                                        </span>
-                                                                      ))}
-                                                                    </TableCell>
-                                                                    <TableCell align="right">{row.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}</TableCell>
-                                                                  </TableRow>
-                                                                ))}
-                                                                <TableRow>
-                                                                  <TableCell colSpan={3}><strong>Band sum</strong></TableCell>
-                                                                  <TableCell align="right"><strong>{fee.band_rows.reduce((s, r) => s + r.amount, 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</strong></TableCell>
-                                                                </TableRow>
-                                                              </TableBody>
-                                                            </Table>
-                                                          </Box>
-                                                        )}
-                                                        {fee.adjustments_applied.length > 0 && (
-                                                          <Typography variant="body2" sx={{ mb: 1 }}>
-                                                            <strong>Adjustments:</strong>
-                                                            {fee.adjustments_applied.map(a => `${a.description} (${a.type} ${a.percentage}%)`).join(', ')}
-                                                          </Typography>
-                                                        )}
-                                                        {fee.component_amounts && fee.component_amounts.length > 0 && (
-                                                          <Typography variant="body2" sx={{ mb: 1 }}>
-                                                            <strong>Components after adjustments:</strong>{' '}
-                                                            {fee.component_amounts.map(c => `${c.label}: ${c.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}`).join('; ')}
-                                                          </Typography>
-                                                        )}
-
                                                         <Typography variant="body2" className="source-ref">
                                                           Source: {fee.source_reference.document_name}
                                                           (Page {fee.source_reference.page}, {fee.source_reference.clause}) -
@@ -1904,16 +1864,6 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                                                           )}
                                                         </Typography>
 
-                                                        {fee.quality_flags.map((flag: QualityFlag, index: number) => (
-                                                          <Typography
-                                                            key={index}
-                                                            variant="body2"
-                                                            className={flag.severity === 'error' ? 'status-badge status-error' : flag.severity === 'warning' ? 'status-badge status-warning' : 'status-badge status-info'}
-                                                            sx={{ mt: 1 }}
-                                                          >
-                                                            [{flag.severity.toUpperCase()}] {flag.description}
-                                                          </Typography>
-                                                        ))}
                                                       </Box>
                                                     </Collapse>
                                                   </TableCell>
@@ -2090,7 +2040,7 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
       currency: string;
       flags: number;
       effective_per_gt?: number;
-      lines: { name: string; biller: string; amount: number; estimated: boolean }[];
+      lines: { name: string; biller: string; amount: number; estimated: boolean; derivation?: { structure: string; composition: string; total: string } | null }[];
     }>>();
     for (const { port, result } of portResults) {
       if (!result) continue;
@@ -2128,7 +2078,11 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
             name: ruleNameByPortAndId.get(port.metadata.id)?.get(fee.fee_rule_id) ?? fee.fee_family,
             biller: fee.biller,
             amount: fee.amount,
-            estimated: fee.quality_flags.some(flag => flag.type === 'estimated_parameter')
+            estimated: fee.quality_flags.some(flag => flag.type === 'estimated_parameter'),
+            // Derivation transparency (spec v0.2.42): the condensed form rides
+            // the line into every comparison surface — desktop cells and the
+            // mobile card layout alike.
+            derivation: condensedDerivation(fee)
           });
           perPort.set(result.port_id, entry);
         }
@@ -2189,7 +2143,7 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
 
 
   const amountCell = (
-    entry: { amount: number; currency: string; flags: number; effective_per_gt?: number; lines: { name: string; biller: string; amount: number; estimated: boolean }[] } | undefined,
+    entry: { amount: number; currency: string; flags: number; effective_per_gt?: number; lines: { name: string; biller: string; amount: number; estimated: boolean; derivation?: { structure: string; composition: string; total: string } | null }[] } | undefined,
     fallbackCurrency: string
   ) => {
     if (!entry) {
@@ -2236,6 +2190,17 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
             {line.name} · {line.biller}: {formatCurrency(line.amount, entry.currency || fallbackCurrency)}
             {line.estimated && (
               <span className="status-badge status-warning" style={{ marginLeft: '4px' }}>est.</span>
+            )}
+            {/* Condensed derivation (spec v0.2.42): the comparison states the
+                fee's structure and composition so no figure is opaque there;
+                the full band detail stays on the per-port view. */}
+            {line.derivation && (
+              <Box component="span" className="comparison-derivation-condensed" style={{ display: 'block' }}>
+                <span className="comparison-derivation-structure">{line.derivation.structure}</span>
+                {line.derivation.composition && line.derivation.composition !== line.derivation.structure && (
+                  <span className="comparison-derivation-composition"> — {line.derivation.composition}</span>
+                )}
+              </Box>
             )}
           </Box>
         ))}

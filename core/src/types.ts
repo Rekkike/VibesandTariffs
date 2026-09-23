@@ -498,6 +498,25 @@ export interface BandRow {
   amount: number;          // band total (sum of component amounts)
 }
 
+// Derivation transparency (spec v0.2.42): the engine's own computation
+// structure exposed for presentation, one step per line of arithmetic the
+// engine actually performed, in the order it performed it. Presentation
+// data only — the UI renders these steps and never recomputes, and no
+// step changes an amount.
+export interface DerivationStep {
+  kind: 'bands' | 'components' | 'adjustment' | 'composition';
+  label: string;          // step heading, e.g. 'Bands charged', 'Tier adjustment'
+  detail?: string;         // one-line prose detail, e.g. 'Tier II +5%'
+  bands?: BandRow[];       // kind 'bands': one row per band actually charged
+  components?: { label: string; amount: number }[]; // kind 'components'/'composition'
+  amount?: number;         // the step's resulting figure (signed for adjustments)
+}
+
+export interface FeeDerivation {
+  structure_label: string; // e.g. 'Flat rate', 'Progressive by GT', 'Storage day ladder'
+  steps: DerivationStep[]; // ordered composition: bands → components → adjustments → total
+}
+
 // Effective per-GT derived metric (spec v0.2.30): fee total ÷ vessel GT,
 // labeled as derived, never a published rate. Distorting-factor notes name
 // the basis effect where a floor/cap/per-call banding materially binds.
@@ -520,6 +539,7 @@ export interface FeeResult {
   quality_flags: QualityFlag[];
   component_amounts?: { label: string; amount: number }[]; // composite rules (e.g. HPA GT + env components)
   band_rows?: BandRow[];        // spec v0.2.30 band disclosure (progressive/composite tranche)
+  derivation?: FeeDerivation;  // spec v0.2.42 derivation transparency (presentation only)
   effective_rate?: EffectiveRateInfo; // spec v0.2.30 derived per-GT metric
   functional_class?: string;     // spec v0.2.30 functional classification key
   functional_basis_note?: string; // spec v0.2.30 basis note from the classification

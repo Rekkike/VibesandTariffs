@@ -1017,3 +1017,113 @@ textarea:focus-visible,
     overflow-x: hidden;
   }
 }
+
+/* ===================== Derivation transparency (v0.2.42) ================
+   The expanded fee-line detail: the engine's own computation steps —
+   bands, components, the adjustment stack, flags adjacent to the figure
+   they affected — rendered from FeeResult.derivation (the UI never
+   recomputes). Wrap-safe at the 360 px contract floor: steps stack
+   vertically, band tables scroll within their own container only when
+   a band label cannot fit (never the page), and every figure keeps
+   tabular numerals right-aligned.
+   ======================================================================== */
+.derivation-detail {
+  margin: var(--space-2) 0;
+  padding: var(--space-3);
+  background: var(--surface-sunken);
+  border: 1px solid var(--border);
+  border-radius: var(--space-1);
+}
+
+.derivation-structure-label {
+  font-size: var(--font-caption);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-secondary);
+  margin-bottom: var(--space-2);
+}
+
+.derivation-step {
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.derivation-step:last-of-type {
+  border-bottom: none;
+}
+
+.derivation-step-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+
+.derivation-step-label {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.derivation-step-detail {
+  color: var(--text-secondary);
+}
+
+.derivation-step-amount {
+  margin-left: auto;
+  font-family: 'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.derivation-band-table {
+  margin-top: var(--space-2);
+}
+
+.derivation-step-components {
+  margin-top: var(--space-2);
+}
+
+.derivation-component-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-3);
+  padding: var(--space-1) 0;
+  color: var(--text-secondary);
+  font-size: var(--font-caption);
+}
+
+.derivation-component-amount {
+  font-family: 'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.derivation-flags {
+  margin-top: var(--space-2);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-1);
+}
+
+.derivation-flag-detail {
+  margin-top: var(--space-1);
+}
+
+/* Condensed derivation (comparison view cells and mobile cards): the fee's
+   structure and composition stated under the line so no figure is opaque
+   on a comparison surface; the full detail lives on the per-port view. */
+.comparison-derivation-condensed {
+  color: var(--text-secondary);
+  font-size: 0.7rem;
+}
+
+.comparison-derivation-structure {
+  color: var(--text-secondary);
+}
+
+.comparison-derivation-composition {
+  color: var(--text-secondary);
+}
