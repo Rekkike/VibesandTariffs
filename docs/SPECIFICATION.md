@@ -1,4 +1,4 @@
-# Port Call Cost Analyzer — Specification v0.2.48
+# Port Call Cost Analyzer — Specification v0.2.49
 
 This document is the committed record of the project specification at version 0.2.49. It governs the data model, engine, and UI contracts of the Port Call Cost Analyzer. `docs/INTENDED_STATE.md` remains the authoritative audit document for the Gothenburg 2026 pilot data; where the two documents overlap, INTENDED_STATE.md governs the Gothenburg figures and this document governs the architecture and UI behavior.
 
