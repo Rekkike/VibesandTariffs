@@ -45,13 +45,19 @@ function ceilToCent(value: number): number {
   return Math.ceil(Number((value * 100).toPrecision(12))) / 100;
 }
 
-// Engine NOx Tier heuristic (STC 2.1.1 basis: certified tier of the most
-// polluting engine; without IAPP proof, Tier 0 applies). Used only when the
-// call does not carry a user-set tier.
-export function inferEngineTier(builtYear: number | undefined): 'Tier 0' | 'Tier I' | 'Tier II' {
+// Engine NOx Tier inference, per MARPOL Annex VI Regulation 13 construction
+// dates (spec v0.2.44): a ship constructed on or after 1 January 2000 is
+// Tier I; on or after 1 January 2011 Tier II; on or after 1 January 2016
+// Tier III (Tier III is an in-NECA standard — the inference states the
+// construction-date class and the flag tells the user to verify against the
+// IAPP certificate). Ships constructed before 2000, and unknown build
+// years, fall back to Tier 0 (the pre-Regulation-13 class, and the v0.2.28
+// worst-case default for truly unknown vessels).
+export function inferEngineTier(builtYear: number | undefined): 'Tier 0' | 'Tier I' | 'Tier II' | 'Tier III' {
   if (builtYear === undefined || builtYear < 2000) return 'Tier 0';
   if (builtYear <= 2010) return 'Tier I';
-  return 'Tier II';
+  if (builtYear <= 2015) return 'Tier II';
+  return 'Tier III';
 }
 
 /**
@@ -217,20 +223,24 @@ export function evaluateFeeRule(
     }
   };
   
-  // Resolve engine Tier (spec v0.2.29 default-call contract). Tier is a
-  // classification the tariff always applies — there is no "no Tier" state —
-  // so the clean-baseline default is the worst case: Tier 0, with a named
-  // assumed-parameter flag. The build-year heuristic is never invoked
-  // silently: it applies only when the user explicitly requests it
-  // (infer_engine_tier_from_build_year), and then flags the assumption.
+  // Resolve engine Tier (spec v0.2.29 default-call contract, amended
+  // v0.2.44). Tier is a classification the tariff always applies — there is
+  // no "no Tier" state. Explicit entry always wins. When no tier is entered
+  // and a build year is present, the tier is inferred from the build year
+  // per MARPOL Annex VI Regulation 13 construction dates (1 Jan 2000 →
+  // Tier I, 1 Jan 2011 → Tier II, 1 Jan 2016 → Tier III; pre-2000/unknown
+  // → Tier 0), with a named assumed-parameter flag telling the user to verify
+  // against the IAPP certificate. A blank build year keeps the v0.2.28
+  // worst-case Tier 0 default with its existing flag — the worst-case
+  // contract stands for truly unknown vessels.
   const resolveEngineTier = (): { tier: string; estimated: boolean } => {
     if (call.engine_tier) return { tier: call.engine_tier, estimated: !!call.engine_tier_estimated };
-    if (call.infer_engine_tier_from_build_year) {
+    if (vessel.built_year !== undefined) {
       const inferred = inferEngineTier(vessel.built_year);
       qualityFlags.push({
         type: 'assumed_parameter',
         parameter: 'engine_tier',
-        description: `NOx Tier "${inferred}" inferred from build year ${vessel.built_year ?? 'unknown'} (user-requested inference); enter the certified IAPP tier to override`,
+        description: `engine tier inferred from build year — verify against IAPP certificate (NOx Tier "${inferred}" from build year ${vessel.built_year}; Regulation 13 construction dates)`,
         severity: 'info'
       });
       return { tier: inferred, estimated: true };

@@ -143,7 +143,7 @@ export function guideFor(
         what: 'The certified NOx emission tier of the ship\'s most polluting engine, from the IAPP certificate supplement (MARPOL Annex VI, Regulation 13).',
         issuer: 'IMO under MARPOL Annex VI; certified by the flag state / Recognized Organization and recorded in the IAPP certificate supplement',
         issuerUrl: 'https://www.imo.org/en/ourwork/environment/pages/nitrogen-oxides-(nox)-–-regulation-13.aspx',
-        rule: 'Tier = most polluting engine per the IAPP supplement. Without proof, Tier 0 applies (worst case, +30% on the environmental component). The default is Tier 0, explicitly flagged; "infer from build year" is an explicit user action that applies the heuristic (2011+ → Tier II, 2000–2010 → Tier I, earlier/unknown → Tier 0) and flags it as an assumption.',
+        rule: 'Tier = most polluting engine per the IAPP supplement. When no certified tier is entered and a build year is present, the tier is inferred from the build year per MARPOL Annex VI Regulation 13 construction dates (2016+ → Tier III, 2011–2015 → Tier II, 2000–2010 → Tier I, earlier → Tier 0), flagged as an assumed parameter to verify against the IAPP certificate; a blank build year keeps the worst-case Tier 0 default (+30% on the environmental component). An entered tier always wins.',
         bands: tierBands(),
         deltas: (Object.keys(TIER_PCT) as string[]).map(t => ({
           label: t,

@@ -301,8 +301,14 @@ describe('CP5 - Maren Maersk (194,849 GT, Tier II, 50 h, 3,000 containers)', () 
 });
 
 describe('Hamburg engine mechanics (reference sections 3-8)', () => {
-  it('Tier heuristic: built 2011+ -> Tier II, 2000-2010 -> Tier I, earlier/unknown -> Tier 0', () => {
-    expect(inferEngineTier(2024)).toBe('Tier II');
+  it('Tier inference: Regulation 13 construction dates (spec v0.2.44) — 2016+ -> Tier III, 2011-2015 -> Tier II, 2000-2010 -> Tier I, earlier/unknown -> Tier 0', () => {
+    // Deliberate change (v0.2.44): the pre-amendment pin asserted the
+    // two-class heuristic (2011+ -> Tier II; no Tier III existed); the
+    // contract now infers per MARPOL Annex VI Regulation 13.
+    expect(inferEngineTier(2024)).toBe('Tier III');
+    expect(inferEngineTier(2018)).toBe('Tier III');
+    expect(inferEngineTier(2016)).toBe('Tier III');
+    expect(inferEngineTier(2015)).toBe('Tier II');
     expect(inferEngineTier(2011)).toBe('Tier II');
     expect(inferEngineTier(2010)).toBe('Tier I');
     expect(inferEngineTier(2000)).toBe('Tier I');
@@ -310,47 +316,94 @@ describe('Hamburg engine mechanics (reference sections 3-8)', () => {
     expect(inferEngineTier(undefined)).toBe('Tier 0');
   });
 
-  it('default call is worst-case Tier 0 with a named assumed-parameter flag (spec v0.2.29)', () => {
-    // No tier entered, no inference requested: the build year must NOT
-    // influence the result. The default is Tier 0 (+30% env), explicitly
-    // flagged as an assumed parameter.
+  it('no tier entered + build year present: tier inferred per Regulation 13 with a named assumed-parameter flag (spec v0.2.44)', () => {
+    // Deliberate change (v0.2.44, amending the v0.2.29 worst-case default):
+    // a build year now drives the tier inference — 20,000 x 0.0214 +
+    // 1,979 x 0.0746 = 575.63 base; Tier III -20% -> 460.50 (the old pin
+    // expected Tier 0 +30% -> 748.32 for every build year).
     const modern = calculatePortCallCost(port, makeCall({
       gt: 21979,
       built_year: 2024,
-      lay_time_hours: 16
-    }));
-    const legacy = calculatePortCallCost(port, makeCall({
-      gt: 21979,
-      built_year: 1995,
       lay_time_hours: 16
     }));
     const tierFlag = modern.quality_flags.find(
       f => f.type === 'assumed_parameter' && f.parameter === 'engine_tier'
     );
     expect(tierFlag).toBeDefined();
-    expect(tierFlag!.description).toContain('NOx Tier not entered; worst case (Tier 0) applied');
+    expect(tierFlag!.description).toContain('engine tier inferred from build year — verify against IAPP certificate');
+    expect(tierFlag!.description).toContain('Regulation 13 construction dates');
+    const envModern = feeByRule(modern, 'hpa_port_fee').component_amounts!.find(c => c.label === 'Environmental component')!;
+    expect(envModern.amount).toBe(460.50); // Tier III -20%
+    // Pre-2000 build: Tier 0 inferred, same arithmetic as the worst case
+    const legacy = calculatePortCallCost(port, makeCall({
+      gt: 21979,
+      built_year: 1995,
+      lay_time_hours: 16
+    }));
     expect(legacy.quality_flags.some(f => f.type === 'assumed_parameter' && f.parameter === 'engine_tier')).toBe(true);
-    // Same GT, same tier outcome regardless of build year
-    expect(feeByRule(modern, 'hpa_port_fee').amount).toBe(feeByRule(legacy, 'hpa_port_fee').amount);
-    const env = feeByRule(modern, 'hpa_port_fee').component_amounts!.find(c => c.label === 'Environmental component')!;
+    const envLegacy = feeByRule(legacy, 'hpa_port_fee').component_amounts!.find(c => c.label === 'Environmental component')!;
+    expect(envLegacy.amount).toBe(748.32); // Tier 0 +30%
+    // 2000-2010: Tier I (+25%)
+    const mid = calculatePortCallCost(port, makeCall({ gt: 21979, built_year: 2005, lay_time_hours: 16 }));
+    const envMid = feeByRule(mid, 'hpa_port_fee').component_amounts!.find(c => c.label === 'Environmental component')!;
+    expect(envMid.amount).toBe(719.54);
+    // 2011-2015: Tier II (+5%)
+    const tier2 = calculatePortCallCost(port, makeCall({ gt: 21979, built_year: 2012, lay_time_hours: 16 }));
+    const envT2 = feeByRule(tier2, 'hpa_port_fee').component_amounts!.find(c => c.label === 'Environmental component')!;
+    expect(envT2.amount).toBe(604.41);
+  });
+  it('blank build year keeps the v0.2.28 worst-case Tier 0 default with its existing flag (spec v0.2.44)', () => {
+    const blank = calculatePortCallCost(port, makeCall({
+      gt: 21979,
+      lay_time_hours: 16
+    }));
+    const tierFlag = blank.quality_flags.find(
+      f => f.type === 'assumed_parameter' && f.parameter === 'engine_tier'
+    );
+    expect(tierFlag).toBeDefined();
+    expect(tierFlag!.description).toContain('NOx Tier not entered; worst case (Tier 0) applied');
+    const env = feeByRule(blank, 'hpa_port_fee').component_amounts!.find(c => c.label === 'Environmental component')!;
     // 20,000 x 0.0214 + 1,979 x 0.0746 = 575.63 base; Tier 0 +30% -> 748.32
     expect(env.amount).toBe(748.32);
   });
+  it('explicit tier entry beats inference (spec v0.2.44)', () => {
+    const inferred = calculatePortCallCost(port, makeCall({ gt: 21979, built_year: 2024, lay_time_hours: 16 }));
+    const explicit = calculatePortCallCost(port, makeCall({
+      gt: 21979, built_year: 2024, lay_time_hours: 16,
+      engine_tier: 'Tier 0', engine_tier_estimated: false
+    }));
+    // An explicitly selected tier applies and clears the inference flag
+    expect(explicit.quality_flags.some(f => f.type === 'assumed_parameter' && f.parameter === 'engine_tier')).toBe(false);
+    const envExplicit = feeByRule(explicit, 'hpa_port_fee').component_amounts!.find(c => c.label === 'Environmental component')!;
+    const envInferred = feeByRule(inferred, 'hpa_port_fee').component_amounts!.find(c => c.label === 'Environmental component')!;
+    expect(envExplicit.amount).toBe(748.32); // Tier 0 +30% beats the Tier III inference
+    expect(envInferred.amount).toBe(460.50);
+  });
 
-  it('explicit infer-from-build-year action applies the heuristic and flags it as an assumption', () => {
-    const result = calculatePortCallCost(port, makeCall({
+  it('infer_engine_tier_from_build_year state: inference now applies from the build year without the flag (superseded user action, spec v0.2.44)', () => {
+    // The v0.2.29 explicit user action is repurposed as the inference
+    // contract's state flag: the engine infers whenever no tier is entered
+    // and a build year is present, regardless of the flag's value.
+    const flagged = calculatePortCallCost(port, makeCall({
       gt: 21979,
       built_year: 2024,
       infer_engine_tier_from_build_year: true,
       lay_time_hours: 16
     }));
-    const flag = result.quality_flags.find(
+    const unflagged = calculatePortCallCost(port, makeCall({
+      gt: 21979,
+      built_year: 2024,
+      infer_engine_tier_from_build_year: false,
+      lay_time_hours: 16
+    }));
+    expect(flagged.total).toBe(unflagged.total);
+    const flag = flagged.quality_flags.find(
       f => f.type === 'assumed_parameter' && f.parameter === 'engine_tier'
     );
     expect(flag).toBeDefined();
-    expect(flag!.description).toContain('inferred from build year 2024');
-    const env = feeByRule(result, 'hpa_port_fee').component_amounts!.find(c => c.label === 'Environmental component')!;
-    expect(env.amount).toBe(604.41); // Tier II +5% (heuristic value, now explicit)
+    expect(flag!.description).toContain('engine tier inferred from build year');
+    const env = feeByRule(flagged, 'hpa_port_fee').component_amounts!.find(c => c.label === 'Environmental component')!;
+    expect(env.amount).toBe(460.50); // Tier III -20% per Regulation 13 (deliberate change: old pin 604.41, Tier II)
   });
 
   it('entering a certified tier removes the assumed-parameter flag', () => {

@@ -340,7 +340,7 @@ const EnvGuideHelp: React.FC<{ guide: InputGuide | null }> = ({ guide }) => {
   );
 };
 
-const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVesselChange, onCallChange }) => {
+export const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVesselChange, onCallChange }) => {
   // Which result page(s) are visible - display filter only, never affects computation
   const [visibleSegments, setVisibleSegments] = useState<CostSegment[]>([
     'vessel_call',
@@ -421,7 +421,14 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
   };
 
   const handleCallChange = (field: keyof CallInput, value: any) => {
+    // Batched from the current prop, not a stale closure copy: consecutive
+    // handleCallChange calls in one handler must not clobber each other
+    // (the v0.2.44 wiring defect — the old per-call `{ ...call, [field] }`
+    // spread lost every field but the last when a handler set several).
     onCallChange({ ...call, [field]: value });
+  };
+  const handleCallChanges = (fields: Partial<CallInput>) => {
+    onCallChange({ ...call, ...fields });
   };
 
   const applyPreset = (preset: keyof typeof VESSEL_PRESETS) => {
@@ -734,7 +741,7 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                     onChange={(e) => handleVesselChange('built_year', parseFloat(e.target.value) || undefined)}
                     fullWidth
                     InputLabelProps={{ shrink: true }}
-                    helperText="Used only by the explicit 'infer from build year' action on the NOx Tier field; the Tier default is Tier 0 regardless of build year (spec v0.2.29)"
+                    helperText="Drives the Hamburg NOx Tier inference when no certified tier is entered (Regulation 13 construction dates; spec v0.2.44); otherwise informational"
                   />
                 </Grid>
               )}
@@ -1031,32 +1038,27 @@ const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVes
                           value={state.call.engine_tier || 'tier0_default'}
                           onChange={(e) => {
                             const v = e.target.value as string;
+                            // One atomic update per selection (spec v0.2.44):
+                            // an explicit tier applies and clears the
+                            // inference; the not-entered default hands the
+                            // decision to the engine's inference contract
+                            // (build year present -> inferred tier; blank
+                            // -> worst-case Tier 0 with its existing flag).
                             if (v === 'tier0_default') {
-                              handleCallChange('engine_tier', undefined);
-                              handleCallChange('engine_tier_estimated', undefined);
-                              handleCallChange('infer_engine_tier_from_build_year', false);
+                              handleCallChanges({ engine_tier: undefined, engine_tier_estimated: undefined, infer_engine_tier_from_build_year: false });
                             } else if (v === 'tier0') {
-                              handleCallChange('engine_tier', 'Tier 0');
-                              handleCallChange('engine_tier_estimated', false);
-                              handleCallChange('infer_engine_tier_from_build_year', false);
-                            } else if (v === 'infer_build_year') {
-                              handleCallChange('engine_tier', undefined);
-                              handleCallChange('engine_tier_estimated', undefined);
-                              handleCallChange('infer_engine_tier_from_build_year', true);
+                              handleCallChanges({ engine_tier: 'Tier 0', engine_tier_estimated: false, infer_engine_tier_from_build_year: false });
                             } else {
-                              handleCallChange('engine_tier', v);
-                              handleCallChange('engine_tier_estimated', false);
-                              handleCallChange('infer_engine_tier_from_build_year', false);
+                              handleCallChanges({ engine_tier: v, engine_tier_estimated: false, infer_engine_tier_from_build_year: false });
                             }
                           }}
                           label="Engine Tier (IAPP, most polluting engine)"
                         >
-                          <MenuItem value="tier0_default">Tier 0 — not entered (worst case; enter certified tier to override)</MenuItem>
+                          <MenuItem value="tier0_default">Not entered — inferred from build year per Regulation 13 (blank build year: worst case Tier 0)</MenuItem>
                           <MenuItem value="tier0">Tier 0 / no IAPP (+30%)</MenuItem>
                           <MenuItem value="Tier I">Tier I (+25%)</MenuItem>
                           <MenuItem value="Tier II">Tier II (+5%)</MenuItem>
                           <MenuItem value="Tier III">Tier III+ (−20%)</MenuItem>
-                          <MenuItem value="infer_build_year">Infer from build year (explicit user action; flagged as assumption)</MenuItem>
                         </Select>
                       </FormControl>
                       <EnvGuideHelp guide={guideForInput('engine_tier')} />

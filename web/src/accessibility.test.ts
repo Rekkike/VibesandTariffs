@@ -36,11 +36,13 @@ describe('accessibility floor (WCAG 2.2 AA, v0.2.25–v0.2.32 surfaces)', () => 
     expect(appSource).toMatch(/<Popover\s+id=\{panelId\}/);
   });
 
-  it('the NOx Tier menu is a native labeled Select with an explicit infer action item', () => {
+  it('the NOx Tier menu is a native labeled Select stating the inference contract (v0.2.44)', () => {
     expect(appSource).toContain('Engine Tier (IAPP, most polluting engine)');
-    expect(appSource).toMatch(/value="infer_build_year">Infer from build year/);
-    // Default item states the worst-case default in its label
-    expect(appSource).toMatch(/Tier 0 — not entered \(worst case; enter certified tier to override\)/);
+    // Default item states the Regulation 13 inference contract in its label
+    expect(appSource).toMatch(/Not entered — inferred from build year per Regulation 13 \(blank build year: worst case Tier 0\)/);
+    // The superseded explicit-infer action item is gone: inference is the
+    // engine's contract, not a user action
+    expect(appSource).not.toMatch(/value="infer_build_year"/);
   });
 
   it('quality-flag badges carry titles (accessible name beyond color)', () => {

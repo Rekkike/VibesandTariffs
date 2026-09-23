@@ -134,11 +134,12 @@ describe('Environmental default-call contract (spec v0.2.28)', () => {
       expect(defaultResult.total).toBeGreaterThan(0);
     });
 
-    it('hamburg: default call yields the Tier 0 computation with a named assumed-parameter flag', () => {
+    it('hamburg: blank build year keeps the Tier 0 worst-case computation with a named assumed-parameter flag (v0.2.44)', () => {
       const port = loadPort('hamburg');
       const result = calculatePortCallCost(port, defaultInputFor(port));
-      // Worst case: Tier 0 (+30% env), regardless of any built year on the
-      // default vessel (the default vessel carries none)
+      // The default vessel carries no build year, so the v0.2.28 worst-case
+      // Tier 0 default applies (spec v0.2.44: the inference needs a build
+      // year; the worst case stands for truly unknown vessels)
       const explicit = calculatePortCallCost(port, {
         vessel: DEFAULT_VESSEL,
         call: { ...defaultCall('hamburg'), engine_tier: 'Tier 0', engine_tier_estimated: false }
@@ -159,24 +160,35 @@ describe('Environmental default-call contract (spec v0.2.28)', () => {
       expect(portFee.quality_flags.some(f => f.type === 'assumed_parameter' && f.parameter === 'engine_tier')).toBe(true);
     });
 
-    it('hamburg: entering a certified tier removes the assumed-parameter flag; inference is never invoked without explicit user action', () => {
+    it('hamburg: build year present infers the tier per Regulation 13 with a named flag; explicit entry wins (v0.2.44)', () => {
       const port = loadPort('hamburg');
-      // Certified tier entered: no flag, different (lower) total
+      // Certified tier entered: no flag, lower total
       const certified = calculatePortCallCost(port, {
         vessel: { ...DEFAULT_VESSEL, built_year: 2024 },
         call: { ...defaultCall('hamburg'), engine_tier: 'Tier II', engine_tier_estimated: false }
       });
       expect(certified.quality_flags.some(f => f.type === 'assumed_parameter' && f.parameter === 'engine_tier')).toBe(false);
+      // No tier entered + build year present: the engine infers Tier III
+      // (2024 per Regulation 13) and flags it — the old pin asserted the
+      // inference must NOT happen (deliberate change, v0.2.44)
       const defaulted = calculatePortCallCost(port, {
         vessel: { ...DEFAULT_VESSEL, built_year: 2024 },
         call: defaultCall('hamburg')
       });
-      expect(defaulted.total).toBeGreaterThan(certified.total);
-      // Without the explicit action, a modern build year must not silently
-      // apply the heuristic: default (Tier 0) > heuristic (Tier II)
       expect(defaulted.quality_flags.some(
-        f => f.type === 'assumed_parameter' && f.parameter === 'engine_tier' && f.description.includes('inferred from build year')
-      )).toBe(false);
+        f => f.type === 'assumed_parameter' && f.parameter === 'engine_tier' && f.description.includes('engine tier inferred from build year')
+      )).toBe(true);
+      // Tier III (-20%) < Tier II (+5%) on the environmental component:
+      // the inferred call is now cheaper than the certified-Tier-II call
+      expect(defaulted.total).toBeLessThan(certified.total);
+      // Explicit entry beats inference: Tier 0 entered over a 2024 build
+      // year removes the inference flag and applies Tier 0
+      const explicitT0 = calculatePortCallCost(port, {
+        vessel: { ...DEFAULT_VESSEL, built_year: 2024 },
+        call: { ...defaultCall('hamburg'), engine_tier: 'Tier 0', engine_tier_estimated: false }
+      });
+      expect(explicitT0.quality_flags.some(f => f.type === 'assumed_parameter' && f.parameter === 'engine_tier')).toBe(false);
+      expect(explicitT0.total).toBeGreaterThan(defaulted.total);
     });
 
     it.each(PORT_IDS)('%s: entering an ESI score actually discounts (guard against a dead input)', (id) => {
