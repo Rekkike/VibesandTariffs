@@ -2788,6 +2788,15 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
                       <Typography color="error" className="comparison-not-charged">error</Typography>
                     ) : (
                       <Box component="dl" className="comparison-card-list">
+                        {/* Grand Total leads the per-port card (spec
+                            v0.2.54): the total figure is the card's first
+                            element, above the stage breakdown below — mirroring
+                            the per-port workspace's total strip, where the
+                            Grand Total is the first figure the reader sees. */}
+                        <Box component="dt" className="comparison-card-total">
+                          <strong>Grand Total</strong>
+                          {convCell(result.total, result.currency)}
+                        </Box>
                         {/* Stage grouping and charge-type lines (spec
                             v0.2.52): the mobile card carries the same
                             stage/charge-type structure as the desktop
@@ -2816,10 +2825,6 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
                             ))}
                           </React.Fragment>
                         ))}
-                        <Box component="dt" className="comparison-card-total">
-                          <strong>Grand Total</strong>
-                          {convCell(result.total, result.currency)}
-                        </Box>
                         <Box component="dd" className="comparison-card-family">
                           <span className="comparison-card-family-name">Estimated parameters subtotal</span>
                           {convCell(result.total_estimated_parameters, result.currency)}

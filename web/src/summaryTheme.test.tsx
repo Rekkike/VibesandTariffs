@@ -136,6 +136,55 @@ describe('Vessel Access Charges block — retained and themed (spec v0.2.51)', (
   });
 });
 
+describe('per-port total strip leads with the Grand Total (spec v0.2.54)', () => {
+  let container: HTMLDivElement | null;
+  let root: Root | null;
+  afterEach(async () => {
+    if (root) { await act(async () => { root!.unmount(); }); }
+    container?.remove();
+    container = null;
+    root = null;
+  });
+  const renderWorkspace = async (port: PortDefinition, vessel: VesselInput, call: CallInput) => {
+    container = document.createElement('div');
+    document.body.appendChild(container);
+    const r = createRoot(container);
+    root = r;
+    await act(async () => {
+      r.render(
+        <PortWorkspace
+          port={port}
+          vessel={vessel}
+          call={call}
+          onVesselChange={() => {}}
+          onCallChange={() => {}}
+          onActiveVesselChange={() => {}}
+        />
+      );
+    });
+    await act(async () => { await new Promise(r2 => setTimeout(r2, 650)); });
+  };
+  it('the strip renders the Grand Total figure as its first element, above the segment breakdown', async () => {
+    // The per-port header contract (spec v0.2.54): the Grand Total figure
+    // leads the summary block; the stage/segment breakdown renders below
+    // it. The per-port strip has always held this order — this pin makes
+    // the expectation explicit so no reorganization can regress it
+    // silently.
+    await renderWorkspace(GOTHENBURG, DEFAULT_VESSEL, defaultCall('gothenburg') as CallInput);
+    const strip = container!.querySelector('.total-strip');
+    expect(strip).not.toBeNull();
+    const main = strip!.querySelector('.total-strip-main');
+    expect(main).not.toBeNull();
+    expect((main!.textContent ?? '')).toContain('Grand Total');
+    expect((main!.textContent ?? '')).toContain('3\u00a0007\u00a0051');
+    const firstSegment = strip!.querySelector('.total-strip-segment');
+    expect(firstSegment).not.toBeNull();
+    expect(
+      main!.compareDocumentPosition(firstSegment!) & Node.DOCUMENT_POSITION_FOLLOWING
+    ).toBeTruthy();
+  });
+});
+
 describe('zero figure drift against the v0.2.50 baseline (spec v0.2.51)', () => {
   it('default-call totals are unchanged to the cent at all three ports', () => {
     expect(engineTotal('gothenburg')).toBe(3007051.15);

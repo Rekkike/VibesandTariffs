@@ -283,6 +283,28 @@ describe('comparison view responsive rendering paths', () => {
     expect(card.textContent).toContain('Grand Total');
     expect(card.textContent).toContain('Total without estimates');
   });
+  it('grand total leads each per-port card: the total figure renders above the first stage row (spec v0.2.54)', async () => {
+    // The missing expectation that let the v0.2.52 stage reorganization
+    // regress silently: the card's summary block must lead with the Grand
+    // Total figure, the stage breakdown ("To reach the berth: ...") below.
+    await renderComparison(true);
+    const cards = container!.querySelectorAll('.comparison-port-card');
+    expect(cards.length).toBe(LOADED_PORTS.length);
+    for (const card of Array.from(cards)) {
+      const list = card.querySelector('.comparison-card-list')!;
+      expect(list).not.toBeNull();
+      const firstChild = list.children[0];
+      expect(firstChild.className).toContain('comparison-card-total');
+      expect(firstChild.textContent).toContain('Grand Total');
+      // exactly one grand-total element, and no stage row precedes it
+      expect(card.querySelectorAll('.comparison-card-total').length).toBe(1);
+      const firstStage = card.querySelector('.comparison-card-segment');
+      expect(firstStage).not.toBeNull();
+      expect((firstStage!.textContent ?? '')).toContain('To reach the berth');
+      const order = firstChild!.compareDocumentPosition(firstStage!);
+      expect(order & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    }
+  });
 });
 
 // ---------------------------------------------------------------------------

@@ -35,7 +35,7 @@ import { createRoot, type Root } from 'react-dom/client';
 import { act } from 'react';
 import * as fs from 'fs';
 import * as path from 'path';
-import { ComparisonView } from './App';
+import { ComparisonView, __setMobileQueryForTests } from './App';
 import portsRegistry from './data/ports.json';
 import {
   DEFAULT_VESSEL,
@@ -233,6 +233,48 @@ describe('comparison shared-call per-port defaults (spec v0.2.53 defect fix)', (
     }
   });
 
+  it('mobile per-port card: the Grand Total figure leads the card, above the first stage row (spec v0.2.54)', async () => {
+    // The regression pin the v0.2.52 stage reorganization lacked: each
+    // port's card must open with its Grand Total figure (the header
+    // element), the "To reach the berth" stage breakdown below it. Under
+    // the spec-default merged call the Helsingborg card leads with
+    // 8,481,257.40 SEK.
+    __setMobileQueryForTests(() => true);
+    const c = document.createElement('div');
+    document.body.appendChild(c);
+    const r = createRoot(c);
+    try {
+      await act(async () => {
+        r.render(
+          <ComparisonView
+            ports={LOADED_PORTS}
+            vessel={DEFAULT_VESSEL}
+            call={defaultCall('gothenburg')}
+            selectedPortIds={LOADED_PORTS.map(p => p.metadata.id)}
+            onSelectionChange={() => {}}
+            activeVessel="TEST"
+          />
+        );
+      });
+      const cards = c.querySelectorAll('.comparison-port-card');
+      expect(cards.length).toBe(LOADED_PORTS.length);
+      const hel = Array.from(cards).find(el => (el.textContent ?? '').includes('Helsingborg'));
+      expect(hel).toBeDefined();
+      const list = hel!.querySelector('.comparison-card-list')!;
+      expect(list.children[0].className).toContain('comparison-card-total');
+      expect(list.children[0].textContent).toContain('Grand Total');
+      expect(list.children[0].textContent).toContain('8\u00a0481\u00a0257');
+      const firstStage = hel!.querySelector('.comparison-card-segment')!;
+      expect(firstStage.textContent).toContain('To reach the berth');
+      expect(
+        list.children[0].compareDocumentPosition(firstStage) & Node.DOCUMENT_POSITION_FOLLOWING
+      ).toBeTruthy();
+    } finally {
+      __setMobileQueryForTests(null);
+      await act(async () => { r.unmount(); });
+      c.remove();
+    }
+  });
   it('the v0.2.51 theme discipline holds: no color literal introduced (source and stylesheet unchanged by this pass)', () => {
     // The established v0.2.51 discipline checks, restated for this pass's
     // touched files: no hardcoded light backgrounds, no #666 secondary
