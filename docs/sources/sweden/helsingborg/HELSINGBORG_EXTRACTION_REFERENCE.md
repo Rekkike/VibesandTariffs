@@ -94,6 +94,35 @@ Note on terminology — two different "CSI" scales exist and must never be confl
 - No port dues on: fuel/provisions, oily ballast, fairway equipment, empty
   cargo carriers not constituting independent commodity, unchanged transit crude.
 
+**Cargo-due adjudication (audit-confirmed, recorded spec v0.2.53).** Verbatim
+quotations anchoring the encoding — unitized container goods pay the per-unit
+rate (625.00 SEK), never the conventional-goods gross-weight basis:
+
+> "With the exception of unitized goods, these fees apply to goods that are
+> handled as conventional goods… calculated based on the gross weight…"
+
+> "General cargo refers to goods in containers, on loading platforms, a trailer
+> or other cargo carrier. SEK per unit 625.00"
+
+Supporting quotations — the no-dues list and the security-fee unit definition
+use the same unitized-goods vocabulary:
+
+> "Containers, shipping platforms or other cargo trailers that do not
+> constitute an independent commodity" (no-dues list — an empty carrier is
+> not itself cargo; a carried unit is)
+
+> Port security fee: 78.00 SEK per unit for "containers, platforms, trailers,
+> lorries" — the same unit definition the cargo due prices per unit.
+
+Adjudication: the model's container call is unitized goods by definition (every
+container, loaded or empty-in-transit as an independent commodity, is a unit),
+so the default call's 4,000 units pay 4,000 x 625.00 = 2,500,000.00 SEK cargo
+due (pinned; no figure moves). The gross-weight basis is the
+conventional-goods path only, out of scope for the container model. Source
+status: the archived tariff is a single English-only PDF (S1,
+`port-authority/tariff-2026.pdf`); no Swedish original is published — recorded
+here so no session goes looking for one.
+
 ### 3.5 Port security fee (S1 pp.4, 6)
 - 78.00 SEK per unit (containers, platforms, trailers, lorries).
 - Charged through the same invoice as cargo and ship fees. Vessels without valid

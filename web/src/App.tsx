@@ -2301,11 +2301,20 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
     [rateInput, dataRate]
   );
   // One calculation per selected port - the same engine and data as the
-  // per-port pages; no separate calculation path.
+  // per-port pages; no separate calculation path. Per-port default call
+  // fields (spec v0.2.53 shared-call fix): the comparison prices one call
+  // at all three ports, but the shared call does not carry a port's
+  // port-specific inputs when it was built by another port's defaultCall.
+  // Each port's column therefore applies its own defaultCall(portId) values
+  // for the port-specific fields the shared call does not carry, mirroring
+  // the per-port page's port-switch reset (PORT_SPECIFIC_CALL_FIELDS):
+  // an explicitly set shared input always wins over the per-port default.
   const portResults = useMemo(() => {
     return selectedPorts.map(port => {
       try {
-        const result = calculatePortCallCost(port, { vessel, call: { ...call, port_id: port.metadata.id } });
+        const portDefaults = defaultCall(port.metadata.id) as unknown as Record<string, unknown>;
+        const merged: Record<string, unknown> = { ...portDefaults, ...call, port_id: port.metadata.id };
+        const result = calculatePortCallCost(port, { vessel, call: merged as unknown as CallInput });
         return { port, result, error: null as string | null };
       } catch (err) {
         return { port, result: null, error: `Calculation failed: ${err}` };

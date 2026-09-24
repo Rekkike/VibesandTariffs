@@ -206,9 +206,47 @@ export function evaluateFeeRule(
       }
     }
     
+    // ISSC status (spec 4.4.2 least-favourable rule; SOLAS XI-2/ISPS): a
+    // blank (undefined) status is "not entered", and the least favourable
+    // value applies — the doubled no-ISSC security fee — with a visible
+    // fallback flag, never silently. An explicit false is the user's own
+    // attestation and carries the SOLAS XI-2/ISPS consequence sentence
+    // instead of a fallback flag (the user stated the absence; nothing was
+    // assumed). An explicit valid certificate carries no flag at all.
+    if (rule.applicable_conditions.issc_valid !== undefined) {
+      const entered = call.issc_valid;
+      // Blank (not entered) resolves to the least favourable value — no
+      // valid ISSC — so the doubled rule fires and the single-rate rule
+      // does not (spec 4.4.2).
+      const effective = entered === undefined ? false : entered;
+      if (entered === undefined && rule.applicable_conditions.issc_valid === false) {
+        qualityFlags.push({
+          type: 'fallback_value',
+          description: 'ISSC status not entered; priced without a valid ISSC — the doubled security fee, the least favourable value (spec 4.4.2). A valid International Ship Security Certificate halves this fee back to the single rate',
+          severity: 'info'
+        });
+      }
+      if (entered === false && rule.applicable_conditions.issc_valid === false) {
+        qualityFlags.push({
+          type: 'fallback_value',
+          description: "No valid ISSC attested; the security fee is doubled per the tariff's ISPS condition (SOLAS XI-2/ISPS Code — vessels without a valid International Ship Security Certificate are charged double)",
+          severity: 'info'
+        });
+      }
+      if (effective !== rule.applicable_conditions.issc_valid) {
+        return null;
+      }
+    }
+    
     // Generic conditions: any other key must match the call input exactly
-    // (e.g. hpa_berth_usage: true, berth_type: 'quay').
-    const handled = new Set(['flag_state', 'arrival_origin', 'ops_usage', 'esi_score', 'csi_class', 'fuel_percentage', 'nt_class', 'vessel_type', 'ordering_lead_time_band', 'terminal_operator']);
+    // (e.g. hpa_berth_usage: true, berth_type: 'quay'). flag_state is
+    // deliberately absent from the handled set: no 2026 tariff prices a rule
+    // on the flag (the Gothenburg waste rules' split dimension is the arrival
+    // origin, spec v0.2.50), so a data rule carrying the retired condition
+    // must reach the warning branch below and be ignored visibly, never pass
+    // through the generic matcher (the v0.2.50 contract text promised a
+    // reachable warning; making it reachable is the v0.2.53 repair).
+    const handled = new Set(['arrival_origin', 'ops_usage', 'esi_score', 'csi_class', 'fuel_percentage', 'nt_class', 'vessel_type', 'ordering_lead_time_band', 'terminal_operator', 'issc_valid']);
     for (const [key, value] of Object.entries(rule.applicable_conditions)) {
       if (handled.has(key)) continue;
       if (key === 'flag_state') {
