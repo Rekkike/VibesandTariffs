@@ -915,6 +915,33 @@ body {
   letter-spacing: 0.04em;
   color: var(--text-secondary);
 }
+/* Comparison stages (spec v0.2.52): the three operational stages a call's
+   costs compose into. Stage rows carry the stage header style. */
+.comparison-stage-row td {
+  background: var(--surface-sunken);
+  font-weight: 600;
+  font-size: var(--font-caption);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-secondary);
+}
+/* Charge-type lines (spec v0.2.52): the fairway/berth/cargo due rows
+   render as prominent named lines inside their stage - the label carries
+   the charge type's description beneath it, in secondary text. */
+.comparison-chargetype-row .comparison-chargetype-label {
+  font-weight: 600;
+  color: var(--text-primary);
+  display: block;
+}
+.comparison-chargetype-row .comparison-chargetype-desc {
+  display: block;
+  font-size: var(--font-caption);
+  color: var(--text-secondary);
+}
+.comparison-not-levied {
+  color: var(--text-disabled);
+  font-style: italic;
+}
 
 .comparison-family-cell {
   padding-left: var(--space-6);

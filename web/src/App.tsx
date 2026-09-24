@@ -80,6 +80,15 @@ import {
 import type { ThemeMode } from './theme';
 // Zero-line collapse classification (spec v0.2.27), presentation only
 import { partitionFees } from './zeroCollapse';
+
+import {
+  CHARGE_TYPE_LINES,
+  COMPARISON_STAGES,
+  chargeTypeForRule,
+  stageForFamily,
+  STAGE_BY_CHARGE_TYPE,
+  type ChargeTypeId
+} from './chargeTypes';
 // Badge honesty (spec v0.2.29): assumed parameters get named badges, never a generic "est."
 import { badgesForFlags } from './flagBadges';
 // Derivation transparency (spec v0.2.42): engine-exposed derivation rendering
@@ -2354,7 +2363,7 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
       currency: string;
       flags: number;
       effective_per_gt?: number;
-      lines: { name: string; biller: string; amount: number; estimated: boolean; derivation?: { structure: string; composition: string; total: string } | null }[];
+      lines: { name: string; ruleId: string; biller: string; amount: number; flags: number; estimated: boolean; derivation?: { structure: string; composition: string; total: string } | null }[];
     }>>();
     for (const { port, result } of portResults) {
       if (!result) continue;
@@ -2390,8 +2399,10 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
           entry.flags += fee.quality_flags.length;
           entry.lines.push({
             name: ruleNameByPortAndId.get(port.metadata.id)?.get(fee.fee_rule_id) ?? fee.fee_family,
+            ruleId: fee.fee_rule_id,
             biller: fee.biller,
             amount: fee.amount,
+            flags: fee.quality_flags.length,
             estimated: fee.quality_flags.some(flag => flag.type === 'estimated_parameter'),
             // Derivation transparency (spec v0.2.42): the condensed form rides
             // the line into every comparison surface — desktop cells and the
@@ -2402,14 +2413,86 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
         }
       }
     }
-    return SEGMENTS.map(segment => ({
-      segment,
-      families: Array.from(familyTotals.entries())
-        .filter(([family]) => (FEE_FAMILY_TO_SEGMENT[family] || 'vessel_call') === segment.id)
+    // Charge-type re-segmentation (spec v0.2.52): the fairway / berth /
+    // cargo due rules are pulled out of their fee families onto their own
+    // named lines (rule-id mapping in chargeTypes.ts, not fee family —
+    // the vessel_fee family collides across billers: Sjofartsverket's
+    // is fairway dues, HHLA/Eurogate's is berth dues). Every rule lands
+    // in exactly one comparison line: its charge-type line or its
+    // remaining fee-family row.
+    type PortEntry = {
+      amount: number; currency: string; flags: number;
+      lines: { name: string; ruleId: string; biller: string; amount: number; flags: number; estimated: boolean; derivation?: { structure: string; composition: string; total: string } | null }[];
+    };
+    const chargeTypeTotals = new Map<ChargeTypeId, Map<string, PortEntry>>();
+    const remainingFamilies = new Map<string, Map<string, {
+      amount: number; currency: string; flags: number; effective_per_gt?: number;
+      lines: { name: string; ruleId: string; biller: string; amount: number; flags: number; estimated: boolean; derivation?: { structure: string; composition: string; total: string } | null }[];
+    }>>();
+    for (const [family, perPort] of Array.from(familyTotals.entries())) {
+      for (const [portId, entry] of Array.from(perPort.entries())) {
+        const chargeLines = entry.lines.filter(line => chargeTypeForRule(line.ruleId) !== null);
+        if (chargeLines.length === 0) {
+          if (!remainingFamilies.has(family)) remainingFamilies.set(family, new Map());
+          remainingFamilies.get(family)!.set(portId, entry);
+          continue;
+        }
+        // A charge-type rule's family entry splits: the mapped rules go
+        // to their charge-type line, any remaining rules of the same
+        // family stay on the family row; a family whose every rule maps
+        // to a charge-type line contributes no remaining row.
+        const remainingLines = entry.lines.filter(line => chargeTypeForRule(line.ruleId) === null);
+        for (const line of chargeLines) {
+          const ctId = chargeTypeForRule(line.ruleId)!;
+          if (!chargeTypeTotals.has(ctId)) chargeTypeTotals.set(ctId, new Map());
+          const m = chargeTypeTotals.get(ctId)!;
+          const e = m.get(portId) || { amount: 0, currency: entry.currency, flags: 0, lines: [] };
+          e.amount += line.amount;
+          e.flags += line.flags;
+          e.lines.push(line);
+          m.set(portId, e);
+        }
+        if (remainingLines.length > 0) {
+          if (!remainingFamilies.has(family)) remainingFamilies.set(family, new Map());
+          remainingFamilies.get(family)!.set(portId, {
+            amount: entry.amount - chargeLines.reduce((s, l) => s + l.amount, 0),
+            currency: entry.currency,
+            flags: entry.flags - chargeLines.reduce((s, l) => s + l.flags, 0),
+            lines: remainingLines
+          });
+        }
+      }
+    }
+    // Zero-line suppression (spec v0.2.52): a comparison line whose
+    // amount is zero at every compared port for the current inputs does
+    // not render in the comparison view. Display-only — rules still
+    // fire, derivations still compute, the engine is untouched; any
+    // input change making a line nonzero renders it immediately.
+    const lineIsAllZero = (perPort: Map<string, { amount: number }>) =>
+      portResults.every(({ result }) =>
+        !result || (perPort.get(result.port_id)?.amount ?? 0) === 0);
+    for (const [ctId, perPort] of Array.from(chargeTypeTotals.entries())) {
+      if (lineIsAllZero(perPort)) chargeTypeTotals.delete(ctId);
+    }
+    for (const [family, perPort] of Array.from(remainingFamilies.entries())) {
+      if (lineIsAllZero(perPort)) remainingFamilies.delete(family);
+    }
+    // Stages (spec v0.2.52): the three charge-type lines nest under their
+    // stage as prominent rows; remaining fee families group under the
+    // stage their economic function belongs to (mapping and citations in
+    // chargeTypes.ts).
+    const rowsByStage = COMPARISON_STAGES.map(stage => {
+      const chargeTypeRows = CHARGE_TYPE_LINES
+        .filter(line => STAGE_BY_CHARGE_TYPE[line.id] === stage.id)
+        .filter(line => (chargeTypeTotals.get(line.id)?.size ?? 0) > 0)
+        .map(line => ({
+          chargeType: line,
+          perPort: chargeTypeTotals.get(line.id)!,
+          leviedAt: Array.from(chargeTypeTotals.get(line.id)!.keys())
+        }));
+      const familyRows = Array.from(remainingFamilies.entries())
+        .filter(([family]) => stageForFamily(family) === stage.id)
         .map(([family, perPort]) => {
-          // Port-dues family row carries the effective per-GT per port
-          // (spec v0.2.30): family total ÷ vessel GT, derived — never a
-          // published rate.
           if (family === 'port_dues') {
             for (const portId of Array.from(perPort.keys())) {
               const entry = perPort.get(portId)!;
@@ -2419,28 +2502,12 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
             }
           }
           return { family, perPort };
-        })
-    })).filter(group => group.families.length > 0);
+        });
+      return { stage, chargeTypeRows, familyRows };
+    }).filter(group => group.chargeTypeRows.length > 0 || group.familyRows.length > 0);
+    return { rowsByStage, chargeTypeTotals };
   }, [portResults, ruleNameByPortAndId, ruleAttributesByPortAndId, vessel.gt]);
 
-  const segmentSubtotals = useMemo(() => {
-    return portResults.map(({ port, result }) => {
-      const totals: Record<CostSegment, number> = {
-        vessel_call: 0,
-        energy_at_berth: 0,
-        terminal_and_yard: 0
-      };
-      if (result) {
-        for (const biller of result.billers) {
-          for (const fee of biller.fees) {
-            const segment = FEE_FAMILY_TO_SEGMENT[fee.fee_family] || 'vessel_call';
-            totals[segment] += fee.amount;
-          }
-        }
-      }
-      return { portId: port.metadata.id, totals };
-    });
-  }, [portResults]);
 
   // Ranking integrity (spec v0.2.31): ordering and ranking use the
   // converted comparison basis (SEK), never raw amounts — the Swedish SEK
@@ -2457,14 +2524,16 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
 
 
   const amountCell = (
-    entry: { amount: number; currency: string; flags: number; effective_per_gt?: number; lines: { name: string; biller: string; amount: number; estimated: boolean; derivation?: { structure: string; composition: string; total: string } | null }[] } | undefined,
+    entry: { amount: number; currency: string; flags: number; effective_per_gt?: number; lines: { name: string; ruleId: string; biller: string; amount: number; flags: number; estimated: boolean; derivation?: { structure: string; composition: string; total: string } | null }[] } | undefined,
     fallbackCurrency: string,
     showDerivation: boolean
   ) => {
     if (!entry) {
-      // Explicit absence: never hidden, so an absence of cost is not
-      // mistaken for missing data (spec 4.3.1 comparability rules)
-      return <span className="comparison-not-charged">not charged</span>;
+      // Explicit absence (spec v0.2.52): a fee family a port does not levy
+      // renders "not levied at this port" — never hidden, so an absence of
+      // cost is not mistaken for missing data (spec 4.3.1 comparability
+      // rules; pinned choice, per-port and comparison alike).
+      return <span className="comparison-not-charged">not levied at this port</span>;
     }
     const conv = toComparisonBasis(entry.amount, entry.currency || fallbackCurrency, rateInfo);
     return (
@@ -2695,7 +2764,6 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
           {isMobile && (
             <Box id="comparison-conversions-panel" className="comparison-cards" component="section" aria-label="Port comparison cards">
               {portResults.map(({ port, result }) => {
-                const subtotals = segmentSubtotals.find(s => s.portId === port.metadata.id)!;
                 return (
                   <Paper key={port.metadata.id} className="comparison-port-card" elevation={1}>
                     <Typography variant="h6" component="h3" className="comparison-card-title">
@@ -2711,13 +2779,30 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
                       <Typography color="error" className="comparison-not-charged">error</Typography>
                     ) : (
                       <Box component="dl" className="comparison-card-list">
-                        {rowsBySegment.map(({ segment, families }) => (
-                          <React.Fragment key={segment.id}>
-                            <Box component="dt" className="comparison-card-segment">{segment.label}: {convCell(subtotals.totals[segment.id], result.currency)}</Box>
-                            {families.map(({ family, perPort }) => (
-                              <Box component="dd" key={`${segment.id}-${family}`} className="comparison-card-family">
+                        {/* Stage grouping and charge-type lines (spec
+                            v0.2.52): the mobile card carries the same
+                            stage/charge-type structure as the desktop
+                            table, consistently. */}
+                        {rowsBySegment.rowsByStage.map(({ stage, chargeTypeRows, familyRows }) => (
+                          <React.Fragment key={stage.id}>
+                            <Box component="dt" className="comparison-card-segment">{stage.label}: {convCell(
+                              chargeTypeRows.reduce((s, r) => s + (r.perPort.get(port.metadata.id)?.amount ?? 0), 0) +
+                              familyRows.reduce((s, r) => s + (r.perPort.get(port.metadata.id)?.amount ?? 0), 0),
+                              result.currency)}</Box>
+                            {chargeTypeRows.map(({ chargeType, perPort, leviedAt }) => (
+                              <Box component="dd" key={chargeType.id} className="comparison-card-family comparison-card-chargetype">
+                                <span className="comparison-card-family-name">{chargeType.label}</span>
+                                {leviedAt.includes(port.metadata.id)
+                                  ? amountCell(perPort.get(port.metadata.id), port.metadata.currency, true)
+                                  : <span className="comparison-not-levied">not levied at this port</span>}
+                              </Box>
+                            ))}
+                            {familyRows.map(({ family, perPort }) => (
+                              <Box component="dd" key={`${stage.id}-${family}`} className="comparison-card-family">
                                 <span className="comparison-card-family-name">{family.replace(/_/g, ' ')}</span>
-                                {amountCell(perPort.get(port.metadata.id), port.metadata.currency, true)}
+                                {perPort.get(port.metadata.id)
+                                  ? amountCell(perPort.get(port.metadata.id), port.metadata.currency, true)
+                                  : <span className="comparison-not-levied">not levied at this port</span>}
                               </Box>
                             ))}
                           </React.Fragment>
@@ -2777,25 +2862,52 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
                 </TableRow>
               </TableHead>
               <TableBody>
-                {rowsBySegment.map(({ segment, families }) => (
-                  <React.Fragment key={segment.id}>
-                    <TableRow className="comparison-segment-row">
+                {/* Stage grouping (spec v0.2.52): three operational stages
+                    a call's costs compose into; the charge-type lines nest
+                    under their stage as prominent rows, remaining fee
+                    families follow inside the same stage. Stage subtotals
+                    compose from the rendered lines (charge-type + family
+                    rows), so a suppressed all-zero line contributes zero
+                    and the visible sum plus suppressed zeros equals the
+                    Grand Total. */}
+                {rowsBySegment.rowsByStage.map(({ stage, chargeTypeRows, familyRows }) => (
+                  <React.Fragment key={stage.id}>
+                    <TableRow className="comparison-stage-row">
                       <TableCell>
-                        <strong>{segment.label}</strong>
+                        <strong>{stage.label}</strong>
                       </TableCell>
-                      {portResults.map(({ port, result }) => {
-                        const subtotals = segmentSubtotals.find(s => s.portId === port.metadata.id)!;
+                      {portResults.map(({ port }) => {
+                        const stageTotal =
+                          chargeTypeRows.reduce((s, r) => s + (r.perPort.get(port.metadata.id)?.amount ?? 0), 0) +
+                          familyRows.reduce((s, r) => s + (r.perPort.get(port.metadata.id)?.amount ?? 0), 0);
                         return (
                           <TableCell key={port.metadata.id} align="right" className="comparison-subtotal">
-                            {result
-                              ? convCell(subtotals.totals[segment.id], result.currency)
-                              : <span className="comparison-error">error</span>}
+                            <span className="comparison-figure">{formatCurrency(stageTotal, port.metadata.currency)}</span>
                           </TableCell>
                         );
                       })}
                     </TableRow>
-                    {families.map(({ family, perPort }) => (
-                      <TableRow key={`${segment.id}-${family}`}>
+                    {chargeTypeRows.map(({ chargeType, perPort, leviedAt }) => (
+                      <TableRow key={chargeType.id} className="comparison-chargetype-row">
+                        <TableCell className="comparison-family-cell">
+                          <span className="comparison-chargetype-label">{chargeType.label}</span>
+                          <span className="comparison-chargetype-desc">{chargeType.description}</span>
+                        </TableCell>
+                        {portResults.map(({ port }) => (
+                          <TableCell key={port.metadata.id} align="right" className="amount">
+                            {/* Absence structure (spec v0.2.52): a charge
+                                type a port never levies is stated, not
+                                hidden — GOT/HAM cargo dues, the Swedish
+                                ports' and GOT's berth dues. */}
+                            {leviedAt.includes(port.metadata.id)
+                              ? amountCell(perPort.get(port.metadata.id), port.metadata.currency, derivationsVisible)
+                              : <span className="comparison-not-levied">not levied at this port</span>}
+                          </TableCell>
+                        ))}
+                      </TableRow>
+                    ))}
+                    {familyRows.map(({ family, perPort }) => (
+                      <TableRow key={`${stage.id}-${family}`}>
                         <TableCell className="comparison-family-cell">
                           {family.replace(/_/g, ' ')}
                         </TableCell>
@@ -2803,7 +2915,9 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
                           const entry = perPort.get(port.metadata.id);
                           return (
                             <TableCell key={port.metadata.id} align="right" className="amount">
-                              {amountCell(entry, port.metadata.currency, derivationsVisible)}
+                              {entry
+                                ? amountCell(entry, port.metadata.currency, derivationsVisible)
+                                : <span className="comparison-not-levied">not levied at this port</span>}
                             </TableCell>
                           );
                         })}
