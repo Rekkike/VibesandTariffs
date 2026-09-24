@@ -2754,6 +2754,48 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
       </Box>
     );
   };
+  // Derived per-GT on the Grand Total (spec v0.2.58): the comparison's
+  // cross-port comparability bridge — Grand Total ÷ vessel GT, the same
+  // derived-metric convention as the vessel-access effective per-GT (spec
+  // v0.2.30: labeled derived, never a published rate). The Swedish ports
+  // are pure division (SEK total ÷ GT); Hamburg converts through the same
+  // EUR/SEK rate input as every converted figure (EUR total × rate ÷ GT)
+  // and names the rate input as a dependency per the derived-and-converted
+  // disclosure convention. When OPS user-specified values are entered the
+  // figure uses the Grand Total as presented (including OPS) — the
+  // comparison is about the total cost of the call as the user speculates
+  // it — and the note states that inclusion so the label never implies the
+  // total is tariff-derived when it is not. Zero or missing GT renders
+  // nothing (no division artifact). Secondary line under the total per the
+  // v0.2.56 rhythm; the mobile converted collapse (spec v0.2.39) applies
+  // to the converted Hamburg figure exactly as to every converted figure.
+  const grandTotalPerGtCell = (total: number, currency: string, opsPresent: boolean) => {
+    if (!vessel.gt || vessel.gt <= 0) return null;
+    const opsNote = opsPresent ? ' (includes user-specified OPS)' : '';
+    if (currency === 'SEK') {
+      const perGt = total / vessel.gt;
+      return (
+        <Box sx={{ fontSize: '0.75rem' }} className="comparison-secondary comparison-total-pergt">
+          {perGt.toFixed(2)} SEK/GT effective — derived, not a published rate{opsNote}
+        </Box>
+      );
+    }
+    const conv = toComparisonBasis(total, currency, rateInfo);
+    if (!conv.converted) return null;
+    if (isMobile && !conversionsVisible) {
+      return (
+        <Box sx={{ fontSize: '0.75rem' }} className="comparison-secondary comparison-total-pergt">
+          <span className="comparison-converted-hidden-tag">converted per-GT figure hidden</span>
+        </Box>
+      );
+    }
+    const perGtConv = conv.amount / vessel.gt;
+    return (
+      <Box sx={{ fontSize: '0.75rem' }} className="comparison-secondary comparison-total-pergt">
+        {perGtConv.toFixed(2)} SEK/GT effective — derived, not a published rate; converted at the exchange-rate input ({formatRate(rateInfo)}){opsNote}
+      </Box>
+    );
+  };
 
   return (
     <Box className="container">
@@ -2919,7 +2961,10 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
                             Grand Total is the first figure the reader sees. */}
                         <Box component="dt" className="comparison-card-total">
                           <strong>Grand Total</strong>
-                          {convCell(result.total, result.currency)}
+                          <Box sx={{ textAlign: 'right' }}>
+                            {convCell(result.total, result.currency)}
+                            {grandTotalPerGtCell(result.total, result.currency, Boolean(result.ops_speculative))}
+                          </Box>
                         </Box>
                         {/* Stage grouping and charge-type lines (spec
                             v0.2.52): the mobile card carries the same
@@ -3082,7 +3127,10 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
                   {portResults.map(({ port, result }) => (
                     <TableCell key={port.metadata.id} align="right" className="comparison-subtotal">
                       {result
-                        ? convCell(result.total, result.currency)
+                        ? <Box sx={{ textAlign: 'right' }}>
+                            {convCell(result.total, result.currency)}
+                            {grandTotalPerGtCell(result.total, result.currency, Boolean(result.ops_speculative))}
+                          </Box>
                         : <span className="comparison-error">error</span>}
                     </TableCell>
                   ))}
