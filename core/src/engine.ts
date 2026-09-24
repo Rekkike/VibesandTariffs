@@ -28,7 +28,9 @@ import {
   SourceReference,
   BandRow,
   FeeDerivation,
-  DerivationStep
+  DerivationStep,
+  OpsSpeculativeLine,
+  OpsSpeculativeBlock
 } from './types';
 import { classifyRule } from './classification';
 
@@ -1505,12 +1507,64 @@ export function getCsiClassIndex(csiClass: string | undefined): number {
 }
 
 /**
+ * OPS speculative component descriptor (spec v0.2.57): per-port shape of
+ * the user-speculation input group — component presence, currency, and
+ * unit only, configuration not rates. The per-port posture reflects each
+ * port's public OPS position: Gothenburg publishes an OPS connection fee
+ * only for the tanker-segment Energy Port jetties (no container connection
+ * component, so no connection box; electricity, demand, and per-GT remain
+ * speculable); Hamburg bills electricity through its energy ecosystem with
+ * no published demand or per-GT component (electricity and connection only);
+ * Helsingborg publishes nothing OPS-specific, so all four components stay
+ * open (least-defined public posture). This is web-layer configuration in
+ * spirit but lives beside the single calculation path so the engine prices
+ * exactly the components a port's surface offers; it is never in ports.json
+ * and carries no rates.
+ */
+export interface OpsComponentSpec {
+  enabled: boolean;
+  currency: Currency;
+  unit: string;
+}
+export interface OpsComponentsSpec {
+  electricity: OpsComponentSpec;
+  demand: OpsComponentSpec;
+  connection: OpsComponentSpec;
+  per_gt: OpsComponentSpec;
+}
+const OPS_COMPONENTS_BY_PORT: Record<string, OpsComponentsSpec> = {
+  gothenburg: {
+    electricity: { enabled: true, currency: 'SEK', unit: 'SEK/kWh' },
+    demand: { enabled: true, currency: 'SEK', unit: 'SEK/call' },
+    connection: { enabled: false, currency: 'SEK', unit: 'SEK/call' },
+    per_gt: { enabled: true, currency: 'SEK', unit: 'SEK/GT' }
+  },
+  hamburg: {
+    electricity: { enabled: true, currency: 'EUR', unit: 'EUR/kWh' },
+    demand: { enabled: false, currency: 'EUR', unit: 'EUR/call' },
+    connection: { enabled: true, currency: 'EUR', unit: 'EUR/call' },
+    per_gt: { enabled: false, currency: 'EUR', unit: 'EUR/GT' }
+  },
+  helsingborg: {
+    electricity: { enabled: true, currency: 'SEK', unit: 'SEK/kWh' },
+    demand: { enabled: true, currency: 'SEK', unit: 'SEK/call' },
+    connection: { enabled: true, currency: 'SEK', unit: 'SEK/call' },
+    per_gt: { enabled: true, currency: 'SEK', unit: 'SEK/GT' }
+  }
+};
+export function opsComponentsForPort(portId: string): OpsComponentsSpec {
+  return OPS_COMPONENTS_BY_PORT[portId] ?? OPS_COMPONENTS_BY_PORT.helsingborg;
+}
+
+/**
  * Calculates the total cost for a port call
  */
 export function calculatePortCallCost(
   port: PortDefinition,
   input: CostCalculationInput
 ): CostCalculationResult {
+  const opsComponents = opsComponentsForPort(port.metadata.id);
+  const call = input.call;
   const qualityFlags: QualityFlag[] = [];
   const feeResults: FeeResult[] = [];
   const matchedFeeFamilies = new Set<string>();
@@ -1708,7 +1762,67 @@ export function calculatePortCallCost(
     classes: accessClassesPresent,
     basis_notes: accessBasisNotes
   } : undefined;
-  
+
+  // OPS speculative block (spec v0.2.57): free-number user speculation on
+  // onshore power supply, deliberately outside the tariff-traceability
+  // contract — no in-scope published tariff prices container-terminal OPS
+  // (AFIR/FuelEU make it effectively mandatory at key EU ports from 2030).
+  // The numbers live only in the call input, never in a rate table. Blank
+  // contributes zero and renders nothing (the block is undefined when no
+  // component is entered). Electricity requires the shared enabling input
+  // (estimated kWh); without it no electricity line fires even if a price
+  // is entered. Every line carries its arithmetic in its basis string so
+  // the "user-specified, not tariff-derived" label is the only provenance.
+  const opsLines: OpsSpeculativeLine[] = [];
+  if (opsComponents.electricity.enabled) {
+    const kwh = call.ops_kwh_consumption;
+    const price = call.ops_electricity_price;
+    if (typeof kwh === 'number' && kwh > 0 && typeof price === 'number' && price > 0) {
+      opsLines.push({
+        id: 'ops_spec_electricity',
+        label: `OPS electricity (user-specified, ${opsComponents.electricity.currency}/kWh)`,
+        amount: roundToCent(kwh * price),
+        basis: `${kwh.toLocaleString('en-US', { maximumFractionDigits: 2 })} kWh × ${price.toLocaleString('en-US', { maximumFractionDigits: 4 })} ${opsComponents.electricity.currency}/kWh (user-specified, not tariff-derived)`
+      });
+    }
+  }
+  if (opsComponents.demand.enabled && typeof call.ops_demand_charge === 'number' && call.ops_demand_charge !== 0) {
+    opsLines.push({
+      id: 'ops_spec_demand',
+      label: 'OPS demand charge (user-specified)',
+      amount: roundToCent(call.ops_demand_charge),
+      basis: `flat per call (user-specified, not tariff-derived; ${opsComponents.demand.currency})`
+    });
+  }
+  if (opsComponents.connection.enabled && typeof call.ops_connection_charge === 'number' && call.ops_connection_charge !== 0) {
+    opsLines.push({
+      id: 'ops_spec_connection',
+      label: 'OPS service/connection charge (user-specified)',
+      amount: roundToCent(call.ops_connection_charge),
+      basis: `flat per call (user-specified, not tariff-derived; ${opsComponents.connection.currency})`
+    });
+  }
+  if (opsComponents.per_gt.enabled && typeof call.ops_per_gt_charge === 'number' && call.ops_per_gt_charge !== 0 && input.vessel.gt > 0) {
+    opsLines.push({
+      id: 'ops_spec_per_gt',
+      label: 'OPS per-GT charge (user-specified)',
+      amount: roundToCent(input.vessel.gt * call.ops_per_gt_charge),
+      basis: `${input.vessel.gt.toLocaleString('en-US')} GT × ${call.ops_per_gt_charge.toLocaleString('en-US', { maximumFractionDigits: 4 })} ${opsComponents.per_gt.currency}/GT (user-specified, not tariff-derived)`
+    });
+  }
+  const opsSpeculative: OpsSpeculativeBlock | undefined = opsLines.length > 0 ? {
+    lines: opsLines,
+    amount: roundToCent(opsLines.reduce((s, l) => s + l.amount, 0)),
+    currency: port.metadata.currency
+  } : undefined;
+
+  // The Grand Total includes the OPS block (spec v0.2.57): user-specified
+  // contributions add to the same figure the surfaces present, with the
+  // block kept structurally separate so every surface can distinguish
+  // tariff-derived from user-specified. Blank OPS changes nothing.
+  const grandTotal = opsSpeculative ? roundToCent(total + opsSpeculative.amount) : total;
+  const grandWithoutEstimates = roundToCent(grandTotal - totalEstimatedParameters);
+
   return {
     port_id: port.metadata.id,
     port_name: port.metadata.name,
@@ -1721,11 +1835,12 @@ export function calculatePortCallCost(
       estimated_nt: estimatedNt
     },
     billers,
-    total,
+    total: grandTotal,
     total_estimated_parameters: totalEstimatedParameters,
-    total_without_estimates: totalWithoutEstimates,
+    total_without_estimates: grandWithoutEstimates,
     quality_flags: qualityFlags,
     vessel_access: vesselAccess,
+    ops_speculative: opsSpeculative,
     calculation_timestamp: new Date().toISOString()
   };
 }

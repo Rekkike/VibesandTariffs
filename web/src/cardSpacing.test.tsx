@@ -86,11 +86,13 @@ describe('mobile card vertical rhythm (spec v0.2.56)', () => {
     expect(derivation).not.toBeNull();
     expect(derivation![0]).toMatch(/margin-top:\s*var\(--space-1\);/);
 
-    // The v0.2.51 theme discipline holds inside the rhythm block: spacing
-    // comes from tokens, no new px literals.
-    const rhythmBlock = cssSource.match(/\.comparison-card-list \.comparison-card-family-name[\s\S]*?\.comparison-conversion-disclosure/);
-    expect(rhythmBlock).not.toBeNull();
-    expect(rhythmBlock![0]).not.toMatch(/\d+px/);
+    // The v0.2.51 theme discipline holds inside the rhythm rules: spacing
+    // comes from tokens, no new px literals (the three card-scoped rules
+    // only; the OPS block that follows uses the pre-existing 2px border
+    // convention and is not part of the rhythm block).
+    expect(familyName![0]).not.toMatch(/\d+px/);
+    expect(secondary![0]).not.toMatch(/\d+px/);
+    expect(derivation![0]).not.toMatch(/\d+px/);
   });
 
   it('the Grand Total keeps its breathing room (padding token on the card total row)', () => {

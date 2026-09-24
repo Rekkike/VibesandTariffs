@@ -492,6 +492,37 @@ export interface CallInput {
   fresh_water_m3?: number;          // fresh water supplied (m3); free up to 50 m3, then 50 SEK/m3
   scrubber_waste?: boolean;         // scrubber waste delivered (800 SEK admin; disposal billed at cost)
   break_bulk_1000kg?: number;       // break bulk tonnage (1,000 kg units) at 54 SEK/unit
+  // OPS speculative inputs (spec v0.2.57): free-number user speculation,
+  // deliberately outside the tariff-traceability contract — no port
+  // publishes a container-terminal OPS rate (AFIR/FuelEU make OPS
+  // effectively mandatory at key EU ports from 2030, but no in-scope
+  // tariff prices it). The numbers live only in the call input, never in
+  // ports.json or any rate table; blank contributes nothing and renders
+  // nothing. Each entered component renders under an explicit
+  // "user-specified, not tariff-derived" label.
+  ops_kwh_consumption?: number;   // shared enabling input: estimated kWh for the call; without it no electricity line
+  ops_electricity_price?: number; // user's assumed electricity price (SEK/kWh Sweden; EUR/kWh Hamburg)
+  ops_demand_charge?: number;     // user's assumed demand charge, flat per call (SEK; Sweden only)
+  ops_connection_charge?: number; // user's assumed service/connection charge, flat per call (SEK Sweden; EUR Hamburg)
+  ops_per_gt_charge?: number;     // user's assumed additional per-GT charge (optional; blank disables)
+}
+
+// OPS speculative block (spec v0.2.57): the user-entered OPS components
+// priced for this call, kept structurally separate from the tariff-derived
+// billers so every surface can render it as its own visibly separated
+// block and the Grand Total can distinguish tariff-derived from
+// user-specified contributions. Presentation data on the result mirrors
+// the engine's single calculation path: the UI never recomputes.
+export interface OpsSpeculativeLine {
+  id: string;                     // stable line id, e.g. 'ops_spec_electricity'
+  label: string;                   // e.g. 'OPS electricity (user-specified)'
+  amount: number;                  // the priced contribution
+  basis: string;                   // e.g. '1,250 kWh x 2.50 SEK/kWh (user-specified)'
+}
+export interface OpsSpeculativeBlock {
+  lines: OpsSpeculativeLine[];
+  amount: number;                  // sum of lines
+  currency: Currency;
 }
 
 // Full input for cost calculation
@@ -614,6 +645,10 @@ export interface CostCalculationResult {
   total_without_estimates: number;
   quality_flags: QualityFlag[];
   vessel_access?: VesselAccessAggregate;
+  // OPS speculative block (spec v0.2.57): present only when the call
+  // carries at least one entered OPS component; absent (undefined) when
+  // all inputs are blank so blank changes no total and renders nothing.
+  ops_speculative?: OpsSpeculativeBlock;
   calculation_timestamp: string;
 }
 

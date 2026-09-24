@@ -50,6 +50,7 @@ import {
   getNetTonnageClass,
   calculatePortCallCost,
   inferEngineTier,
+  opsComponentsForPort,
   DEFAULT_VESSEL,
   defaultCall,
   namedProfile,
@@ -438,12 +439,15 @@ const EnvGuideHelp: React.FC<{ guide: InputGuide | null }> = ({ guide }) => {
 };
 
 export const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVesselChange, onCallChange, onActiveVesselChange, assumedCallFields = [], onAssumedCallFieldsChange = () => {} }) => {
+  // OPS speculative component shape for this port (spec v0.2.57):
+  // descriptor-driven presence/currency/unit — the input group renders
+  // exactly the components this port's public OPS posture supports.
+  const opsComponents = useMemo(() => opsComponentsForPort(port.metadata.id), [port.metadata.id]);
   // Which result page(s) are visible - display filter only, never affects computation
   const [visibleSegments, setVisibleSegments] = useState<CostSegment[]>([
     'vessel_call',
     'energy_at_berth'
   ]);
-
   // Local workspace state for display only (expansion, loading)
   const [state, setState] = useState<AppState>({
     vessel,
@@ -751,7 +755,20 @@ export const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call
             Grand Total: <strong>{formatCurrency(state.result?.total ?? 0)}</strong>
           </Typography>
         </Box>
-        <Box className="total-strip-segments">          {(state.result?.total_estimated_parameters ?? 0) > 0 && (            <Typography variant="body2" className="total-strip-segment">              <span className="status-badge status-warning" style={{ marginRight: '4px' }}>est.</span>              <span className="total-strip-segment-label">Estimated parameters:</span>{' '}              {formatCurrency(state.result?.total_estimated_parameters ?? 0)}            </Typography>          )}          {(state.result?.total_estimated_parameters ?? 0) > 0 && (            <Typography variant="body2" className="total-strip-segment">              <span className="total-strip-segment-label">Total without estimates:</span>{' '}              {formatCurrency(state.result?.total_without_estimates ?? 0)}            </Typography>          )}
+        <Box className="total-strip-segments">
+          {/* OPS user-specified separation (spec v0.2.57): the Grand Total
+              distinguishes tariff-derived from user-specified
+              contributions — the OPS speculative block is stated as its
+              own strip line when entered, absent when blank. */}
+          {state.result?.ops_speculative && (
+            <Typography variant="body2" className="total-strip-segment">
+              <span className="status-badge status-info" style={{ marginRight: '4px' }}>user</span>
+              <span className="total-strip-segment-label">OPS user-specified:</span>{' '}
+              {formatCurrency(state.result.ops_speculative.amount)}
+              <span className="total-strip-segment-label"> (tariff-derived: {formatCurrency(state.result.total - state.result.ops_speculative.amount)})</span>
+            </Typography>
+          )}
+          {(state.result?.total_estimated_parameters ?? 0) > 0 && (            <Typography variant="body2" className="total-strip-segment">              <span className="status-badge status-warning" style={{ marginRight: '4px' }}>est.</span>              <span className="total-strip-segment-label">Estimated parameters:</span>{' '}              {formatCurrency(state.result?.total_estimated_parameters ?? 0)}            </Typography>          )}          {(state.result?.total_estimated_parameters ?? 0) > 0 && (            <Typography variant="body2" className="total-strip-segment">              <span className="total-strip-segment-label">Total without estimates:</span>{' '}              {formatCurrency(state.result?.total_without_estimates ?? 0)}            </Typography>          )}
           {SEGMENTS.map(segment => (
             <Typography key={segment.id} variant="body2" className="total-strip-segment">
               <span className="total-strip-segment-label">{segment.label}:</span>{' '}
@@ -1718,12 +1735,89 @@ export const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call
                   <EnvGuideHelp guide={guideForInput('ops_usage')} />
                 </Box>
               </Grid>
-              {/* Spec v0.2.32 dead-control sweep: the OPS kWh / connected-hours /
-                  electricity-price / peak-demand inputs were collected but never
-                  read by the engine or any port file (no published container-
-                  terminal OPS rate exists to charge against). Removed rather than
-                  rendered non-functional; ops_usage itself is live (Hamburg OPS
-                  rebate, Gothenburg tanker connection-fee condition). */}
+              {/* Spec v0.2.32 removed the dead OPS kWh/price inputs (never
+                  read by engine or data). Spec v0.2.57 re-introduces them as
+                  a per-port speculative input group (descriptor-driven,
+                  opsComponentsForPort): AFIR/FuelEU make OPS effectively
+                  mandatory at key EU ports from 2030, but no in-scope
+                  published tariff prices it — these are free-number user
+                  speculation, deliberately outside the tariff-traceability
+                  contract, never in ports.json. Blank contributes zero and
+                  renders nothing; every entered value renders under an
+                  explicit "user-specified, not tariff-derived" label.
+                  ops_usage above stays live (Hamburg OPS rebate, Gothenburg
+                  tanker connection-fee condition). */}
+              <Grid item xs={12}>
+                <Typography variant="subtitle2" className="ops-speculative-group-label">
+                  OPS speculation (user-specified, not tariff-derived)
+                </Typography>
+                <Typography variant="caption" className="ops-speculative-group-note">
+                  No published container-terminal OPS rate exists at this port — enter your own assumptions; entered values render in a separate block and add to the Grand Total.
+                </Typography>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  label={`Estimated OPS consumption (kWh)`}
+                  type="number"
+                  value={state.call.ops_kwh_consumption ?? ''}
+                  onChange={(e) => handleCallChange('ops_kwh_consumption', e.target.value === '' ? undefined : parseFloat(e.target.value))}
+                  fullWidth
+                  InputLabelProps={{ shrink: true }}
+                  helperText="Required enabling input: the electricity line needs it"
+                />
+              </Grid>
+              {opsComponents.electricity.enabled && (
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    label={`OPS electricity price (${opsComponents.electricity.unit})`}
+                    type="number"
+                    value={state.call.ops_electricity_price ?? ''}
+                    onChange={(e) => handleCallChange('ops_electricity_price', e.target.value === '' ? undefined : parseFloat(e.target.value))}
+                    fullWidth
+                    InputLabelProps={{ shrink: true }}
+                    helperText={`User-specified ${opsComponents.electricity.currency}/kWh — not a tariff rate; blank = none`}
+                  />
+                </Grid>
+              )}
+              {opsComponents.demand.enabled && (
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    label={`OPS demand charge (${opsComponents.demand.unit})`}
+                    type="number"
+                    value={state.call.ops_demand_charge ?? ''}
+                    onChange={(e) => handleCallChange('ops_demand_charge', e.target.value === '' ? undefined : parseFloat(e.target.value))}
+                    fullWidth
+                    InputLabelProps={{ shrink: true }}
+                    helperText={`User-specified flat per call — not a tariff rate; blank = none`}
+                  />
+                </Grid>
+              )}
+              {opsComponents.connection.enabled && (
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    label={`OPS service/connection charge (${opsComponents.connection.unit})`}
+                    type="number"
+                    value={state.call.ops_connection_charge ?? ''}
+                    onChange={(e) => handleCallChange('ops_connection_charge', e.target.value === '' ? undefined : parseFloat(e.target.value))}
+                    fullWidth
+                    InputLabelProps={{ shrink: true }}
+                    helperText={`User-specified flat per call — not a tariff rate; blank = none`}
+                  />
+                </Grid>
+              )}
+              {opsComponents.per_gt.enabled && (
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    label={`OPS additional per-GT charge (${opsComponents.per_gt.unit})`}
+                    type="number"
+                    value={state.call.ops_per_gt_charge ?? ''}
+                    onChange={(e) => handleCallChange('ops_per_gt_charge', e.target.value === '' ? undefined : parseFloat(e.target.value))}
+                    fullWidth
+                    InputLabelProps={{ shrink: true }}
+                    helperText={`Optional — multiplied by vessel GT; blank disables`}
+                  />
+                </Grid>
+              )}
             </Grid>
 
             {/* ============ TERMINAL AND YARD SEGMENT INPUTS ============ */}
@@ -2218,6 +2312,30 @@ export const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call
                   </Box>
                 )}
 
+                {/* OPS speculative block (spec v0.2.57): user-entered OPS
+                    components render as their own visibly separated block —
+                    never interleaved with tariff lines — each under the
+                    explicit user-specified label. Absent when every OPS
+                    input is blank (blank changes no total, renders
+                    nothing). */}
+                {state.result.ops_speculative && (
+                  <Box className="ops-speculative-block">
+                    <Typography variant="subtitle1" className="ops-speculative-title">
+                      OPS (user-specified, not tariff-derived)
+                    </Typography>
+                    {state.result.ops_speculative.lines.map(line => (
+                      <Box key={line.id} className="ops-speculative-line">
+                        <span className="ops-speculative-line-label">{line.label}</span>
+                        <span className="ops-speculative-line-basis">{line.basis}</span>
+                        <span className="ops-speculative-line-amount">{formatCurrency(line.amount)}</span>
+                      </Box>
+                    ))}
+                    <Box className="ops-speculative-total">
+                      <span className="ops-speculative-total-label">OPS subtotal (user-specified)</span>
+                      <span className="ops-speculative-total-amount">{formatCurrency(state.result.ops_speculative.amount)}</span>
+                    </Box>
+                  </Box>
+                )}
                 <Typography variant="body2" sx={{ mt: 2, textAlign: 'center' }} className="results-timestamp">
                   Calculation performed: {new Date(state.result.calculation_timestamp).toLocaleString()}
                 </Typography>
@@ -2831,6 +2949,18 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
                             ))}
                           </React.Fragment>
                         ))}
+                        {/* OPS speculative block on the card (spec v0.2.57):
+                            the user-specified components as their own
+                            separated line under the Grand Total — blank
+                            renders nothing, and no absence wording renders
+                            for ports without values (no user value is not
+                            a tariff assertion). */}
+                        {result.ops_speculative && (
+                          <Box component="dd" className="comparison-card-family comparison-card-ops">
+                            <span className="comparison-card-family-name">OPS (user-specified, not tariff-derived)</span>
+                            {convCell(result.ops_speculative.amount, result.currency)}
+                          </Box>
+                        )}
                         <Box component="dd" className="comparison-card-family">
                           <span className="comparison-card-family-name">Estimated parameters subtotal</span>
                           {convCell(result.total_estimated_parameters, result.currency)}
@@ -2957,6 +3087,31 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
                     </TableCell>
                   ))}
                 </TableRow>
+                {/* OPS speculative block in comparison (spec v0.2.57): each
+                    port's user-entered OPS components render as a visibly
+                    separated row after the Grand Total — never interleaved
+                    with tariff lines, and never with absence wording in
+                    other ports' columns (no user value is not a tariff
+                    assertion; blank simply renders nothing). */}
+                {portResults.some(({ result }) => result?.ops_speculative) && (
+                  <TableRow className="comparison-ops-row">
+                    <TableCell>
+                      <strong>OPS (user-specified, not tariff-derived)</strong>
+                    </TableCell>
+                    {portResults.map(({ port, result }) => (
+                      <TableCell key={port.metadata.id} align="right" className="comparison-subtotal">
+                        {result?.ops_speculative
+                          ? <Box sx={{ textAlign: 'right' }}>
+                              <span className="comparison-figure">{formatCurrency(result.ops_speculative.amount, result.currency)}</span>
+                              <Box sx={{ fontSize: '0.75rem' }} className="comparison-secondary">
+                                {result.ops_speculative.lines.map(l => l.label).join('; ')}
+                              </Box>
+                            </Box>
+                          : <span className="comparison-ops-absent">—</span>}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                )}
                 {/* Estimated-parameter separation (spec v0.2.24): the total
                     minus its estimated-parameter lines, shown for every port
                     symmetrically (Hamburg handling/towage, Helsingborg
@@ -3129,7 +3284,12 @@ const PORT_SPECIFIC_CALL_FIELDS = [
   'waste_sustainable_waste_reduction', 'csi_class', 'fossil_free_fuel_percentage',
   'pilotage_hours', 'pilotage_extra_pilot',
   'pilotage_ordering_lead_time_hours', 'hatch_cover_count', 'gearbox_count',
-  'lay_up_days'
+  'lay_up_days',
+  // OPS speculative price fields (spec v0.2.57): currency-specific per port
+  // (SEK Sweden / EUR Hamburg), so a port switch resets them like every
+  // other port-specific input. ops_kwh_consumption stays shared — kWh is
+  // currency-neutral and is the shared enabling input at all ports.
+  'ops_electricity_price', 'ops_demand_charge', 'ops_connection_charge', 'ops_per_gt_charge'
 ];
 
 const App: React.FC = () => {
