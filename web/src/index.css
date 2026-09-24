@@ -204,7 +204,7 @@ body {
 /* Profile-assumption helper (spec v0.2.48): seeded values read as
    assumptions — muted, wrap-safe, adjacent to the field they qualify. */
 .profile-assumption-helper {
-  color: var(--text-secondary, rgba(0, 0, 0, 0.6));
+  color: var(--text-secondary);
   font-style: italic;
   overflow-wrap: break-word;
 }
@@ -259,6 +259,27 @@ body {
   box-shadow: none;
   padding: var(--space-6);
   margin-bottom: var(--space-6);
+}
+
+/* Themed summary blocks (spec v0.2.51): results-area summary surfaces use
+   the theme tokens, never hardcoded light backgrounds - the v0.2.51 audit
+   found the two #f5f5f5 blocks invisible in dark mode (themed near-white
+   text on a hardcoded light background) since their introduction. */
+.results-summary-block {
+  background: var(--surface-sunken);
+  border: 1px solid var(--border);
+  border-radius: var(--space-2);
+  margin-bottom: var(--space-6);
+  padding: var(--space-4);
+  color: var(--text-primary);
+}
+
+.results-timestamp {
+  color: var(--text-secondary);
+}
+
+.comparison-secondary {
+  color: var(--text-secondary);
 }
 
 .form-section h2,
@@ -390,7 +411,7 @@ body {
   min-height: 40px;
   padding: var(--space-2) var(--space-6);
   background: var(--accent);
-  color: #0c1220;
+  color: var(--surface);
   border: 1px solid transparent;
   border-radius: var(--space-1);
   cursor: pointer;
@@ -981,8 +1002,8 @@ textarea:focus-visible,
    Neutral styling — it is derived data, not a status. */
 .comparison-converted-tag {
   font-size: 0.7rem;
-  color: var(--text-secondary, #666);
-  border: 1px solid var(--border, #ccc);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
   border-radius: 3px;
   padding: 0 3px;
   margin-left: 4px;
@@ -1126,7 +1147,7 @@ textarea:focus-visible,
 
 .comparison-converted-hidden-tag {
   font-size: 0.7rem;
-  color: var(--text-secondary, #666);
+  color: var(--text-secondary);
   margin-left: 4px;
 }
 

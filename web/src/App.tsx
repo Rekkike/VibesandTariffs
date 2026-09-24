@@ -706,11 +706,6 @@ export const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call
   }, [port]);
   const feeLineLabel = (fee: FeeResult) => ruleNameById.get(fee.fee_rule_id) ?? fee.fee_family;
 
-  const getCsiClassColor = (csiClass: string | undefined) => {
-    if (!csiClass) return '#999';
-    const colors = { A: '#4caf50', B: '#8bc34a', C: '#ffeb3b', D: '#ff9800', E: '#f44336' };
-    return colors[csiClass as keyof typeof colors] || '#999';
-  };
 
   // Segment subtotals derived from fee_family membership (no manual tagging)
   const segmentTotals = useMemo(() => {
@@ -879,9 +874,11 @@ export const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call
                   fullWidth
                   InputLabelProps={{ shrink: true }}
                   helperText={
-                    estimatedFields.includes('nt')
-                      ? 'Estimated value from the vessel library (see source note) — editable'
-                      : !state.vessel.nt ? 'Will be estimated as 0.55 × GT' : ''
+                    estimatedFields.includes('nt') && state.vessel.nt
+                      ? `Estimated value from the vessel library (see source note) — editable · NT class ${getNetTonnageClass(state.vessel.nt)}`
+                      : !state.vessel.nt
+                        ? 'Will be estimated as 0.55 × GT'
+                        : `NT class ${getNetTonnageClass(state.vessel.nt)}`
                   }
                 />
               </Grid>
@@ -1863,42 +1860,20 @@ export const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call
               <Typography color="error">{state.error}</Typography>
             ) : state.result ? (
               <Box>
-                {/* Vessel Summary */}
-                <Box sx={{ mb: 3, p: 2, backgroundColor: '#f5f5f5', borderRadius: 1 }}>
-                  <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>Vessel Summary</Typography>
-                  <Typography>GT: {state.result.vessel_summary.gt.toLocaleString()}</Typography>
-                  <Typography>NT: {state.result.vessel_summary.nt.toLocaleString()}
-                    {state.result.vessel_summary.estimated_nt && (
-                      <span className="status-badge status-warning" style={{ marginLeft: '10px' }}>
-                        Estimated
-                      </span>
-                    )}
-                  </Typography>
-                  {state.result.vessel_summary.loa_m && (
-                    <Typography>LOA: {state.result.vessel_summary.loa_m}m</Typography>
-                  )}
-                  <Typography sx={{ mt: 1, fontSize: '0.8rem', color: '#666' }}>
-                    NT Class: {getNetTonnageClass(state.result.vessel_summary.nt)}
-                    {state.call.csi_class && (
-                      <span style={{
-                        marginLeft: '10px',
-                        padding: '2px 6px',
-                        borderRadius: '4px',
-                        backgroundColor: getCsiClassColor(state.call.csi_class),
-                        color: 'white'
-                      }}>
-                        CSI: {state.call.csi_class}
-                      </span>
-                    )}
-                  </Typography>
-                </Box>
                 {/* Vessel-access aggregate (spec v0.2.30): the sum of this
                     call's berth/terminal infrastructure + waterway/fairway
                     access + readiness/safety capacity lines, with the
                     effective per-GT derived comparability bridge and the
-                    per-rule basis notes. */}
+                    per-rule basis notes. The v0.2.51 audit removed the
+                    v0.2.51 audit removed the vessel-particulars recap (pure duplication: GT/NT/LOA live
+                    in the vessel card, CSI in its select input) and
+                    relocated its one unique datum — the NT class — to the
+                    NT field's helper text; this block is retained and
+                    themed (it was invisible in dark mode from its
+                    introduction: a hardcoded light background under themed
+                    text). */}
                 {state.result.vessel_access && (
-                  <Box sx={{ mb: 3, p: 2, backgroundColor: '#f5f5f5', borderRadius: 1 }}>
+                  <Box className="results-summary-block">
                     <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
                       Vessel Access Charges
                     </Typography>
@@ -2234,7 +2209,7 @@ export const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call
                   </Box>
                 )}
 
-                <Typography variant="body2" sx={{ mt: 2, textAlign: 'center', color: '#666' }}>
+                <Typography variant="body2" sx={{ mt: 2, textAlign: 'center' }} className="results-timestamp">
                   Calculation performed: {new Date(state.result.calculation_timestamp).toLocaleString()}
                 </Typography>
               </Box>
@@ -2506,19 +2481,19 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
           // Narrow screens (spec v0.2.39): the converted figure collapses
           // behind the view's conversion disclosure.
           conversionsVisible && (
-            <Box sx={{ fontSize: '0.75rem', color: '#666' }}>
+            <Box sx={{ fontSize: '0.75rem' }} className="comparison-secondary">
               ≈ {formatCurrency(conv.amount, 'SEK')} <span className="comparison-converted-tag">converted</span>
             </Box>
           )
         ) : (
           // Converted-secondary figure (spec v0.2.31): native primary, then
           // the converted approximation, always with its rate basis.
-          <Box sx={{ fontSize: '0.75rem', color: '#666' }}>
+          <Box sx={{ fontSize: '0.75rem' }} className="comparison-secondary">
             ≈ {formatCurrency(conv.amount, 'SEK')} <span className="comparison-converted-tag">converted</span>
           </Box>
         ))}
         {entry.effective_per_gt !== undefined && (
-          <Box sx={{ fontSize: '0.75rem', color: '#666' }}>
+          <Box sx={{ fontSize: '0.75rem' }} className="comparison-secondary">
             {entry.effective_per_gt.toFixed(2)} {entry.currency || fallbackCurrency}/GT effective — derived, not a published rate
             {conv.converted && (
               <span> (≈ {(entry.effective_per_gt * rateInfo.rate).toFixed(2)} SEK/GT converted)</span>
@@ -2526,7 +2501,7 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
           </Box>
         )}
         {entry.lines.map((line, index) => (
-          <Box key={index} sx={{ fontSize: '0.75rem', color: '#666', mt: 0.25 }}>
+          <Box key={index} sx={{ fontSize: '0.75rem', mt: 0.25 }} className="comparison-secondary">
             {line.name} · {line.biller}: {formatCurrency(line.amount, entry.currency || fallbackCurrency)}
             {line.estimated && (
               <span className="status-badge status-warning" style={{ marginLeft: '4px' }}>est.</span>
@@ -2571,7 +2546,7 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
     return (
       <Box sx={{ textAlign: 'right' }}>
         <span className="comparison-figure">{formatCurrency(nativeAmount, currency)}</span>
-        <Box sx={{ fontSize: '0.75rem', color: '#666' }}>
+        <Box sx={{ fontSize: '0.75rem' }} className="comparison-secondary">
           {'≈'} {formatCurrency(conv.amount, 'SEK')} <span className="comparison-converted-tag">converted {'—'} {formatRate(rateInfo)}</span>
         </Box>
       </Box>
@@ -2896,11 +2871,11 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
                               <Box sx={{ textAlign: 'right' }}>
                                 <span>{formatCurrency(result.vessel_access.amount, result.currency)}</span>
                                 {vaConv.converted && (
-                                  <Box sx={{ fontSize: '0.75rem', color: '#666' }}>
+                                  <Box sx={{ fontSize: '0.75rem' }} className="comparison-secondary">
                                     {'≈'} {formatCurrency(vaConv.amount, 'SEK')} <span className="comparison-converted-tag">converted {'—'} {formatRate(rateInfo)}</span>
                                   </Box>
                                 )}
-                                <Box sx={{ fontSize: '0.75rem', color: '#666' }}>
+                                <Box sx={{ fontSize: '0.75rem' }} className="comparison-secondary">
                                   {result.vessel_access.effective_per_gt.toFixed(2)} {result.currency}/GT effective — derived, not a published rate
                                   {vaConv.converted && (
                                     <span> ({'≈'} {(result.vessel_access.effective_per_gt * rateInfo.rate).toFixed(2)} SEK/GT converted)</span>
