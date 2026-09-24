@@ -104,3 +104,82 @@ charge zero on the yard surcharges; a user-entered zero is a value, not a flag.
 
 No other Gothenburg parameter is estimated: every tariff figure in the port
 file is verified against G1/G2/G3.
+
+## 7. Waste dues — compulsory base, origin split, certificate, exemption (spec v0.2.50)
+
+Source: G1 (Port Tariff 2026), "Dues for ship-generated waste" schedule, p.5;
+§§6, 10–12, pp.3–4. All quotations verbatim.
+
+**Compulsory basis.** G1 §6: "The Port of Gothenburg charges for receiving
+waste from vessels in accordance with Swedish legislation." The per-GT
+sludge and solid-waste dues therefore apply to **every calling vessel**;
+they are computed lines on every call, not opt-in services. The only relief
+is the Transport Agency exemption (below).
+
+**The split dimension is the arrival origin, never the flag.** The waste
+schedule prices:
+
+- Solid waste: "Vessels arriving from European ports 0,13 SEK/GT / Vessels
+  arriving from non-European ports 0,24 SEK / Discount with certificates
+  - 0,05 SEK/GT" — "The discount applies if the vessel is certified according
+  to Commission Implementing Regulation (EU) 2022/91."
+- Sludge: "Sludge from vessels arriving from European ports, up to 11 m³
+  0,21 SEK/GT / Sludge from vessels arriving from non-European ports, up to
+  11 m³ 0,31 SEK/GT / Sludge exceeding 11 m³ 2 400 SEK/m³" — the lay-time
+  analogue: the rate covers the included volume, the excess bills per m³.
+- Scrubber waste: "Administration fee 800 SEK" — "Scrubber waste unloaded in
+  the Port of Gothenburg will be charged at the actual cost plus an
+  administration fee." Only the 800 SEK administration fee is encoded;
+  the actual disposal cost is excluded and labeled as such.
+
+§10 defines the dimension in terms of the previous port of call:
+"Short sea shipping includes all vessels with a European port as their
+latest port of call." The tariff's own worked examples (p.11) state it the
+same way: "A vessel of 70 000 GT arrives at the Port of Gothenburg from a
+port in Europe" (European rates) and "A vessel of 12,000 GT arrives at the
+Port of Gothenburg from a port outside of Europe" (non-European rates).
+
+**Semantics fix (v0.2.50, defect).** The four waste rules were previously
+gated on `flag_state` — the wrong dimension. A US-flagged vessel arriving
+from a European port pays the European rates under the tariff; the old
+model charged the non-European rates (and the reverse for a European-flagged
+vessel arriving from outside Europe). The rules are now gated on a shared
+`arrival_origin` call input ('europe' / 'outside-europe'), default outside
+Europe (the worst case and the realistic Asia-arrival leg for the Maren
+Maersk default). The flag is retained as vessel data only; the engine's
+`flag_state` gate is retired.
+
+**§10 certificate discount (EU 2022/91).** Modeled as an explicit attestation
+input (`waste_certificate_2022_91`, default false — the worst-case posture):
+when held, −0.05 SEK/GT off the solid-waste line only, per the tariff text
+("a lower dues, SEK/GT for vessel generated solid waste… an additional
+discount of 0.05 SEK/GT is granted from the regular waste fee").
+
+**§11 non-compliance surcharge.** "A surcharge will be levied for any
+additional costs incurred by the Port Authority, or its contractors as a
+result of the port regulations not being followed." Contingent on an
+operational breach with unpublished amounts; not modeled (no rate to encode).
+
+**§12 Transport Agency exemption — documented status, deferred.** "Vessels
+that have been granted exemption from the compulsory discharge of
+ship-generated waste in Swedish ports by the Transport Agency do not pay any
+sludge or waste dues in the Port of Gothenburg." This is an explicit
+documented exemption, deliberately **not** encoded as a call input this pass:
+modeling it would let a single checkbox zero four compulsory lines, and the
+exemption is a rare, per-vessel regulatory grant (no default should imply
+it). Deferred as a considered future option; no silent assumption exists —
+the compulsory lines fire on every modeled call, and the UI's compulsory-basis
+helper names §12 as the only relief.
+
+**§10 short-sea discount note.** The §10 first sentence ("For ships in short
+sea shipping***, a discount on the waste fee is provided in the form of a
+lower dues, SEK/GT for vessel generated solid waste") describes the same
+European-rate split the schedule already prices (§10's footnote defines
+short sea shipping as the European-arrival case); it is not a separate
+subtractive discount beyond the origin split and the 2022/91 certificate.
+
+**Rotation mode — deferred.** The origin selector is shared across all ports
+per the comparison philosophy (one leg, priced identically everywhere). A
+real rotation's sequence of legs (Asia → Hamburg → Gothenburg) is out of
+scope: a per-port override is a considered future option ("rotation mode"),
+recorded in the spec's deferred list, not implemented.

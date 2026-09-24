@@ -268,6 +268,17 @@ interface AppState {
   zeroLinesExpanded: boolean;
 }
 
+// Gothenburg compulsory waste lines (spec v0.2.50): the per-GT sludge and
+// solid-waste dues are compulsory on every calling vessel per Swedish
+// legislation (tariff §6); only the Transport Agency exemption relieves them
+// (§12). These four rule ids render the compulsory-basis helper sentence.
+const WASTE_COMPULSORY_RULES = [
+  'port_gothenburg_waste_solid_eu',
+  'port_gothenburg_waste_solid_non_eu',
+  'port_gothenburg_waste_sludge_eu',
+  'port_gothenburg_waste_sludge_non_eu'
+];
+
 // Vessel presets
 const VESSEL_PRESETS = {
   feeder: { gt: 8000, nt: 4400, loa_m: 150, beam_m: 25, draft_m: 8, teu_capacity: 800 },
@@ -1051,6 +1062,27 @@ export const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call
                   </Select>
                 </FormControl>
               </Grid>
+              {/* Arrival origin (spec v0.2.50): the Gothenburg waste dues split
+                  on the previous port of call's region, not the flag. Shared
+                  across all ports per the comparison philosophy — one leg,
+                  priced identically everywhere. Default: outside Europe (the
+                  worst case and the realistic Asia-arrival leg). */}
+              <Grid item xs={12} sm={6}>
+                <FormControl fullWidth>
+                  <InputLabel>Arrival Origin</InputLabel>
+                  <Select
+                    value={state.call.arrival_origin || 'outside-europe'}
+                    onChange={(e) => handleCallChange('arrival_origin', e.target.value as 'europe' | 'outside-europe')}
+                    label="Arrival Origin"
+                  >
+                    <MenuItem value="outside-europe">From outside Europe</MenuItem>
+                    <MenuItem value="europe">From a European port</MenuItem>
+                  </Select>
+                  <FormHelperText>
+                    priced as an arrival from outside Europe — set 'From a European port' for the intra-Europe leg
+                  </FormHelperText>
+                </FormControl>
+              </Grid>
               <Grid item xs={12} sm={6}>
                 <Box display="flex" alignItems="center">
                   <TextField
@@ -1224,7 +1256,22 @@ export const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call
                       onChange={(e) => handleCallChange('sludge_extra_m3', parseFloat(e.target.value) || undefined)}
                       fullWidth
                       InputLabelProps={{ shrink: true }}
-                      helperText="2,400 SEK/m³ above the included volume; blank = none"
+                      helperText="sludge exceeding the 11 m³ included volume — 2,400 SEK/m³"
+                    />
+                  </Grid>
+                  {/* EU 2022/91 waste-certificate discount (spec v0.2.50, tariff
+                      §10): an explicit attestation — off by default per the
+                      worst-case posture; discounts the solid-waste line by
+                      0.05 SEK/GT only. */}
+                  <Grid item xs={12} sm={6}>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={state.call.waste_certificate_2022_91 || false}
+                          onChange={(e) => handleCallChange('waste_certificate_2022_91', e.target.checked)}
+                        />
+                      }
+                      label="EU 2022/91 waste certificate held (−0.05 SEK/GT off solid waste)"
                     />
                   </Grid>
                   <Grid item xs={12} sm={6}>
@@ -2082,6 +2129,15 @@ export const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call
                                                     <Box className="source-ref" sx={{ mt: 0.5 }}>
                                                       {fee.band_or_basis}
                                                     </Box>
+                                                    {/* Compulsory basis (spec v0.2.50): the Gothenburg sludge
+                                                        and solid-waste lines are compulsory per-GT charges on
+                                                        every calling vessel per Swedish legislation; only a
+                                                        Transport Agency exemption relieves them (tariff §12). */}
+                                                    {WASTE_COMPULSORY_RULES.includes(fee.fee_rule_id) && (
+                                                      <Box className="source-ref waste-compulsory-helper" sx={{ mt: 0.5 }}>
+                                                        charged to all calling vessels in accordance with Swedish legislation; only a Transport Agency exemption relieves it (tariff §12)
+                                                      </Box>
+                                                    )}
                                                   </TableCell>
                                                   <TableCell align="right" className="amount">
                                                     {formatCurrency(fee.amount)}
@@ -2630,6 +2686,15 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
               {call.terminal_operator === 'Eurogate'
                 ? 'EUROGATE (entered — published Prices and Conditions)'
                 : 'HHLA (default — the reference operator)'}
+            </span>
+            {/* Arrival origin (spec v0.2.50): a shared voyage-leg attribute —
+                held constant across ports exactly like lay time and moves;
+                the waste-dues dimension at Gothenburg. */}
+            <span className="comparison-context-item">
+              <span className="comparison-context-label">Arrival origin:</span>{' '}
+              {call.arrival_origin === 'europe'
+                ? 'From a European port (entered)'
+                : 'From outside Europe (default — the worst case; set \'From a European port\' for the intra-Europe leg)'}
             </span>
           </Box>
 

@@ -45,6 +45,14 @@ export function defaultCall(portId: string): CallInput {
     lay_time_hours: defaultProfile()!.lay_time_hours,
     calls_this_month: 1,
     flag_state: 'EU',
+    // Arrival origin (spec v0.2.50): shared leg selector, default outside
+    // Europe — the worst case for the Gothenburg waste dues and the realistic
+    // Asia-arrival leg for the Maren Maersk default (direct Asia → Hamburg /
+    // Gothenburg). The engine's fallback flag renders the scenario plainly.
+    arrival_origin: 'outside-europe',
+    // EU 2022/91 waste certificate: not held by default (worst case); an
+    // explicit attestation discounts the solid-waste line by 0.05 SEK/GT.
+    waste_certificate_2022_91: false,
     vessel_type: 'container',
     // Blank = not entered (spec v0.2.28): never a seeded score, never coerced
     // to zero. Any environmental discount requires an explicit user entry.

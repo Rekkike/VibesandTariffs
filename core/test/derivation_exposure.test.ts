@@ -231,7 +231,8 @@ describe('Derivation transparency — flat and simple structures', () => {
         containers_discharged_le20ft: 20, containers_discharged_gt20ft: 10,
         calls_this_month: 1, flag_state: 'EU', esi_score: 0, csi_class: 'A',
         fossil_free_fuel_percentage: 0, ops_usage: false, lay_up_days: 0,
-        pilotage_required: true, pilotage_hours: 2, sludge_extra_m3: 4
+        pilotage_required: true, pilotage_hours: 2, sludge_extra_m3: 4,
+        arrival_origin: 'europe'
       } as CostCalculationInput['call']
     });
     const solid = feeByRule(result, 'port_gothenburg_waste_solid_eu');
@@ -263,7 +264,7 @@ describe('Derivation transparency — flat and simple structures', () => {
 });
 
 describe('Derivation transparency — zero figure drift (the exposure never changes an amount)', () => {
-  it('default-call Grand Totals at all three ports are unchanged to the cent (v0.2.48 default vessel: Maren Maersk)', () => {
+  it('default-call Grand Totals at all three ports are unchanged to the cent (v0.2.48 default vessel: Maren Maersk; v0.2.50 re-pin: Gothenburg moved by the waste-origin dimension fix)', () => {
     const { port: g } = loadAndValidatePort(path.join(__dirname, '..', 'data', 'gothenburg_2026.yaml'));
     const { port: h } = loadAndValidatePort(path.join(__dirname, '..', 'data', 'hamburg_2026.yaml'));
     const { port: x } = loadAndValidatePort(path.join(__dirname, '..', 'data', 'helsingborg_2026.yaml'));
@@ -272,7 +273,14 @@ describe('Derivation transparency — zero figure drift (the exposure never chan
     // GT 55,000→194,849, lay time 16 h→50 h, moves 2,000→4,000, tier
     // blank→Tier II (inferred from build year 2014). Old pins:
     // GOT 1,622,145.00 / HAM 861,430.56 / HEL 4,114,795.00.
-    expect(calculatePortCallCost(g, { vessel: DEFAULT_VESSEL, call: defaultCall('gothenburg') }).total).toBe(2966132.86);
+    //
+    // v0.2.50 defect-fix re-pin (Gothenburg only): the waste dues now price
+    // the arrival origin (default outside Europe) instead of the flag (old
+    // default EU). Sludge 0.31 vs 0.21 and solid 0.24 vs 0.13 on 194,849 GT:
+    // +19,484.90 + 21,433.39 = +40,918.29 → 3,007,051.15. Hamburg and
+    // Helsingborg are unchanged — no rule at those ports ever gated on the
+    // flag, so the retirement touches nothing there.
+    expect(calculatePortCallCost(g, { vessel: DEFAULT_VESSEL, call: defaultCall('gothenburg') }).total).toBe(3007051.15);
     expect(calculatePortCallCost(h, { vessel: DEFAULT_VESSEL, call: defaultCall('hamburg') }).total).toBe(2313489.31);
     expect(calculatePortCallCost(x, { vessel: DEFAULT_VESSEL, call: defaultCall('helsingborg') }).total).toBe(8481257.40);
   });

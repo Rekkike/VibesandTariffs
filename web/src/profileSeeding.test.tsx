@@ -355,7 +355,7 @@ describe('comparison context strip: seeded profile with honest flags (spec v0.2.
   });
 });
 
-describe('default-call figures at all three ports (spec v0.2.48, deliberate contract change)', () => {
+describe('default-call figures at all three ports (spec v0.2.48, deliberate contract change; Gothenburg re-pinned v0.2.50)', () => {
   it('the new default call (Maren Maersk) prices to the pinned Grand Totals', () => {
     for (const p of [GOTHENBURG, HAMBURG]) {
       const result = require('@port-cost/core').calculatePortCallCost(
@@ -364,7 +364,11 @@ describe('default-call figures at all three ports (spec v0.2.48, deliberate cont
       );
       const total = result.total;
       if (p.metadata.id === 'gothenburg') {
-        expect(total).toBeCloseTo(2966132.86, 2);
+        // v0.2.50 defect-fix re-pin: the waste dues now price the arrival
+        // origin (default outside Europe) instead of the flag (old default
+        // EU): sludge 0.31 vs 0.21 and solid 0.24 vs 0.13 on 194,849 GT
+        // = +40,918.29 → 3,007,051.15.
+        expect(total).toBeCloseTo(3007051.15, 2);
       } else {
         expect(total).toBeCloseTo(2313489.31, 2);
       }

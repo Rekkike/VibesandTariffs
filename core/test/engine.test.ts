@@ -588,7 +588,7 @@ describe('Port Call Cost Analyzer Engine', () => {
   });
 
   describe('Applicable Conditions', () => {
-    it('should apply fee only when flag_state matches', () => {
+    it('should apply fee only when arrival_origin matches (v0.2.50 re-pin: origin replaces flag as the gating dimension; flag_state is retired and ignored)', () => {
       const port = createTestPort();
       port.fee_rules = [
         {
@@ -597,7 +597,7 @@ describe('Port Call Cost Analyzer Engine', () => {
           biller: 'Port Authority',
           name: 'EU Waste Fee',
           applicable_conditions: {
-            flag_state: 'EU'
+            arrival_origin: 'europe'
           },
           rate_structure: {
             type: 'flat',
@@ -617,17 +617,17 @@ describe('Port Call Cost Analyzer Engine', () => {
       
       const inputEu = createTestInput(
         {},
-        { flag_state: 'EU' }
+        { arrival_origin: 'europe', flag_state: 'non-EU' }
       );
       const resultEu = calculatePortCallCost(port, inputEu);
       expect(resultEu.total).toBe(500);
 
       const inputNonEu = createTestInput(
         {},
-        { flag_state: 'non-EU' }
+        { arrival_origin: 'outside-europe', flag_state: 'EU' }
       );
       const resultNonEu = calculatePortCallCost(port, inputNonEu);
-      expect(resultNonEu.total).toBe(0); // Not applicable for non-EU
+      expect(resultNonEu.total).toBe(0); // Not applicable for outside-Europe arrivals
     });
 
     it('should apply fee only when ESI score meets threshold', () => {
@@ -767,7 +767,7 @@ describe('Port Call Cost Analyzer Engine', () => {
           biller: 'Port Authority',
           name: 'EU Solid Waste',
           applicable_conditions: {
-            flag_state: 'EU'
+            arrival_origin: 'europe'
           },
           rate_structure: {
             type: 'per_unit',
@@ -788,17 +788,17 @@ describe('Port Call Cost Analyzer Engine', () => {
       
       const inputEu = createTestInput(
         { gt: 10000 },
-        { flag_state: 'EU' }
+        { arrival_origin: 'europe', flag_state: 'non-EU' }
       );
       const resultEu = calculatePortCallCost(port, inputEu);
       expect(resultEu.total).toBe(10000 * 0.13);
 
       const inputNonEu = createTestInput(
         { gt: 10000 },
-        { flag_state: 'non-EU' }
+        { arrival_origin: 'outside-europe', flag_state: 'EU' }
       );
       const resultNonEu = calculatePortCallCost(port, inputNonEu);
-      expect(resultNonEu.total).toBe(0); // Not applicable for non-EU
+      expect(resultNonEu.total).toBe(0); // Not applicable for outside-Europe arrivals
     });
   });
 
@@ -1024,6 +1024,10 @@ describe('Panamax Verification - Gothenburg 2026', () => {
       containers_discharged_gt20ft: 750,
       calls_this_month: 1,
       flag_state: 'EU',
+      // v0.2.50: the waste-dues dimension is the arrival origin; this
+      // scenario is a European-arrival call (previously expressed via
+      // flag_state alone).
+      arrival_origin: 'europe',
       esi_score: 40,
       csi_class: 'A',
       fossil_free_fuel_percentage: 0,
@@ -1067,12 +1071,12 @@ describe('Panamax Verification - Gothenburg 2026', () => {
     expect(portDuesFee?.adjustments_applied.length).toBeGreaterThan(0);
   });
 
-  it('Waste (solid, EU) should be 7,150 SEK', () => {
+  it("Waste (solid) should be 7,150 SEK for a European arrival (v0.2.50 re-pin: 55,000 GT x 0.13, origin-gated — the tariff's dimension)", () => {
     const result = calculatePortCallCost(gothenburgPort, panamaxInput);
     
     const wasteFee = result.billers
       .find(b => b.biller === 'Port of Gothenburg')
-      ?.fees.find(f => f.fee_family === 'waste');
+      ?.fees.find(f => f.fee_family === 'waste' && f.fee_rule_id === 'port_gothenburg_waste_solid_eu');
     
     expect(wasteFee).toBeDefined();
     // 55,000 GT * 0.13 SEK/GT = 7,150

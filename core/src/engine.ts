@@ -74,9 +74,32 @@ export function evaluateFeeRule(
   
   // Check if rule is applicable based on conditions
   if (rule.applicable_conditions) {
-    if (rule.applicable_conditions.flag_state && 
-        rule.applicable_conditions.flag_state !== call.flag_state) {
-      return null; // Not applicable
+    // Arrival origin (spec v0.2.50): the waste-dues split dimension is the
+    // previous port of call's region, never the flag (Port Tariff 2026
+    // "Vessels arriving from European ports"). Values 'europe' /
+    // 'outside-europe'; absent or unrecognized defaults to 'outside-europe',
+    // the worst case, and that fallback is always visible, never silent
+    // (spec 4.4.2). flag_state is no longer a gating condition: the 2026
+    // tariffs price no rule on the flag, and any data rule that still
+    // carries one is ignored with a visible notice rather than silently
+    // mis-priced on the wrong dimension.
+    if (rule.applicable_conditions.arrival_origin) {
+      const required = rule.applicable_conditions.arrival_origin;
+      const entered = call.arrival_origin;
+      const known = ['europe', 'outside-europe'];
+      const origin = entered && known.includes(entered) ? entered : 'outside-europe';
+      if (origin !== required) {
+        return null;
+      }
+      if (entered !== origin || !entered) {
+        qualityFlags.push({
+          type: 'fallback_value',
+          description: entered
+            ? `Arrival origin "${entered}" not recognized; priced as an arrival from outside Europe, the worst case (spec v0.2.50 waste-dues origin dimension)`
+            : 'Arrival origin not selected; priced as an arrival from outside Europe, the worst case — set \'From a European port\' for the intra-Europe leg (spec v0.2.50)',
+          severity: 'info'
+        });
+      }
     }
     
     if (rule.applicable_conditions.ops_usage && 
@@ -185,9 +208,17 @@ export function evaluateFeeRule(
     
     // Generic conditions: any other key must match the call input exactly
     // (e.g. hpa_berth_usage: true, berth_type: 'quay').
-    const handled = new Set(['flag_state', 'ops_usage', 'esi_score', 'csi_class', 'fuel_percentage', 'nt_class', 'vessel_type', 'ordering_lead_time_band', 'terminal_operator']);
+    const handled = new Set(['flag_state', 'arrival_origin', 'ops_usage', 'esi_score', 'csi_class', 'fuel_percentage', 'nt_class', 'vessel_type', 'ordering_lead_time_band', 'terminal_operator']);
     for (const [key, value] of Object.entries(rule.applicable_conditions)) {
       if (handled.has(key)) continue;
+      if (key === 'flag_state') {
+        qualityFlags.push({
+          type: 'fallback_value',
+          description: `Rule "${rule.id}" still carries a retired flag_state condition; flag-based gating was removed in spec v0.2.50 (the waste-dues dimension is the arrival origin) and the condition is ignored`,
+          severity: 'warning'
+        });
+        continue;
+      }
       const callValue = (call as any)[key];
       if (value === true) {
         if (callValue !== true) return null;
@@ -1132,11 +1163,31 @@ export function evaluateFeeRule(
         if (!conditionMet) continue;
       }
       
+      // Flat per-GT amount (spec v0.2.50): a tariff-denominated SEK/GT
+      // adjustment (Gothenburg waste-certificate discount, tariff §10)
+      // prices as rate x basis GT — never a percentage of the line, so a
+      // rate change on the base line cannot distort the discount.
+      if (adjustment.amount_per_gt !== undefined && ruleUnitCount !== undefined && ruleUnitRate !== undefined) {
+        // ruleUnitCount/ruleUnitRate carry the per-unit basis (GT for the
+        // waste lines); amount = per-GT rate x GT, signed by type.
+        const flatAmount = adjustment.amount_per_gt * ruleUnitCount;
+        adjustedAmount += adjustment.type === 'discount' ? -Math.abs(flatAmount) : Math.abs(flatAmount);
+        rateApplied += ` (${adjustment.type} ${adjustment.amount_per_gt} SEK/GT x ${ruleUnitCount} GT)`;
+        adjSteps.push({
+          kind: 'adjustment',
+          label: adjustment.description,
+          detail: `${adjustment.type} ${adjustment.amount_per_gt} SEK/GT x ${ruleUnitCount} GT`,
+          amount: roundToCent(adjustedAmount - beforeAdjStep)
+        });
+        adjustmentsApplied.push(adjustment);
+        continue;
+      }
+      
       if (adjustment.stack_method === 'additive') {
         if (adjustment.type === 'discount') {
-          additiveDiscountPct += adjustment.percentage;
+          additiveDiscountPct += adjustment.percentage ?? 0;
         } else if (adjustment.type === 'surcharge') {
-          additiveSurchargePct += adjustment.percentage;
+          additiveSurchargePct += adjustment.percentage ?? 0;
         }
       } else if (adjustment.apply_to === 'excess_units') {
         // Excess-units reduction (spec v0.2.37, SJÖFS 2025:5 §25): only the
@@ -1147,18 +1198,19 @@ export function evaluateFeeRule(
         if (ruleUnitCount !== undefined && ruleUnitRate !== undefined) {
           const excess = Math.max(0, ruleUnitCount - threshold);
           if (excess > 0) {
+            const pct = adjustment.percentage ?? 0;
             const excessFactor = adjustment.type === 'discount'
-              ? (1 - adjustment.percentage / 100)
-              : (1 + adjustment.percentage / 100);
+              ? (1 - pct / 100)
+              : (1 + pct / 100);
             adjustedAmount -= excess * ruleUnitRate;
             adjustedAmount += excess * ruleUnitRate * excessFactor;
-            rateApplied += ` (excess-units ${adjustment.type}: ${excess} units beyond ${threshold} at ${adjustment.percentage}%)`;
+            rateApplied += ` (excess-units ${adjustment.type}: ${excess} units beyond ${threshold} at ${pct}%)`;
           }
         }
       } else if (adjustment.type === 'discount') {
-        adjustedAmount *= (1 - adjustment.percentage / 100);
+        adjustedAmount *= (1 - (adjustment.percentage ?? 0) / 100);
       } else if (adjustment.type === 'surcharge') {
-        adjustedAmount *= (1 + adjustment.percentage / 100);
+        adjustedAmount *= (1 + (adjustment.percentage ?? 0) / 100);
       }
       
       if (adjustment.stack_method !== 'additive') {

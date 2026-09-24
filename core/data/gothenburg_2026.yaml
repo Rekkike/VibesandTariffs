@@ -122,54 +122,77 @@ fee_rules:
   # ESI >= 30 or CSI class 4 -> 10%; >= 30% fossil-free fuel -> +10% (additive
   # per the tariff's 10 + 10 wording); second call on same route -> 50%
   # (port-tariff-2026.pdf Sections 3.2-3.3).
+  # Waste dues (spec v0.2.50): the tariff's split dimension is the arrival
+  # origin — the previous port of call's region — never the flag. G1 waste
+  # schedule: "Vessels arriving from European ports 0,13 SEK/GT / Vessels
+  # arriving from non-European ports 0,24 SEK/GT; Discount with certificates
+  # -0,05 SEK/GT" (EU Implementing Regulation 2022/91 certification), sludge
+  # "Sludge from vessels arriving from European ports, up to 11 m³ 0,21 SEK/GT
+  # / Sludge from vessels arriving from non-European ports 0,31 / Sludge
+  # exceeding 11 m³ 2 400 SEK/m³". Compulsory per Swedish legislation (§6:
+  # "The Port of Gothenburg charges for receiving waste from vessels in
+  # accordance with Swedish legislation"); only the Transport Agency exemption
+  # relieves it (§12).
   - id: port_gothenburg_waste_solid_eu
     fee_family: waste
     biller: Port of Gothenburg
-    name: Solid Waste Dues - EU Vessel
-    description: "Solid waste disposal fee for EU-flagged vessels"
+    name: Solid Waste Dues - Arrival from Europe
+    description: "Solid waste dues for vessels arriving from a European port (previous port of call): 0.13 SEK/GT, compulsory for all calling vessels per Swedish legislation"
     rate_structure:
       type: per_unit
       unit_rate: 0.13
       unit_type: gt
     applicable_conditions:
-      flag_state: EU
+      arrival_origin: europe
+    adjustments:
+      - type: discount
+        amount_per_gt: 0.05
+        condition: "waste_certificate_2022_91"
+        description: "EU 2022/91 waste-certificate discount (tariff §10): -0.05 SEK/GT off the solid-waste line for certified vessels"
+        stack_method: additive
     source_reference:
       document_name: "port-tariff-2026.pdf"
       document_url: "docs/sources/sweden/gothenburg/port-authority/port-tariff-2026.pdf"
       upstream_url: "https://www.portofgothenburg.com/globalassets/dokument/port-tariff-2026.pdf"
       document_issued: "2025-12-01"
       page: 10
-      clause: "Section 4.1 - Waste Dues"
-      verified_on: "2025-12-15"
-      verified_by: "Port Cost Analyzer Team"
+      clause: "Waste dues schedule, solid waste — 'Vessels arriving from European ports 0,13 SEK/GT'; certificate discount §10"
+      verified_on: "2026-09-24"
+      verified_by: "Gothenburg waste-dues origin pass (spec v0.2.50)"
 
   - id: port_gothenburg_waste_solid_non_eu
     fee_family: waste
     biller: Port of Gothenburg
-    name: Solid Waste Dues - Non-EU Vessel
-    description: "Solid waste disposal fee for non-EU flagged vessels"
+    name: Solid Waste Dues - Arrival from outside Europe
+    description: "Solid waste dues for vessels arriving from a non-European port (previous port of call): 0.24 SEK/GT, compulsory for all calling vessels per Swedish legislation"
     rate_structure:
       type: per_unit
       unit_rate: 0.24
       unit_type: gt
     applicable_conditions:
-      flag_state: non-EU
+      arrival_origin: outside-europe
+    adjustments:
+      - type: discount
+        amount_per_gt: 0.05
+        condition: "waste_certificate_2022_91"
+        description: "EU 2022/91 waste-certificate discount (tariff §10): -0.05 SEK/GT off the solid-waste line for certified vessels"
+        stack_method: additive
     source_reference:
       document_name: "port-tariff-2026.pdf"
       document_url: "docs/sources/sweden/gothenburg/port-authority/port-tariff-2026.pdf"
       upstream_url: "https://www.portofgothenburg.com/globalassets/dokument/port-tariff-2026.pdf"
       document_issued: "2025-12-01"
       page: 10
-      clause: "Section 4.1 - Waste Dues"
-      verified_on: "2025-12-15"
-      verified_by: "Port Cost Analyzer Team"
+      clause: "Waste dues schedule, solid waste — 'Vessels arriving from non-European ports 0,24 SEK/GT'; certificate discount §10"
+      verified_on: "2026-09-24"
+      verified_by: "Gothenburg waste-dues origin pass (spec v0.2.50)"
 
-  # Sludge: EU vessel 0.21 SEK/GT up to 11 m³ then 2,400 SEK/m³
+  # Sludge: arrival from Europe 0.21 SEK/GT up to 11 m³ then 2,400 SEK/m³
   - id: port_gothenburg_waste_sludge_eu
     fee_family: waste
     biller: Port of Gothenburg
-    name: Sludge Waste Dues - EU Vessel
-    description: "Sludge waste disposal fee for EU-flagged vessels: 0.21 SEK/GT up to 11 m³, then 2,400 SEK/m³"
+    name: Sludge Waste Dues - Arrival from Europe
+    description: "Sludge dues for vessels arriving from a European port (previous port of call): 0.21 SEK/GT up to 11 m³, then 2,400 SEK/m³; compulsory for all calling vessels per Swedish legislation"
     rate_structure:
       type: banded
       basis: gt
@@ -177,25 +200,25 @@ fee_rules:
         - min: 0
           max: null
           rate: 0.21
-    # Note: The 11 m³ threshold and 2,400 SEK/m³ excess would need custom logic
-    # For now, using per-GT rate as base
+    # Note: the 11 m³ threshold and 2,400 SEK/m³ excess is carried by the
+    # dedicated excess rule below (presence-gated on sludge_extra_m3).
     applicable_conditions:
-      flag_state: EU
+      arrival_origin: europe
     source_reference:
       document_name: "port-tariff-2026.pdf"
       document_url: "docs/sources/sweden/gothenburg/port-authority/port-tariff-2026.pdf"
       upstream_url: "https://www.portofgothenburg.com/globalassets/dokument/port-tariff-2026.pdf"
       document_issued: "2025-12-01"
       page: 10
-      clause: "Section 4.2 - Sludge Waste Dues"
-      verified_on: "2025-12-15"
-      verified_by: "Port Cost Analyzer Team"
+      clause: "Waste dues schedule, sludge — 'Sludge from vessels arriving from European ports, up to 11 m³ 0,21 SEK/GT'"
+      verified_on: "2026-09-24"
+      verified_by: "Gothenburg waste-dues origin pass (spec v0.2.50)"
 
   - id: port_gothenburg_waste_sludge_non_eu
     fee_family: waste
     biller: Port of Gothenburg
-    name: Sludge Waste Dues - Non-EU Vessel
-    description: "Sludge waste disposal fee for non-EU flagged vessels: 0.31 SEK/GT up to 11 m³, then 2,400 SEK/m³"
+    name: Sludge Waste Dues - Arrival from outside Europe
+    description: "Sludge dues for vessels arriving from a non-European port (previous port of call): 0.31 SEK/GT up to 11 m³, then 2,400 SEK/m³; compulsory for all calling vessels per Swedish legislation"
     rate_structure:
       type: banded
       basis: gt
@@ -204,16 +227,16 @@ fee_rules:
           max: null
           rate: 0.31
     applicable_conditions:
-      flag_state: non-EU
+      arrival_origin: outside-europe
     source_reference:
       document_name: "port-tariff-2026.pdf"
       document_url: "docs/sources/sweden/gothenburg/port-authority/port-tariff-2026.pdf"
       upstream_url: "https://www.portofgothenburg.com/globalassets/dokument/port-tariff-2026.pdf"
       document_issued: "2025-12-01"
       page: 10
-      clause: "Section 4.2 - Sludge Waste Dues"
-      verified_on: "2025-12-15"
-      verified_by: "Port Cost Analyzer Team"
+      clause: "Waste dues schedule, sludge — 'Sludge from vessels arriving from non-European ports, up to 11 m³ 0,31 SEK/GT'"
+      verified_on: "2026-09-24"
+      verified_by: "Gothenburg waste-dues origin pass (spec v0.2.50)"
 
   # --- OPS Connection Fee ---
   # Sludge exceeding the included 11 m3: 2,400 SEK per m3

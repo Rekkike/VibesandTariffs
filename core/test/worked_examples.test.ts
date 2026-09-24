@@ -47,6 +47,13 @@ function makeCall(overrides: Record<string, unknown> = {}): CostCalculationInput
       containers_discharged_gt20ft: 0,
       calls_this_month: 1,
       flag_state: 'EU',
+      // v0.2.50: the waste-dues dimension is the arrival origin (previous
+      // port of call). The tariff's own worked examples state it plainly —
+      // WE-GOT-1 "arrives at the Port of Gothenburg from a port in Europe",
+      // WE-GOT-2 "arrives ... from a port outside of Europe". Tests that
+      // don't specify an origin fall to the outside-Europe default and gate
+      // the non-European rules; WE-GOT-1 overrides to europe.
+      arrival_origin: undefined,
       esi_score: undefined,
       csi_class: 'E',
       fossil_free_fuel_percentage: undefined,
@@ -82,9 +89,10 @@ function familyTotal(result: ReturnType<typeof calculatePortCallCost>, family: s
 
 describe('Port of Gothenburg Port Tariff 2026 — container worked examples (WE-GOT-1, WE-GOT-2)', () => {
   // Port Tariff 2026 §2.2, p.11 "Calculation models — Container vessels".
-  it('WE-GOT-1: 70,000 GT EU container vessel — dues 104,400 / sludge 14,700 / sludge excess 9,600 / solid waste 9,100 / total 137,800', () => {
+  it('WE-GOT-1: 70,000 GT container vessel arriving from a European port — dues 104,400 / sludge 14,700 / sludge excess 9,600 / solid waste 9,100 / total 137,800 (v0.2.50 re-pin: the sheet states the arrival origin, not the flag)', () => {
     const result = calculatePortCallCost(gothenburg, makeCall({
       gt: 70000, nt: 35000, loa_m: 300,
+      arrival_origin: 'europe',
       sludge_extra_m3: 4
     }));
 
@@ -122,10 +130,10 @@ describe('Port of Gothenburg Port Tariff 2026 — container worked examples (WE-
     expect(dues.adjustments_applied.some(a => a.type === 'discount' && a.percentage === 10)).toBe(true);
   });
 
-  it('WE-GOT-2: 12,000 GT non-EU container vessel with ESI ≥ 30 — dues 23,520 − 2,352 = 21,168 / sludge 3,720 / solid 2,880 / total 27,768', () => {
+  it('WE-GOT-2: 12,000 GT container vessel arriving from outside Europe with ESI ≥ 30 — dues 23,520 − 2,352 = 21,168 / sludge 3,720 / solid 2,880 / total 27,768 (v0.2.50 re-pin: the sheet states the arrival origin, not the flag)', () => {
     const result = calculatePortCallCost(gothenburg, makeCall({
       gt: 12000, nt: 0, loa_m: 140,
-      flag_state: 'non-EU',
+      arrival_origin: 'outside-europe',
       esi_score: 40
     }));
 

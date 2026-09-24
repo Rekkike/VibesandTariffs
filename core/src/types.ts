@@ -269,7 +269,11 @@ export type AdjustmentType = 'discount' | 'surcharge';
 
 export interface Adjustment {
   type: AdjustmentType;
-  percentage: number; // percentage to apply (e.g., 10 for 10%)
+  percentage?: number; // percentage to apply (e.g., 10 for 10%)
+  // Flat per-GT amount (spec v0.2.50): a tariff denominated in SEK/GT (e.g.
+  // Gothenburg's -0.05 SEK/GT waste-certificate discount, tariff §10) prices
+  // the adjustment as rate x basis GT, never as a percentage of the line.
+  amount_per_gt?: number;
   condition?: string; // condition for applying this adjustment
   stacking_order?: number; // custom stacking order
   // Excess-units reduction (spec v0.2.37, SJÖFS 2025:5 §25): the discount
@@ -400,6 +404,15 @@ export interface CallInput {
   containers_discharged_gt20ft: number;
   calls_this_month: number; // number of calls this vessel has made at this port this month
   flag_state: 'EU' | 'non-EU' | string;
+  // Arrival origin (spec v0.2.50): the Gothenburg waste dues split on the
+  // previous port of call's region (Port Tariff 2026 waste schedule:
+  // "Vessels arriving from European ports" vs "non-European ports"), not the
+  // flag. Shared across all ports per the comparison philosophy. Default
+  // 'outside-europe' = the worst case and the realistic Asia-arrival leg.
+  arrival_origin?: 'europe' | 'outside-europe';
+  // EU 2022/91 waste-certificate discount (spec v0.2.50): a boolean
+  // attestation; true discounts the Gothenburg solid-waste line by 0.05 SEK/GT.
+  waste_certificate_2022_91?: boolean;
   esi_score?: number;
   csi_class?: string;
   fossil_free_fuel_percentage?: number;
