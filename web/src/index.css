@@ -1114,35 +1114,11 @@ textarea:focus-visible,
   border-bottom: none;
 }
 
-.comparison-card-segment dt,
-.comparison-card-family dt {
-  flex: none;
-  max-width: 60%;
-}
-
-.comparison-card-segment dt {
-  font-size: var(--font-caption);
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--text-secondary);
-}
-
-.comparison-card-family dt {
-  padding-left: var(--space-4);
-  color: var(--text-secondary);
-}
-
-.comparison-card-family dd,
-.comparison-card-segment dd {
-  margin: 0;
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-}
 
 .comparison-card-total {
   border-bottom: 2px solid var(--border-strong);
   margin-bottom: var(--space-2);
+  padding-top: var(--space-3);
   padding-bottom: var(--space-3);
   font-weight: 700;
 }
@@ -1156,6 +1132,21 @@ textarea:focus-visible,
   margin: 0;
   text-align: right;
   font-variant-numeric: tabular-nums;
+}
+
+/* Mobile card vertical rhythm (spec v0.2.56) — card surface only: the
+   family-name wraps within a bounded width so a long label never crowds
+   its figure; every secondary note and the condensed derivation note
+   carry token-based separation beneath the amount they explain. */
+.comparison-card-list .comparison-card-family-name {
+  flex: none;
+  max-width: 60%;
+}
+.comparison-card-list .comparison-secondary {
+  margin-top: var(--space-1);
+}
+.comparison-card-list .comparison-derivation-condensed {
+  margin-top: var(--space-1);
 }
 
 .comparison-conversion-disclosure {

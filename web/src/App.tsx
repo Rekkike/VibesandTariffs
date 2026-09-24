@@ -2589,9 +2589,15 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
                 the full band detail stays on the per-port view. */}
             {showDerivation && line.derivation && (
               <Box component="span" className="comparison-derivation-condensed" style={{ display: 'block' }}>
-                <span className="comparison-derivation-structure">{line.derivation.structure}</span>
-                {line.derivation.composition && line.derivation.composition !== line.derivation.structure && (
-                  <span className="comparison-derivation-composition"> — {line.derivation.composition}</span>
+                {line.derivation.composition && line.derivation.composition.startsWith(`${line.derivation.structure}:`) ? (
+                  <span className="comparison-derivation-composition">{line.derivation.composition}</span>
+                ) : (
+                  <>
+                    <span className="comparison-derivation-structure">{line.derivation.structure}</span>
+                    {line.derivation.composition && line.derivation.composition !== line.derivation.structure && (
+                      <span className="comparison-derivation-composition"> — {line.derivation.composition}</span>
+                    )}
+                  </>
                 )}
               </Box>
             )}

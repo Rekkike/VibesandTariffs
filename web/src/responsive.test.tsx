@@ -351,9 +351,14 @@ describe('comparison view: condensed derivation in both layouts (spec v0.2.42)',
     await renderComparison(true);
     const condensed = container!.querySelectorAll('.comparison-derivation-condensed');
     expect(condensed.length).toBeGreaterThan(0);
-    const first = condensed[0];
-    expect(first.querySelector('.comparison-derivation-structure')).not.toBeNull();
-    expect((first.textContent ?? '')).not.toBe('');
+    // v0.2.56: the first condensed derivation is the flat-rate case whose
+    // basis now renders exactly once (composition only; the structure span
+    // is suppressed as the duplicate prefix) — a derivation carrying a
+    // structure span must also exist, so the non-flat path stays pinned.
+    const withStructure = Array.from(condensed)
+      .find(el => el.querySelector('.comparison-derivation-structure'));
+    expect(withStructure).toBeDefined();
+    expect((withStructure!.textContent ?? '')).not.toBe('');
     // Hamburg's composite port fee states its component composition —
     // the CP class of figure the transposition must never make opaque.
     const hamburgCard = Array.from(container!.querySelectorAll('.comparison-port-card'))
