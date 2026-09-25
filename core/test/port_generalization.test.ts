@@ -128,9 +128,12 @@ describe('per-port default-call data (spec v0.2.59)', () => {
 
   it('the zero-drift baselines hold through the data-driven defaults (the v0.2.53 merge and the v0.2.28 core)', () => {
     for (const [id, expected] of [
-      ['gothenburg', 3007051.15],
+      // v0.2.61 drift-reconciliation re-pin: GOT/HEL gain the godsavgift
+      // line (+268,800.00 SEK each at the default call's 80,000 derived
+      // tonnes x 3.36 kr/t); HAM unchanged.
+      ['gothenburg', 3275851.15],
       ['hamburg', 2313489.31],
-      ['helsingborg', 8481257.40]
+      ['helsingborg', 8750057.40]
     ] as const) {
       const port = loadPort(id);
       const result = calculatePortCallCost(port, { vessel: DEFAULT_VESSEL, call: defaultCall(id) });

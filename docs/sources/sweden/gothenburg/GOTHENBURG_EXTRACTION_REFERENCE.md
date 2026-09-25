@@ -183,3 +183,27 @@ per the comparison philosophy (one leg, priced identically everywhere). A
 real rotation's sequence of legs (Asia → Hamburg → Gothenburg) is out of
 scope: a per-port override is a considered future option ("rotation mode"),
 recorded in the spec's deferred list, not implemented.
+
+**Godsavgift — encoded at spec v0.2.61.** Gothenburg's own transcription
+(port-silo discipline), per the Sjöfartsverket price list "Prislista farleds-
+och lotsavgifter 2026" (the gods- och passageraravgift table, effective
+fr.o.m. 2026-01-01; related regulation Föreskrift 2025:6 om farledsavgift):
+högvärdigt gods (high-value cargo) 3.36 kr/tonne; lågvärdigt gods (low-value
+cargo) 1.67 kr/tonne. "Lastat transitgods är befriat från godsavgift" —
+loaded transit cargo is exempt (reduction application per §21 Föreskrift om
+Farledsavgifter); the call model cannot represent transit cargo, and the
+limitation is stated in the line's basis string, never silently assumed.
+Traffic-type basis (Föreskrift 2025:6, not the price list): international
+traffic is charged on loaded and discharged cargo, domestic traffic on loaded
+only; the call model cannot distinguish traffic type, so the international
+basis is the default with the assumption disclosed in the line's basis string
+("international basis assumed"), and the domestic variant is a recorded
+deferred finding. The container counts feeding the derivation already
+represent both directions (loaded + discharged), so the tonnage prices once.
+Encoded as rule sjofartsverket_godsavgift, fairway-dues family, "To reach
+the berth" stage, functional class waterway/fairway access. Cargo tonnes
+derive from the call's container counts and the shared planning weights
+(spec §4.2.5): default 14 t/20ft, 24 t/40ft (OECD 12–18 t/TEU band,
+user-adjustable, never tariff data), whole-tonne rounding (SJÖFS 16 §); the
+low-value share input defaults to 0% (100% high-value for container vessels
+per the SJÖFS commodity-code annex).

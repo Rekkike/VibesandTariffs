@@ -77,16 +77,17 @@ describe('Functional classification (spec v0.2.30)', () => {
     expect(classifyRule('hhla_security_charge')!.functional_class).toBe('cargo_throughput_levy');
   });
 
-  it('marks godsavgift-class cargo fees as throughput levies; the Gothenburg rules are encoded but compute 0 without cargo tonnage', () => {
-    expect(classifyRule('sjofartsverket_cargo_fee_high_value')!.functional_class).toBe('cargo_throughput_levy');
-    expect(classifyRule('sjofartsverket_cargo_fee_low_value')!.functional_class).toBe('cargo_throughput_levy');
+  it('classifies the godsavgift as waterway/fairway access — the cargo-based component of the national fairway due (spec v0.2.61)', () => {
+    expect(classifyRule('sjofartsverket_godsavgift')!.functional_class).toBe('waterway_fairway_access');
+    expect(classifyRule('sfv_godsavgift')!.functional_class).toBe('waterway_fairway_access');
+    // The rule fires on the default call: derived cargo tonnes at the
+    // planning weights price a real line (the v0.2.30 not-yet-encoded
+    // marking is retired by the v0.2.61 encoding).
     const got = loadPort('gothenburg_2026.yaml');
     const res = calculatePortCallCost(got, canonicalCall('gothenburg'));
-    const godsLines = res.billers.flatMap(b => b.fees).filter(f => f.fee_rule_id.startsWith('sjofartsverket_cargo_fee'));
-    // The rules exist in the file (encoded) but no cargo-tonnage input fires
-    // them: the classification table carries the not-yet-encoded marking
-    // for the fee's computation, not for the rule's existence.
-    expect(godsLines.every(l => l.amount === 0)).toBe(true);
+    const godsLine = res.billers.flatMap(b => b.fees).find(f => f.fee_rule_id === 'sjofartsverket_godsavgift');
+    expect(godsLine).toBeDefined();
+    expect(godsLine!.amount).toBeGreaterThan(0);
   });
 });
 
@@ -97,14 +98,18 @@ describe('Vessel-access aggregate (spec v0.2.30)', () => {
     expect(res.vessel_access).toBeDefined();
     expect(res.vessel_access!.rule_ids.sort()).toEqual([
       'port_gothenburg_container_vessel_dues',
+      'sjofartsverket_godsavgift',
       'sjofartsverket_readiness_fee_class8',
       'sjofartsverket_vessel_fee_class8_csi_e'
     ]);
     // Re-pinned for the v0.2.48 default vessel (deliberate change: Maren
     // Maersk 194,849 GT, NT overridden to 30,250 by canonicalCall so class 8
-    // still fires; old pin 314,590 at 55,000 GT).
-    expect(res.vessel_access!.amount).toBe(428219.20);
-    expect(res.vessel_access!.effective_per_gt).toBe(2.2);
+    // still fires; old pin 314,590 at 55,000 GT). Re-pinned again for the
+    // v0.2.61 godsavgift promotion: the aggregate gains the waterway/
+    // fairway-class godsavgift line (+268,800.00 SEK at the default call's
+    // 80,000 derived cargo tonnes x 3.36 kr/t) — 428,219.20 → 697,019.20.
+    expect(res.vessel_access!.amount).toBe(697019.20);
+    expect(res.vessel_access!.effective_per_gt).toBe(3.58);
     expect(res.vessel_access!.classes.sort()).toEqual([
       'berth_terminal_infrastructure',
       'readiness_safety_capacity',
@@ -137,14 +142,17 @@ describe('Vessel-access aggregate (spec v0.2.30)', () => {
     expect(res.vessel_access).toBeDefined();
     expect(res.vessel_access!.rule_ids.sort()).toEqual([
       'poh_port_dues',
+      'sfv_godsavgift',
       'sfv_readiness_fee_class8',
       'sfv_vessel_fee_class8_csi_e'
     ]);
     // Re-pinned for the v0.2.48 default vessel (deliberate change: Maren
     // Maersk, NT overridden to 30,250 by canonicalCall so class 8 still
-    // fires; old pin 600,690 at 55,000 GT).
-    expect(res.vessel_access!.amount).toBe(1558655.65);
-    expect(res.vessel_access!.effective_per_gt).toBe(8);
+    // fires; old pin 600,690 at 55,000 GT). Re-pinned again for the
+    // v0.2.61 godsavgift promotion (+268,800.00 SEK):
+    // 1,558,655.65 → 1,827,455.65.
+    expect(res.vessel_access!.amount).toBe(1827455.65);
+    expect(res.vessel_access!.effective_per_gt).toBe(9.38);
   });
 
   it('the aggregate nets the Sjöfartsverket frequency discount when it applies (6 calls this month)', () => {
@@ -164,7 +172,12 @@ describe('Vessel-access aggregate (spec v0.2.30)', () => {
     // alone — themselves halved by the Gothenburg 50% frequency discount on
     // port dues. Re-pinned for the v0.2.48 default vessel (deliberate
     // change: 204,279.20 → 102,139.60; old pin 45,325 at 55,000 GT).
-    expect(res.vessel_access!.amount).toBe(102139.60);
+    // Re-pinned for the v0.2.61 godsavgift promotion: the godsavgift is
+    // a cargo-based fairway due the frequency discount does not adjust
+    // (it adjusts vessel_fee + readiness only), so the aggregate now nets
+    // the halved municipal dues plus the undiscounted godsavgift line:
+    // 102,139.60 + 268,800.00 = 370,939.60.
+    expect(res.vessel_access!.amount).toBe(370939.60);
     const nationalSum = res.billers
       .flatMap(b => b.fees)
       .filter(f => [

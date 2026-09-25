@@ -371,6 +371,10 @@ export function evaluateFeeRule(
   // discount only the units beyond a threshold (SJÖFS 2025:5 §25).
   let ruleUnitCount: number | undefined = undefined;
   let ruleUnitRate: number | undefined = undefined;
+  // Cargo-tonnage derivation record (spec v0.2.61, godsavgift): captured
+  // alongside the base amount so an adjustment can reference the chargeable
+  // tonnes, and so the blended-rate derivation renders from computed values.
+  let cargoTonnes: { rawTonnes: number; roundedTonnes: number; weight20: number; weight40: number; boxes20: number; boxes40: number } | undefined = undefined;
   
   const rate = rule.rate_structure;
   
@@ -614,6 +618,28 @@ export function evaluateFeeRule(
         case 'tug_count':
           unitCount = call.tug_count ?? 0;
           break;
+        case 'cargo_tonnage_from_containers':
+          // Godsavgift cargo tonnage (spec v0.2.61): tonnes = 20ft count x
+          // avg-20 weight + 40ft count x avg-40 weight, over the
+          // international-traffic basis (loaded and discharged both — the
+          // call's four container fields). Weights are shared planning
+          // parameters, never tariff data. A zero or blank container total
+          // yields zero tonnes and the rule returns null below (renders
+          // nothing — no zero-tonne line, no division artifacts).
+          {
+            const weights = perUnit.cargo_tonnage!;
+            const w20 = (call as any)[weights.weight_20_input];
+            const w40 = (call as any)[weights.weight_40_input];
+            const weight20 = typeof w20 === 'number' && w20 >= 0 ? w20 : 0;
+            const weight40 = typeof w40 === 'number' && w40 >= 0 ? w40 : 0;
+            const boxes20 = call.containers_loaded_le20ft + call.containers_discharged_le20ft;
+            const boxes40 = call.containers_loaded_gt20ft + call.containers_discharged_gt20ft;
+            const rawTonnes = boxes20 * weight20 + boxes40 * weight40;
+            const rounded = weights.round_to_whole_tonnes ? Math.round(rawTonnes) : rawTonnes;
+            cargoTonnes = { rawTonnes, roundedTonnes: rounded, weight20, weight40, boxes20, boxes40 };
+            unitCount = rounded;
+          }
+          break;
         default:
           // Try to get from call directly
           unitCount = (call as any)[perUnit.unit_type] ?? 0;
@@ -653,8 +679,32 @@ export function evaluateFeeRule(
       
       
 
+      // Godsavgift zero-counts gate (spec v0.2.61): no container counts, no
+      // line — a zero-tonne line is a division artifact, never a rendered
+      // figure.
+      if (perUnit.cargo_tonnage && unitCount === 0) {
+        return null;
+      }
+
       let effectiveRate = perUnit.unit_rate;
       rateApplied = '';
+      if (perUnit.value_blend) {
+        // Two-rate value blend (spec v0.2.61): high-value tonnes at
+        // unit_rate, the low-value share of tonnes at low_value_rate. The
+        // share input is percent 0-100; the effective blended rate is
+        // derived and shown with the derivation.
+        const blend = perUnit.value_blend;
+        const shareRaw = (call as any)[blend.low_share_input];
+        const sharePct = typeof shareRaw === 'number' && shareRaw >= 0 && shareRaw <= 100 ? shareRaw : 0;
+        const lowShare = sharePct / 100;
+        effectiveRate = perUnit.unit_rate * (1 - lowShare) + blend.low_value_rate * lowShare;
+        rateApplied = `Per tonne: ${unitCount} tonnes x ${effectiveRate.toFixed(4)} blended (high ${perUnit.unit_rate} kr/t x ${(100 - sharePct).toFixed(2)}% + low ${blend.low_value_rate} kr/t x ${sharePct.toFixed(2)}%)`;
+        bandOrBasis = `cargo tonnes=${unitCount} (${cargoTonnes!.boxes20} x 20ft x ${cargoTonnes!.weight20} t + ${cargoTonnes!.boxes40} x 40ft x ${cargoTonnes!.weight40} t, international basis: loaded + discharged); ${blend.basis_note}`;
+        baseAmount = unitCount * effectiveRate;
+        ruleUnitCount = unitCount;
+        ruleUnitRate = roundToCent(effectiveRate);
+        break;
+      }
       if (perUnit.unit_rate_input) {
         const override = (call as any)[perUnit.unit_rate_input];
         if (typeof override === 'number' && override >= 0) {

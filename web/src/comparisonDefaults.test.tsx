@@ -122,7 +122,9 @@ describe('comparison shared-call per-port defaults (spec v0.2.53 defect fix)', (
     expect(grandTotalRow).not.toBeNull();
     const text = grandTotalRow!.textContent ?? '';
     // sv-SE grouping renders 8 481 257 (narrow no-break spaces).
-    expect(text).toContain('8\u00a0481\u00a0257');
+    // v0.2.61 drift re-pin (godsavgift promotion, expected per the
+    // directive): HEL 8,481,257.40 + 268,800.00 = 8,750,057.40.
+    expect(text).toContain('8\u00a0750\u00a0057');
     expect(text).not.toContain('8\u00a0793\u00a0257');
   });
 
@@ -200,12 +202,15 @@ describe('comparison shared-call per-port defaults (spec v0.2.53 defect fix)', (
     expect(ees!.amount).toBe(168000);
   });
 
-  it('zero drift: the comparison columns equal the pinned per-port totals at all three ports', () => {
+  it('zero drift: the comparison columns equal the pinned per-port totals at all three ports (re-pinned v0.2.61)', () => {
     const sharedCall = defaultCall('gothenburg');
     const pinned: Record<string, number> = {
-      gothenburg: 3007051.15,
+      // v0.2.61 drift re-pin (godsavgift promotion, expected per the
+      // directive): GOT and HEL each gain the 268,800.00 godsavgift line;
+      // HAM is untouched.
+      gothenburg: 3275851.15,
       hamburg: 2313489.31,
-      helsingborg: 8481257.4
+      helsingborg: 8750057.4
     };
     for (const port of LOADED_PORTS) {
       const result = calculatePortCallCost(port, {
@@ -239,7 +244,8 @@ describe('comparison shared-call per-port defaults (spec v0.2.53 defect fix)', (
     // port's card must open with its Grand Total figure (the header
     // element), the "To reach the berth" stage breakdown below it. Under
     // the spec-default merged call the Helsingborg card leads with
-    // 8,481,257.40 SEK.
+    // 8,750,057.40 SEK (v0.2.61 drift re-pin: the godsavgift adds
+    // 268,800.00 to the HEL total).
     __setMobileQueryForTests(() => true);
     const c = document.createElement('div');
     document.body.appendChild(c);
@@ -264,7 +270,7 @@ describe('comparison shared-call per-port defaults (spec v0.2.53 defect fix)', (
       const list = hel!.querySelector('.comparison-card-list')!;
       expect(list.children[0].className).toContain('comparison-card-total');
       expect(list.children[0].textContent).toContain('Grand Total');
-      expect(list.children[0].textContent).toContain('8\u00a0481\u00a0257');
+      expect(list.children[0].textContent).toContain('8\u00a0750\u00a0057');
       const firstStage = hel!.querySelector('.comparison-card-segment')!;
       expect(firstStage.textContent).toContain('To reach the berth');
       expect(

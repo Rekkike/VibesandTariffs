@@ -212,10 +212,32 @@ Extra pilot 12,620 SEK. Pilotage discount 40 percent for piloted time exceeding
 7 hours. Ordering fee (beställningsavgift) by lead time: <1 h 9,390; 1–2 h
 7,510; 2–3 h 5,635; 3–4 h 3,775; ≥4 h 1,880 SEK. Checkpoints use ≥4 h (1,880).
 
-### 4.5 Cargo fee (godsavgift) — not encoded in v1
-High-value goods 3.36 SEK/tonne, low-value 1.67 SEK/tonne. Requires a
-cargo-tonnage input the model does not have; same status as in the Gothenburg
-build. Surface as "not yet encoded" rather than estimating.
+### 4.5 Cargo fee (godsavgift) — encoded at spec v0.2.61
+Helsingborg's own transcription (port-silo discipline), per the Sjöfartsverket
+price list "Prislista farleds- och lotsavgifter 2026" (the gods- och
+passageraravgift table, effective fr.o.m. 2026-01-01; related regulation
+Föreskrift 2025:6 om farledsavgift):
+- Högvärdigt gods (high-value cargo): 3.36 kr/tonne.
+- Lågvärdigt gods (low-value cargo): 1.67 kr/tonne.
+- "Lastat transitgods är befriat från godsavgift" — loaded transit cargo is
+  exempt (reduction application per §21 Föreskrift om Farledsavgifter); the
+  call model cannot represent transit cargo, and the limitation is stated in
+  the line's basis string, never silently assumed.
+Traffic-type basis (Föreskrift 2025:6, not the price list): international
+traffic is charged on loaded and discharged cargo, domestic traffic on loaded
+only. The call model cannot distinguish traffic type; the international basis
+is the default and the assumption is disclosed in the line's basis string
+("international basis assumed"); the domestic variant is a recorded deferred
+finding. The container counts feeding the derivation already represent both
+directions (loaded + discharged), so the tonnage prices once.
+Encoded as rule sfv_godsavgift, fairway-dues family, "To reach the berth"
+stage, functional class waterway/fairway access. It stacks with the
+Port-of-Helsingborg cargo due (S1 p.6) — separate charges, both fire.
+Cargo tonnes derive from the call's container counts and the shared planning
+weights (spec §4.2.5): default 14 t/20ft, 24 t/40ft (OECD 12–18 t/TEU band,
+user-adjustable, never tariff data), whole-tonne rounding (SJÖFS 16 §);
+the low-value share input defaults to 0% (100% high-value for container
+vessels per the SJÖFS commodity-code annex).
 
 ## 5. Estimated parameters (all quality-flagged, user-overridable)
 
@@ -302,7 +324,7 @@ the two 10 percent discounts and that no other component is discounted.
 
 ## 9. Not modeled in v1 (surface as notices, do not guess)
 
-- Godsavgift (cargo fee, needs tonnage input) — "not yet encoded".
+- Godsavgift — encoded at spec v0.2.61 (§4.5 above); no longer in this list.
 - Dalshult stuffing/stripping/warehousing — outside the port's tariff, shown as
   third-party, no published rates extracted.
 - OOG handling ("as per request") — no published rate.

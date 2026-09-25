@@ -144,6 +144,7 @@ describe('Source link integrity (spec v0.2.26)', () => {
       'docs/sources/sweden/gothenburg/apm-terminals/terminal-tariff-2026-june.pdf',
       'docs/sources/sweden/gothenburg/port-authority/port-tariff-2026.pdf',
       'docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf',
+      'docs/sources/sweden/national/sjofartsverket/prislista-farleds--och-lotsavgifter-2026.pdf',
     ].sort();
     const cited = new Set<string>();
     const marked = new Set<string>();

@@ -122,14 +122,9 @@ const got: Record<string, FunctionalClassInfo> = {
     basis_note: 'Lay-up dues for occupying port infrastructure (Port Tariff 2026 lay-up schedule)',
     source: 'port-tariff-2026.pdf lay-up schedule'
   },
-  sjofartsverket_cargo_fee_high_value: {
-    functional_class: 'cargo_throughput_levy',
-    basis_note: 'Godsavgift — national cargo fee on high-value goods tonnage (Sjöfartsverket price list 2026 p.5); transit cargo exempt',
-    source: 'prislista-farleds-lotsavgifter-2026.pdf p.5'
-  },
-  sjofartsverket_cargo_fee_low_value: {
-    functional_class: 'cargo_throughput_levy',
-    basis_note: 'Godsavgift — national cargo fee on low-value goods tonnage (Sjöfartsverket price list 2026 p.5); transit cargo exempt',
+  sjofartsverket_godsavgift: {
+    functional_class: 'waterway_fairway_access',
+    basis_note: 'Godsavgift — national cargo-based fairway due, 3.36 kr/t high-value / 1.67 kr/t low-value on derived cargo tonnes (Sjöfartsverket price list 2026 p.5, Föreskrift 2025:6); international basis assumed; transit cargo exempt',
     source: 'prislista-farleds-lotsavgifter-2026.pdf p.5'
   },
   sjofartsverket_cargo_fee_passengers: {
@@ -648,6 +643,13 @@ export function classifyRule(ruleId: string): FunctionalClassInfo | undefined {
       functional_class: 'purchased_service',
       basis_note: 'Pilotage — purchased nautical service (Sjöfartsverket price list 2026 p.4)',
       source: 'prislista-farleds-lotsavgifter-2026.pdf p.4'
+    };
+  }
+  if (/^(sjofartsverket|sfv)_godsavgift$/.test(ruleId)) {
+    return {
+      functional_class: 'waterway_fairway_access',
+      basis_note: 'Godsavgift — national cargo-based fairway due, 3.36 kr/t high-value / 1.67 kr/t low-value on derived cargo tonnes (Sjöfartsverket price list 2026 p.5, Föreskrift 2025:6); international basis assumed; transit cargo exempt',
+      source: 'prislista-farleds-lotsavgifter-2026.pdf p.5'
     };
   }
   if (/^(sjofartsverket|sfv)_ordering_fee_/.test(ruleId)) {

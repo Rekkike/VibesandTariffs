@@ -338,6 +338,51 @@ export const WorkspaceInputs: React.FC<WorkspaceInputsProps> = (props) => {
                   />
                 </Box>
               </Box>
+                {profileSections.has('godsavgift_parameters') && (
+                  <Box className="godsavgift-parameters-group" component="section" aria-label="Cargo tonnage for godsavgift">
+                    <Typography variant="caption" component="h4" className="godsavgift-heading">
+                      Cargo tonnage for godsavgift (Swedish national cargo fee)
+                    </Typography>
+                    <Grid container spacing={2}>
+                      <Grid item xs={12} sm={4}>
+                        <TextField
+                          label="Avg. weight per 20' container (t)"
+                          type="number"
+                          value={state.call.cargo_weight_per_20ft ?? ''}
+                          onChange={(e) => handleCallChange('cargo_weight_per_20ft', e.target.value === '' ? undefined : parseFloat(e.target.value))}
+                          fullWidth
+                          InputLabelProps={{ shrink: true }}
+                          helperText="Suggested planning weight — user-adjustable, not tariff data (OECD 12–18 t/TEU band)"
+                        />
+                      </Grid>
+                      <Grid item xs={12} sm={4}>
+                        <TextField
+                          label="Avg. weight per 40' container (t)"
+                          type="number"
+                          value={state.call.cargo_weight_per_40ft ?? ''}
+                          onChange={(e) => handleCallChange('cargo_weight_per_40ft', e.target.value === '' ? undefined : parseFloat(e.target.value))}
+                          fullWidth
+                          InputLabelProps={{ shrink: true }}
+                          helperText="Suggested planning weight — user-adjustable, not tariff data (OECD 12–18 t/TEU band)"
+                        />
+                      </Grid>
+                      <Grid item xs={12} sm={4}>
+                        <TextField
+                          label="Low-value share of tonnage (%)"
+                          type="number"
+                          value={state.call.cargo_low_value_share ?? ''}
+                          onChange={(e) => handleCallChange('cargo_low_value_share', e.target.value === '' ? undefined : parseFloat(e.target.value))}
+                          fullWidth
+                          InputLabelProps={{ shrink: true }}
+                          helperText="Default 0% — 100% high-value for container vessels per the SJÖFS commodity-code annex; the input exists for mixed and non-container calls"
+                        />
+                      </Grid>
+                    </Grid>
+                    <Typography variant="caption" className="godsavgift-derived-note">
+                      Derived cargo tonnes: (20' loaded + 20' discharged) × avg-20 + (40' loaded + 40' discharged) × avg-40 — international basis (loaded + discharged)
+                    </Typography>
+                  </Box>
+                )}
               </DisclosureCard>
               <DisclosureCard title="Call" summary="Vessel call parameters" defaultOpen>
               {/* ============ VESSEL CALL SEGMENT INPUTS ============ */}

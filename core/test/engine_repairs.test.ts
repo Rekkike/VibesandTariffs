@@ -219,7 +219,9 @@ describe('ISSC three-state contract (spec 4.4.2 least-favourable rule; Helsingbo
     const fee = feeByRule(result, 'poh_security_fee');
     expect(fee.amount).toBe(312000);
     expect(fee.quality_flags.some(f => f.type === 'fallback_value')).toBe(false);
-    expect(result.total).toBe(8481257.4);
+    // v0.2.61 drift re-pin: the HEL default call now carries the sfv_godsavgift
+    // line (+268,800.00 SEK; 80,000 t x 3.36 kr/t).
+    expect(result.total).toBe(8750057.4);
   });
 });
 
@@ -233,7 +235,9 @@ describe('Helsingborg cargo-due adjudication (audit-confirmed; spec v0.2.53 reco
     });
     const fee = feeByRule(result, 'poh_cargo_due');
     expect(fee.amount).toBe(2500000); // 4,000 units x 625.00
-    expect(result.total).toBe(8481257.4);
+    // v0.2.61 drift re-pin: the HEL default call now carries the sfv_godsavgift
+    // line (+268,800.00 SEK; 80,000 t x 3.36 kr/t).
+    expect(result.total).toBe(8750057.4);
   });
 
   it('the unit rate is 625.00 SEK per unit (rate honesty on the line)', () => {

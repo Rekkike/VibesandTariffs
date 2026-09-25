@@ -11,9 +11,10 @@
 // tariff-derived when it is not. Zero/blank GT renders nothing.
 //
 // Pinned baselines (default Maren Maersk call, GT 194,849, default rate
-// 11.275 SEK/EUR from ports.json exchange_rates): GOT 3,007,051.15 ÷ GT
-// = 15.43 SEK/GT; HEL 8,481,257.40 ÷ GT = 43.53 SEK/GT; HAM 2,313,489.31
-// × 11.275 ÷ GT = 133.87 SEK/GT.
+// 11.275 SEK/EUR from ports.json exchange_rates; re-pinned v0.2.61 — the
+// godsavgift promotion adds 268,800.00 to GOT and HEL): GOT 3,275,851.15
+// ÷ GT = 16.81 SEK/GT; HEL 8,750,057.40 ÷ GT = 44.91 SEK/GT;
+// HAM 2,313,489.31 × 11.275 ÷ GT = 133.87 SEK/GT (untouched).
 import React from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { act } from 'react';
@@ -85,14 +86,16 @@ describe('Grand Total derived per-GT — desktop comparison (spec v0.2.58)', () 
     }
   });
 
-  it('GOT and HEL are pure division against the pinned baselines: 15.43 and 43.53 SEK/GT', async () => {
+  it('GOT and HEL are pure division against the pinned baselines: 16.81 and 44.91 SEK/GT (re-pinned v0.2.61)', async () => {
     ({ container, root } = await renderComparison(false, defaultCall('gothenburg')));
     const totalRow = Array.from(container!.querySelectorAll('.comparison-total-row'))
       .find(r => (r.textContent ?? '').includes('Grand Total'))!;
     const text = totalRow.textContent ?? '';
-    // 3,007,051.15 ÷ 194,849 = 15.4341 → 15.43; 8,481,257.40 ÷ 194,849 = 43.5290 → 43.53
-    expect(text).toContain('15.43 SEK/GT');
-    expect(text).toContain('43.53 SEK/GT');
+    // v0.2.61 drift re-pin (godsavgift promotion, expected per the
+    // directive): 3,275,851.15 ÷ 194,849 = 16.8123 → 16.81;
+    // 8,750,057.40 ÷ 194,849 = 44.9069 → 44.91.
+    expect(text).toContain('16.81 SEK/GT');
+    expect(text).toContain('44.91 SEK/GT');
   });
 
   it('HAM converts through the rate input: 133.87 SEK/GT at the default 11.275, with the derived-and-converted disclosure naming the rate dependency', async () => {
@@ -116,7 +119,7 @@ describe('Grand Total derived per-GT — desktop comparison (spec v0.2.58)', () 
       vessel: smallVessel, call: defaultCall('gothenburg')
     });
     const expected = (gotResult.total / 100000).toFixed(2);
-    expect(expected).not.toBe('15.43');
+    expect(expected).not.toBe('16.81');
     ({ container, root } = await renderComparison(false, defaultCall('gothenburg'), smallVessel));
     const totalRow = Array.from(container!.querySelectorAll('.comparison-total-row'))
       .find(r => (r.textContent ?? '').includes('Grand Total'))!;
@@ -152,7 +155,7 @@ describe('Grand Total derived per-GT — mobile comparison cards (spec v0.2.58)'
     }
     // GOT card carries the exact figure
     const got = Array.from(cards).find(c => (c.textContent ?? '').includes('Gothenburg'))!;
-    expect(got.querySelector('.comparison-card-total')!.textContent).toContain('15.43 SEK/GT');
+    expect(got.querySelector('.comparison-card-total')!.textContent).toContain('16.81 SEK/GT');
   });
 
   it('the mobile converted collapse (spec v0.2.39) hides the converted Hamburg per-GT behind the disclosure', async () => {
@@ -181,8 +184,9 @@ describe('Grand Total derived per-GT — OPS honesty (spec v0.2.58)', () => {
       expect(cell.textContent).toContain('derived, not a published rate');
     }
     // and the arithmetic holds against the presented (OPS-inclusive) totals:
-    // GOT (3,007,051.15 + 32,609.90) ÷ 194,849 = 15.60 SEK/GT
-    const gotCell = Array.from(perGtCells).find(c => (c.textContent ?? '').startsWith('15.60'))!;
+    // GOT (3,275,851.15 + 32,609.90) ÷ 194,849 = 16.98 SEK/GT
+    // (v0.2.61 drift re-pin: the godsavgift moves the base to 3,275,851.15)
+    const gotCell = Array.from(perGtCells).find(c => (c.textContent ?? '').startsWith('16.98'))!;
     expect(gotCell).toBeDefined();
   });
 

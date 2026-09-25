@@ -52,9 +52,12 @@ describe('OPS speculative inputs — zero-drift baseline (spec v0.2.57)', () => 
   // blank the results are byte-identical to the pre-OPS engine.
   it('blank OPS renders no block and changes no total (pinned baselines hold exactly)', () => {
     const pinned: Record<string, number> = {
-      gothenburg: 3007051.15,
+      // v0.2.61 drift re-pin (godsavgift promotion, expected per the
+      // directive): GOT and HEL each gain the 268,800.00 godsavgift line;
+      // HAM is untouched.
+      gothenburg: 3275851.15,
       hamburg: 2313489.31,
-      helsingborg: 8481257.4
+      helsingborg: 8750057.4
     };
     for (const [id, expected] of Object.entries(pinned)) {
       const result = calculatePortCallCost(portById(id), {
@@ -313,12 +316,15 @@ describe('OPS speculative inputs — web surfaces (spec v0.2.57)', () => {
     });
   });
 
-  it('the comparison zero-drift baseline holds with blank OPS at all three ports', async () => {
+  it('the comparison baseline holds with blank OPS at all three ports (re-pinned v0.2.61)', async () => {
+    // v0.2.61 drift re-pin (godsavgift promotion, expected per the
+    // directive): GOT and HEL each gain the 268,800.00 godsavgift line;
+    // HAM is untouched.
     await renderComparison(defaultCall('gothenburg'), false);
     const grandTotalRow = Array.from(container!.querySelectorAll('.comparison-total-row'))
       .find(r => (r.textContent ?? '').includes('Grand Total'))!;
-    expect(grandTotalRow.textContent).toContain('3\u00A0007\u00A0051');
-    expect(grandTotalRow.textContent).toContain('8\u00A0481\u00A0257');
+    expect(grandTotalRow.textContent).toContain('3\u00A0275\u00A0851');
+    expect(grandTotalRow.textContent).toContain('8\u00A0750\u00A0057');
     expect(grandTotalRow.textContent).toContain('2\u00A0313\u00A0489');
   });
 });

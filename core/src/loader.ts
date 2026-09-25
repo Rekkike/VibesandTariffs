@@ -343,6 +343,41 @@ export function validateRateStructure(
           path: 'rate_structure.unit_type'
         });
       }
+
+      // Cargo-tonnage derivation (spec v0.2.61): the two weight inputs are
+      // mandatory when the derivation is declared - a missing input name
+      // would silently price tonnes at zero-weight.
+      if (perUnit.cargo_tonnage) {
+        if (!perUnit.cargo_tonnage.weight_20_input || !perUnit.cargo_tonnage.weight_40_input) {
+          errors.push({
+            rule_id: ruleId,
+            message: 'Cargo tonnage derivation missing weight input names',
+            severity: 'error',
+            path: 'rate_structure.cargo_tonnage'
+          });
+        }
+      }
+
+      // Value blend (spec v0.2.61): the low-value rate and share input are
+      // mandatory when the blend is declared.
+      if (perUnit.value_blend) {
+        if (typeof perUnit.value_blend.low_value_rate !== 'number' || perUnit.value_blend.low_value_rate < 0) {
+          errors.push({
+            rule_id: ruleId,
+            message: 'Value blend missing or invalid low_value_rate',
+            severity: 'error',
+            path: 'rate_structure.value_blend.low_value_rate'
+          });
+        }
+        if (!perUnit.value_blend.low_share_input) {
+          errors.push({
+            rule_id: ruleId,
+            message: 'Value blend missing low_share_input',
+            severity: 'error',
+            path: 'rate_structure.value_blend.low_share_input'
+          });
+        }
+      }
       break;
     }
     

@@ -177,7 +177,9 @@ describe('per-port total strip leads with the Grand Total (spec v0.2.54)', () =>
     const main = strip!.querySelector('.total-strip-main');
     expect(main).not.toBeNull();
     expect((main!.textContent ?? '')).toContain('Grand Total');
-    expect((main!.textContent ?? '')).toContain('3\u00a0007\u00a0051');
+    // v0.2.61 drift re-pin (godsavgift promotion, expected per the
+    // directive): GOT 3,007,051.15 + 268,800.00 = 3,275,851.15.
+    expect((main!.textContent ?? '')).toContain('3\u00a0275\u00a0851');
     const firstSegment = strip!.querySelector('.total-strip-segment');
     expect(firstSegment).not.toBeNull();
     expect(
@@ -186,10 +188,13 @@ describe('per-port total strip leads with the Grand Total (spec v0.2.54)', () =>
   });
 });
 
-describe('zero figure drift against the v0.2.50 baseline (spec v0.2.51)', () => {
-  it('default-call totals are unchanged to the cent at all three ports', () => {
-    expect(engineTotal('gothenburg')).toBe(3007051.15);
+describe('default-call totals against the pinned baselines (spec v0.2.50; re-pinned v0.2.61)', () => {
+  it('default-call totals hold to the cent at all three ports (v0.2.61 drift: GOT and HEL gain the godsavgift)', () => {
+    // v0.2.61 drift re-pin (godsavgift promotion, expected per the
+    // directive): GOT 3,007,051.15 + 268,800.00 = 3,275,851.15;
+    // HEL 8,481,257.40 + 268,800.00 = 8,750,057.40; HAM untouched.
+    expect(engineTotal('gothenburg')).toBe(3275851.15);
     expect(engineTotal('hamburg')).toBe(2313489.31);
-    expect(engineTotal('helsingborg')).toBe(8481257.4);
+    expect(engineTotal('helsingborg')).toBe(8750057.4);
   });
 });

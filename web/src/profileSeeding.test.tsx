@@ -369,7 +369,10 @@ describe('default-call figures at all three ports (spec v0.2.48, deliberate cont
         // origin (default outside Europe) instead of the flag (old default
         // EU): sludge 0.31 vs 0.21 and solid 0.24 vs 0.13 on 194,849 GT
         // = +40,918.29 → 3,007,051.15.
-        expect(total).toBeCloseTo(3007051.15, 2);
+        // v0.2.61 drift re-pin (godsavgift promotion, expected per the
+        // directive): the Swedish national cargo-based fairway due adds
+        // 268,800.00 (80,000 t × 3.36 kr/t) → 3,275,851.15.
+        expect(total).toBeCloseTo(3275851.15, 2);
       } else {
         expect(total).toBeCloseTo(2313489.31, 2);
       }

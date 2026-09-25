@@ -139,6 +139,30 @@ export interface PerUnitRate {
   default_by_loa?: {         // suggested count by LOA class (spec 3.3: defaults are data, user-overridable)
     bands: { min_m?: number; max_m?: number; count: number; description?: string }[];
   };
+  // Cargo-tonnage derivation from container counts (spec v0.2.61, the
+  // godsavgift encoding): tonnes = 20ft count x weight_20_input + 40ft count
+  // x weight_40_input, charged over the international-traffic basis (loaded
+  // and discharged, per the Sjöfartsverket regulation's traffic-type charge
+  // basis). The weight inputs are shared planning weights, never tariff data;
+  // their defaults and disclosure live in the data rule. A zero or blank
+  // container total renders nothing: no zero-tonne line, no division
+  // artifacts (the rule returns null before any amount exists).
+  cargo_tonnage?: {
+    weight_20_input: string;   // call input: average weight per 20ft container
+    weight_40_input: string;   // call input: average weight per 40ft container
+    round_to_whole_tonnes: boolean; // SJÖFS 16 §: chargeable tonnage rounds to the nearest whole tonne
+  };
+  // Two-rate value blend (spec v0.2.61): high_value_rate is the per_unit
+  // unit_rate; the low-value share input carries the share of tonnage priced
+  // at low_value_rate. The blended effective rate is derived on the line
+  // (e.g. 25% low -> 2.94 kr/tonne) with the derivation shown; the share
+  // default is 0 (100% high-value for container vessels per the SJÖFS
+  // commodity-code annex).
+  value_blend?: {
+    low_value_rate: number;
+    low_share_input: string;   // call input: low-value share, percent 0-100
+    basis_note: string;       // rendered basis: rates, traffic basis, transit limitation
+  };
 }
 
 export interface BandedByTimeRate {
@@ -562,6 +586,17 @@ export interface CallInput {
   // ports.json or any rate table; blank contributes nothing and renders
   // nothing. Each entered component renders under an explicit
   // "user-specified, not tariff-derived" label.
+  // Sjöfartsverket godsavgift cargo-technical inputs (spec v0.2.61): shared,
+  // currency-neutral, port-agnostic planning parameters for the Swedish
+  // national cargo fee. Visible only where a godsavgift charges (the Swedish
+  // workspaces). They behave like ops_kwh_consumption: shared across ports,
+  // surviving switches until refresh or the per-workspace reset (never in
+  // any port's reset_fields). Defaults 14 t / 24 t / 0% are suggested
+  // planning weights, never tariff data (OECD 12-18 t/TEU band for the
+  // defaults; SJÖFS commodity-code annex for the 100% high-value default).
+  cargo_weight_per_20ft?: number;  // average weight per 20ft container, tonnes
+  cargo_weight_per_40ft?: number;  // average weight per 40ft container, tonnes
+  cargo_low_value_share?: number;   // low-value share of tonnage, percent 0-100
   ops_kwh_consumption?: number;   // shared enabling input: estimated kWh for the call; without it no electricity line
   ops_electricity_price?: number; // user's assumed electricity price (SEK/kWh Sweden; EUR/kWh Hamburg)
   ops_demand_charge?: number;     // user's assumed demand charge, flat per call (SEK; Sweden only)

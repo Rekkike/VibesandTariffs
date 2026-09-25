@@ -61,7 +61,8 @@ describe('charge-type mapping (spec v0.2.52)', () => {
     expect(chargeTypeForRule('poh_cargo_due')).toBe('cargo_dues');
     // Neighbors that must NOT map (different economic animals):
     expect(chargeTypeForRule('hpa_port_fee')).toBeNull();
-    expect(chargeTypeForRule('sjofartsverket_cargo_fee_high_value')).toBeNull(); // needs a cargo-tonnage input; stays in its family row
+    expect(chargeTypeForRule('sjofartsverket_godsavgift')).toBe('fairway_dues'); // cargo-based national fairway due (spec v0.2.61), rides the Fairway dues line
+    expect(chargeTypeForRule('sfv_godsavgift')).toBe('fairway_dues');
     expect(chargeTypeForRule('hhla_container_service_gassing_20ft')).toBeNull(); // a container service, not a cargo due
     expect(chargeTypeForRule('poh_ees')).toBeNull();
     expect(chargeTypeForRule('hhla_container_handling')).toBeNull();
@@ -271,12 +272,15 @@ describe('zero-line suppression (spec v0.2.52)', () => {
   });
 });
 
-describe('zero figure drift and theme discipline stand (spec v0.2.50/v0.2.51)', () => {
-  it('default-call totals are unchanged to the cent at all three ports', () => {
+describe('default-call totals and theme discipline stand (spec v0.2.50/v0.2.51; re-pinned v0.2.61)', () => {
+  it('default-call totals hold to the cent at all three ports (v0.2.61 drift: GOT and HEL gain the godsavgift)', () => {
+    // v0.2.61 drift re-pin (godsavgift promotion, expected per the
+    // directive): GOT 3,007,051.15 + 268,800.00 = 3,275,851.15;
+    // HEL 8,481,257.40 + 268,800.00 = 8,750,057.40; HAM untouched.
     for (const [portId, expected] of [
-      ['gothenburg', 3007051.15],
+      ['gothenburg', 3275851.15],
       ['hamburg', 2313489.31],
-      ['helsingborg', 8481257.40]
+      ['helsingborg', 8750057.40]
     ] as const) {
       const port = LOADED_PORTS.find(p => p.metadata.id === portId)!;
       const result = calculatePortCallCost(port, {

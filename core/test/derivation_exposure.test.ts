@@ -280,9 +280,15 @@ describe('Derivation transparency — zero figure drift (the exposure never chan
     // +19,484.90 + 21,433.39 = +40,918.29 → 3,007,051.15. Hamburg and
     // Helsingborg are unchanged — no rule at those ports ever gated on the
     // flag, so the retirement touches nothing there.
-    expect(calculatePortCallCost(g, { vessel: DEFAULT_VESSEL, call: defaultCall('gothenburg') }).total).toBe(3007051.15);
+    // v0.2.61 drift-reconciliation re-pin (godsavgift promotion, expected
+    // per the directive): GOT and HEL each gain the Sjöfartsverket godsavgift
+    // line at the default call's derived cargo tonnage — 80,000 t (1,600 x
+    // 20ft x 14 t + 2,400 x 40ft x 24 t) x 3.36 kr/t = 268,800.00 SEK — so
+    // GOT 3,007,051.15 → 3,275,851.15 and HEL 8,481,257.40 → 8,750,057.40.
+    // HAM is untouched: no Swedish national due levies at Hamburg.
+    expect(calculatePortCallCost(g, { vessel: DEFAULT_VESSEL, call: defaultCall('gothenburg') }).total).toBe(3275851.15);
     expect(calculatePortCallCost(h, { vessel: DEFAULT_VESSEL, call: defaultCall('hamburg') }).total).toBe(2313489.31);
-    expect(calculatePortCallCost(x, { vessel: DEFAULT_VESSEL, call: defaultCall('helsingborg') }).total).toBe(8481257.40);
+    expect(calculatePortCallCost(x, { vessel: DEFAULT_VESSEL, call: defaultCall('helsingborg') }).total).toBe(8750057.40);
   });
 });
 

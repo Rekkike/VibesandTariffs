@@ -26,13 +26,14 @@
 //   line prices "goods in containers, on loading platforms, a trailer or
 //   other cargo carrier" at 625.00 SEK per unit - unitized container
 //   calls pay it; the "with the exception of unitized goods" opening
-//   governs the conventional/tonnage rates, not this line). Gothenburg's
-//   Sjofartsverket godsavgift rules exist in data but need a
-//   cargo-tonnage input the call does not carry - they stay in their
-//   existing segment (standing "not yet encoded" deferral, per-port
-//   view only; they are never cargo-per-container dues). Hamburg levies
-//   no cargo due (its cargo_fee-family rules are container *services*
-//   under Quay Tariff section 8, not cargo dues).
+//   governs the conventional/tonnage rates, not this line). The Swedish
+//   Sjofartsverket godsavgift (spec v0.2.61: cargo-based component of
+//   the national farledsavgift, Foreskrift 2025:6) is a *fairway* due by
+//   its funding statute, not a port cargo due - it rides the Fairway
+//   dues line above and stacks with Helsingborg's Port Dues Cargo as
+//   separate charges. Hamburg levies no cargo due (its cargo_fee-family
+//   rules are container *services* under Quay Tariff section 8, not
+//   cargo dues).
 
 export type ChargeTypeId = 'fairway_dues' | 'berth_dues' | 'cargo_dues';
 
@@ -69,6 +70,7 @@ export const CHARGE_TYPE_LINES: ChargeTypeLine[] = [
 const FAIRWAY_RULE_PATTERNS: RegExp[] = [
   /^(sjofartsverket|sfv)_vessel_fee_/,
   /^(sjofartsverket|sfv)_readiness_fee_/,
+  /^(sjofartsverket|sfv)_godsavgift$/,
   /frequency_discount/
 ];
 

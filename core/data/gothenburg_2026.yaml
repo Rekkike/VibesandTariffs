@@ -1456,44 +1456,47 @@ fee_rules:
 
 
 
-  # --- Cargo Fee (Godsavgift) ---
-  - id: sjofartsverket_cargo_fee_high_value
-    fee_family: cargo_fee
+  # --- Cargo Fee (Godsavgift) — Sjöfartsverket national cargo-based fairway due (spec v0.2.61) ---
+  # Gods- och passageraravgift, the cargo-based component of the national
+  # farledsavgift (Föreskrift 2025:6 om farledsavgift: beredskapsavgift +
+  # fartygsbaserad + gods-/passagerarbaserad farledsavgift). Encoded as one
+  # blended rule: high-value tonnes at 3.36 kr/t, the low-value share at
+  # 1.67 kr/t (price list 2026 p.5, effective 2026-01-01). Cargo tonnage is
+  # derived from the call's container counts x the shared planning weights
+  # (user-adjustable, never tariff data; tonnes round to the nearest whole
+  # tonne per the SJÖFS 16 § rounding rule). Traffic basis: international
+  # traffic charges loaded and discharged — the call's four container
+  # fields — assumed as the default (disclosed in the basis string); the
+  # domestic variant (loaded only) is a recorded finding. Transit cargo is
+  # exempt (price list: loaded transit goods are exempt from godsavgift;
+  # refund per §21); the call model cannot represent transit cargo — the
+  # limitation is disclosed in the basis string.
+  - id: sjofartsverket_godsavgift
+    fee_family: fairway_dues
     biller: Sjöfartsverket
-    name: Cargo Fee - High Value Goods
-    description: "Cargo fee for high-value goods. Transit cargo is exempt."
+    name: Cargo Fee (Godsavgift)
+    description: "National cargo-based fairway due: 3.36 kr/tonne high-value, 1.67 kr/tonne low-value; transit cargo exempt."
     rate_structure:
       type: per_unit
       unit_rate: 3.36
-      unit_type: ton
+      unit_type: cargo_tonnage_from_containers
+      cargo_tonnage:
+        weight_20_input: cargo_weight_per_20ft
+        weight_40_input: cargo_weight_per_40ft
+        round_to_whole_tonnes: true
+      value_blend:
+        low_value_rate: 1.67
+        low_share_input: cargo_low_value_share
+        basis_note: "godsavgift 3.36 kr/t high-value / 1.67 kr/t low-value (2026 price list p.5, Föreskrift 2025:6); international basis assumed (loaded + discharged; domestic = loaded only); transit cargo exempt — not representable in the call model"
     source_reference:
       document_name: "prislista-farleds-lotsavgifter-2026.pdf"
-      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
+      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds--och-lotsavgifter-2026.pdf"
       upstream_url: "https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf"
       document_issued: "2025-11-01"
       page: 5
-      clause: "Godsavgift - High Value"
-      verified_on: "2025-12-10"
-      verified_by: "Port Cost Analyzer Team"
-
-  - id: sjofartsverket_cargo_fee_low_value
-    fee_family: cargo_fee
-    biller: Sjöfartsverket
-    name: Cargo Fee - Low Value Goods
-    description: "Cargo fee for low-value goods. Transit cargo is exempt."
-    rate_structure:
-      type: per_unit
-      unit_rate: 1.67
-      unit_type: ton
-    source_reference:
-      document_name: "prislista-farleds-lotsavgifter-2026.pdf"
-      document_url: "docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf"
-      upstream_url: "https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf"
-      document_issued: "2025-11-01"
-      page: 5
-      clause: "Godsavgift - Low Value"
-      verified_on: "2025-12-10"
-      verified_by: "Port Cost Analyzer Team"
+      clause: "Gods- och passageraravgift — Högvärdigt gods 3,36 kr/ton; Lågvärdigt gods 1,67 kr/ton; lastat transitgods befriat"
+      verified_on: "2026-09-25"
+      verified_by: "vibe-session-godsavgift"
 
   - id: sjofartsverket_cargo_fee_passengers
     fee_family: cargo_fee
@@ -2770,5 +2773,7 @@ input_profile:
   fields:
     - clean_shipping_index
   sections:
+    - id: godsavgift_parameters
+      heading: Cargo tonnage for godsavgift (planning weights)
     - id: gothenburg_ancillary
       heading: Gothenburg Ancillary Services (optional)

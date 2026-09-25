@@ -57,6 +57,16 @@ export function defaultCall(portId: string): CallInput {
     lay_time_hours: defaultProfile()!.lay_time_hours,
     calls_this_month: 1,
     flag_state: 'EU',
+    // Godsavgift cargo-technical planning inputs (spec v0.2.61): shared,
+    // currency-neutral, visible only where a godsavgift charges. The 14/24 t
+    // defaults are suggested planning weights, never tariff data (OECD
+    // 12-18 t/TEU band); the 0% low-value default is the 100% high-value
+    // container-vessel posture per the SJÖFS commodity-code annex. They
+    // behave like the profile's container counts: shared across ports,
+    // never in any port's reset_fields.
+    cargo_weight_per_20ft: 14,
+    cargo_weight_per_40ft: 24,
+    cargo_low_value_share: 0,
     // Arrival origin (spec v0.2.50): shared leg selector, default outside
     // Europe — the worst case for the Gothenburg waste dues and the realistic
     // Asia-arrival leg for the Maren Maersk default (direct Asia → Hamburg /
