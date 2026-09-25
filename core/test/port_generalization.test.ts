@@ -22,8 +22,10 @@
 //    data cannot pass these).
 import {
   DEFAULT_VESSEL,
+  allPortResetFields,
   defaultCall,
   opsComponentsForPort,
+  portResetFields,
   registerPortData,
   registerPortDefinition,
   __clearPortDataRegistry,
@@ -282,5 +284,113 @@ describe('registry mechanics (spec v0.2.59)', () => {
       registerPortDefinition(loadPort(id));
     }
     expect(defaultCall('gothenburg').towage_cost_per_tug).toBe(60000);
+  });
+});
+
+// Port-specific reset fields (spec v0.2.60, refactor pass 2 item 3).
+//
+// The last hand-kept per-port array (the web's PORT_SPECIFIC_CALL_FIELDS)
+// is data now: each port's input_profile declares its reset_fields, the
+// App reset effect iterates the registry union, and a new port's reset
+// fields ship with its authoring.
+//
+// Pins:
+//  - per-port exactness: each real port declares exactly its own reset
+//    fields - the lists are derived from each port's rendered inputs and
+//    tariff-specific call parameters, not copied around;
+//  - union equality: the union across the registry equals the retired
+//    hand-kept array exactly (both directions), so the reset behavior is
+//    byte-equivalent to the code-authored array it replaces;
+//  - loud failure: an unregistered port throws at portResetFields - never
+//    a silent reset of nothing (the silent-failure defect class);
+//  - generalization: the never-committed fixture port's reset fields join
+//    the union with zero code edit - a new port is a data edit.
+describe('port-specific reset fields (spec v0.2.60)', () => {
+  const EXPECTED_RESET_FIELDS: Record<string, string[]> = {
+    gothenburg: [
+      'engine_tier', 'engine_tier_estimated', 'clean_shipping_index_class',
+      'towage_cost_per_tug', 'tug_count', 'csi_class',
+      'fossil_free_fuel_percentage', 'pilotage_hours', 'pilotage_extra_pilot',
+      'pilotage_ordering_lead_time_hours', 'hatch_cover_count',
+      'gearbox_count', 'lay_up_days', 'ops_electricity_price',
+      'ops_demand_charge', 'ops_connection_charge', 'ops_per_gt_charge'
+    ],
+    hamburg: [
+      'engine_tier', 'engine_tier_estimated', 'esi_noise_score',
+      'towage_amount', 'handling_rate_per_move', 'gangway_class',
+      'gangway_count', 'gangway_supervision_hours', 'hpa_berth_usage',
+      'berth_type', 'berth_hours', 'quantum_prior_year_gt',
+      'pilotage_segment_pct', 'waste_short_sea_reduction',
+      'waste_alternative_fuel_reduction', 'waste_sustainable_waste_reduction',
+      'ops_electricity_price', 'ops_demand_charge', 'ops_connection_charge',
+      'ops_per_gt_charge'
+    ],
+    helsingborg: [
+      'engine_tier', 'engine_tier_estimated', 'esi_score', 'esi_noise_score',
+      'issc_valid', 'clean_shipping_index_class', 'ees_rate_per_move',
+      'towage_cost_per_tug', 'tug_count', 'csi_class',
+      'fossil_free_fuel_percentage', 'pilotage_hours', 'pilotage_extra_pilot',
+      'pilotage_ordering_lead_time_hours', 'hatch_cover_count',
+      'gearbox_count', 'lay_up_days', 'ops_electricity_price',
+      'ops_demand_charge', 'ops_connection_charge', 'ops_per_gt_charge'
+    ]
+  };
+
+  it('each real port declares exactly its own reset_fields (per-port exactness)', () => {
+    for (const id of PORT_IDS) {
+      expect(portResetFields(id)).toEqual(EXPECTED_RESET_FIELDS[id]);
+    }
+  });
+
+  it('the registry union equals the retired hand-kept array exactly (both directions)', () => {
+    // The PORT_SPECIFIC_CALL_FIELDS array as it stood at spec v0.2.59
+    // (web/src/App.tsx): the reset contract this data replaces.
+    const legacy = [
+      'engine_tier', 'engine_tier_estimated', 'esi_score', 'esi_noise_score',
+      'issc_valid', 'clean_shipping_index_class', 'ees_rate_per_move',
+      'towage_cost_per_tug', 'tug_count', 'quantum_prior_year_gt',
+      'pilotage_segment_pct', 'towage_amount', 'handling_rate_per_move',
+      'gangway_class', 'gangway_count', 'gangway_supervision_hours',
+      'hpa_berth_usage', 'berth_type', 'berth_hours',
+      'waste_short_sea_reduction', 'waste_alternative_fuel_reduction',
+      'waste_sustainable_waste_reduction', 'csi_class',
+      'fossil_free_fuel_percentage', 'pilotage_hours', 'pilotage_extra_pilot',
+      'pilotage_ordering_lead_time_hours', 'hatch_cover_count',
+      'gearbox_count', 'lay_up_days', 'ops_electricity_price',
+      'ops_demand_charge', 'ops_connection_charge', 'ops_per_gt_charge'
+    ];
+    const union = allPortResetFields();
+    expect([...union].sort()).toEqual([...legacy].sort());
+    expect(union.length).toBe(legacy.length);
+  });
+
+  it('loud failure: portResetFields throws for an unregistered port - never a silent reset of nothing', () => {
+    expect(() => portResetFields('dk_aarhus')).toThrow(/no port data registered for 'dk_aarhus'/);
+  });
+
+  it('a new port\'s reset fields join the union with no code edit (the test-fixture port, never committed)', () => {
+    const fixtureWithResets: PortDefinition = {
+      ...FIXTURE_PORT,
+      input_profile: {
+        ...FIXTURE_PORT.input_profile!,
+        reset_fields: ['towage_cost_per_tug', 'ees_rate_per_move', 'dkk_harbour_dues']
+      }
+    };
+    registerPortDefinition(fixtureWithResets);
+    expect(portResetFields('fixture_port')).toEqual(['towage_cost_per_tug', 'ees_rate_per_move', 'dkk_harbour_dues']);
+    expect(allPortResetFields()).toContain('dkk_harbour_dues');
+    // Re-register the real fixture without reset fields: registry restored.
+    registerPortDefinition(FIXTURE_PORT);
+    expect(portResetFields('fixture_port')).toEqual([]);
+  });
+
+  it('red proof: a hand-kept array ignoring the data must fail - App.tsx no longer declares one', () => {
+    const appSource = fs.readFileSync(path.join(__dirname, '..', '..', 'web', 'src', 'App.tsx'), 'utf8');
+    expect(appSource).not.toMatch(/PORT_SPECIFIC_CALL_FIELDS/);
+    // The union must be derived from the registry at the call site, not
+    // merely imported: a hardcoded array substituted for the call turns
+    // this pin red.
+    expect(appSource).toMatch(/allPortResetFields\(\)/);
+    expect(appSource).not.toMatch(/portSpecificCallFields\s*=\s*\[/);
   });
 });

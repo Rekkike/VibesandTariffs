@@ -185,19 +185,32 @@ describe('OPS component descriptor — per-port shape (spec v0.2.57)', () => {
     expect(c.electricity.currency).toBe('SEK');
   });
 
-  it('the descriptor is configuration only — no OPS rates or price inputs enter ports.json (pin revised at v0.2.59, stated in the spec)', () => {
+  it('the descriptor is configuration only — no OPS rates or price inputs enter ports.json (pin revised at v0.2.59, letter clarified at v0.2.60, stated in the spec)', () => {
     // v0.2.57 pinned "nothing OPS enters ports.json". v0.2.59 revises the
     // contract, not weakens it: the OPS component *descriptor* (presence,
     // currency, unit - configuration, never rates) is now data in each
     // port's YAML and flows into ports.json like every other port
     // configuration section. What remains banned - the pin's intent - is
-    // any OPS *rate* or user-price input name: the numbers live only in
-    // the call input, never in the registry or any rate table.
-    const raw = JSON.stringify(portsRegistry);
-    expect(raw).not.toMatch(/ops_electricity_price/);
-    expect(raw).not.toMatch(/ops_demand_charge/);
-    expect(raw).not.toMatch(/ops_connection_charge/);
-    expect(raw).not.toMatch(/ops_per_gt_charge/);
+    // any OPS *rate* or user-price *input name in the registry*: the
+    // numbers live only in the call input, never in the registry or any
+    // rate table. v0.2.60 clarifies the pin's letter to match that intent:
+    // the banned strings are asserted against the registry's rate-bearing
+    // sections (fee rules, default-call values, exchange rates) - the OPS
+    // descriptor and the input_profile's reset_fields (which *names* call
+    // fields for the port-switch reset, carrying no values) are
+    // configuration and do not violate the pin. A raw substring match over
+    // the whole registry would ban the reset contract itself.
+    const rateBearing = JSON.stringify(
+      ((portsRegistry as any).ports ?? []).map((p: any) => ({
+        fee_rules: p.fee_rules,
+        default_call: p.default_call,
+        exchange_rates: (portsRegistry as any).exchange_rates
+      }))
+    );
+    expect(rateBearing).not.toMatch(/ops_electricity_price/);
+    expect(rateBearing).not.toMatch(/ops_demand_charge/);
+    expect(rateBearing).not.toMatch(/ops_connection_charge/);
+    expect(rateBearing).not.toMatch(/ops_per_gt_charge/);
     // And the descriptor that does ship is configuration only: every
     // component entry carries exactly enabled/currency/unit.
     for (const port of (portsRegistry as any).ports ?? []) {

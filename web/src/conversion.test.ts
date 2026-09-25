@@ -23,6 +23,7 @@ import {
   ExchangeRateInfo
 } from './conversion';
 import App from './App';
+import { readDecomposedAppSource } from './appSource';
 
 const dataRate = { rate: 11.275, date: '2026-09-21', source: 'ECB euro reference rate (SEK per EUR)' };
 
@@ -133,9 +134,7 @@ describe('removed control and native-only per-port views (spec v0.2.31)', () => 
     // The removed control's code paths: fetchEcbRates, the ECB endpoint,
     // the localStorage cache key, the display-currency select, and the
     // converted-totals table. None may appear in the app source.
-    const fs = require('fs');
-    const path = require('path');
-    const appSource = fs.readFileSync(path.join(__dirname, 'App.tsx'), 'utf8');
+    const appSource = readDecomposedAppSource();
     expect(appSource).not.toContain('fetchEcbRates');
     expect(appSource).not.toContain('frankfurter.app');
     expect(appSource).not.toContain('ecb_rates_cache');
@@ -146,9 +145,7 @@ describe('removed control and native-only per-port views (spec v0.2.31)', () => 
   });
 
   it('the rate input renders with its documented default and fallback flag', () => {
-    const fs = require('fs');
-    const path = require('path');
-    const appSource = fs.readFileSync(path.join(__dirname, 'App.tsx'), 'utf8');
+    const appSource = readDecomposedAppSource();
     expect(appSource).toContain('Exchange rate (kr per EUR)');
     expect(appSource).toContain('default rate in effect (editable)');
     expect(appSource).toContain('Blank uses the default.');
@@ -160,14 +157,16 @@ describe('removed control and native-only per-port views (spec v0.2.31)', () => 
     // view. The conversion module is imported once at module top; assert
     // the per-port total strip and segment rendering contain no converted
     // basis markers.
+    // Re-pointed at the v0.2.60 decomposition (disclosed deviation): the
+    // slice between 'const PortWorkspace' and 'const ComparisonView' was a
+    // single-file boundary; the workspace now spans its own modules, so the
+    // pin reads exactly those modules and asserts the same three markers.
     const fs = require('fs');
     const path = require('path');
-    const appSource = fs.readFileSync(path.join(__dirname, 'App.tsx'), 'utf8');
-    const portWorkspaceStart = appSource.indexOf('const PortWorkspace');
-    const comparisonViewStart = appSource.indexOf('const ComparisonView');
-    expect(portWorkspaceStart).toBeGreaterThan(-1);
-    expect(comparisonViewStart).toBeGreaterThan(portWorkspaceStart);
-    const workspace = appSource.slice(portWorkspaceStart, comparisonViewStart);
+    const workspaceModules = ['portWorkspace.tsx', 'portWorkspaceInputs.tsx', 'disclosureCard.tsx', 'envGuideHelp.tsx'];
+    const workspace = workspaceModules
+      .map(m => fs.readFileSync(path.join(__dirname, m), 'utf8'))
+      .join('\n');
     expect(workspace).not.toContain('toComparisonBasis');
     expect(workspace).not.toContain('comparison-converted-tag');
     expect(workspace).not.toContain('convCell');

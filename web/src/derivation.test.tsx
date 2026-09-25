@@ -25,8 +25,9 @@ import { DerivationDetail, condensedDerivation } from './derivation';
 import { calculatePortCallCost } from '@port-cost/core';
 import type { CostCalculationInput, FeeResult, PortDefinition } from '@port-cost/core';
 import portsRegistry from './data/ports.json';
+import { readDecomposedAppSource } from './appSource';
 
-const appSource = fs.readFileSync(path.join(__dirname, 'App.tsx'), 'utf8');
+const appSource = readDecomposedAppSource();
 
 const LOADED_PORTS: PortDefinition[] = ((portsRegistry as any).ports ?? []).filter(
   (p: any) => p && p.fee_rules && Array.isArray(p.fee_rules)

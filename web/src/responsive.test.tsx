@@ -29,8 +29,9 @@ import {
 import { ComparisonView, __setMobileQueryForTests } from './App';
 import portsRegistry from './data/ports.json';
 import type { PortDefinition, VesselInput, CallInput } from '@port-cost/core/types';
+import { readDecomposedAppSource } from './appSource';
 
-const appSource = fs.readFileSync(path.join(__dirname, 'App.tsx'), 'utf8');
+const appSource = readDecomposedAppSource();
 const cssSource = fs.readFileSync(path.join(__dirname, 'index.css'), 'utf8');
 
 const LOADED_PORTS: PortDefinition[] = ((portsRegistry as any).ports ?? []).filter(
@@ -429,16 +430,30 @@ describe('comparison-table fit contract (spec v0.2.43)', () => {
       expect(rule).not.toMatch(/white-space:\s*nowrap/);
     }
   });
-  it('no min-width forces the label-column gap (no comparison min-width exists)', () => {
+  it('no min-width forces the label-column gap (the v0.2.43 negative held until the v0.2.60 port-column floor)', () => {
+    // v0.2.43 pinned "no comparison min-width exists" because the only
+    // min-width then conceivable was one forcing a gap before the port
+    // columns. v0.2.60 adds the port-column readability floor (spec
+    // v0.2.60, audit D): every column but the first keeps min-width
+    // 140px so the ranked table degrades by horizontal scroll, not by
+    // unreadable squeezing. The pin's intent is preserved exactly: the
+    // label column - the family cell and the first-column cells -
+    // carries no min-width, so no forced gap can appear before the port
+    // columns. (Disclosed pin revision, stated in the spec changelog.)
     const comparisonBlock = cssSource.slice(
       cssSource.indexOf('.comparison-table-container'),
-      cssSource.indexOf('.comparison-estimate-row')
+      cssSource.indexOf('.comparison-estimate-row td {',
+        cssSource.indexOf('.comparison-estimate-row td {') + 1)
     );
-    expect(comparisonBlock).not.toMatch(/min-width/);
+    expect(comparisonBlock).toMatch(/\.comparison-table th:not\(:first-child\),\s*\.comparison-table td:not\(:first-child\)\s*\{[^}]*min-width:\s*140px;/);
     const familyRules = cssSource.match(/[^{}]*comparison-family-cell[^{]*\{[^}]*\}/g) ?? [];
     for (const rule of familyRules) {
       expect(rule).not.toMatch(/min-width/);
     }
+    // The floor is structural (all but the first column) - no rule may
+    // put a min-width on the first column or the family cell.
+    expect(comparisonBlock).not.toMatch(/th:first-child[^{]*\{[^}]*min-width/);
+    expect(comparisonBlock).not.toMatch(/td:first-child[^{]*\{[^}]*min-width/);
   });
   it('the figure spans render in the table cells (scoped nowrap actually applied)', async () => {
     __setMobileQueryForTests(() => false);

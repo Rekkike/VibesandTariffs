@@ -36,8 +36,9 @@ import {
   type CallInput,
   type PortDefinition
 } from '@port-cost/core';
+import { readDecomposedAppSource } from './appSource';
 
-const appSource = fs.readFileSync(path.join(__dirname, 'App.tsx'), 'utf8');
+const appSource = readDecomposedAppSource();
 const cssSource = fs.readFileSync(path.join(__dirname, 'index.css'), 'utf8');
 
 const LOADED_PORTS: PortDefinition[] = ((portsRegistry as any).ports ?? []).filter(

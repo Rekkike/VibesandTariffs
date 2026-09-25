@@ -1771,6 +1771,30 @@ ops_speculative:
 # is the user-facing select; the gating values live in the fee rules'
 # terminal_operator applicable_conditions.
 input_profile:
+  # Port-specific reset fields (spec v0.2.60): the call inputs a port
+  # switch resets to their default. Declared per port; the App reset
+  # effect iterates the union across the registry.
+  reset_fields:
+    - engine_tier
+    - engine_tier_estimated
+    - esi_noise_score
+    - towage_amount
+    - handling_rate_per_move
+    - gangway_class
+    - gangway_count
+    - gangway_supervision_hours
+    - hpa_berth_usage
+    - berth_type
+    - berth_hours
+    - quantum_prior_year_gt
+    - pilotage_segment_pct
+    - waste_short_sea_reduction
+    - waste_alternative_fuel_reduction
+    - waste_sustainable_waste_reduction
+    - ops_electricity_price
+    - ops_demand_charge
+    - ops_connection_charge
+    - ops_per_gt_charge
   # Field-level inputs inside the shared general-information group (the
   # build-year field drives the engine's Tier inference).
   fields:

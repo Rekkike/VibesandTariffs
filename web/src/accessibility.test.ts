@@ -8,8 +8,9 @@
 // aria-expanded/aria-controls or the labels fails the suite.
 import * as fs from 'fs';
 import * as path from 'path';
+import { readDecomposedAppSource } from './appSource';
 
-const appSource = fs.readFileSync(path.join(__dirname, 'App.tsx'), 'utf8');
+const appSource = readDecomposedAppSource();
 const cssSource = fs.readFileSync(path.join(__dirname, 'index.css'), 'utf8');
 
 describe('accessibility floor (WCAG 2.2 AA, v0.2.25–v0.2.32 surfaces)', () => {

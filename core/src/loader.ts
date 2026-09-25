@@ -833,6 +833,14 @@ export function validatePort(port: PortDefinition): PortValidationResult {
         path: 'input_profile.fields'
       });
     }
+    if (port.input_profile.reset_fields !== undefined
+      && (!Array.isArray(port.input_profile.reset_fields) || port.input_profile.reset_fields.some(f => typeof f !== 'string'))) {
+      errors.push({
+        message: 'Port input_profile.reset_fields malformed (list of field ids, spec v0.2.60)',
+        severity: 'error',
+        path: 'input_profile.reset_fields'
+      });
+    }
     for (const section of port.input_profile.sections) {
       if (!section || typeof section.id !== 'string' || typeof section.heading !== 'string') {
         errors.push({

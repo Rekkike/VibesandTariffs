@@ -2744,6 +2744,27 @@ ops_speculative:
 # Per-port input profile (spec v0.2.59): the input sections the workspace
 # renders for this port. UI configuration, never rates.
 input_profile:
+  # Port-specific reset fields (spec v0.2.60): the call inputs a port
+  # switch resets to their default. Declared per port; the App reset
+  # effect iterates the union across the registry.
+  reset_fields:
+    - engine_tier
+    - engine_tier_estimated
+    - clean_shipping_index_class
+    - towage_cost_per_tug
+    - tug_count
+    - csi_class
+    - fossil_free_fuel_percentage
+    - pilotage_hours
+    - pilotage_extra_pilot
+    - pilotage_ordering_lead_time_hours
+    - hatch_cover_count
+    - gearbox_count
+    - lay_up_days
+    - ops_electricity_price
+    - ops_demand_charge
+    - ops_connection_charge
+    - ops_per_gt_charge
   # Field-level inputs inside the shared general-information group (the
   # CSI-class discount select renders at the Swedish ports).
   fields:

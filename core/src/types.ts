@@ -418,6 +418,12 @@ export interface PortInputProfile {
   // Field-level inputs rendered inside the workspace's shared groups (e.g.
   // the build-year field, the CSI-class select) - declared per port.
   fields?: string[];
+  // Port-specific call inputs this port resets to their default on a port
+  // switch (spec v0.2.60, the data-authored PORT_SPECIFIC_CALL_FIELDS): the
+  // fields this port's own inputs and tariff render or price port-specifically.
+  // The App reset effect iterates the union across the registry, so a new
+  // port's reset fields ship with its authoring.
+  reset_fields?: string[];
   sections: PortInputProfileSection[];
 }
 

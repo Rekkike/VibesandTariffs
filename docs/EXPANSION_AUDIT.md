@@ -24,6 +24,18 @@ The findings above describe the audited baseline (`c5d78d9`, v0.2.58) and stand 
 
 ---
 
+## Resolution record — v0.2.60 refactor pass 2 (one line per item, so this map stays current)
+
+The pass-2 decomposition (spec changelog row 0.2.60) resolved the items as follows:
+
+- **Item B (App.tsx decomposition map) — RESOLVED by item 1:** App.tsx (3,482 lines at the audited baseline) extracted into thirteen modules along the mapped boundaries — shared renderers (`comparisonCells.tsx`), PortWorkspace (`portWorkspace.tsx`), the profile-driven inputs (`portWorkspaceInputs.tsx`), ComparisonView (`comparisonView.tsx`), the comparison memo bodies (`comparisonModel.ts`), the port-selection controls (`comparisonPortSelection.tsx`), the theme/shell seam (`appTheme.ts`), the registry wiring (`portRegistry.ts`, `portLabel.ts`, `vesselOptions.ts`), the disclosure-card and env-guide-help renderers, the app-source test seam (`appSource.ts`), and a 226-line App root; every source-reading pin re-pointed through the appSource seam (disclosed), every behavior-coupled pin passed unmodified. Two extraction defects found and fixed in-pass (disclosed): the dropped `PORT_SPECIFIC_CALL_FIELDS` reference (jest does not type-check; no suite exercised the reset effect — a silent uncaught regression) and a widened prop type that broke the production build.
+- **Item D (column CSS) — RESOLVED by item 2:** every comparison port column carries a 140 px readability floor; the table degrades by horizontal scroll, never by unreadable squeezing; the v0.2.43 negative pin revised to the floor's intent (stated in the spec, red-proven by rule removal). The searchable picker and card-stack subsetting remain deferred (see below).
+- **Pass-1 item 3's stop-and-report / A3's open half (PORT_SPECIFIC_CALL_FIELDS) — RESOLVED by item 3:** the last hand-kept per-port array is now each port's `input_profile.reset_fields` (GOT 17 / HAM 20 / HEL 21; union equal to the retired array exactly, both directions pinned); the registry exposes `allPortResetFields`/`portResetFields` with loud failure; fixture-proven and red-proven. The v0.2.59 OPS pin's letter clarified to its intent (rate-bearing sections, stated in the spec).
+- **The port-switch reset defect (plan amendment, folded into item 3) — REPAIRED, not preserved:** the v0.2.20 wipe-on-switch destroyed entered per-port values (OPS speculation could not be entered and compared); port-specific fields are now per-port persisted state with per-workspace reset controls, the comparison consumes each port's own entries, and currency safety is per-port isolation (8 new pins, red-proven by restoring the wipe — 3 pins turn red). The defect's before/after is recorded in the pass-2 report and the spec §4.3.1.
+- **The two v0.2.56 findings (optional item 4) — ADJUDICATED:** the est.-badge 4px margin tokenized (fixed); the mobile derivation always-visible finding stays deferred (a pinned v0.2.43 behavior contract — applying the collapse to cards is a pinned-behavior revision a future directive must order); the 6px badge margins stay deferred (no 6px token; normalizing moves rendered spacing).
+
+---
+
 ## Audit item A — Port-count implicitness sweep
 
 Every site where the number three or a specific port identity is implicit or explicit in code rather than data. Locations are exact; each carries the smallest change that would generalize it (**recommendation only — nothing was implemented**).

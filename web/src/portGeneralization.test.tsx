@@ -22,11 +22,12 @@ import {
   type ExchangeRateInfo
 } from './conversion';
 import { ComparisonView, __setMobileQueryForTests } from './App';
-import { DEFAULT_VESSEL, defaultCall, portInputProfile } from '@port-cost/core';
+import { DEFAULT_VESSEL, allPortResetFields, defaultCall, portInputProfile, portResetFields } from '@port-cost/core';
 import type { CallInput, PortDefinition, VesselInput } from '@port-cost/core/types';
 import portsRegistry from './data/ports.json';
 import * as fs from 'fs';
 import * as path from 'path';
+import { readDecomposedAppSource } from './appSource';
 
 const LOADED_PORTS: PortDefinition[] = ((portsRegistry as any).ports ?? []).filter(
   (p: any) => p && p.fee_rules && Array.isArray(p.fee_rules)
@@ -183,13 +184,13 @@ describe('comparison scalability controls (spec v0.2.59)', () => {
   });
 
   it('red proof: the fresh-load selection is bounded, not all-ports (slice(0, 4), all three today)', () => {
-    const appSource = fs.readFileSync(path.join(__dirname, 'App.tsx'), 'utf8');
+    const appSource = readDecomposedAppSource();
     expect(appSource).toMatch(/LOADED_PORTS\.slice\(0, 4\)\.map\(p => p\.metadata\.id\)/);
     expect(appSource).not.toMatch(/useState<string\[\]>\(\s*LOADED_PORTS\.map\(p => p\.metadata\.id\)/);
   });
 
   it('red proof: the comparison prose no longer hardcodes the port count', () => {
-    const appSource = fs.readFileSync(path.join(__dirname, 'App.tsx'), 'utf8');
+    const appSource = readDecomposedAppSource();
     expect(appSource).toContain('one identical call at every selected port');
     expect(appSource).not.toContain('one identical call at all three ports');
   });
@@ -217,17 +218,20 @@ describe('profile-driven workspace inputs (spec v0.2.59)', () => {
   });
 
   it('red proof: the workspace gates read the profile, not port ids (the port-id JSX conditionals are gone)', () => {
-    const appSource = fs.readFileSync(path.join(__dirname, 'App.tsx'), 'utf8');
+    const appSource = readDecomposedAppSource();
     // The five former gates are profile-membership tests now.
     expect(appSource).toMatch(/profileSections\.has\('hamburg_call_parameters'\)/);
     expect(appSource).toMatch(/profileSections\.has\('helsingborg_call_parameters'\)/);
     expect(appSource).toMatch(/profileSections\.has\('gothenburg_ancillary'\)/);
     expect(appSource).toMatch(/profileFields\.has\('build_year'\)/);
     expect(appSource).toMatch(/profileFields\.has\('clean_shipping_index'\)/);
-    // And no port-id conditional gates the workspace JSX anymore:
-    const workspaceStart = appSource.indexOf('export const PortWorkspace');
-    const comparisonStart = appSource.indexOf('export const ComparisonView');
-    const workspace = appSource.slice(workspaceStart, comparisonStart);
+    // And no port-id conditional gates the workspace JSX anymore
+    // (re-pointed at the v0.2.60 decomposition, disclosed deviation: the
+    // workspace's modules, not the former App.tsx slice):
+    const workspaceModules = ['portWorkspace.tsx', 'portWorkspaceInputs.tsx'];
+    const workspace = workspaceModules
+      .map(m => require('fs').readFileSync(require('path').join(__dirname, m), 'utf8'))
+      .join('\n');
     expect(workspace).not.toMatch(/port\.metadata\.id === /);
     // The operator MenuItems are data-driven:
     expect(appSource).toMatch(/operatorSection\?\.operators \?\? \[\]\)\.map\(op =>/);
@@ -242,5 +246,54 @@ describe('profile-driven workspace inputs (spec v0.2.59)', () => {
     const labels = profile.sections.find(sec => sec.operators)!.operators!.map(op => op.label);
     expect(labels[0]).toBe('HHLA (CTA/CTB/CTT — reference operator)');
     expect(labels[1]).toBe('EUROGATE Container Terminal Hamburg');
+  });
+});
+
+// Port-specific reset fields (spec v0.2.60, refactor pass 2 item 3): the
+// last hand-kept per-port array is data now. Each port's input_profile
+// declares its reset_fields; the App port-switch reset effect iterates
+// the registry union - a new port's reset fields ship with its authoring.
+describe('port-specific reset fields (spec v0.2.60)', () => {
+  it('each port declares exactly its own reset_fields and the union covers every port-specific input', () => {
+    const expected: Record<string, string[]> = {
+      gothenburg: [
+        'engine_tier', 'engine_tier_estimated', 'clean_shipping_index_class',
+        'towage_cost_per_tug', 'tug_count', 'csi_class',
+        'fossil_free_fuel_percentage', 'pilotage_hours', 'pilotage_extra_pilot',
+        'pilotage_ordering_lead_time_hours', 'hatch_cover_count',
+        'gearbox_count', 'lay_up_days', 'ops_electricity_price',
+        'ops_demand_charge', 'ops_connection_charge', 'ops_per_gt_charge'
+      ],
+      hamburg: [
+        'engine_tier', 'engine_tier_estimated', 'esi_noise_score',
+        'towage_amount', 'handling_rate_per_move', 'gangway_class',
+        'gangway_count', 'gangway_supervision_hours', 'hpa_berth_usage',
+        'berth_type', 'berth_hours', 'quantum_prior_year_gt',
+        'pilotage_segment_pct', 'waste_short_sea_reduction',
+        'waste_alternative_fuel_reduction', 'waste_sustainable_waste_reduction',
+        'ops_electricity_price', 'ops_demand_charge', 'ops_connection_charge',
+        'ops_per_gt_charge'
+      ],
+      helsingborg: [
+        'engine_tier', 'engine_tier_estimated', 'esi_score', 'esi_noise_score',
+        'issc_valid', 'clean_shipping_index_class', 'ees_rate_per_move',
+        'towage_cost_per_tug', 'tug_count', 'csi_class',
+        'fossil_free_fuel_percentage', 'pilotage_hours', 'pilotage_extra_pilot',
+        'pilotage_ordering_lead_time_hours', 'hatch_cover_count',
+        'gearbox_count', 'lay_up_days', 'ops_electricity_price',
+        'ops_demand_charge', 'ops_connection_charge', 'ops_per_gt_charge'
+      ]
+    };
+    for (const port of LOADED_PORTS) {
+      expect(portResetFields(port.metadata.id)).toEqual(expected[port.metadata.id]);
+    }
+    expect(allPortResetFields()).toEqual(expect.arrayContaining(expected.hamburg));
+  });
+
+  it('the App reset effect reads the registry union, not a hand-kept array (source pin)', () => {
+    const appSource = fs.readFileSync(path.join(__dirname, 'App.tsx'), 'utf8');
+    expect(appSource).not.toMatch(/PORT_SPECIFIC_CALL_FIELDS/);
+    expect(appSource).toMatch(/allPortResetFields\(\)/);
+    expect(appSource).not.toMatch(/portSpecificCallFields\s*=\s*\[/);
   });
 });

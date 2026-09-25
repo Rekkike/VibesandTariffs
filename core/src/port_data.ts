@@ -26,6 +26,7 @@ interface RegisteredPortData {
   defaultCall: PortDefaultCallSection;
   opsSpeculative: OpsComponentsSpec;
   inputProfile: PortInputProfile;
+  resetFields: string[];
 }
 
 const REGISTRY = new Map<string, RegisteredPortData>();
@@ -41,6 +42,7 @@ export function registerPortData(
     defaultCall: PortDefaultCallSection;
     opsSpeculative: OpsComponentsSpec;
     inputProfile: PortInputProfile;
+    resetFields?: string[];
   }
 ): void {
   if (!portId || typeof portId !== 'string') {
@@ -50,6 +52,11 @@ export function registerPortData(
     throw new Error(`registerPortData('${portId}'): configuration sections object missing`);
   }
   const { defaultCall, opsSpeculative, inputProfile } = sections;
+  // Port-specific reset fields (spec v0.2.60): optional only so synthetic
+  // fixtures can exercise the loud-failure path; every real port file
+  // declares them (a port with none still declares an empty list - the
+  // authoring is explicit, never silent).
+  const resetFields = sections.resetFields !== undefined ? sections.resetFields : undefined;
   if (!defaultCall || typeof defaultCall !== 'object') {
     throw new Error(`registerPortData('${portId}'): default_call section missing - every port must ship its per-port default call in its data file (spec v0.2.59)`);
   }
@@ -97,10 +104,15 @@ export function registerPortData(
       }
     }
   }
+  if (resetFields !== undefined
+    && (!Array.isArray(resetFields) || resetFields.some(f => typeof f !== 'string'))) {
+    throw new Error(`registerPortData('${portId}'): input_profile.reset_fields malformed (must be a list of field ids; spec v0.2.60)`);
+  }
   REGISTRY.set(portId, {
     defaultCall: normalizedDefaultCall,
     opsSpeculative,
-    inputProfile
+    inputProfile,
+    resetFields: resetFields ?? []
   });
 }
 
@@ -116,7 +128,8 @@ export function registerPortDefinition(port: PortDefinition): void {
   registerPortData(port.metadata.id, {
     defaultCall: port.default_call!,
     opsSpeculative: port.ops_speculative!,
-    inputProfile: port.input_profile!
+    inputProfile: port.input_profile!,
+    resetFields: port.input_profile?.reset_fields
   });
 }
 
@@ -171,6 +184,38 @@ export function portInputProfile(portId: string): PortInputProfile {
     );
   }
   return entry.inputProfile;
+}
+
+/**
+ * The union of every registered port's port-specific reset fields (spec
+ * v0.2.60): the call inputs a port switch resets to their default. Derived
+ * from the registry - never a hand-kept array - so a new port's reset
+ * fields ship with its authoring.
+ */
+export function allPortResetFields(): string[] {
+  const union: string[] = [];
+  for (const entry of REGISTRY.values()) {
+    for (const field of entry.resetFields) {
+      if (!union.includes(field)) union.push(field);
+    }
+  }
+  return union;
+}
+
+/**
+ * One port's declared port-specific reset fields (spec v0.2.60). Throws
+ * loudly when the port is unregistered - never silently resets nothing.
+ */
+export function portResetFields(portId: string): string[] {
+  const entry = REGISTRY.get(portId);
+  if (!entry) {
+    throw new Error(
+      `portResetFields: no port data registered for '${portId}' - ` +
+      `the port's data file must carry its input_profile section with its ` +
+      `reset_fields (spec v0.2.60)`
+    );
+  }
+  return [...entry.resetFields];
 }
 
 /**
