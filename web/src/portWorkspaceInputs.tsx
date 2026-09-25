@@ -1086,6 +1086,7 @@ export const WorkspaceInputs: React.FC<WorkspaceInputsProps> = (props) => {
                   </Typography>
                   <Typography variant="caption" className="ops-speculative-group-note">
                     No published container-terminal OPS rate exists at this port — enter your own assumptions; entered values render in a separate block and add to the Grand Total.
+                    The price inputs are this port's own (per-port; they survive port switches and never price another port); the consumption (kWh) input is shared across all ports — it prices the electricity line at every port with its own entered price.
                   </Typography>
                 </Grid>
                 <Grid item xs={12} sm={6}>
@@ -1096,7 +1097,7 @@ export const WorkspaceInputs: React.FC<WorkspaceInputsProps> = (props) => {
                     onChange={(e) => handleCallChange('ops_kwh_consumption', e.target.value === '' ? undefined : parseFloat(e.target.value))}
                     fullWidth
                     InputLabelProps={{ shrink: true }}
-                    helperText="Required enabling input: the electricity line needs it"
+                    helperText="Required enabling input: the electricity line needs it. Shared across all ports (currency-neutral): it prices the electricity line at every port with its own entered price, so changing it here changes other ports' OPS amounts too"
                   />
                 </Grid>
                 {opsComponents.electricity.enabled && (
