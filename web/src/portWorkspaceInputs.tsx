@@ -34,6 +34,7 @@ import type { LibraryVessel, VesselOption } from './vesselOptions';
 import { portLabel } from './portLabel';
 import { DisclosureCard } from './disclosureCard';
 import { EnvGuideHelp } from './envGuideHelp';
+import { BandSelect, bandedInputsForPort } from './bandSelect';
 
 export interface WorkspaceInputsProps {
   port: PortDefinition;
@@ -81,6 +82,12 @@ export const WorkspaceInputs: React.FC<WorkspaceInputsProps> = (props) => {
     applyCustomVessel
   } = props;
   const PROFILE_ASSUMPTION_TEXT = profileAssumptionText;
+  // Banded-input dual-mode controls (spec v0.2.65): the band definitions
+  // derive from the port file's own adjustment rules - the same band
+  // arrays the engine applies - so a port without banded adjustments
+  // renders no select, and the defaults never move.
+  const bandDefs = bandedInputsForPort(port);
+  const bandDefFor = (input: string) => bandDefs.find(d => d.input === input);
   return (
           <Grid item xs={12} md={6}>
             <Paper className="form-section" elevation={0}>
@@ -793,6 +800,18 @@ export const WorkspaceInputs: React.FC<WorkspaceInputsProps> = (props) => {
                         <EnvGuideHelp guide={guideForInput('esi_score')} />
                       </Box>
                     </Grid>
+                    {bandDefFor('esi_score') && (
+                      <Grid item xs={12} sm={6}>
+                        <BandSelect
+                          def={bandDefFor('esi_score')!}
+                          value={state.call.esi_score}
+                          onValueChange={(v) => handleCallChange('esi_score', v)}
+                          selectLabel="ESI air tier (STC 4.1.1.1)"
+                          label="Bands: Environmental Ship Index air score 20 up to < 25 = 0.35% (max € 175); 25 up to < 35 = 0.7% (max € 350); 35 up to < 50 = 3.5% (max € 700); ≥ 50 = 7% (max € 1,050) — special tariff 140, stc-maritime-shipping-2026.pdf"
+                          helperText="Selecting a tier writes the score field; editing the score re-bands this select"
+                        />
+                      </Grid>
+                    )}
                     <Grid item xs={12} sm={6}>
                       <Box display="flex" alignItems="center">
                         <TextField
@@ -807,6 +826,18 @@ export const WorkspaceInputs: React.FC<WorkspaceInputsProps> = (props) => {
                         <EnvGuideHelp guide={guideForInput('esi_noise_score')} />
                       </Box>
                     </Grid>
+                    {bandDefFor('esi_noise_score') && (
+                      <Grid item xs={12} sm={6}>
+                        <BandSelect
+                          def={bandDefFor('esi_noise_score')!}
+                          value={state.call.esi_noise_score}
+                          onValueChange={(v) => handleCallChange('esi_noise_score', v)}
+                          selectLabel="ESI noise tier (STC 4.1.1.2)"
+                          label="Bands: Environmental Ship Index noise score 40 up to < 45 = 0.15% (max € 75); 45 up to < 55 = 0.3% (max € 150); 55 up to < 70 = 1.5% (max € 300); ≥ 70 = 3% (max € 450) — special tariff 141, stc-maritime-shipping-2026.pdf"
+                          helperText="Selecting a tier writes the score field; editing the score re-bands this select"
+                        />
+                      </Grid>
+                    )}
                     <Grid item xs={12} sm={6}>
                       <Box display="flex" alignItems="center">
                         <TextField
@@ -821,6 +852,18 @@ export const WorkspaceInputs: React.FC<WorkspaceInputsProps> = (props) => {
                         <EnvGuideHelp guide={guideForInput('quantum_prior_year_gt')} />
                       </Box>
                     </Grid>
+                    {bandDefFor('quantum_prior_year_gt') && (
+                      <Grid item xs={12} sm={6}>
+                        <BandSelect
+                          def={bandDefFor('quantum_prior_year_gt')!}
+                          value={state.call.quantum_prior_year_gt === 0 ? undefined : state.call.quantum_prior_year_gt}
+                          onValueChange={(v) => handleCallChange('quantum_prior_year_gt', v === undefined ? 0 : v)}
+                          selectLabel="Quantum tier (STC 4.1.2.11)"
+                          label="Steps: > 1.5m GT and ≤ 10m = 2.5%; > 10m and ≤ 25m = 5.0%; > 25m = 7.5% on the GT component — special tariff 280, stc-maritime-shipping-2026.pdf"
+                          helperText="Selecting a tier writes the GT field; editing the GT re-bands this select; 0 = no discount"
+                        />
+                      </Grid>
+                    )}
                     {/* Lay Time at Berth moved to the general-information group
                         (spec v0.2.47): a shared input rendered once beneath the
                         vessel selection, not per port card. The Hamburg tariff
