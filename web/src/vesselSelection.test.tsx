@@ -220,9 +220,10 @@ describe('workspace render: selection drives the vessel, header reports live (sp
     });
     await act(async () => { await new Promise(r => setTimeout(r, 650)); });
     let text = container!.textContent ?? '';
-    // v0.2.48: DEFAULT_VESSEL is Maren Maersk (194,849 GT) — 50 h tonnage
-    // dues = 194,849 × 1.25 + 3 × 194,849 × 0.8 = 243,561.25 + 467,637.60
-    expect(text).toContain('711,198');
+    // v0.2.66 promotion re-baseline: DEFAULT_VESSEL is Maren Maersk
+    // (194,849 GT) at the Eurogate default — 50 h berthing =
+    // 194,849 × 1.04 + 3 × 194,849 × 0.6 = 202,642.96 + 350,728.20 (§17.5)
+    expect(text).toContain('553,371');
     // change the lay time through the shared input
     const layInput = container!.querySelector('.lay-time-input input') as HTMLInputElement;
     expect(layInput).not.toBeNull();
@@ -245,7 +246,7 @@ describe('workspace render: selection drives the vessel, header reports live (sp
     });
     await act(async () => { await new Promise(r => setTimeout(r, 650)); });
     text = container!.textContent ?? '';
-    expect(text).toContain('243,561'); // first-24-h clock only at 24 h (194,849 × 1.25)
+    expect(text).toContain('202,642'); // first-24-h clock only at 24 h (194,849 × 1.04, Eurogate)
   });
 
   it('the box-count inputs drive figures: changing a count changes the result', async () => {

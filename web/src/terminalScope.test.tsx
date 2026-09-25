@@ -40,20 +40,20 @@ describe('Hamburg terminal scope — engine gate via the web-resolved registry (
     expect((td as any).applicable_conditions?.terminal_operator).toBe('HHLA');
   });
 
-  it('the seeded default call (HHLA) is unchanged: tonnage dues 711,198.85, no Eurogate line', () => {
+  it('the seeded default call (Eurogate) bills the promotion structure: berthing 553,371.16, no HHLA line (v0.2.66 re-baseline)', () => {
     const r = engineRun(undefined);
-    const ids = feeLines(r).map(f => f.fee_rule_id as string);
-    expect(ids.some(id => id.startsWith('eurogate_'))).toBe(false);
-    const tonnage = feeLines(r).find(f => f.fee_rule_id === 'hhla_tonnage_dues')!;
-    expect(tonnage.amount).toBe(711198.85);
-  });
-
-  it('an Eurogate call: Maren at 50 h bills berthing 553,371.16 and no HHLA line', () => {
-    const r = engineRun('Eurogate');
     const ids = feeLines(r).map(f => f.fee_rule_id as string);
     expect(ids.some(id => id.startsWith('hhla_'))).toBe(false);
     const berthing = feeLines(r).find(f => f.fee_rule_id === 'eurogate_berthing_charge')!;
     expect(berthing.amount).toBe(553371.16);
+  });
+
+  it('an HHLA call (the switchable variant) bills tonnage dues 711,198.85 and no Eurogate line (v0.2.66 re-point)', () => {
+    const r = engineRun('HHLA');
+    const ids = feeLines(r).map(f => f.fee_rule_id as string);
+    expect(ids.some(id => id.startsWith('eurogate_'))).toBe(false);
+    const tonnage = feeLines(r).find(f => f.fee_rule_id === 'hhla_tonnage_dues')!;
+    expect(tonnage.amount).toBe(711198.85);
   });
 });
 
@@ -112,34 +112,36 @@ describe('Hamburg terminal-scope UI wiring (spec v0.2.49)', () => {
     await act(async () => { option!.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
   };
 
-  it('the operator selector renders both operators and the default call prices HHLA figures unchanged', async () => {
+  it('the operator selector renders both operators and the default call prices the Eurogate figures (v0.2.66 re-baseline)', async () => {
     await renderWorkspace({ ...DEFAULT_VESSEL }, { ...defaultCall('hamburg'), lay_time_hours: 50 } as CallInput);
     await settleCalculation();
     const text = container!.textContent ?? '';
-    // Default (HHLA) figures unchanged to the cent (the v0.2.48 pins)
-    expect(text).toContain('711,198.85');
-    expect(text).toContain('Tonnage Dues (Ship\'s Dues)');
+    // v0.2.66 promotion: the seeded default operator is Eurogate; the default
+    // call bills the Eurogate structure (berthing 553,371.16 — script-computed,
+    // §17.5; the HHLA figures price under the entered variant below).
+    expect(text).toContain('553,371.16');
+    expect(text).toContain('Berthing Charge / Tonnage Dues');
     await openOperatorMenu();
     const options = Array.from(document.querySelectorAll('li[role="option"]')).map(o => o.textContent ?? '');
     expect(options.some(o => o.startsWith('HHLA (CTA/CTB/CTT'))).toBe(true);
     expect(options.some(o => o.startsWith('EUROGATE Container Terminal Hamburg'))).toBe(true);
   });
 
-  it('selecting Eurogate suppresses the HHLA tonnage dues and bills the Eurogate structure (the wiring pin)', async () => {
+  it('selecting HHLA suppresses the Eurogate lines and bills the HHLA structure (the wiring pin, v0.2.66 re-point)', async () => {
     await renderWorkspace({ ...DEFAULT_VESSEL }, { ...defaultCall('hamburg'), lay_time_hours: 50 } as CallInput);
     await settleCalculation();
-    expect(container!.textContent).toContain('711,198.85');
+    expect(container!.textContent).toContain('553,371.16');
     await openOperatorMenu();
-    await selectOption('EUROGATE Container Terminal Hamburg');
+    await selectOption('HHLA (CTA/CTB/CTT');
     // onCallChange captured the new operator; rerender with it (the parent
     // owns the call state in production; the harness mirrors it)
-    await act(async () => { await rerender({ ...DEFAULT_VESSEL }, { ...currentCall, terminal_operator: 'Eurogate' }); });
+    await act(async () => { await rerender({ ...DEFAULT_VESSEL }, { ...currentCall, terminal_operator: 'HHLA' }); });
     await settleCalculation();
     const text = container!.textContent ?? '';
-    expect(text).toContain('553,371.16');
-    expect(text).toContain('Berthing Charge / Tonnage Dues');
-    expect(text).not.toContain('711,198.85');
-    expect(text).not.toContain('Tonnage Dues (Ship\'s Dues)');
+    expect(text).toContain('711,198.85');
+    expect(text).toContain('Tonnage Dues (Ship\'s Dues)');
+    expect(text).not.toContain('553,371.16');
+    expect(text).not.toContain('Berthing Charge / Tonnage Dues');
   });
 });
 
@@ -172,11 +174,11 @@ describe('comparison context strip states the priced operator (spec v0.2.49)', (
     const strip = container!.querySelector('.comparison-context-strip');
     expect(strip).not.toBeNull();
     const text = strip!.textContent ?? '';
-    expect(text).toContain('HHLA (default — the reference operator)');
-    expect(text).not.toContain('EUROGATE (entered');
+    expect(text).toContain('EUROGATE (default — the reference operator, published Prices and Conditions)');
+    expect(text).not.toContain('HHLA (entered');
   });
 
-  it('an entered Eurogate call strip states EUROGATE (entered — published Prices and Conditions)', async () => {
+  it('an entered HHLA call strip states HHLA (entered — switchable terminal variant)', async () => {
     container = document.createElement('div');
     document.body.appendChild(container);
     root = createRoot(container);
@@ -185,7 +187,7 @@ describe('comparison context strip states the priced operator (spec v0.2.49)', (
         <ComparisonView
           ports={LOADED_PORTS}
           vessel={DEFAULT_VESSEL}
-          call={{ ...defaultCall('hamburg'), terminal_operator: 'Eurogate' } as CallInput}
+          call={{ ...defaultCall('hamburg'), terminal_operator: 'HHLA' } as CallInput}
           selectedPortIds={LOADED_PORTS.map(p => p.metadata.id)}
           onSelectionChange={() => {}}
           activeVessel="MAREN MAERSK (IMO 9632129)"
@@ -195,7 +197,7 @@ describe('comparison context strip states the priced operator (spec v0.2.49)', (
     const strip = container!.querySelector('.comparison-context-strip');
     expect(strip).not.toBeNull();
     const text = strip!.textContent ?? '';
-    expect(text).toContain('EUROGATE (entered — published Prices and Conditions)');
-    expect(text).not.toContain('HHLA (default — the reference operator)');
+    expect(text).toContain('HHLA (entered — switchable terminal variant, Quay Tariff)');
+    expect(text).not.toContain('EUROGATE (default');
   });
 });

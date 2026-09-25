@@ -201,9 +201,9 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
             </span>
             <span className="comparison-context-item">
               <span className="comparison-context-label">Hamburg terminal:</span>{' '}
-              {call.terminal_operator === 'Eurogate'
-                ? 'EUROGATE (entered — published Prices and Conditions)'
-                : 'HHLA (default — the reference operator)'}
+              {call.terminal_operator === 'HHLA'
+                ? 'HHLA (entered — switchable terminal variant, Quay Tariff)'
+                : 'EUROGATE (default — the reference operator, published Prices and Conditions)'}
             </span>
             {/* Arrival origin (spec v0.2.50): a shared voyage-leg attribute —
                 held constant across ports exactly like lay time and moves;

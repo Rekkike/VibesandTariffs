@@ -31,7 +31,12 @@ const feeByRule = (result: ReturnType<typeof calculatePortCallCost>, ruleId: str
 // test the tariff arithmetic, not the (new) default vessel.
 const TEST_VESSEL: VesselInput = { gt: 55000, nt: 30250, loa_m: 290, beam_m: 32, draft_m: 12, teu_capacity: 4000 };
 const engineRun = (lay: number | undefined): ReturnType<typeof calculatePortCallCost> => {
-  const call = { ...defaultCall('hamburg'), port_id: 'hamburg', lay_time_hours: lay } as CallInput;
+  // v0.2.66 promotion re-point (disclosed, assertion-preserving): this suite
+  // documents the HHLA clause-1.2 tier arithmetic, which stands unchanged as
+  // the switchable terminal variant (the seeded default is Eurogate — its
+  // berthing tiers are pinned in terminalScope.test.tsx); the calls are
+  // pinned to the variant explicitly.
+  const call = { ...defaultCall('hamburg'), port_id: 'hamburg', terminal_operator: 'HHLA' as const, lay_time_hours: lay } as CallInput;
   const input: CostCalculationInput = { vessel: TEST_VESSEL, call };
   return calculatePortCallCost(HAMBURG, input);
 };
@@ -166,11 +171,16 @@ describe('Hamburg lay-time UI wiring (spec v0.2.46)', () => {
 
   it('changing the lay-time input changes the Hamburg result and the derivation renders both tiers', async () => {
     const vessel: VesselInput = { ...TEST_VESSEL };
+    // v0.2.66 promotion re-baseline (disclosed, §17.5): the default operator
+    // is Eurogate; the 50-h call now bills the Eurogate berthing charge
+    // (1.04 EUR/GT first 24 h + 0.6 EUR/GT per commenced 12 h — the same
+    // two-clock structure the pin has always asserted). 55,000 GT at 50 h:
+    // 57,200 + 99,000 = 156,200 (script-computed against the engine).
     await renderWorkspace(vessel, { ...defaultCall('hamburg'), lay_time_hours: 50 });
     await settleCalculation();
     const text = container!.textContent ?? '';
-    // The rendered result carries the 50-h tonnage dues figure
-    expect(text).toContain('200,750');
+    // The rendered result carries the 50-h berthing figure
+    expect(text).toContain('156,200');
     // The derivation detail shows both clocks as distinct labeled steps
     expect(text).toContain('First 24 hours of lay time');
     expect(text).toContain('per commenced 12 hours thereafter');

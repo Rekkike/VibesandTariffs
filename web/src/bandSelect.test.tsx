@@ -42,11 +42,14 @@ const HELSINGBORG = LOADED_PORTS.find(p => p.metadata.id === 'helsingborg')!;
 const fmt = (n: number) => n.toFixed(2);
 
 // ---- zero-drift baselines (the v0.2.64 pins are the reference) ----
-describe('banded-input zero drift (spec v0.2.65)', () => {
-  it('the fresh load produces byte-identical results to the v0.2.64 baseline at all three ports', () => {
+describe('banded-input zero drift (spec v0.2.65; HAM re-baselined v0.2.66)', () => {
+  it('the fresh load reproduces the pinned baselines at all three ports (GOT/HEL byte-identical; HAM re-baselined by the Eurogate promotion, §17.5)', () => {
+    // v0.2.66 promotion re-baseline: HAM 2,313,489.31 -> 2,204,910.90 and the
+    // converted per-GT 133.87 -> 127.59 (terminal layer replaced; GOT/HEL
+    // byte-identical — the isolation contract, pinned).
     for (const [port, total, perGt] of [
       [GOTHENBURG, '3275851.15', '16.81'],
-      [HAMBURG, '2313489.31', '133.87'],
+      [HAMBURG, '2204910.90', '127.59'],
       [HELSINGBORG, '8750057.40', '44.91']
     ] as [PortDefinition, string, string][]) {
       const result = calculatePortCallCost(port, {

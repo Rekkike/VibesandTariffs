@@ -47,10 +47,10 @@ describe('handling hygiene a: line label carries the estimate and its anchor', (
     expect((rule.rate_structure as any).unit_rate_input).toBe('handling_rate_per_move');
   });
 
-  it('the estimated_parameter flag is emitted on the computed line', () => {
+  it('the estimated_parameter flag is emitted on the computed line (HHLA variant; v0.2.66 re-point)', () => {
     const result = calculatePortCallCost(hamburg, {
       vessel: { gt: 21979, nt: 8000, loa_m: 171.92, vessel_type: 'container', built_year: 2024 } as any,
-      call: { containers_loaded_le20ft: 0, containers_loaded_gt20ft: 0, containers_discharged_le20ft: 400, containers_discharged_gt20ft: 0 } as any
+      call: { containers_loaded_le20ft: 0, containers_loaded_gt20ft: 0, containers_discharged_le20ft: 400, containers_discharged_gt20ft: 0, terminal_operator: 'HHLA' } as any
     });
     const line = result.billers.flatMap(b => b.fees).find(f => f.fee_rule_id === 'hhla_container_handling')!;
     expect(line).toBeDefined();
@@ -58,10 +58,10 @@ describe('handling hygiene a: line label carries the estimate and its anchor', (
     expect(line.amount).toBe(143200.00);
   });
 
-  it('the flag persists when the user overrides the rate', () => {
+  it('the flag persists when the user overrides the rate (HHLA variant; v0.2.66 re-point)', () => {
     const result = calculatePortCallCost(hamburg, {
       vessel: { gt: 21979, nt: 8000, loa_m: 171.92, vessel_type: 'container', built_year: 2024 } as any,
-      call: { containers_loaded_le20ft: 0, containers_loaded_gt20ft: 0, containers_discharged_le20ft: 400, containers_discharged_gt20ft: 0, handling_rate_per_move: 400 } as any
+      call: { containers_loaded_le20ft: 0, containers_loaded_gt20ft: 0, containers_discharged_le20ft: 400, containers_discharged_gt20ft: 0, handling_rate_per_move: 400, terminal_operator: 'HHLA' } as any
     });
     const line = result.billers.flatMap(b => b.fees).find(f => f.fee_rule_id === 'hhla_container_handling')!;
     expect(line.amount).toBe(160000.00);
@@ -79,7 +79,9 @@ describe('handling hygiene b: terminal-hygiene constraint (no Eurogate mixing)',
       .filter(r => r.fee_family === 'terminal_handling')
       .map(r => r.id)
       .sort();
-    expect(handlingRules).toEqual(['eurogate_container_handling', 'hhla_container_handling']);
+    // v0.2.66: eurogate_small_call_minimum (S9 5.4) joins the
+    // terminal_handling family - a minimum bill on the handling service.
+    expect(handlingRules).toEqual(['eurogate_container_handling', 'eurogate_small_call_minimum', 'hhla_container_handling']);
     for (const id of handlingRules) {
       const rule = hamburg.fee_rules.find(r => r.id === id)!;
       expect(rule.applicable_conditions?.terminal_operator).toBeDefined();
@@ -99,7 +101,10 @@ describe('handling hygiene b: terminal-hygiene constraint (no Eurogate mixing)',
     const billerNames = (hamburg.billers ?? []).map(b => b.name);
     expect(billerNames.some(n => /EUROGATE/i.test(n))).toBe(true);
     const eurogateRules = hamburg.fee_rules.filter(r => /eurogate/i.test(r.id));
-    expect(eurogateRules.length).toBe(3);
+    // v0.2.66: the promotion adds the optional services (lashing,
+    // twistlocks, IMO, small-call minimum, lay-by, reefer first/subsequent)
+    // - all operator-gated like the original three.
+    expect(eurogateRules.length).toBe(10);
     for (const rule of eurogateRules) {
       expect(rule.applicable_conditions?.terminal_operator).toBe('Eurogate');
     }
@@ -115,23 +120,24 @@ describe('handling hygiene b: terminal-hygiene constraint (no Eurogate mixing)',
     expect(eurogateLines.length).toBe(0);
   });
 
-  it('no rule combination can bill an HHLA due with a non-HHLA handling line or vice versa', () => {
-    // In the single-terminal model every computed handling line belongs to
-    // the same biller as the HHLA dues; locked for future edits.
-    const result = calculatePortCallCost(hamburg, {
-      vessel: { gt: 21979, nt: 8000, loa_m: 171.92, vessel_type: 'container', built_year: 2024 } as any,
-      call: { containers_loaded_le20ft: 0, containers_loaded_gt20ft: 0, containers_discharged_le20ft: 400, containers_discharged_gt20ft: 0, lay_time_hours: 16 } as any
-    });
-    const handlingBiller = result.billers
-      .flatMap(b => b.fees)
-      .filter(f => f.fee_family === 'terminal_handling')
-      .map(f => f.biller);
-    expect(handlingBiller.length).toBeGreaterThan(0);
-    for (const biller of handlingBiller) {
-      expect(biller).toBe('HHLA Container Terminals');
+  it('no rule combination can bill an HHLA due with a non-HHLA handling line or vice versa (v0.2.66: verified per operator)', () => {
+    // Each operator's call bills its own dues and its own handling line:
+    // the HHLA variant pairs the tonnage dues with the HHLA handling
+    // estimate; the Eurogate default pairs the berthing charge with the
+    // published 5.1.1 handling line. Locked for future edits.
+    for (const [op, duesId] of [['HHLA', 'hhla_tonnage_dues'], ['Eurogate', 'eurogate_berthing_charge']] as const) {
+      const result = calculatePortCallCost(hamburg, {
+        vessel: { gt: 21979, nt: 8000, loa_m: 171.92, vessel_type: 'container', built_year: 2024 } as any,
+        call: { containers_loaded_le20ft: 0, containers_loaded_gt20ft: 0, containers_discharged_le20ft: 400, containers_discharged_gt20ft: 0, lay_time_hours: 16, terminal_operator: op } as any
+      });
+      const handlingBiller = result.billers
+        .flatMap(b => b.fees)
+        .filter(f => f.fee_family === 'terminal_handling' && f.amount > 0)
+        .map(f => f.biller);
+      expect(handlingBiller.length).toBe(1);
+      const dues = result.billers.flatMap(b => b.fees).find(f => f.fee_rule_id === duesId);
+      expect(dues!.biller).toBe(handlingBiller[0]);
     }
-    const tonnageDue = result.billers.flatMap(b => b.fees).find(f => f.fee_rule_id === 'hhla_tonnage_dues');
-    expect(tonnageDue!.biller).toBe(handlingBiller[0]);
   });
 });
 
@@ -157,6 +163,12 @@ describe('handling hygiene c: estimated-parameter separation, symmetric across p
       issc_valid: true
     };
     if (port.metadata.id === 'hamburg') {
+      // v0.2.66 re-point, assertion-preserving: this block documents the
+      // estimated-parameter separation on the handling-estimate surface, which
+      // is the HHLA variant's (the handling_rate_per_move estimate is flagged
+      // estimated only there; under the Eurogate default the published 5.1.1
+      // handling line carries no estimate flag — pinned in environmental_defaults).
+      base.terminal_operator = 'HHLA';
       base.lay_time_hours = 16;
       base.port_time_hours = 16;
       base.gangway_class = 'overseas';

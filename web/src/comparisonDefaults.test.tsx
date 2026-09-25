@@ -209,7 +209,7 @@ describe('comparison shared-call per-port defaults (spec v0.2.53 defect fix)', (
       // directive): GOT and HEL each gain the 268,800.00 godsavgift line;
       // HAM is untouched.
       gothenburg: 3275851.15,
-      hamburg: 2313489.31,
+      hamburg: 2204910.9,
       helsingborg: 8750057.4
     };
     for (const port of LOADED_PORTS) {

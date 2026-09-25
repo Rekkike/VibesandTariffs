@@ -36,6 +36,13 @@ function makeCall(overrides: Record<string, unknown>): CostCalculationInput {
     vessel: { gt: (gt as number) ?? 0, built_year: built_year as number | undefined },
     call: {
       port_id: 'hamburg',
+      // v0.2.66 promotion re-point (disclosed, assertion-preserving): the
+      // CP2-CP5 fixtures and the mechanics tests below document the HHLA
+      // layer's tariff behavior, which stands unchanged as the switchable
+      // terminal variant; the calls are pinned to it explicitly. The
+      // seeded default operator is Eurogate (pinned in
+      // terminal_scope.test.ts).
+      terminal_operator: 'HHLA',
       date: '2026-06-01',
       vessel_type: 'container',
       containers_loaded_le20ft: 0,

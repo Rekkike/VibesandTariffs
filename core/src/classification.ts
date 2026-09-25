@@ -404,6 +404,41 @@ const ham: Record<string, FunctionalClassInfo> = {
     basis_note: 'Security charge per container handled (Prices and Conditions 13.1)',
     source: 'prices-and-conditions-2026.pdf 13.1'
   },
+  eurogate_lashing: {
+    functional_class: 'purchased_service',
+    basis_note: 'Lashing/unlashing with system lashings per container handled and restowed (Prices and Conditions 5.2.1)',
+    source: 'prices-and-conditions-2026.pdf 5.2.1'
+  },
+  eurogate_twistlocks: {
+    functional_class: 'purchased_service',
+    basis_note: 'Setting/removing twistlocks on board per container (Prices and Conditions 5.2.2)',
+    source: 'prices-and-conditions-2026.pdf 5.2.2'
+  },
+  eurogate_imo_surcharge: {
+    functional_class: 'cargo_throughput_levy',
+    basis_note: 'IMO (dangerous-goods) container surcharge per container (Prices and Conditions 5.3)',
+    source: 'prices-and-conditions-2026.pdf 5.3'
+  },
+  eurogate_small_call_minimum: {
+    functional_class: 'cargo_throughput_levy',
+    basis_note: 'Minimum charge per transaction per ship for calls handling up to 20 containers (Prices and Conditions 5.4)',
+    source: 'prices-and-conditions-2026.pdf 5.4'
+  },
+  eurogate_layby_charge: {
+    functional_class: 'berth_terminal_infrastructure',
+    basis_note: 'Lay-by berth charge per commenced 24 h by maximum nominal TEU intake (Prices and Conditions 2.1.4)',
+    source: 'prices-and-conditions-2026.pdf 2.1.4'
+  },
+  eurogate_reefer_first_24h: {
+    functional_class: 'purchased_service',
+    basis_note: 'Reefer temperature maintenance, first 24 h including plug on/off (Prices and Conditions 9.1)',
+    source: 'prices-and-conditions-2026.pdf 9.1'
+  },
+  eurogate_reefer_subsequent_24h: {
+    functional_class: 'purchased_service',
+    basis_note: 'Reefer temperature maintenance, each subsequent 24 h (Prices and Conditions 9.2)',
+    source: 'prices-and-conditions-2026.pdf 9.2'
+  },
   hhla_container_service_neutralization: {
     functional_class: 'purchased_service',
     basis_note: 'Neutralization service (Quay Tariff §8)',

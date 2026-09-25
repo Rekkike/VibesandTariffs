@@ -56,7 +56,7 @@ describe('OPS speculative inputs — zero-drift baseline (spec v0.2.57)', () => 
       // directive): GOT and HEL each gain the 268,800.00 godsavgift line;
       // HAM is untouched.
       gothenburg: 3275851.15,
-      hamburg: 2313489.31,
+      hamburg: 2204910.9,
       helsingborg: 8750057.4
     };
     for (const [id, expected] of Object.entries(pinned)) {
@@ -325,6 +325,8 @@ describe('OPS speculative inputs — web surfaces (spec v0.2.57)', () => {
       .find(r => (r.textContent ?? '').includes('Grand Total'))!;
     expect(grandTotalRow.textContent).toContain('3\u00A0275\u00A0851');
     expect(grandTotalRow.textContent).toContain('8\u00A0750\u00A0057');
-    expect(grandTotalRow.textContent).toContain('2\u00A0313\u00A0489');
+    // v0.2.66 promotion re-baseline: 2,313,489.31 -> 2,204,910.90 (the
+    // Eurogate terminal layer; §17.5).
+    expect(grandTotalRow.textContent).toContain('2\u00A0204\u00A0911');
   });
 });

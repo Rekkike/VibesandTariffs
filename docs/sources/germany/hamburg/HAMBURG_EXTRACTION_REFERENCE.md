@@ -19,6 +19,8 @@ Authoritative extraction record for the Hamburg port file. Status: DRAFT for use
 | S6 | Kaibetriebsordnung (UVHH) | May 2004 | Port-association framework: berthing allocation, obligation to shift, gear rules (no prices) |
 | S7 | GDWS Tariff Ordinance for District Pilotage (Lotstarif) | as amended 01.01.2026 | Pilotage dues and pilot fees, River Elbe columns; caps, percentages, surcharges |
 | S8 | Hamburg Ship Waste Fees Ordinance (SchiffsAbgV), English translation | as of 24 June 2025 (current version; revision announced for 01.01.2027) | Municipal ship waste fee: MARPOL I/IV/V components, GT factors, call charges, reductions |
+| S9 | EUROGATE Container Terminal Hamburg — Prices and Conditions | effective 01.03.2026 | Eurogate terminal layer (default operator per §17): berthing charge, waterside handling, security, lashing/twistlocks, IMO surcharge, small-call minimum, lay-by, reefer, social-fund surcharge |
+| S10 | EUROGATE Group — Standard Terms and Conditions of Business | English edition valid from 01.05.2014 (German binding edition "Fassung gültig ab 01. Mai 2014") | Contract layer per S9 §1.1 (no prices — recorded, not archived) |
 
 Repository paths (mirroring the Gothenburg convention):
 
@@ -30,7 +32,8 @@ Repository paths (mirroring the Gothenburg convention):
 - S6 (Kaibetriebsordnung) — **not archived in-repo**; live upstream URLs: English edition \`https://hhla.de/fileadmin/download/kaibetriebsordnung_mai_2004_ENG.pdf\`, German original \`https://www.uvhh.de/files/pdf/agb/kaibetriebsordnung_mai_2004.pdf\`
 - \`docs/sources/germany/national/gdws/pilot-tariff-2026.pdf\` (S7)
 - \`docs/sources/germany/hamburg/city-bukea/ship-waste-fees-ordinance-2025.pdf\` (S8)
-- \`docs/sources/germany/hamburg/eurogate/prices-and-conditions-2026.pdf\` (S9, reference anchor — see §8)
+- `docs/sources/germany/hamburg/eurogate/prices-and-conditions-2026.pdf` (S9 — the Eurogate terminal layer's authority of record per §17; upstream `https://www1.eurogate.de/wp-content/uploads/2026/02/eurogate_prices_and_conditions_2026.pdf`, retrieval 2026-09-25)
+- S10 (EUROGATE Group Standard Terms and Conditions of Business) — **not archived in-repo**; live upstream URLs: English `https://www1.eurogate.de/wp-content/uploads/2024/01/general_terms__conditions_of_business.pdf`, German `https://www1.eurogate.de/wp-content/uploads/2023/12/agb_eurogate_gruppe.pdf` (retrieval 2026-09-25)
 
 ## 2. Billers
 
@@ -346,3 +349,121 @@ Benchmark: ~1.5M EUR understood as a negotiated effective cost for an equivalent
 - All 27 HHLA rules carry `applicable_conditions: terminal_operator: HHLA`; the three new Eurogate rules (berthing charge, handling, security + the biller's 1.5% social-fund surcharge) carry `terminal_operator: Eurogate`. Port-wide charges (HPA, GDWS, BUKEA, towage) are operator-neutral.
 - `terminal_operator` call input (default HHLA, the reference operator); absent or unrecognized values fall back to HHLA with a visible fallback flag.
 - Verdict pins: `core/test/terminal_scope.test.ts` (fallback visibility, mutual exclusion, Eurogate arithmetic at 50 h = 553,371.16, published-rate handling without estimated flag, security 99,800, social fund 8,300.57, operator-neutral demurrage and berth-fee scoping).
+
+## 17. Seventh Review — Eurogate Terminal Promotion Audit (2026-09-25, v0.2.66)
+
+Scope: the item-1 source audit of the Eurogate terminal-promotion directive. This section is the pass's authority of record for the new Eurogate encoding; all quotations verbatim from the archived S9 text. Decided before any encoding.
+
+### 17.1 Source archiving and upstream checks
+
+- S9 — EUROGATE Container Terminal Hamburg GmbH (with Bremerhaven and Wilhelmshaven), *Prices and Conditions*, effective 1st March 2026. Archived since v0.2.49 at `docs/sources/germany/hamburg/eurogate/prices-and-conditions-2026.pdf`. Upstream URL (verified 2026-09-25): `https://www1.eurogate.de/wp-content/uploads/2026/02/eurogate_prices_and_conditions_2026.pdf`. S9 is now added to the §1 source table (it was previously recorded as the reference anchor only).
+- S5 — GTCCH (HHLA), dated 01.11.2017. Upstream check 2026-09-25: the HHLA download center still links `General_Terms_and_Conditions_for_Container_Handling_GTCCH_01112017.pdf` as the current edition — **no newer edition exists upstream**. The 2017 date stands; its age is disclosed in §17.4 wherever the HHLA layer is referenced. The GTCCH is HHLA's contract layer, not the Eurogate layer; no Eurogate rate depends on it.
+- S6 — Kaibetriebsordnung (UVHH), May 2004. Upstream check 2026-09-25: the current linked "Quay operating conditions" is still `kaibetriebsordnung_mai_2004_ENG.pdf` — **no newer edition exists upstream**. The Kaibetriebsordnung is the port-association quay framework, operator-neutral; no Eurogate rate depends on it.
+- Eurogate Group Standard Terms and Conditions of Business (S9 §1.1: "use of facilities shall be governed by the regulations contained in these Prices and Conditions and by the Standard Terms and Conditions of Business of the EUROGATE Group in its latest version"). English edition "Version valid from May 1st 2014": `https://www1.eurogate.de/wp-content/uploads/2024/01/general_terms__conditions_of_business.pdf`; German binding edition "Fassung gültig ab 01. Mai 2014": `https://www1.eurogate.de/wp-content/uploads/2023/12/agb_eurogate_gruppe.pdf`. Both are contract-only documents with **no prices** — recorded here with live URLs, not archived, per the S5/S6 convention. This is the Eurogate analog of the HHLA GTCCH; no rate depends on it.
+- No further Eurogate schedule pages carrying prices were found upstream beyond S9 itself: S9 is the complete published price schedule of EUROGATE Container Terminal Hamburg GmbH (chapters 1–15). The pages 10.10/10.11 "CPA Transport" and 12.19/12.20/12.21/12.24 customs items are Hamburg-only schedules inside S9 and are recorded in §17.2 where relevant.
+
+### 17.2 Full Eurogate charge inventory for a container call (S9)
+
+Quoted verbatim from S9. Applicability is adjudicated for the default Maren Maersk call (194,849 GT, 50 h lay time, 4,000 container moves: 800×20′ + 1,200×40′ loaded, 800×20′ + 1,200×40′ discharged; no reefer, OOG, or IMO units by default).
+
+**Vessel charges (ch. 2) — apply to the default call:**
+
+- §2.1: "Every ship berthed at the handling facilities must pay a berthing charge." §2.1.1 "for the first 24 hours of lay days minimum 1,04 €"; §2.1.2 "for every additional 12 hours or part of this period 0,60 €" — "The lay time commences at the time of docking and shall be calculated uninterruptedly until the time of casting off." Basis: "the gross tonnage index* of the vessel concerned … multiplied by the gross tonnage index". **Default call: 194,849 × (1.04 + 3 × 0.60) = 553,371.16 EUR** (50 h = first 24 h + three commenced 12-h periods). Note on wording: §2.1.1's "minimum" reads as the rate word of the tariff line (a per-GT rate, not a call minimum — §1.3.4 states "Minimum charge: not applicable"); v0.2.49's terminal_scope pins established the same reading.
+- §2.1.3 — vessels without proper tonnage measurement, per running meter, on request: not applicable (Maren Maersk is a measured vessel).
+- §2.1.4 — lay-by berth: "Ships using the Container Terminal as a lay by berth prior start of cargo operation or after completion of cargo operation … Per 24 hrs or part thereof/TEU 1,34 €. Berth dues counts by maximum nominal intake of TEU". Conditional: fires only for a lay-by use; the default call is a working cargo call. Encoded gated.
+- §2.2 — quay dues/weight dues: "Vessels engaged in overseas shipping (outgoing and incoming traffic) 9,45 €/t; b. Vessels engaged in European shipping … 5,46 €/t". These are **weight dues on conventional (non-containerized) cargo** — the container-terminal pricing of box cargo runs through ch. 5 per-container, not through tonnage weight dues; S4 §1.1's HHLA analogue ("excluding fully cellular container services handled at special facilities") documents the same port convention. **No quay dues for the default container call.** Notice: S9 itself carries no explicit container carve-out sentence; the non-application is a read of the tariff's structure (per-container ch. 5 vs. per-ton ch. 2.2), recorded here as an interpretation notice, not an invention of either direction.
+
+**Handling (ch. 5) — apply to the default call:**
+
+- §5.1.1: "Loading/discharging from/to main vessel, feeder vessel or barge Per Container — ISO -Container, empty / full 358,00 €". "All prices plus security charge (see Section 13)." **Default call: 4,000 × 358.00 = 1,432,000.00 EUR** (published rate — no estimated flag).
+- §5.2.1: "Lashing / unlashing, securing Container on main / feeder vessels (Basis: overall volume of Container handled and restowed) Per Container — Lashing / unlashing, using system lashings on board seagoing vessels 47,00 €". §5.2.2: "Setting / removing twistlocks on board 24,00 €" per container. §5.2.3–5.2.4 chains/wire and general/heavy cargoes: on request (no published rate — notice, never invented). §5.2.5 bridge fittings 142,00 € per employee/hour. Conditional: lashing is an ordered service, "Basis: overall volume of Container handled and restowed"; the default call carries no lashing order (count blank → zero). Encoded gated on an explicit lashing container count.
+- §5.3: "Surcharge for IMO Container Per Container 87,00 €". Conditional: fires only for IMO (dangerous-goods) containers; the default call carries none. Encoded gated on the dangerous-goods unit count.
+- §5.4: "Charge for ships with up to 20 Container handled Per transaction / per ship 3.308,00 €". Conditional: a minimum bill for small calls — it can never fire for the 4,000-move default call. Encoded gated (the small-call condition cannot hold at the default; the rule must exist for the gate to be real, as GOT's tanker-gated OPS rule does for the container default).
+- §5.1.2 Non-ISO/OOG 716,00 €; §5.1.3 chains 1,432,00 €; §5.1.4 special security on request; §5.5–5.8 conventional cargo, hatch covers, bin racks — all conditional on cargo the default call does not carry (OOG units blank by default). Not encoded in this pass beyond the existing OOG convention; recorded as notices (the default call is pure ISO; encoding OOG rates for Hamburg is a future data extension, not a gap in the default call).
+- §5.1 penultimate: "Discharging / loading on basis free out / free in. Discharging/loading costs and all charges related to handling and storage are exclusively and irrevocably to be paid by the shipping line given by the vessel." — the waterside charges are the shipping line's, consistent with the model's ship-side cost view.
+
+**Reefer (ch. 9) — conditional (no reefer by default):**
+
+- §9.1: "For the first 24 hours or part thereof including plug on / plug off in the yard 181,50 €" per container; §9.2: "For subsequent 24 hours or part thereof 144,50 €". Fires only with reefer units (blank by default). Encoded gated.
+
+**Other handling-side chapters — adjudicated out of the waterside ship-side call:**
+
+- Ch. 3 (shift surcharges 3.1, receiving/delivery surcharges 3.2, overtime 3.3, waiting times 3.4) and ch. 4 (equipment hire): scenario-dependent per-shift/per-hour charges that require an operational schedule the call model does not carry (no shift-count input exists). Recorded as notices; not encoded (a rate without an input would be an invention of usage).
+- Ch. 6 (receiving/delivery from/to rail/truck, 6.1.1 ISO 152,00 €) and ch. 7 (storage 7.1/7.2/7.3/7.4), ch. 10 landside transport, ch. 11 status change, ch. 12 special services: **landside/cargo-side charges** — §1.4.3 bills handling charges for goods via quay to "the issuer of the port record … / the recipient of the cargo"; the ship-side call carries none of them by default. The current HHLA encoding models storage as ship-visible optional scenario inputs; the Eurogate storage schedules (7.1 export: ISO 5 free days, 42/84/126 with escalation; 7.2 import: ISO 3 free days, 42/84/126/168 four bands; 7.3 transhipment; 7.4 empties 21/42/63 no free time) are recorded here in full and remain unencoded in this pass — the default call fires no storage (free time covers the defaults), and storage is a scenario layer (the deferred scenario-adjustment layer owns it). Notice, not a gap for the default call.
+- Ch. 8 restowing (8.1.1 ISO 433,00 €): on-board restow operations are not part of a standard call; notice.
+- Ch. 13 security: "13.1 Container full / empty Per Container 24,95 €". **Default call: 4,000 × 24.95 = 99,800.00 EUR.** Note ch. 5's "All prices plus security charge (see Section 13)" — security is additive to every handling price; it is also excluded from the social fund (§1.3.13).
+- Ch. 14 ship's equipment and provisions (14.1 all-inclusive clearance 157,50 € per delivery): conditional on deliveries of ship's stores; the default call models none. Notice.
+- Ch. 15 customs/bonded seaport: Wilhelmshaven-only contractual text; no prices. N/A for Hamburg (except the customs service items under ch. 12 already covered by the landside adjudication).
+
+**Social fund (§1.3.13):** "A 1.5% social fund will be charged on all services. The following shall be excluded: - storage charges - materials for stowing and lashing - security charge." **Applies to the default call** on all biller-line services except the named exclusions.
+
+**Defect finding (repair in this pass):** the current `eurogate_social_fund_surcharge` encoding (v0.2.49) excludes `terminal_handling` from the 1.5% base (`exclude_families: [storage, terminal_handling, security]`). S9 §1.3.13 verbatim excludes only **storage charges, materials for stowing and lashing, security charge** — handling is IN the base. The v0.2.49 terminal_scope pin 8,300.57 (fund on berthing only) encoded exactly the three-rule Eurogate surface of that pass; under the promoted surface the corrected base includes the handling line. This is a transcription defect against the authority of record, repaired by this pass, and the drift it produces is classified in the pass report.
+
+### 17.3 Applicability matrix — default Maren Maersk call
+
+| S9 charge | Rate | Default call | Basis at default |
+|---|---|---|---|
+| Berthing charge 2.1.1/2.1.2 | 1.04 EUR/GT first 24 h; 0.60 EUR/GT per commenced 12 h | **Fires** | 194,849 × (1.04 + 3×0.60) = 553,371.16 |
+| Handling 5.1.1 | 358.00 EUR/container | **Fires** | 4,000 × 358.00 = 1,432,000.00 |
+| Security 13.1 | 24.95 EUR/container | **Fires** | 4,000 × 24.95 = 99,800.00 |
+| Social fund 1.3.13 | 1.5% on services excl. storage, lashing materials, security | **Fires** | 1.5% × (553,371.16 + 1,432,000.00) = 29,780.57 |
+| Lashing 5.2.1 | 47.00 EUR/container | Conditional (gated) | no lashing order at default → 0 |
+| Twistlocks 5.2.2 | 24.00 EUR/container | Conditional (gated) | same gate → 0 |
+| IMO surcharge 5.3 | 87.00 EUR/container | Conditional (gated) | no IMO units at default → 0 |
+| Small-call minimum 5.4 | 3,308.00 EUR per ship ≤20 containers | Conditional (gated; cannot fire at 4,000 moves) | 0 |
+| Lay-by 2.1.4 | 1.34 EUR/TEU per 24 h | Conditional (gated) | working call → 0 |
+| Reefer 9.1/9.2 | 181.50 / 144.50 EUR per 24 h | Conditional (gated) | no reefer at default → 0 |
+| Quay dues 2.2 | 9.45/5.46 EUR/t | Not applied (conventional cargo only — §17.2 notice) | 0 |
+| Storage ch. 7 | 21–1,008 EUR/day bands | Not applied (landside; free time covers defaults) | 0 |
+| Shift/overtime/waiting ch. 3–4 | per shift/hour | Not encoded (no schedule input — notice) | 0 |
+
+### 17.4 HHLA-vs-Eurogate delta table (the drift definition)
+
+Current HHLA terminal layer (28 rules + biller surcharge) vs the promoted Eurogate layer. Line figures at the default call, script-computed against the engine at e2094d5.
+
+| Charge | HHLA current (S4) | Eurogate (S9) | Default-call movement (EUR) |
+|---|---|---|---|
+| Berth/ship's dues | `hhla_tonnage_dues` 1.25/GT 24 h + 0.80/GT 12 h → 711,198.85 (S4 §1.2) | `eurogate_berthing_charge` 1.04/0.60 → 553,371.16 (S9 2.1.1–2.1.2) | −157,827.69 |
+| Waterside handling | `hhla_container_handling` 358.00/move, **estimated flag** (S4 §2.1.2 unpublished; S9 5.1.1 anchor) → 1,432,000.00 | `eurogate_container_handling` 358.00/move, **published** (S9 5.1.1) → 1,432,000.00 | 0.00 (estimate flag retires) |
+| Security | `hhla_security_charge` 17.00/container → 68,000.00 (S4 §1.3.3) | `eurogate_security_charge` 24.95/container → 99,800.00 (S9 13.1) | +31,800.00 |
+| Gangway | `hhla_gangway` 633.80 overseas → 633.80 (S4 §1.4) | no Eurogate gangway charge in S9 | −633.80 |
+| Gangway supervision | `hhla_gangway_supervision` 101.30/h → 0.00 at default (S4 §1.5) | no counterpart | 0.00 |
+| Biller surcharge | `hhla_hafenfonds_surcharge` 1.5% excl. storage + terminal_handling (S4 §9.2.3) → 11,697.49 on tonnage+gangway+security | `eurogate_social_fund_surcharge` 1.5% excl. storage + lashing materials + security — **corrected base includes handling** (S9 §1.3.13) → 29,780.57 on berthing+handling | +18,083.08 |
+| Storage (11 rules) | `hhla_storage_*` progressive bands (S4 §3), default free time → 0.00 | not encoded this pass (landside; §17.2 notice) | 0.00 |
+| Container services (13 rules) | `hhla_container_service_*` optional, default off → 0.00 | Eurogate optional services 5.2/5.3/5.4/9.1/9.2/2.1.4 encoded gated, default off → 0.00 | 0.00 |
+| **Terminal-layer total** | **2,313,489.31** call total of which terminal layer 2,223,530.14 | see §17.5 | |
+
+Terminal-independent charges do not move: HPA port fee 62,030.41; GDWS pilotage 5,322.00 + 4,100.00; BUKEA waste 2,630.46 + 1.00 + 828.00 + 47.30; towage estimate 15,000.00 (sum 90,959.17).
+
+### 17.5 New baseline (script-computed, pinned in the pass)
+
+HPA 62,030.41 + GDWS 9,422.00 (dues 5,322.00 + fees 4,100.00) + Eurogate berthing 553,371.16 + handling 1,432,000.00 + security 99,800.00 + social fund 29,780.57 + lashing 0 + twistlocks 0 + IMO 0 + small-call minimum 0 + lay-by 0 + reefer 0 + BUKEA 3,506.76 (2,630.46 + 1.00 + 828.00 + 47.30) + towage 15,000.00 = **2,204,910.90 EUR**; per-GT 11.32 EUR (2,204,910.90 / 194,849 = 11.32); the SEK comparison figure re-derives at delivery (11.32 × 11.275 = 127.63 SEK/GT; ranked order unchanged — HAM remains the highest per-GT figure).
+
+Erratum (2026-09-25): the first issue of this section stated 2,295,869.90 EUR / 11.78 / 132.86 SEK — an arithmetic slip that double-counted the terminal-independent charges (90,959.00 added twice). The engine-verified figure is 2,204,910.90; the pins, the drift table (§17.4 movements are unaffected), and the delivered baseline all carry the corrected value.
+
+### 17.6 HHLA adjudication — retire versus variant
+
+Cost of option (a) — retire HHLA (Eurogate-only):
+
+- Data: delete the 28 `hhla_*` rules and the `hhla` biller (1,809-line file loses ~620 lines); the input profile's operator select loses the HHLA option; the `gangway_class`/`gangway_count`/`gangway_supervision_hours` inputs retire (no Eurogate counterpart); `handling_rate_per_move` retires (the published rate replaces the estimate input).
+- Pins: terminal_scope's fallback contract (absent → HHLA) inverts; hamburg.test CP2–CP5 HHLA pins re-point to Eurogate equivalents or retire disclosed; handling_hygiene's estimate-subtotal pins re-derive (the estimated set drops to towage-only 15,000.00); functional_classification's vessel-access aggregate re-derives (Hafenfonds line replaced by the social fund, a non-vessel-access family).
+- Documentation: the HHLA extraction reference (§6, S4) is retained as historical documentation; S4/S5/S6 stay archived.
+- Risk: the HHLA comparison disappears from the live surface; if a user needs HHLA figures, the historical record is text-only.
+
+Cost of option (b) — keep HHLA as a switchable terminal variant:
+
+- Data: keep both layers gated `terminal_operator` (the gating already exists, v0.2.49); default flips to Eurogate. Per-port data grows by the Eurogate optional services only.
+- Engine: no change required — `terminal_operator` conditions, the operator select, and the fallback flag all exist. The fallback default (absent → HHLA) must re-point to Eurogate: a one-line engine default change plus its pin. The estimate machinery (handling_rate_per_move) stays for the HHLA variant.
+- UI: the operator select already renders both options; the comparison strip's "HHLA (default — the reference operator)" label re-points.
+- Pins: the same HHLA pins must anyway re-point (the default call changes operator); the marginal pin cost of the variant is near zero — both surfaces were already pinned at v0.2.49.
+
+Recommendation, argued from evidence: **option (b) — keep HHLA as a switchable terminal variant; Eurogate becomes the default and reference operator.** The marginal cost of the variant is small and was already paid at v0.2.49: the gating mechanism, the operator select, the mutual-exclusion pins, and both rule sets exist and are tested. Retiring HHLA would delete a working, pinned, archived surface and force every HHLA pin into a text-only historical record, while the variant preserves the honest in-app HHLA-vs-Eurogate comparison the tool exists to make — the two operators' published structures differ materially (tonnage 711,199 vs berthing 553,371; security 68,000 vs 99,800; fund 11,697 vs 29,781 at default). No variant mechanism beyond what exists is built in this pass; the promotion is a data-default flip plus new gated rules, not an engine change.
+
+### 17.7 Encoding decisions for the pass
+
+- `default_call.terminal_operator: Eurogate`; the input profile's operator list order and labels update (EUROGATE first, the default and reference operator; HHLA second, the switchable variant). The engine's `terminal_operator` fallback default re-points from HHLA to Eurogate — the only engine edit, a default constant plus its flag text, no architecture change.
+- New Eurogate rules, all gated `terminal_operator: Eurogate`, all with S9 citations: `eurogate_lashing` (5.2.1, 47.00 EUR/container, gated on a lashing container count input), `eurogate_twistlocks` (5.2.2, 24.00 EUR/container, same gate), `eurogate_imo_surcharge` (5.3, 87.00 EUR/container, gated on the dangerous-goods count), `eurogate_small_call_minimum` (5.4, 3,308.00 EUR, gated to calls of ≤20 handled containers — cannot fire at the default), `eurogate_layby_charge` (2.1.4, 1.34 EUR/TEU per 24 h, gated on a lay-by berth-day input), `eurogate_reefer_first_24h` (9.1, 181.50 EUR per reefer per first 24 h), `eurogate_reefer_subsequent_24h` (9.2, 144.50 EUR per reefer per subsequent 24 h).
+- New call inputs (Hamburg-scoped, default blank/zero — no seeded count may manufacture a charge): `lashing_containers`, `twistlock_containers`, `layby_teu_days` (gated to the lay-by scenario), reefer via the existing shared `reefer_units` + a Hamburg reefer-days input. The small-call minimum reads the existing container fields; no new input.
+- The social-fund exclusion list corrects to `[storage, security]` — `terminal_handling` leaves the exclusion list per S9 §1.3.13; the materials-for-stowing-and-lashing exclusion is the lashing-service lines' own materials (no lashing materials line exists in the fee surface; the exclusion is recorded in the reference and stays vacuous until a materials line exists).
+- Classification entries for every new rule id; berth-side rules join the web berth-dues membership where the segmentation contract requires.
+- The HHLA layer stands unchanged as the variant (scope guard: no HHLA rule edits beyond none; the layer only ceases to be the default).

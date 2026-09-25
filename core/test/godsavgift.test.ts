@@ -77,10 +77,14 @@ describe('Godsavgift — the Swedish national cargo-based fairway due (spec v0.2
     const ham = calculatePortCallCost(loadPort('hamburg_2026.yaml'), { vessel: DEFAULT_VESSEL, call: defaultCall('hamburg') });
     const hel = calculatePortCallCost(loadPort('helsingborg_2026.yaml'), { vessel: DEFAULT_VESSEL, call: defaultCall('helsingborg') });
     // Drift classification (expected, per the directive): GOT and HEL each
-    // gain exactly the 268,800.00 godsavgift line; HAM is untouched.
+    // gain exactly the 268,800.00 godsavgift line; HAM is untouched by
+    // the godsavgift (no Swedish national due at Hamburg). v0.2.66 drift
+    // reconciliation (Eurogate terminal promotion): HAM re-baselines from
+    // 2,313,489.31 (the HHLA variant, still switchable) to the Eurogate
+    // default 2,204,910.90 (extraction reference §17.5); GOT/HEL hold.
     expect(got.total).toBe(3007051.15 + 268800.00);
     expect(hel.total).toBe(8481257.40 + 268800.00);
-    expect(ham.total).toBe(2313489.31);
+    expect(ham.total).toBe(2204910.90);
     expect(got.total).toBe(3275851.15);
     expect(hel.total).toBe(8750057.40);
   });

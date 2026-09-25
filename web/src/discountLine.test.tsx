@@ -86,9 +86,11 @@ afterEach(async () => {
 // ---- Item 1: zero-drift pins — every baseline holds exactly -------------
 describe('comparison-legibility zero-drift pins (spec v0.2.64)', () => {
   it('every engine baseline holds with all new rendering in place (byte-identical totals and per-GT)', async () => {
+    // v0.2.66 promotion re-baseline: HAM 2,313,489.31 -> 2,204,910.90
+    // (the Eurogate terminal layer; §17.5); GOT/HEL byte-identical.
     for (const [portId, expected] of [
       ['gothenburg', 3275851.15],
-      ['hamburg', 2313489.31],
+      ['hamburg', 2204910.90],
       ['helsingborg', 8750057.40]
     ] as const) {
       const result = calculatePortCallCost(portById(portId), {
@@ -109,7 +111,7 @@ describe('comparison-legibility zero-drift pins (spec v0.2.64)', () => {
       'Grand Total',
       '3\u00a0275\u00a0851\u00a0kr16.81 SEK/GT effective \u2014 derived, not a published rate',
       '8\u00a0750\u00a0057\u00a0kr44.91 SEK/GT effective \u2014 derived, not a published rate',
-      '2\u00a0313\u00a0489\u00a0\u20ac\u2248 26\u00a0084\u00a0592\u00a0kr converted \u2014 at 11.275 kr/EUR, 2026-09-21133.87 SEK/GT effective \u2014 derived, not a published rate; converted at the exchange-rate input (at 11.275 kr/EUR, 2026-09-21)'
+      '2\u00a0204\u00a0911\u00a0\u20ac\u2248 24\u00a0860\u00a0370\u00a0kr converted \u2014 at 11.275 kr/EUR, 2026-09-21127.59 SEK/GT effective \u2014 derived, not a published rate; converted at the exchange-rate input (at 11.275 kr/EUR, 2026-09-21)'
     ]);
   });
 
@@ -118,11 +120,11 @@ describe('comparison-legibility zero-drift pins (spec v0.2.64)', () => {
     const stageRows = container!.querySelectorAll('.comparison-stage-row');
     expect(stageRows.length).toBe(3);
     expect((stageRows[0].textContent ?? '').trim())
-      .toBe('To reach the berth1\u00a0068\u00a0651\u00a0kr2\u00a0378\u00a0057\u00a0kr102\u00a0290\u00a0\u20ac');
+      .toBe('To reach the berth1\u00a0068\u00a0651\u00a0kr2\u00a0378\u00a0057\u00a0kr119\u00a0740\u00a0\u20ac');
     expect((stageRows[1].textContent ?? '').trim())
-      .toBe('At the berth0\u00a0kr0\u00a0kr711\u00a0199\u00a0\u20ac');
+      .toBe('At the berth0\u00a0kr0\u00a0kr553\u00a0371\u00a0\u20ac');
     expect((stageRows[2].textContent ?? '').trim())
-      .toBe('Quayside operations2\u00a0207\u00a0200\u00a0kr6\u00a0372\u00a0000\u00a0kr1\u00a0500\u00a0000\u00a0\u20ac');
+      .toBe('Quayside operations2\u00a0207\u00a0200\u00a0kr6\u00a0372\u00a0000\u00a0kr1\u00a0531\u00a0800\u00a0\u20ac');
   });
 });
 
@@ -189,7 +191,7 @@ describe('discounts received — the model (spec v0.2.64, item 2)', () => {
     expect(line.percentage.toFixed(2)).toBe('0.62');
   });
 
-  it('the HAM quantum discount fires at 2m prior-year GT: 1,228.25 EUR, 0.05% of gross', () => {
+  it('the HAM quantum discount fires at 2m prior-year GT: 1,228.25 EUR, 0.06% of gross (v0.2.66 re-baseline: the gross moved)', () => {
     const result = calculatePortCallCost(portById('hamburg'), {
       vessel: DEFAULT_VESSEL,
       call: { ...defaultCall('hamburg'), quantum_prior_year_gt: 2000000 } as CallInput
@@ -199,8 +201,8 @@ describe('discounts received — the model (spec v0.2.64, item 2)', () => {
     expect(line.components.length).toBe(1);
     expect(line.components[0].label).toContain('Quantum');
     expect(line.components[0].citation).toContain('pricelist-maritime-shipping-2026.pdf');
-    expect(line.grossCharges).toBe(2313489.31);
-    expect(line.percentage.toFixed(2)).toBe('0.05');
+    expect(line.grossCharges).toBe(2204910.90);
+    expect(line.percentage.toFixed(2)).toBe('0.06');
   });
 
   it('the HEL environmental discounts stack additively: 266,943.13 SEK, 3.05% of gross', () => {
@@ -302,7 +304,7 @@ describe('discounts received — the rendering (spec v0.2.64, item 2)', () => {
     const discountRow = container!.querySelector('.comparison-discount-row')!;
     expect(discountRow.textContent).toContain('1\u00a0228');
     expect(discountRow.textContent).toContain('converted');
-    expect(discountRow.textContent).toContain('0.05% of gross (pre-discount) charges');
+    expect(discountRow.textContent).toContain('0.06% of gross (pre-discount) charges');
   });
 
   it('mobile: the card carries the discount line with the honest no-discounts state at the default call', async () => {
@@ -444,7 +446,7 @@ describe('the derived per-GT metric\u2019s per-GT-OPS disclosure (spec v0.2.64, 
     const totalRow = Array.from(container!.querySelectorAll('.comparison-total-row'))
       .find(r => (r.textContent ?? '').includes('Grand Total'))!;
     const hamCell = Array.from(totalRow.querySelectorAll('.comparison-total-pergt'))
-      .find(c => (c.textContent ?? '').includes('134.34'))!;
+      .find(c => (c.textContent ?? '').includes('128.06'))!;
     expect(hamCell.textContent).toContain('includes user-specified OPS');
     expect(hamCell.textContent).not.toContain('per-GT OPS charge uses the same GT basis');
   });

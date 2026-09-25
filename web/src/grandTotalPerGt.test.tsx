@@ -98,15 +98,16 @@ describe('Grand Total derived per-GT — desktop comparison (spec v0.2.58)', () 
     expect(text).toContain('44.91 SEK/GT');
   });
 
-  it('HAM converts through the rate input: 133.87 SEK/GT at the default 11.275, with the derived-and-converted disclosure naming the rate dependency', async () => {
+  it('HAM converts through the rate input: 127.59 SEK/GT at the default 11.275, with the derived-and-converted disclosure naming the rate dependency (v0.2.66 re-baseline)', async () => {
     ({ container, root } = await renderComparison(false, defaultCall('gothenburg')));
     const totalRow = Array.from(container!.querySelectorAll('.comparison-total-row'))
       .find(r => (r.textContent ?? '').includes('Grand Total'))!;
     const hamCell = Array.from(totalRow.querySelectorAll('.comparison-total-pergt'))
       .find(c => (c.textContent ?? '').includes('converted at the exchange-rate input'))!;
     expect(hamCell).toBeDefined();
-    // 2,313,489.31 × 11.275 ÷ 194,849 = 133.87 SEK/GT
-    expect(hamCell.textContent).toContain('133.87 SEK/GT');
+    // v0.2.66 promotion re-baseline: 2,204,910.90 × 11.275 ÷ 194,849 =
+    // 127.59 SEK/GT (the Eurogate terminal layer; §17.5).
+    expect(hamCell.textContent).toContain('127.59 SEK/GT');
     expect(hamCell.textContent).toContain('11.275 kr/EUR');
   });
 
@@ -165,7 +166,7 @@ describe('Grand Total derived per-GT — mobile comparison cards (spec v0.2.58)'
     const hiddenTags = ham.querySelectorAll('.comparison-card-total .comparison-converted-hidden-tag');
     expect(hiddenTags.length).toBe(2);
     expect(Array.from(hiddenTags).some(t => (t.textContent ?? '').includes('converted per-GT figure hidden'))).toBe(true);
-    expect(ham.querySelector('.comparison-card-total')!.textContent).not.toContain('133.87');
+    expect(ham.querySelector('.comparison-card-total')!.textContent).not.toContain('127.59');
   });
 });
 

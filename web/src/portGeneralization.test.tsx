@@ -210,10 +210,13 @@ describe('profile-driven workspace inputs (spec v0.2.59)', () => {
     const operatorSection = profile.sections.find(sec => sec.operators);
     expect(operatorSection).toBeDefined();
     expect(operatorSection!.id).toBe('hamburg_call_parameters');
-    expect(operatorSection!.operators!.map(op => op.value)).toEqual(['HHLA', 'Eurogate']);
+    // v0.2.66 promotion re-point (disclosed): the seeded default operator is
+    // Eurogate, so the data list orders it first; HHLA is the switchable
+    // terminal variant.
+    expect(operatorSection!.operators!.map(op => op.value)).toEqual(['Eurogate', 'HHLA']);
     expect(operatorSection!.operators!.map(op => op.label)).toEqual([
-      'HHLA (CTA/CTB/CTT — reference operator)',
-      'EUROGATE Container Terminal Hamburg'
+      'EUROGATE Container Terminal Hamburg (default — reference operator)',
+      'HHLA (CTA/CTB/CTT — switchable terminal variant)'
     ]);
   });
 
@@ -244,8 +247,10 @@ describe('profile-driven workspace inputs (spec v0.2.59)', () => {
     // the former hardcoded MenuItems carried (the extraction contract).
     const profile = portInputProfile('hamburg');
     const labels = profile.sections.find(sec => sec.operators)!.operators!.map(op => op.label);
-    expect(labels[0]).toBe('HHLA (CTA/CTB/CTT — reference operator)');
-    expect(labels[1]).toBe('EUROGATE Container Terminal Hamburg');
+    // v0.2.66 promotion re-point (disclosed): the labels follow the flipped
+    // operator order (Eurogate default first, HHLA the switchable variant).
+    expect(labels[0]).toBe('EUROGATE Container Terminal Hamburg (default — reference operator)');
+    expect(labels[1]).toBe('HHLA (CTA/CTB/CTT — switchable terminal variant)');
   });
 });
 
@@ -272,7 +277,8 @@ describe('port-specific reset fields (spec v0.2.60)', () => {
         'pilotage_segment_pct', 'waste_short_sea_reduction',
         'waste_alternative_fuel_reduction', 'waste_sustainable_waste_reduction',
         'ops_electricity_price', 'ops_demand_charge', 'ops_connection_charge',
-        'ops_per_gt_charge'
+        'ops_per_gt_charge', 'lashing_containers', 'twistlock_containers',
+        'imo_containers', 'layby_hours', 'reefer_extra_days', 'small_call_containers'
       ],
       helsingborg: [
         'engine_tier', 'engine_tier_estimated', 'esi_score', 'esi_noise_score',

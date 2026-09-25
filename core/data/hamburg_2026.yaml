@@ -60,7 +60,6 @@ billers:
       percentage: 1.5
       exclude_families:
         - storage
-        - terminal_handling
         - security
       source_reference:
         document_name: "prices-and-conditions-2026.pdf"
@@ -1731,15 +1730,166 @@ fee_rules:
       clause: "13.1"
       verified_on: "2026-09-24"
       verified_by: "vibe-session-hamburg-terminal-scope"
+  - id: eurogate_lashing
+    fee_family: cargo_fee
+    biller: EUROGATE Container Terminal Hamburg
+    name: Lashing / Unlashing (system lashings)
+    description: "Eurogate lashing/unlashing using system lashings on board seagoing vessels, 47.00 EUR per container (S9 5.2.1; basis: overall volume of containers handled and restowed). Ordered service - fires only when a lashing container count is entered; blank charges zero, never a seeded count."
+    rate_structure:
+      type: per_unit
+      unit_type: lashing_containers
+      unit_rate: 47.00
+    applicable_conditions:
+      terminal_operator: Eurogate
+    source_reference:
+      document_name: "prices-and-conditions-2026.pdf"
+      document_url: "docs/sources/germany/hamburg/eurogate/prices-and-conditions-2026.pdf"
+      document_issued: "2026-01-01"
+      page: 7
+      clause: "5.2.1"
+      verified_on: "2026-09-25"
+      verified_by: "vibe-session-eurogate-promotion"
+  - id: eurogate_twistlocks
+    fee_family: cargo_fee
+    biller: EUROGATE Container Terminal Hamburg
+    name: Setting / Removing Twistlocks
+    description: "Eurogate setting/removing twistlocks on board, 24.00 EUR per container (S9 5.2.2). Ordered service - fires only when a twistlock container count is entered; blank charges zero."
+    rate_structure:
+      type: per_unit
+      unit_type: twistlock_containers
+      unit_rate: 24.00
+    applicable_conditions:
+      terminal_operator: Eurogate
+    source_reference:
+      document_name: "prices-and-conditions-2026.pdf"
+      document_url: "docs/sources/germany/hamburg/eurogate/prices-and-conditions-2026.pdf"
+      document_issued: "2026-01-01"
+      page: 7
+      clause: "5.2.2"
+      verified_on: "2026-09-25"
+      verified_by: "vibe-session-eurogate-promotion"
+  - id: eurogate_imo_surcharge
+    fee_family: cargo_fee
+    biller: EUROGATE Container Terminal Hamburg
+    name: IMO Container Surcharge
+    description: "Eurogate surcharge for IMO (dangerous-goods) containers, 87.00 EUR per container (S9 5.3). Fires only for IMO units; the default call carries none."
+    rate_structure:
+      type: per_unit
+      unit_type: imo_containers
+      unit_rate: 87.00
+    applicable_conditions:
+      terminal_operator: Eurogate
+    source_reference:
+      document_name: "prices-and-conditions-2026.pdf"
+      document_url: "docs/sources/germany/hamburg/eurogate/prices-and-conditions-2026.pdf"
+      document_issued: "2026-01-01"
+      page: 7
+      clause: "5.3"
+      verified_on: "2026-09-25"
+      verified_by: "vibe-session-eurogate-promotion"
+  - id: eurogate_small_call_minimum
+    fee_family: terminal_handling
+    biller: EUROGATE Container Terminal Hamburg
+    name: Small-Call Minimum (up to 20 containers)
+    description: "Eurogate charge for ships with up to 20 containers handled: 3,308.00 EUR per transaction per ship (S9 5.4). A minimum bill for small calls - can never fire for the 4,000-move default; the gate is the call's attested handled-container count, entered only for small calls (blank = not a small call, charges nothing)."
+    rate_structure:
+      type: banded_flat
+      basis: small_call_containers
+      bands:
+        - min: null
+          max: 20
+          amount: 3308.00
+        - min: 20
+          max: null
+          amount: 0.00
+    applicable_conditions:
+      terminal_operator: Eurogate
+      small_call_containers: present
+    source_reference:
+      document_name: "prices-and-conditions-2026.pdf"
+      document_url: "docs/sources/germany/hamburg/eurogate/prices-and-conditions-2026.pdf"
+      document_issued: "2026-01-01"
+      page: 7
+      clause: "5.4"
+      verified_on: "2026-09-25"
+      verified_by: "vibe-session-eurogate-promotion"
+  - id: eurogate_layby_charge
+    fee_family: vessel_fee
+    biller: EUROGATE Container Terminal Hamburg
+    name: Lay-By Berth Charge
+    description: "Eurogate lay-by berth charge: ships using the terminal as a lay-by berth prior to start or after completion of cargo operations, 1.34 EUR per TEU per 24 h or part thereof; berth dues count by maximum nominal TEU intake (S9 2.1.4). Fires only when lay-by hours are entered (blank charges nothing); the default is a working cargo call. The TEU basis is the vessel's maximum nominal TEU intake."
+    rate_structure:
+      type: per_commenced_period
+      basis: teu
+      hours_input: layby_hours
+      free_hours: 0
+      period_hours: 24
+      tiers:
+        - up_to_excess_hours: null
+          rate_per_period_per_basis: 1.34
+    applicable_conditions:
+      terminal_operator: Eurogate
+      layby_hours: present
+    source_reference:
+      document_name: "prices-and-conditions-2026.pdf"
+      document_url: "docs/sources/germany/hamburg/eurogate/prices-and-conditions-2026.pdf"
+      document_issued: "2026-01-01"
+      page: 4
+      clause: "2.1.4"
+      verified_on: "2026-09-25"
+      verified_by: "vibe-session-eurogate-promotion"
+  - id: eurogate_reefer_first_24h
+    fee_family: cargo_fee
+    biller: EUROGATE Container Terminal Hamburg
+    name: Reefer Temperature Maintenance - First 24 h
+    description: "Eurogate refrigeration and temperature maintenance: first 24 hours or part thereof including plug on / plug off in the yard, 181.50 EUR per reefer container (S9 9.1). Fires only with reefer units; the default call carries none."
+    rate_structure:
+      type: per_unit
+      unit_type: reefer
+      unit_rate: 181.50
+    applicable_conditions:
+      terminal_operator: Eurogate
+    source_reference:
+      document_name: "prices-and-conditions-2026.pdf"
+      document_url: "docs/sources/germany/hamburg/eurogate/prices-and-conditions-2026.pdf"
+      document_issued: "2026-01-01"
+      page: 12
+      clause: "9.1"
+      verified_on: "2026-09-25"
+      verified_by: "vibe-session-eurogate-promotion"
+  - id: eurogate_reefer_subsequent_24h
+    fee_family: cargo_fee
+    biller: EUROGATE Container Terminal Hamburg
+    name: Reefer Temperature Maintenance - Subsequent 24 h
+    description: "Eurogate refrigeration and temperature maintenance: each subsequent 24 hours or part thereof, 144.50 EUR per reefer container per day (S9 9.2). Fires only with reefer units and reefer days beyond the first 24 h; blank charges zero."
+    rate_structure:
+      type: per_commenced_day
+      daily_rate: 144.50
+      basis: reefer_extra_days
+      unit_input: reefer_units
+      unit_type: reefer_units
+    applicable_conditions:
+      terminal_operator: Eurogate
+      reefer_extra_days: present
+    source_reference:
+      document_name: "prices-and-conditions-2026.pdf"
+      document_url: "docs/sources/germany/hamburg/eurogate/prices-and-conditions-2026.pdf"
+      document_issued: "2026-01-01"
+      page: 12
+      clause: "9.2"
+      verified_on: "2026-09-25"
+      verified_by: "vibe-session-eurogate-promotion"
 # Per-port default-call data (spec v0.2.59): the port-specific input-form
 # defaults, data-authored in the port's own file. Configuration only -
 # list-price defaults, never rates. The engine overlays these on the shared
 # worst-case core (core/src/defaults.ts); the comparison applies the same
 # merge per port since v0.2.53.
 default_call:
-  # Terminal scope (spec v0.2.49): Hamburg calls are priced against a named
-  # terminal operator; the default and reference operator is HHLA.
-  terminal_operator: HHLA
+  # Terminal scope (spec v0.2.49; promotion per v0.2.66): Hamburg calls are
+  # priced against a named terminal operator; the default and reference
+  # operator is EUROGATE Container Terminal Hamburg. HHLA remains a
+  # switchable terminal variant (extraction reference §17.6).
+  terminal_operator: Eurogate
   # NOx Tier (spec v0.2.29, amended v0.2.44): not entered by default; the
   # engine infers from the build year when one is present.
   engine_tier: null
@@ -1795,6 +1945,12 @@ input_profile:
     - ops_demand_charge
     - ops_connection_charge
     - ops_per_gt_charge
+    - lashing_containers
+    - twistlock_containers
+    - imo_containers
+    - layby_hours
+    - reefer_extra_days
+    - small_call_containers
   # Field-level inputs inside the shared general-information group (the
   # build-year field drives the engine's Tier inference).
   fields:
@@ -1803,7 +1959,7 @@ input_profile:
     - id: hamburg_call_parameters
       heading: Hamburg Call Parameters
       operators:
-        - value: HHLA
-          label: HHLA (CTA/CTB/CTT — reference operator)
         - value: Eurogate
-          label: EUROGATE Container Terminal Hamburg
+          label: EUROGATE Container Terminal Hamburg (default — reference operator)
+        - value: HHLA
+          label: HHLA (CTA/CTB/CTT — switchable terminal variant)

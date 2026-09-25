@@ -1,10 +1,14 @@
 /**
  * v0.2.49 Hamburg terminal-scope and ship's-dues pins (diagnosis verdicts,
- * 2026-09-24). A Hamburg call is priced against a named terminal operator:
- * HHLA items only for HHLA calls (the reference default), Eurogate items
- * only for Eurogate calls. Verdicts established in the extraction reference
- * section 16 and grounded in S4 (HHLA Quay Tariff), S9 (Eurogate Prices and
- * Conditions), S5 (GTCCH), S6 (Kaibetriebsordnung):
+ * 2026-09-24); re-pinned at v0.2.66 for the Eurogate terminal promotion
+ * (extraction reference §17): the default and reference operator is now
+ * EUROGATE Container Terminal Hamburg; HHLA remains a switchable terminal
+ * variant whose rules and figures are unchanged. A Hamburg call is priced
+ * against a named terminal operator: Eurogate items only for Eurogate calls
+ * (the default), HHLA items only for HHLA calls (the variant). Verdicts
+ * established in the extraction reference sections 16-17 and grounded in
+ * S4 (HHLA Quay Tariff), S9 (Eurogate Prices and Conditions), S5 (GTCCH),
+ * S6 (Kaibetriebsordnung):
  *  - verdict one: clause 1.2 tonnage dues apply to fully cellular container
  *    vessels; clause 1.1's parenthetical excludes them from weight dues only
  *  - verdict two: Eurogate bills ship's dues (ch. 2) separately from the
@@ -20,7 +24,7 @@ import { defaultCall } from '../src/defaults';
 
 const hamburg = loadPortFromYaml('data/hamburg_2026.yaml');
 
-const MAREN = { gt: 194849, nt: 97000, loa_m: 399, vessel_type: 'container', built_year: 2014 } as any;
+const MAREN = { gt: 194849, nt: 97000, loa_m: 399, vessel_type: 'container', built_year: 2014, teu_capacity: 19076 } as any;
 
 const baseCall = () => {
   const call: any = { ...defaultCall('hamburg') };
@@ -36,39 +40,47 @@ const baseCall = () => {
 const feeLines = (result: any) => result.billers.flatMap((b: any) => b.fees);
 
 describe('terminal scope a: default operator and fallback visibility', () => {
-  it('an absent terminal operator defaults to HHLA with a visible fallback flag', () => {
+  it('an absent terminal operator defaults to Eurogate with a visible fallback flag (v0.2.66)', () => {
     const call = baseCall();
     delete call.terminal_operator;
     const result = calculatePortCallCost(hamburg, { vessel: MAREN, call });
     const flag = result.quality_flags.find((f: any) =>
       f.type === 'fallback_value' && /Terminal operator not selected/.test(f.description));
     expect(flag).toBeDefined();
-    const tonnage = feeLines(result).find((f: any) => f.fee_rule_id === 'hhla_tonnage_dues');
-    expect(tonnage).toBeDefined();
+    const berthing = feeLines(result).find((f: any) => f.fee_rule_id === 'eurogate_berthing_charge');
+    expect(berthing).toBeDefined();
   });
 
-  it('an unrecognized terminal operator falls back to HHLA with a visible flag', () => {
+  it('an unrecognized terminal operator falls back to Eurogate with a visible flag (v0.2.66)', () => {
     const call = baseCall();
     call.terminal_operator = 'DP World';
     const result = calculatePortCallCost(hamburg, { vessel: MAREN, call });
     const flag = result.quality_flags.find((f: any) =>
       f.type === 'fallback_value' && /DP World.*not recognized/.test(f.description));
     expect(flag).toBeDefined();
-    const tonnage = feeLines(result).find((f: any) => f.fee_rule_id === 'hhla_tonnage_dues');
-    expect(tonnage).toBeDefined();
+    const berthing = feeLines(result).find((f: any) => f.fee_rule_id === 'eurogate_berthing_charge');
+    expect(berthing).toBeDefined();
   });
 
-  it('an explicit HHLA selection prices identically to the seeded default, with no fallback flag', () => {
-    const seeded = calculatePortCallCost(hamburg, { vessel: MAREN, call: baseCall() });
+  it('an explicit HHLA selection prices the unchanged HHLA variant (2,313,489.31), with no fallback flag', () => {
     const explicitCall = baseCall();
     explicitCall.terminal_operator = 'HHLA';
     const explicit = calculatePortCallCost(hamburg, { vessel: MAREN, call: explicitCall });
-    expect(explicit.total).toBe(seeded.total);
     expect(explicit.total).toBe(2313489.31);
     const tonnage = feeLines(explicit).find((f: any) => f.fee_rule_id === 'hhla_tonnage_dues');
     expect(tonnage.amount).toBe(711198.85);
     expect(explicit.quality_flags.some((f: any) =>
       f.type === 'fallback_value' && /Terminal operator/.test(f.description))).toBe(false);
+  });
+  it('the seeded default is the Eurogate call: 2,204,910.90 with no fallback flag (v0.2.66 promotion)', () => {
+    const seeded = calculatePortCallCost(hamburg, { vessel: MAREN, call: baseCall() });
+    expect(seeded.total).toBe(2204910.90);
+    expect(seeded.quality_flags.some((f: any) =>
+      f.type === 'fallback_value' && /Terminal operator/.test(f.description))).toBe(false);
+    const eCall = baseCall();
+    eCall.terminal_operator = 'Eurogate';
+    const explicit = calculatePortCallCost(hamburg, { vessel: MAREN, call: eCall });
+    expect(explicit.total).toBe(seeded.total);
   });
 });
 
@@ -80,8 +92,22 @@ describe('terminal scope b: Eurogate call suppresses HHLA items, keeps port-wide
     const lines = feeLines(result);
     const hhlaLines = lines.filter((f: any) => /hhla_/.test(f.fee_rule_id ?? ''));
     expect(hhlaLines.length).toBe(0);
+    // The per_unit optional services render zero-amount lines at the default
+    // (blank count; same convention as the HHLA container services), while
+    // the presence-gated rules (small-call minimum, lay-by, reefer days
+    // beyond the first 24 h) render nothing at all.
     const egIds = lines.map((f: any) => f.fee_rule_id).filter((id: any) => /eurogate_/.test(id)).sort();
-    expect(egIds).toEqual(['eurogate_berthing_charge', 'eurogate_container_handling', 'eurogate_security_charge', 'eurogate_social_fund_surcharge']);
+    expect(egIds).toEqual(['eurogate_berthing_charge', 'eurogate_container_handling',
+      'eurogate_imo_surcharge', 'eurogate_lashing', 'eurogate_reefer_first_24h',
+      'eurogate_security_charge', 'eurogate_social_fund_surcharge', 'eurogate_twistlocks']);
+    for (const gid of ['eurogate_lashing', 'eurogate_twistlocks', 'eurogate_imo_surcharge',
+      'eurogate_reefer_first_24h']) {
+      expect(lines.find((f: any) => f.fee_rule_id === gid)!.amount).toBe(0);
+    }
+    for (const gid of ['eurogate_small_call_minimum', 'eurogate_layby_charge',
+      'eurogate_reefer_subsequent_24h']) {
+      expect(lines.find((f: any) => f.fee_rule_id === gid)).toBeUndefined();
+    }
   });
 
   it('port-wide charges (HPA port fee, pilotage, BUKEA waste, towage) fire on an Eurogate call unchanged', () => {
@@ -118,7 +144,7 @@ describe('terminal scope b: Eurogate call suppresses HHLA items, keeps port-wide
     expect(handling.quality_flags.some((f: any) => f.type === 'estimated_parameter')).toBe(false);
   });
 
-  it('Eurogate security 4,000 x 24.95 = 99,800 and the 1.5% social fund applies to the berthing charge (S9 13.1, 1.3.13)', () => {
+  it('Eurogate security 4,000 x 24.95 = 99,800; the 1.5% social fund covers berthing + handling, excluding security (S9 13.1, 1.3.13 - corrected base per §17.2 defect finding)', () => {
     const call = baseCall();
     call.terminal_operator = 'Eurogate';
     const result = calculatePortCallCost(hamburg, { vessel: MAREN, call });
@@ -126,7 +152,7 @@ describe('terminal scope b: Eurogate call suppresses HHLA items, keeps port-wide
     expect(security.amount).toBe(99800.00);
     const fund = feeLines(result).find((f: any) => f.fee_rule_id === 'eurogate_social_fund_surcharge');
     expect(fund).toBeDefined();
-    expect(fund.amount).toBe(8300.57);
+    expect(fund.amount).toBe(29780.57);
   });
 
   it('no mixed biller set exists for any operator value (HHLA, Eurogate, unknown)', () => {
@@ -162,5 +188,93 @@ describe('terminal scope b: Eurogate call suppresses HHLA items, keeps port-wide
       const berth = feeLines(result).find((f: any) => f.fee_rule_id === 'hpa_berth_fee_quay');
       expect(berth).toBeUndefined();
     }
+  });
+});
+
+/* v0.2.66 promotion pins: the Eurogate optional services (S9 5.2/5.3/5.4/
+ * 2.1.4/9.1/9.2) - every rate script-computed from the archived text; the
+ * gates verify blank-renders-nothing and the fired arithmetic. */
+describe('terminal scope c: Eurogate optional services (v0.2.66, S9 chs. 2/5/9)', () => {
+  it('lashing 4,000 x 47.00 = 188,000.00 (S9 5.2.1)', () => {
+    const call = baseCall();
+    call.terminal_operator = 'Eurogate';
+    call.lashing_containers = 4000;
+    const result = calculatePortCallCost(hamburg, { vessel: MAREN, call });
+    const line = feeLines(result).find((f: any) => f.fee_rule_id === 'eurogate_lashing');
+    expect(line.amount).toBe(188000.00);
+  });
+  it('twistlocks 4,000 x 24.00 = 96,000.00 (S9 5.2.2)', () => {
+    const call = baseCall();
+    call.terminal_operator = 'Eurogate';
+    call.twistlock_containers = 4000;
+    const result = calculatePortCallCost(hamburg, { vessel: MAREN, call });
+    const line = feeLines(result).find((f: any) => f.fee_rule_id === 'eurogate_twistlocks');
+    expect(line.amount).toBe(96000.00);
+  });
+  it('IMO surcharge 40 x 87.00 = 3,480.00 (S9 5.3)', () => {
+    const call = baseCall();
+    call.terminal_operator = 'Eurogate';
+    call.imo_containers = 40;
+    const result = calculatePortCallCost(hamburg, { vessel: MAREN, call });
+    const line = feeLines(result).find((f: any) => f.fee_rule_id === 'eurogate_imo_surcharge');
+    expect(line.amount).toBe(3480.00);
+  });
+  it('small-call minimum: exactly 20 handled containers bills 3,308.00; 21 bills the 0.00 band (S9 5.4 boundary)', () => {
+    const call = baseCall();
+    call.terminal_operator = 'Eurogate';
+    call.small_call_containers = 20;
+    const result = calculatePortCallCost(hamburg, { vessel: MAREN, call });
+    const line = feeLines(result).find((f: any) => f.fee_rule_id === 'eurogate_small_call_minimum');
+    expect(line.amount).toBe(3308.00);
+    const call21 = baseCall();
+    call21.terminal_operator = 'Eurogate';
+    call21.small_call_containers = 21;
+    const result21 = calculatePortCallCost(hamburg, { vessel: MAREN, call: call21 });
+    const line21 = feeLines(result21).find((f: any) => f.fee_rule_id === 'eurogate_small_call_minimum');
+    expect(line21.amount).toBe(0.00);
+  });
+  it('lay-by charge: 30 h = 2 commenced 24-h periods x 19,076 TEU x 1.34 = 51,123.68 (S9 2.1.4)', () => {
+    const call = baseCall();
+    call.terminal_operator = 'Eurogate';
+    call.layby_hours = 30;
+    const result = calculatePortCallCost(hamburg, { vessel: MAREN, call });
+    const line = feeLines(result).find((f: any) => f.fee_rule_id === 'eurogate_layby_charge');
+    expect(line.amount).toBe(51123.68);
+  });
+  it('reefer: first 24 h 100 x 181.50 = 18,150.00; 3 subsequent days 100 x 3 x 144.50 = 43,350.00 (S9 9.1/9.2)', () => {
+    const call = baseCall();
+    call.terminal_operator = 'Eurogate';
+    call.reefer_units = 100;
+    call.reefer_extra_days = 3;
+    const result = calculatePortCallCost(hamburg, { vessel: MAREN, call });
+    const first = feeLines(result).find((f: any) => f.fee_rule_id === 'eurogate_reefer_first_24h');
+    expect(first.amount).toBe(18150.00);
+    const subsequent = feeLines(result).find((f: any) => f.fee_rule_id === 'eurogate_reefer_subsequent_24h');
+    expect(subsequent.amount).toBe(43350.00);
+  });
+  it('the social fund covers the optional services too: lashing + twistlocks + IMO at the default moves -> 1.5% of the expanded base (S9 1.3.13)', () => {
+    const call = baseCall();
+    call.terminal_operator = 'Eurogate';
+    call.lashing_containers = 4000;
+    call.twistlock_containers = 4000;
+    call.imo_containers = 40;
+    const result = calculatePortCallCost(hamburg, { vessel: MAREN, call });
+    const fund = feeLines(result).find((f: any) => f.fee_rule_id === 'eurogate_social_fund_surcharge');
+    // base = 553,371.16 + 1,432,000 + 188,000 + 96,000 + 3,480 = 2,272,851.16; 1.5% = 34,092.77
+    expect(fund.amount).toBe(34092.77);
+  });
+  it('HHLA calls fire none of the Eurogate optional services even with counts entered (variant isolation)', () => {
+    const call = baseCall();
+    call.terminal_operator = 'HHLA';
+    call.lashing_containers = 4000;
+    call.twistlock_containers = 4000;
+    call.imo_containers = 40;
+    call.reefer_units = 100;
+    call.reefer_extra_days = 3;
+    call.layby_hours = 30;
+    call.small_call_containers = 10;
+    const result = calculatePortCallCost(hamburg, { vessel: MAREN, call });
+    const egIds = feeLines(result).map((f: any) => f.fee_rule_id).filter((id: any) => /eurogate_/.test(id));
+    expect(egIds.length).toBe(0);
   });
 });

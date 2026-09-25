@@ -187,15 +187,18 @@ export function evaluateFeeRule(
     // Hamburg terminal scope (spec v0.2.49): a Hamburg call is priced against
     // a named terminal operator. HHLA ship's-dues items apply only to HHLA
     // calls; EUROGATE items only to Eurogate calls. An absent or unrecognized
-    // operator falls back to HHLA, the model's reference operator, and that
-    // fallback is always visible, never silent (spec 4.4.2).
+    // Terminal scope (spec v0.2.49; default operator re-pointed to Eurogate
+    // per the v0.2.66 promotion, Hamburg extraction reference §17.6/§17.7):
+    // absent or unrecognized operator falls back to Eurogate, the model's
+    // default and reference operator, and that fallback is always visible,
+    // never silent (spec 4.4.2).
     if (rule.applicable_conditions.terminal_operator) {
       const required = Array.isArray(rule.applicable_conditions.terminal_operator)
         ? rule.applicable_conditions.terminal_operator
         : [rule.applicable_conditions.terminal_operator];
       const known = ['HHLA', 'Eurogate'];
       const entered = call.terminal_operator;
-      const op = entered && known.includes(entered) ? entered : 'HHLA';
+      const op = entered && known.includes(entered) ? entered : 'Eurogate';
       if (!required.includes(op)) {
         return null;
       }
@@ -203,8 +206,8 @@ export function evaluateFeeRule(
         qualityFlags.push({
           type: 'fallback_value',
           description: entered
-            ? `Terminal operator "${entered}" not recognized; defaulted to HHLA (the reference operator for the Hamburg model — spec v0.2.49 terminal scope)`
-            : 'Terminal operator not selected; defaulted to HHLA (the reference operator for the Hamburg model — spec v0.2.49 terminal scope)',
+            ? `Terminal operator "${entered}" not recognized; defaulted to Eurogate (the default and reference operator for the Hamburg model — spec v0.2.66 terminal promotion)`
+            : 'Terminal operator not selected; defaulted to Eurogate (the default and reference operator for the Hamburg model — spec v0.2.66 terminal promotion)',
           severity: 'info'
         });
       }

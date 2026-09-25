@@ -40,6 +40,12 @@ describe('audit b/c: the new Hamburg rules fire under the right inputs', () => {
   const vessel = { gt: 21979, nt: 8000, loa_m: 171.92, built_year: 2024, vessel_type: 'container' } as any;
   const base = {
     port_id: 'hamburg', date: '2026-09-21',
+    // v0.2.66 promotion re-point (disclosed, assertion-preserving): these
+    // pins document the HHLA layer's optional-service tariff behavior, which
+    // stands unchanged as the switchable terminal variant (the seeded default
+    // is Eurogate — pinned in terminal_scope.test.ts); the calls are pinned to
+    // the variant explicitly so the HHLA rules fire as audited.
+    terminal_operator: 'HHLA',
     containers_discharged_le20ft: 0, containers_discharged_gt20ft: 0,
     containers_loaded_le20ft: 0, containers_loaded_gt20ft: 0,
     lay_time_hours: 16
@@ -187,6 +193,12 @@ function triPortCall(port: PortDefinition, vesselName: string): any {
     call.pilotage_segment_pct = 100;
     call.towage_amount = 15000;
     call.handling_rate_per_move = 358;
+    // v0.2.66 promotion re-point (disclosed, assertion-preserving): the
+    // CP2–CP5 reference checkpoints document the HHLA layer's tariff
+    // behavior, which stands unchanged as the switchable terminal variant;
+    // the calls are pinned to it explicitly. The Eurogate default carries
+    // its own sanity block below (script-computed, §17.5).
+    call.terminal_operator = 'HHLA';
   }
   if (port.metadata.id === 'helsingborg') {
     call.ees_rate_per_move = 35;
@@ -201,9 +213,29 @@ describe('tri-port sanity check: Hamburg reproduces all four reference checkpoin
     ['MSC KYUNGMIN', 201628.48],  // CP3
     ['VISTULA MAERSK', 262907.05],// CP4
     ['MAREN MAERSK', 1938234.31]  // CP5
-  ])('%s total EUR', (name, expected) => {
+  ])('%s total EUR (HHLA variant, v0.2.66 re-point)', (name, expected) => {
     const vessel = { ...LIBRARY_VESSELS[name as string], vessel_type: 'container' } as any;
     const result = calculatePortCallCost(hamburg, { vessel, call: triPortCall(hamburg, name as string) });
+    expect(result.total).toBeCloseTo(expected as number, 1);
+  });
+});
+
+describe('tri-port sanity check: Hamburg under the Eurogate default (v0.2.66 re-baseline, §17.5)', () => {
+  // Script-computed against the engine at the promotion baseline; every
+  // movement versus the HHLA checkpoints is classified in §17.4 (terminal
+  // layer replaced: HHLA tonnage/handling/security/suppleness swapped for
+  // Eurogate berthing/handling/security/social-fund; terminal-independent
+  // HPA/GDWS/BUKEA/towage charges do not move).
+  it.each([
+    ['HELGAFELL', 183093.96],
+    ['MSC KYUNGMIN', 201526.35],
+    ['VISTULA MAERSK', 261361.15],
+    ['MAREN MAERSK', 1816590.90]
+  ])('%s total EUR (Eurogate default)', (name, expected) => {
+    const vessel = { ...LIBRARY_VESSELS[name as string], vessel_type: 'container' } as any;
+    const call = { ...triPortCall(hamburg, name as string) };
+    delete call.terminal_operator;
+    const result = calculatePortCallCost(hamburg, { vessel, call });
     expect(result.total).toBeCloseTo(expected as number, 1);
   });
 });

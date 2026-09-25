@@ -365,12 +365,16 @@ describe('Estimated-parameters subtotal composition including towage (spec v0.2.
     expect(result.total_without_estimates).toBeCloseTo(result.total - 120000, 2);
   });
 
-  it('Hamburg: handling (1,432,000: 4000 moves x 358) + towage (15,000) in the estimate subtotal', () => {
-    // Re-pinned for the v0.2.48 default profile (deliberate change: Maren
-    // Maersk seeds 4,000 moves; old pin 731,000 = 2,000 moves x 358 + 15,000).
+  it('Hamburg: the Eurogate default carries only the towage estimate (15,000) in the estimate subtotal (v0.2.66)', () => {
+    // v0.2.66 promotion re-pin: under the Eurogate default the handling
+    // line is the published 5.1.1 rate (no estimated flag), so the
+    // estimated-parameters subtotal is the towage estimate alone. The
+    // HHLA variant's 1,447,000 (4,000 moves x 358 handling estimate +
+    // 15,000 towage) is exercised against the explicit HHLA call in the
+    // mechanics suites.
     const port = loadPort('hamburg');
     const result = calculatePortCallCost(port, defaultInputFor(port));
-    expect(result.total_estimated_parameters).toBe(1447000);
+    expect(result.total_estimated_parameters).toBe(15000);
   });
 
   it('Helsingborg: towage (120,000: LOA 290 -> 2 tugs) in the estimate subtotal; the seeded EES rate is a user input, not an estimate', () => {

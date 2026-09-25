@@ -159,8 +159,11 @@ describe('comparison stages and charge-type lines render (spec v0.2.52)', () => 
     expect(container.textContent).not.toContain('not charged');
   });
 
-  it('the tonnage-dues figure renders under the Berth dues line (HHLA default call), never under cargo', async () => {
-    ({ container, root } = await renderComparison(defaultCall('hamburg')));
+  it('the tonnage-dues figure renders under the Berth dues line at the HHLA variant, never under cargo (v0.2.66 re-point)', async () => {
+    ({ container, root } = await renderComparison({
+      ...defaultCall('hamburg'),
+      terminal_operator: 'HHLA'
+    }));
     const berthRow = Array.from(container.querySelectorAll('.comparison-chargetype-row'))
       .find(r => (r.textContent ?? '').includes('Berth dues'));
     expect(berthRow).toBeDefined();
@@ -168,11 +171,8 @@ describe('comparison stages and charge-type lines render (spec v0.2.52)', () => 
     expect(berthRow!.textContent).not.toContain('1\u00a0432\u00a0000'); // handling never lands here
   });
 
-  it('the Eurogate berthing figure joins the same Berth dues line (same economic animal)', async () => {
-    ({ container, root } = await renderComparison({
-      ...defaultCall('hamburg'),
-      terminal_operator: 'Eurogate'
-    }));
+  it('the Eurogate berthing figure joins the same Berth dues line on the default call (same economic animal; v0.2.66 re-baseline)', async () => {
+    ({ container, root } = await renderComparison(defaultCall('hamburg')));
     const berthRow = Array.from(container.querySelectorAll('.comparison-chargetype-row'))
       .find(r => (r.textContent ?? '').includes('Berth dues'));
     expect(berthRow).toBeDefined();
@@ -277,9 +277,11 @@ describe('default-call totals and theme discipline stand (spec v0.2.50/v0.2.51; 
     // v0.2.61 drift re-pin (godsavgift promotion, expected per the
     // directive): GOT 3,007,051.15 + 268,800.00 = 3,275,851.15;
     // HEL 8,481,257.40 + 268,800.00 = 8,750,057.40; HAM untouched.
+    // v0.2.66 promotion re-baseline: HAM 2,313,489.31 -> 2,204,910.90 (the
+    // Eurogate terminal layer; §17.5); GOT/HEL byte-identical.
     for (const [portId, expected] of [
       ['gothenburg', 3275851.15],
-      ['hamburg', 2313489.31],
+      ['hamburg', 2204910.90],
       ['helsingborg', 8750057.40]
     ] as const) {
       const port = LOADED_PORTS.find(p => p.metadata.id === portId)!;

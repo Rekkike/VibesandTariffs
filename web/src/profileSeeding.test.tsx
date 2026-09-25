@@ -374,7 +374,9 @@ describe('default-call figures at all three ports (spec v0.2.48, deliberate cont
         // 268,800.00 (80,000 t × 3.36 kr/t) → 3,275,851.15.
         expect(total).toBeCloseTo(3275851.15, 2);
       } else {
-        expect(total).toBeCloseTo(2313489.31, 2);
+        // v0.2.66 promotion re-baseline: 2,313,489.31 -> 2,204,910.90
+        // (the Eurogate terminal layer; §17.5).
+        expect(total).toBeCloseTo(2204910.9, 2);
       }
     }
   });

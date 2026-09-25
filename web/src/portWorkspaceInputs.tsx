@@ -278,10 +278,13 @@ export const WorkspaceInputs: React.FC<WorkspaceInputsProps> = (props) => {
                   parameters that describe the call itself, not a port's
                   specific tariff — lay time directly under the selection,
                   the four container counts as one compact secondary row.
-                  Lay time is a shared input: HHLA tonnage dues and the HPA
-                  demurrage read it at Hamburg (S4 clause 1.2; the port card
-                  keeps its tariff caveats in its helper text), and the
-                  Swedish per-commenced-period rules fall back to it. */}
+                  Lay time is a shared input: the terminal layer's lay-time
+                  basis (Eurogate berthing at the default operator, HHLA
+                  tonnage dues at the variant) and the HPA demurrage read it
+                  at Hamburg (Eurogate P&C 2.1.1–2.1.2, HHLA S4 clause 1.2;
+                  the port card keeps its tariff caveats in its helper text),
+                  and the Swedish per-commenced-period rules fall back to
+                  it. */}
               <Box className="general-info-group" component="section" aria-label="Call general information">
                 <Typography variant="subtitle2" component="h3" className="general-info-heading">
                   General call information
@@ -298,7 +301,7 @@ export const WorkspaceInputs: React.FC<WorkspaceInputsProps> = (props) => {
                     (assumedFields.includes('lay_time_hours')
                       ? `${PROFILE_ASSUMPTION_TEXT.lay_time_hours}. `
                       : '') +
-                    'Lay time runs berthing to casting off; Sundays and holidays count only if worked — modeled as a simple hours input (S4 clause 1.2). HHLA tonnage dues: first 24 h full rate, then per commenced 12 h. Blank = not entered'
+                    'Lay time runs berthing to casting off; Sundays and holidays count only if worked — modeled as a simple hours input (sources: Eurogate Prices and Conditions 2.1.1–2.1.2; HHLA Quay Tariff S4 clause 1.2). Terminal lay-time charge: Eurogate berthing at the default operator — 1.04 EUR/GT first 24 h, then 0.60 EUR/GT per commenced 12 h; HHLA tonnage dues at the variant — first 24 h full rate, then per commenced 12 h. Blank = not entered'
                   }
                   FormHelperTextProps={{ className: 'profile-assumption-helper' }}
                 />
@@ -901,52 +904,61 @@ export const WorkspaceInputs: React.FC<WorkspaceInputsProps> = (props) => {
                         helperText="Estimated; no published tariff (3 tugs × ~5,000 EUR market range)"
                       />
                     </Grid>
-                    <Grid item xs={12} sm={6}>
-                      <TextField
-                        label="Handling Rate per Move (EUR) — est."
-                        type="number"
-                        value={state.call.handling_rate_per_move ?? 358}
-                        onChange={(e) => handleCallChange('handling_rate_per_move', parseFloat(e.target.value) || undefined)}
-                        fullWidth
-                        InputLabelProps={{ shrink: true }}
-                        helperText="Estimated; HHLA unpublished, anchored to Eurogate Hamburg 5.1.1"
-                      />
-                    </Grid>
-                    <Grid item xs={12} sm={6}>
-                      <TextField
-                        label="Gangways"
-                        type="number"
-                        value={state.call.gangway_count ?? 1}
-                        onChange={(e) => handleCallChange('gangway_count', parseFloat(e.target.value) || undefined)}
-                        fullWidth
-                        InputLabelProps={{ shrink: true }}
-                        helperText="One gangway per call default"
-                      />
-                    </Grid>
-                    <Grid item xs={12} sm={6}>
-                      <TextField
-                        label="Gangway Supervision (hours)"
-                        type="number"
-                        value={state.call.gangway_supervision_hours ?? 0}
-                        onChange={(e) => handleCallChange('gangway_supervision_hours', parseFloat(e.target.value) || undefined)}
-                        fullWidth
-                        InputLabelProps={{ shrink: true }}
-                        helperText="101.30 EUR/h during operations; 0 in reference calls"
-                      />
-                    </Grid>
-                    <Grid item xs={12} sm={6}>
-                      <FormControl fullWidth>
-                        <InputLabel>Gangway Class</InputLabel>
-                        <Select
-                          value={state.call.gangway_class || 'overseas'}
-                          onChange={(e) => handleCallChange('gangway_class', e.target.value as string)}
-                          label="Gangway Class"
-                        >
-                          <MenuItem value="feeder">Feeder (453.50 EUR)</MenuItem>
-                          <MenuItem value="overseas">Overseas (633.80 EUR)</MenuItem>
-                        </Select>
-                      </FormControl>
-                    </Grid>
+                    {/* HHLA-variant inputs (spec v0.2.66): the handling-rate
+                        estimate and the gangway charges are HHLA layer;
+                        under the Eurogate default the handling rate is the
+                        published 5.1.1 price and S9 carries no gangway
+                        charge, so the fields render only for the variant. */}
+                    {(state.call.terminal_operator === 'HHLA') && (
+                      <>
+                        <Grid item xs={12} sm={6}>
+                          <TextField
+                            label="Handling Rate per Move (EUR) — est."
+                            type="number"
+                            value={state.call.handling_rate_per_move ?? 358}
+                            onChange={(e) => handleCallChange('handling_rate_per_move', parseFloat(e.target.value) || undefined)}
+                            fullWidth
+                            InputLabelProps={{ shrink: true }}
+                            helperText="Estimated; HHLA unpublished, anchored to Eurogate Hamburg 5.1.1"
+                          />
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
+                          <TextField
+                            label="Gangways"
+                            type="number"
+                            value={state.call.gangway_count ?? 1}
+                            onChange={(e) => handleCallChange('gangway_count', parseFloat(e.target.value) || undefined)}
+                            fullWidth
+                            InputLabelProps={{ shrink: true }}
+                            helperText="One gangway per call default"
+                          />
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
+                          <TextField
+                            label="Gangway Supervision (hours)"
+                            type="number"
+                            value={state.call.gangway_supervision_hours ?? 0}
+                            onChange={(e) => handleCallChange('gangway_supervision_hours', parseFloat(e.target.value) || undefined)}
+                            fullWidth
+                            InputLabelProps={{ shrink: true }}
+                            helperText="101.30 EUR/h during operations; 0 in reference calls"
+                          />
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
+                          <FormControl fullWidth>
+                            <InputLabel>Gangway Class</InputLabel>
+                            <Select
+                              value={state.call.gangway_class || 'overseas'}
+                              onChange={(e) => handleCallChange('gangway_class', e.target.value as string)}
+                              label="Gangway Class"
+                            >
+                              <MenuItem value="feeder">Feeder (453.50 EUR)</MenuItem>
+                              <MenuItem value="overseas">Overseas (633.80 EUR)</MenuItem>
+                            </Select>
+                          </FormControl>
+                        </Grid>
+                      </>
+                    )}
                     <Grid item xs={12}>
                       <FormControlLabel
                         control={
@@ -1023,6 +1035,84 @@ export const WorkspaceInputs: React.FC<WorkspaceInputsProps> = (props) => {
                         label="Sustainable waste (−2% MARPOL V)"
                       />
                     </Grid>
+                    {/* Eurogate optional services (spec v0.2.66, S9 chs. 2/5/9):
+                        ordered or gated services rendered only under the
+                        Eurogate operator; blank charges nothing. */}
+                    {(state.call.terminal_operator !== 'HHLA') && (
+                      <>
+                        <Grid item xs={12}>
+                          <Typography variant="body2" className="segment-description">
+                            EUROGATE optional services (ordered services, blank = not ordered; Prices and Conditions chs. 2, 5, 9)
+                          </Typography>
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
+                          <TextField
+                            label="Lashing / unlashing containers (47.00 EUR each)"
+                            type="number"
+                            value={state.call.lashing_containers ?? ''}
+                            onChange={(e) => handleCallChange('lashing_containers', parseFloat(e.target.value) || undefined)}
+                            fullWidth
+                            InputLabelProps={{ shrink: true }}
+                            helperText="System lashings on board, per container handled/restowed (P&C 5.2.1)"
+                          />
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
+                          <TextField
+                            label="Twistlock containers (24.00 EUR each)"
+                            type="number"
+                            value={state.call.twistlock_containers ?? ''}
+                            onChange={(e) => handleCallChange('twistlock_containers', parseFloat(e.target.value) || undefined)}
+                            fullWidth
+                            InputLabelProps={{ shrink: true }}
+                            helperText="Setting / removing twistlocks on board, per container (P&C 5.2.2)"
+                          />
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
+                          <TextField
+                            label="IMO containers (87.00 EUR each)"
+                            type="number"
+                            value={state.call.imo_containers ?? ''}
+                            onChange={(e) => handleCallChange('imo_containers', parseFloat(e.target.value) || undefined)}
+                            fullWidth
+                            InputLabelProps={{ shrink: true }}
+                            helperText="Surcharge for IMO (dangerous-goods) containers, per container (P&C 5.3)"
+                          />
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
+                          <TextField
+                            label="Small-call handled containers (≤20 → 3,308.00 EUR per ship)"
+                            type="number"
+                            value={state.call.small_call_containers ?? ''}
+                            onChange={(e) => handleCallChange('small_call_containers', parseFloat(e.target.value) || undefined)}
+                            fullWidth
+                            InputLabelProps={{ shrink: true }}
+                            helperText="Enter the call's handled-container count only for a small call (P&C 5.4); blank = not a small call"
+                          />
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
+                          <TextField
+                            label="Lay-by berth hours (1.34 EUR/TEU per commenced 24 h)"
+                            type="number"
+                            value={state.call.layby_hours ?? ''}
+                            onChange={(e) => handleCallChange('layby_hours', parseFloat(e.target.value) || undefined)}
+                            fullWidth
+                            InputLabelProps={{ shrink: true }}
+                            helperText="Lay-by use before start / after completion of cargo operations (P&C 2.1.4); TEU basis is the vessel's nominal intake"
+                          />
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
+                          <TextField
+                            label="Reefer days beyond the first 24 h (144.50 EUR/reefer/day)"
+                            type="number"
+                            value={state.call.reefer_extra_days ?? ''}
+                            onChange={(e) => handleCallChange('reefer_extra_days', parseFloat(e.target.value) || undefined)}
+                            fullWidth
+                            InputLabelProps={{ shrink: true }}
+                            helperText="Subsequent 24-h temperature maintenance (P&C 9.2); requires reefer units in the shared special-cargo group"
+                          />
+                        </Grid>
+                      </>
+                    )}
                   </Grid>
                 </>
               )}

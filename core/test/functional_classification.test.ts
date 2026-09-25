@@ -117,22 +117,23 @@ describe('Vessel-access aggregate (spec v0.2.30)', () => {
     ]);
   });
 
-  it('Hamburg: aggregate is the HPA port fee + HHLA tonnage dues + Hafenfonds surcharge, exact rule-id set', () => {
+  it('Hamburg: aggregate is the HPA port fee + Eurogate berthing charge + social-fund surcharge, exact rule-id set (v0.2.66 promotion re-pin)', () => {
     const ham = loadPort('hamburg_2026.yaml');
     const res = calculatePortCallCost(ham, canonicalCall('hamburg'));
     expect(res.vessel_access).toBeDefined();
     expect(res.vessel_access!.rule_ids.sort()).toEqual([
-      'hhla_hafenfonds_surcharge',
-      'hhla_tonnage_dues',
+      'eurogate_berthing_charge',
+      'eurogate_social_fund_surcharge',
       'hpa_port_fee'
     ]);
-    // Hafenfonds is a surcharge on HHLA quay-tariff fees (including the
-    // tonnage dues): berth/terminal infrastructure like the fee it uplifts.
-    // Re-pinned for the v0.2.48 default vessel (deliberate change: Maren
-    // Maersk — 62,030.41 (HPA) + 711,198.85 (tonnage) + 11,697.49
-    // (Hafenfonds 1.5%) = 784,926.75; old pin 86,396.96 at 55,000 GT / 16 h).
-    expect(res.vessel_access!.amount).toBe(784926.75);
-    expect(res.vessel_access!.effective_per_gt).toBe(4.03);
+    // The social fund is a surcharge on Eurogate services: classified
+    // berth/terminal infrastructure like the fee it uplifts, so the full
+    // fund line joins the aggregate. v0.2.66 promotion re-pin (Maren
+    // Maersk, Eurogate default): 62,030.41 (HPA) + 553,371.16 (berthing)
+    // + 29,780.57 (social fund 1.5% on berthing + handling) = 645,182.14;
+    // the prior HHLA pin was 784,926.75.
+    expect(res.vessel_access!.amount).toBe(645182.14);
+    expect(res.vessel_access!.effective_per_gt).toBe(3.31);
     expect(res.vessel_access!.classes).toEqual(['berth_terminal_infrastructure']);
   });
 

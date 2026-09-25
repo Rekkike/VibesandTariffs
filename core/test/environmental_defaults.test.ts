@@ -155,12 +155,15 @@ describe('Environmental default-call contract (spec v0.2.28)', () => {
       expect(flag).toBeDefined();
       expect(flag!.description).toContain('NOx Tier not entered; worst case (Tier 0) applied');
       // The assumed-Tier flag must not contaminate the estimated-parameters
-      // subtotal: Tier is a classification, not an estimated charge
-      // (re-pinned for the v0.2.48 default profile: 4,000 moves x 358 =
-      // 1,432,000 handling + 15,000 towage; old pin 731,000).
-      expect(result.total_estimated_parameters).toBe(1447000);
-      const handling = result.billers.flatMap(b => b.fees).find(f => f.fee_rule_id === 'hhla_container_handling');
-      expect(handling!.quality_flags.some(f => f.type === 'estimated_parameter')).toBe(true);
+      // subtotal: Tier is a classification, not an estimated charge.
+      // v0.2.66 promotion re-pin: under the Eurogate default the handling
+      // line is a published rate (no estimated flag), so the estimated
+      // subtotal is the towage estimate alone; the HHLA variant's 1,447,000
+      // subtotal (1,432,000 handling estimate + 15,000 towage) is pinned in
+      // the mechanics suites against the explicit HHLA call.
+      expect(result.total_estimated_parameters).toBe(15000);
+      const handling = result.billers.flatMap(b => b.fees).find(f => f.fee_rule_id === 'eurogate_container_handling');
+      expect(handling!.quality_flags.some(f => f.type === 'estimated_parameter')).toBe(false);
       const portFee = result.billers.flatMap(b => b.fees).find(f => f.fee_rule_id === 'hpa_port_fee')!;
       expect(portFee.quality_flags.some(f => f.type === 'estimated_parameter')).toBe(false);
       expect(portFee.quality_flags.some(f => f.type === 'assumed_parameter' && f.parameter === 'engine_tier')).toBe(true);

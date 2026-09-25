@@ -46,9 +46,11 @@ describe('call frequency what-if — zero-drift pins (spec v0.2.63)', () => {
   it('every baseline holds exactly with the panel rendered (panel absence-of-effect)', () => {
     // The engine path is untouched by the panel: the same calls price the
     // same totals with the panel in the tree.
+    // v0.2.66 promotion re-baseline: HAM 2,313,489.31 -> 2,204,910.90
+    // (the Eurogate terminal layer; §17.5); GOT/HEL byte-identical.
     const cases: [PortDefinition, number][] = [
       [GOTHENBURG, 3275851.15],
-      [HAMBURG, 2313489.31],
+      [HAMBURG, 2204910.90],
       [HELSINGBORG, 8750057.40]
     ];
     for (const [port, expected] of cases) {

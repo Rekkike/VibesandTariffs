@@ -569,6 +569,14 @@ export interface CallInput {
   reefer_checks?: number;
   labelling_units?: number;
   neutralization_units?: number;
+  // Hamburg Eurogate optional-service inputs (spec v0.2.66, S9 chs. 2/5/9):
+  // counts default blank — no seeded count may manufacture a charge.
+  lashing_containers?: number;       // S9 5.2.1 lashing/unlashing system lashings, per container
+  twistlock_containers?: number;    // S9 5.2.2 setting/removing twistlocks, per container
+  imo_containers?: number;          // S9 5.3 IMO surcharge, per container
+  layby_hours?: number;              // S9 2.1.4 lay-by berth use in hours (per commenced 24 h)
+  reefer_extra_days?: number;        // S9 9.2 reefer days beyond the first 24 h
+  small_call_containers?: number;   // S9 5.4 small-call basis: the call's handled-container count when the operator attests a ≤20-container call
   // Helsingborg call inputs (spec v0.2.21)
   issc_valid?: boolean;              // valid ISSC certificate; double security fee when absent (least-favourable default)
   clean_shipping_index_class?: string; // Clean Shipping Index class 1-5 (port discount; distinct from Sjöfartsverket A-E)

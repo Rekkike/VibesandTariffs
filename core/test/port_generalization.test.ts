@@ -104,9 +104,17 @@ describe('per-port default-call data (spec v0.2.59)', () => {
     }
   });
 
-  it('the section values match the code-authored defaults exactly (Hamburg block, the largest)', () => {
+  it('the section values match the code-authored defaults exactly (Hamburg block, the largest; v0.2.66 re-pin: Eurogate default)', () => {
     const call = defaultCall('hamburg');
-    expect(call.terminal_operator).toBe('HHLA');
+    expect(call.terminal_operator).toBe('Eurogate');
+    // v0.2.66 Eurogate optional-service inputs (S9 chs. 2/5/9): blank by
+    // default - no seeded count may manufacture a charge.
+    expect(call.lashing_containers).toBeUndefined();
+    expect(call.twistlock_containers).toBeUndefined();
+    expect(call.imo_containers).toBeUndefined();
+    expect(call.layby_hours).toBeUndefined();
+    expect(call.reefer_extra_days).toBeUndefined();
+    expect(call.small_call_containers).toBeUndefined();
     expect(call.engine_tier).toBeUndefined();
     expect(call.engine_tier_estimated).toBeUndefined();
     expect(call.infer_engine_tier_from_build_year).toBe(false);
@@ -130,9 +138,11 @@ describe('per-port default-call data (spec v0.2.59)', () => {
     for (const [id, expected] of [
       // v0.2.61 drift-reconciliation re-pin: GOT/HEL gain the godsavgift
       // line (+268,800.00 SEK each at the default call's 80,000 derived
-      // tonnes x 3.36 kr/t); HAM unchanged.
+      // tonnes x 3.36 kr/t). v0.2.66 drift-reconciliation re-pin (Eurogate
+      // terminal promotion): HAM re-baselines to 2,204,910.90 (extraction
+      // reference §17.5); GOT/HEL hold exactly.
       ['gothenburg', 3275851.15],
-      ['hamburg', 2313489.31],
+      ['hamburg', 2204910.90],
       ['helsingborg', 8750057.40]
     ] as const) {
       const port = loadPort(id);
@@ -326,7 +336,9 @@ describe('port-specific reset fields (spec v0.2.60)', () => {
       'pilotage_segment_pct', 'waste_short_sea_reduction',
       'waste_alternative_fuel_reduction', 'waste_sustainable_waste_reduction',
       'ops_electricity_price', 'ops_demand_charge', 'ops_connection_charge',
-      'ops_per_gt_charge'
+      'ops_per_gt_charge',
+      'lashing_containers', 'twistlock_containers', 'imo_containers',
+      'layby_hours', 'reefer_extra_days', 'small_call_containers'
     ],
     helsingborg: [
       'engine_tier', 'engine_tier_estimated', 'esi_score', 'esi_noise_score',
@@ -360,7 +372,11 @@ describe('port-specific reset fields (spec v0.2.60)', () => {
       'fossil_free_fuel_percentage', 'pilotage_hours', 'pilotage_extra_pilot',
       'pilotage_ordering_lead_time_hours', 'hatch_cover_count',
       'gearbox_count', 'lay_up_days', 'ops_electricity_price',
-      'ops_demand_charge', 'ops_connection_charge', 'ops_per_gt_charge'
+      'ops_demand_charge', 'ops_connection_charge', 'ops_per_gt_charge',
+      // v0.2.66 Eurogate optional-service inputs (Hamburg, spec v0.2.66):
+      // the union grows by exactly the six new data-authored fields.
+      'lashing_containers', 'twistlock_containers', 'imo_containers',
+      'layby_hours', 'reefer_extra_days', 'small_call_containers'
     ];
     const union = allPortResetFields();
     expect([...union].sort()).toEqual([...legacy].sort());

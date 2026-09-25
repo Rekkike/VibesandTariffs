@@ -286,8 +286,13 @@ describe('Derivation transparency — zero figure drift (the exposure never chan
     // 20ft x 14 t + 2,400 x 40ft x 24 t) x 3.36 kr/t = 268,800.00 SEK — so
     // GOT 3,007,051.15 → 3,275,851.15 and HEL 8,481,257.40 → 8,750,057.40.
     // HAM is untouched: no Swedish national due levies at Hamburg.
+    // v0.2.66 drift-reconciliation re-pin (Eurogate terminal promotion,
+    // expected per the directive): HAM re-baselines from the HHLA variant
+    // (2,313,489.31, still pinned as the variant below in the mechanics
+    // suites) to the Eurogate default 2,204,910.90 (extraction reference
+    // §17.5); GOT and HEL hold exactly.
     expect(calculatePortCallCost(g, { vessel: DEFAULT_VESSEL, call: defaultCall('gothenburg') }).total).toBe(3275851.15);
-    expect(calculatePortCallCost(h, { vessel: DEFAULT_VESSEL, call: defaultCall('hamburg') }).total).toBe(2313489.31);
+    expect(calculatePortCallCost(h, { vessel: DEFAULT_VESSEL, call: defaultCall('hamburg') }).total).toBe(2204910.90);
     expect(calculatePortCallCost(x, { vessel: DEFAULT_VESSEL, call: defaultCall('helsingborg') }).total).toBe(8750057.40);
   });
 });
@@ -315,9 +320,12 @@ describe('Derivation transparency — evaluateFeeRule exposure parity', () => {
 // the tariff citation — plus a composition step naming both components.
 // Presentation-only: the amounts are the arithmetic already performed.
 describe('Derivation transparency — two-clock tier display (v0.2.46)', () => {
+  // v0.2.66 promotion re-point: these tier-step derivations document the
+  // HHLA rule's structure, which stands unchanged as the variant; the call
+  // is pinned to HHLA explicitly (the seeded default is Eurogate).
   const hhlaCall = (lay: number): CostCalculationInput => ({
     vessel: DEFAULT_VESSEL,
-    call: { ...defaultCall('hamburg'), lay_time_hours: lay }
+    call: { ...defaultCall('hamburg'), terminal_operator: 'HHLA', lay_time_hours: lay }
   });
 
   it('hhla_tonnage_dues at 50 h: initial and subsequent tiers as distinct steps with citations', () => {
