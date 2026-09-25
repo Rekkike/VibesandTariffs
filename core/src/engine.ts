@@ -30,9 +30,11 @@ import {
   FeeDerivation,
   DerivationStep,
   OpsSpeculativeLine,
-  OpsSpeculativeBlock
+  OpsSpeculativeBlock,
+  OpsComponentsSpec
 } from './types';
 import { classifyRule } from './classification';
+import { portOpsComponents } from './port_data';
 
 // Round half-up to the cent (tariff-line precision). The toPrecision(12) guard
 // strips binary-float noise (e.g. 8890 * 0.0135 = 120.01499999999999) so exact
@@ -1521,39 +1523,15 @@ export function getCsiClassIndex(csiClass: string | undefined): number {
  * exactly the components a port's surface offers; it is never in ports.json
  * and carries no rates.
  */
-export interface OpsComponentSpec {
-  enabled: boolean;
-  currency: Currency;
-  unit: string;
-}
-export interface OpsComponentsSpec {
-  electricity: OpsComponentSpec;
-  demand: OpsComponentSpec;
-  connection: OpsComponentSpec;
-  per_gt: OpsComponentSpec;
-}
-const OPS_COMPONENTS_BY_PORT: Record<string, OpsComponentsSpec> = {
-  gothenburg: {
-    electricity: { enabled: true, currency: 'SEK', unit: 'SEK/kWh' },
-    demand: { enabled: true, currency: 'SEK', unit: 'SEK/call' },
-    connection: { enabled: false, currency: 'SEK', unit: 'SEK/call' },
-    per_gt: { enabled: true, currency: 'SEK', unit: 'SEK/GT' }
-  },
-  hamburg: {
-    electricity: { enabled: true, currency: 'EUR', unit: 'EUR/kWh' },
-    demand: { enabled: false, currency: 'EUR', unit: 'EUR/call' },
-    connection: { enabled: true, currency: 'EUR', unit: 'EUR/call' },
-    per_gt: { enabled: false, currency: 'EUR', unit: 'EUR/GT' }
-  },
-  helsingborg: {
-    electricity: { enabled: true, currency: 'SEK', unit: 'SEK/kWh' },
-    demand: { enabled: true, currency: 'SEK', unit: 'SEK/call' },
-    connection: { enabled: true, currency: 'SEK', unit: 'SEK/call' },
-    per_gt: { enabled: true, currency: 'SEK', unit: 'SEK/GT' }
-  }
-};
+// OPS component descriptor (spec v0.2.57, data-authored at v0.2.59): the
+// per-port shape lives in the port's data file (ops_speculative section -
+// presence, currency, unit; no rates), carried into the engine through the
+// port definition. The descriptor is configuration only; the user-specified
+// numbers live only in the call input, never in a rate table. A port
+// without a declared section fails loudly below - the old named-port
+// fallback (silently receiving Helsingborg's posture) is removed.
 export function opsComponentsForPort(portId: string): OpsComponentsSpec {
-  return OPS_COMPONENTS_BY_PORT[portId] ?? OPS_COMPONENTS_BY_PORT.helsingborg;
+  return portOpsComponents(portId);
 }
 
 /**
@@ -1563,7 +1541,16 @@ export function calculatePortCallCost(
   port: PortDefinition,
   input: CostCalculationInput
 ): CostCalculationResult {
-  const opsComponents = opsComponentsForPort(port.metadata.id);
+  // The descriptor is data (spec v0.2.59): the port's own declared OPS
+  // posture, present on the loaded port. Absent on a malformed fixture -
+  // a loud failure, never a silent default posture.
+  if (!port.ops_speculative) {
+    throw new Error(
+      `calculatePortCallCost: port '${port.metadata?.id}' carries no ops_speculative descriptor - ` +
+      `every port data file must declare its OPS component posture (spec v0.2.59)`
+    );
+  }
+  const opsComponents = port.ops_speculative;
   const call = input.call;
   const qualityFlags: QualityFlag[] = [];
   const feeResults: FeeResult[] = [];

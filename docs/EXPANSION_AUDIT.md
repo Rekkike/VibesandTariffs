@@ -10,6 +10,20 @@
 
 ---
 
+## Resolution record — v0.2.59 refactor pass 1 (one line per item, so this map stays current)
+
+The findings above describe the audited baseline (`c5d78d9`, v0.2.58) and stand as the historical record; the v0.2.59 refactor pass (spec changelog row 0.2.59) resolved the items as follows:
+
+- **A1 (defaultCall enumeration) — RESOLVED by item 1:** the port-conditional blocks in `core/src/defaults.ts` moved to per-port `default_call` YAML sections registered through the new `core/src/port_data.ts` registry; `defaultCall` overlays the section on the shared worst-case core and throws for an unregistered port (pinned; red-proven against a data-ignoring enumeration).
+- **A2 (OPS_COMPONENTS_BY_PORT switch) — RESOLVED by item 2:** the engine switch and its named-port Helsingborg fallback were removed; the descriptor is now a per-port `ops_speculative` YAML section carried on the port definition; `opsComponentsForPort` throws for an unregistered port and `calculatePortCallCost` throws for a descriptor-less port; the v0.2.57 "never in ports.json" pin was REVISED to the new contract (rates/input names still banned, descriptor key shape pinned), stated in the spec §4.2.4 and the report.
+- **A3 (currency hardcoding + PORT_SPECIFIC_CALL_FIELDS) — RESOLVED by item 3:** `toComparisonBasis` now resolves through a data-built `ComparisonBasisContext` (registry exchange-rate rows toward the SEK default basis); an undeclared currency throws at conversion and ranking, never ranking on raw amounts (pinned with a DKK fixture; red-proven against the restored silent branch). The field-array half of A3 (`PORT_SPECIFIC_CALL_FIELDS`) remains open — see deviations/deferred below.
+- **A4 (port-gated input JSX + HHLA/Eurogate MenuItems) — RESOLVED by item 4:** the five port-id JSX gates and the hardcoded operator MenuItems moved to a per-port `input_profile` YAML section (fields, section blocks, operator lists); the workspace renders the profile and the existing v0.2.55/56/57/58 surface pins stayed green unmodified.
+- **A5/A6 + item D (comparison scalability) — PARTIALLY RESOLVED by item 5:** the fresh-load default is now the bounded first-four selection (identical DOM at three ports; red-proven against the restored all-ports selection) and the columns/cards render cheapest-first by Grand Total on the converted basis (red-proven against registry-order columns); the searchable picker, column min-width/breakpoint CSS, and card-stack subsetting remain open (deferred to the pass-2 decomposition, audit item B).
+- **Item B (App.tsx decomposition map) — UNCHANGED, now the pass-2 scope:** no decomposition happened in v0.2.59 (the refactor touched the four silent-failure sites and the comparison controls only); the map's boundaries and pin costs stand for the next pass.
+- **Item C (per-port pipeline cost) — IMPROVED at two of its four code sites:** a new port now ships `default_call`, `ops_speculative`, and `input_profile` in its YAML authoring with no engine/JSX edit (pinned by the never-committed FIXTURE_PORT); the extraction reference, classification sweep, baseline pinning, and spec sections remain the dominant per-port costs as recorded.
+
+---
+
 ## Audit item A — Port-count implicitness sweep
 
 Every site where the number three or a specific port identity is implicit or explicit in code rather than data. Locations are exact; each carries the smallest change that would generalize it (**recommendation only — nothing was implemented**).

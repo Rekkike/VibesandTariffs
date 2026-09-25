@@ -21,7 +21,16 @@ function createTestPort(): PortDefinition {
       { id: 'port_authority', name: 'Port Authority', currency: 'SEK' },
       { id: 'terminal', name: 'Terminal Operator', currency: 'SEK' }
     ],
-    fee_rules: []
+    fee_rules: [],
+    // v0.2.59: every port definition carries its configuration sections;
+    // the synthetic fixture declares the all-disabled OPS posture (the
+    // engine tests price rate structures, not OPS).
+    ops_speculative: {
+      electricity: { enabled: false, currency: 'SEK', unit: 'SEK/kWh' },
+      demand: { enabled: false, currency: 'SEK', unit: 'SEK/call' },
+      connection: { enabled: false, currency: 'SEK', unit: 'SEK/call' },
+      per_gt: { enabled: false, currency: 'SEK', unit: 'SEK/GT' }
+    }
   };
 }
 

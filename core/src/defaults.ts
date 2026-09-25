@@ -4,9 +4,18 @@
 // the user explicitly enters it; a blank is "not entered" and is never
 // coerced to a numeric score. Shared by the web form and pinned by
 // core/test/environmental_defaults.test.ts.
+//
+// Per-port default-call data (spec v0.2.59): the port-conditional blocks
+// that used to live here as a hand-kept enumeration are data now - each
+// port's YAML carries its default_call section and registers it through
+// core/src/port_data.ts. The shared worst-case core below is the base
+// object; the port's declared defaults overlay it (the same merge the
+// comparison applies since v0.2.53). A port without a registered section
+// fails loudly, never silently pricing without its list-price defaults.
 import { CallInput, VesselInput } from './types';
 
 import { defaultProfile } from './vessel_profiles';
+import { portDefaultCall } from './port_data';
 
 // Default vessel (spec v0.2.48 default-vessel contract): MAREN MAERSK
 // (IMO 9632129) — a fresh load prices her call until the user selects
@@ -27,6 +36,9 @@ export const DEFAULT_VESSEL: VesselInput = {
 };
 
 export function defaultCall(portId: string): CallInput {
+  // The per-port section is data (spec v0.2.59): unknown ports throw rather
+  // than silently pricing without their list-price defaults.
+  const portSection = portDefaultCall(portId);
   return {
     port_id: portId,
     date: new Date().toISOString().split('T')[0],
@@ -84,53 +96,13 @@ export function defaultCall(portId: string): CallInput {
     pilotage_hours: 4,
     pilotage_extra_pilot: false,
     pilotage_ordering_lead_time_hours: 2,
-    // Gothenburg towage (spec v0.2.33): estimated parameter mirroring the
-    // Helsingborg pattern — no published tariff, LOA-class tug defaults
-    // applied by the engine when no tug count is supplied, estimate-flagged.
-    ...(portId === 'gothenburg' ? {
-      towage_cost_per_tug: 60000,
-      tug_count: undefined
-    } : {}),
-    // Hamburg parameters (spec v0.2.20). Lay time 16 h mid-range default
-    // (50 h for ULCV); gangway one per call, class default overseas with the
-    // feeder default applied from the vessel library for feeder-class ships;
-    // pilotage full Elbe transit; estimated-parameter defaults seeded so the
-    // estimate-flagged lines render with their default amounts.
-    // Helsingborg parameters (spec v0.2.21). List-price defaults: valid ISSC,
-    // EES at the September 2026 level, towage estimate with LOA-class tug
-    // defaults applied by the engine when no tug count is supplied.
-    ...(portId === 'helsingborg' ? {
-      issc_valid: true,
-      ees_rate_per_move: 35,
-      towage_cost_per_tug: 60000,
-      tug_count: undefined,
-      clean_shipping_index_class: undefined
-    } : {}),
-    ...(portId === 'hamburg' ? {
-      // Terminal scope (spec v0.2.49): Hamburg calls are priced against a
-      // named terminal operator; the default and reference operator is HHLA.
-      terminal_operator: 'HHLA',
-      // NOx Tier (spec v0.2.29, amended v0.2.44): not entered by default;
-      // the engine infers from the build year per Regulation 13 when one is
-      // present (flagged), and applies the worst-case Tier 0 only when the
-      // build year is blank too.
-      engine_tier: undefined,
-      engine_tier_estimated: undefined,
-      infer_engine_tier_from_build_year: false,
-      gangway_class: 'overseas',
-      gangway_count: 1,
-      gangway_supervision_hours: 0,
-      pilotage_segment_pct: 100,
-      towage_amount: 15000,
-      handling_rate_per_move: 358,
-      hpa_berth_usage: false,
-      berth_type: 'quay',
-      berth_hours: 0,
-      esi_noise_score: undefined,
-      quantum_prior_year_gt: 0,
-      waste_short_sea_reduction: false,
-      waste_alternative_fuel_reduction: false,
-      waste_sustainable_waste_reduction: false
-    } : {})
+    // Per-port declared defaults (spec v0.2.59): the port's data section
+    // overlays the shared core - Gothenburg's estimated towage, Hamburg's
+    // terminal-operator scope and gangway/pilotage/berth parameters,
+    // Helsingborg's ISSC/EES list-price posture (and any future port's
+    // own defaults, shipped with its authoring, no engine edit). The
+    // shared worst-case posture above never changes; only a port's own
+    // declared list-price defaults enter here.
+    ...(portSection as Partial<CallInput>)
   };
 }

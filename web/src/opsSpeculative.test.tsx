@@ -185,13 +185,29 @@ describe('OPS component descriptor — per-port shape (spec v0.2.57)', () => {
     expect(c.electricity.currency).toBe('SEK');
   });
 
-  it('the descriptor is configuration only — no rates, and nothing OPS enters ports.json', () => {
+  it('the descriptor is configuration only — no OPS rates or price inputs enter ports.json (pin revised at v0.2.59, stated in the spec)', () => {
+    // v0.2.57 pinned "nothing OPS enters ports.json". v0.2.59 revises the
+    // contract, not weakens it: the OPS component *descriptor* (presence,
+    // currency, unit - configuration, never rates) is now data in each
+    // port's YAML and flows into ports.json like every other port
+    // configuration section. What remains banned - the pin's intent - is
+    // any OPS *rate* or user-price input name: the numbers live only in
+    // the call input, never in the registry or any rate table.
     const raw = JSON.stringify(portsRegistry);
-    expect(raw).not.toMatch(/ops_spec/);
     expect(raw).not.toMatch(/ops_electricity_price/);
     expect(raw).not.toMatch(/ops_demand_charge/);
     expect(raw).not.toMatch(/ops_connection_charge/);
     expect(raw).not.toMatch(/ops_per_gt_charge/);
+    // And the descriptor that does ship is configuration only: every
+    // component entry carries exactly enabled/currency/unit.
+    for (const port of (portsRegistry as any).ports ?? []) {
+      const ops = port.ops_speculative;
+      expect(ops).toBeDefined();
+      for (const component of ['electricity', 'demand', 'connection', 'per_gt']) {
+        expect(ops[component]).toBeDefined();
+        expect(Object.keys(ops[component]).sort()).toEqual(['currency', 'enabled', 'unit']);
+      }
+    }
   });
 });
 

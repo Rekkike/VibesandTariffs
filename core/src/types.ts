@@ -373,11 +373,67 @@ export interface PortMetadata {
   description?: string;
 }
 
+// Per-port default-call overrides (spec v0.2.59 port-generalization: the
+// per-port default call is data, not engine knowledge). Configuration
+// values only - input-form defaults mirroring each port's published
+// list-price posture; never rates (rates live in fee rules with source
+// references). A new port ships its defaults with its YAML authoring; the
+// engine overlays them on the shared worst-case core and throws loudly
+// when a port has no section (the silent-staleness defect class the
+// v0.2.53 shared-call fix repaired).
+export interface PortDefaultCallSection {
+  [field: string]: unknown;
+}
+
+// Per-port OPS speculative component descriptor (spec v0.2.57, data-authored
+// at v0.2.59). Configuration only: presence, currency, unit - never rates.
+// The user-specified numbers live only in the call input; this section
+// declares which input boxes the port's public OPS posture supports.
+export interface OpsComponentSpec {
+  enabled: boolean;
+  currency: Currency;
+  unit: string;
+}
+
+export interface OpsComponentsSpec {
+  electricity: OpsComponentSpec;
+  demand: OpsComponentSpec;
+  connection: OpsComponentSpec;
+  per_gt: OpsComponentSpec;
+}
+
+// Per-port input profile (spec v0.2.59): which input sections and operator
+// lists a port's workspace renders - UI configuration data, never rates.
+// Section ids name the workspace's port-gated input blocks; terminal
+// operators gate the Hamburg-style operator scope (the gating values live
+// in the port's fee rules' applicable_conditions; this list is the
+// user-facing select).
+export interface PortInputProfileSection {
+  id: string;
+  heading: string;
+  operators?: { value: string; label: string }[];
+}
+
+export interface PortInputProfile {
+  // Field-level inputs rendered inside the workspace's shared groups (e.g.
+  // the build-year field, the CSI-class select) - declared per port.
+  fields?: string[];
+  sections: PortInputProfileSection[];
+}
+
 // Complete port definition
 export interface PortDefinition {
   metadata: PortMetadata;
   billers: Biller[];
   fee_rules: FeeRule[];
+  // Per-port configuration sections (spec v0.2.59): default-call overrides,
+  // OPS component descriptor, input profile. Optional at the type level so
+  // synthetic test fixtures remain constructible; the loader validates
+  // presence and shape for every real port file, and the lookups throw
+  // loudly when the section is absent.
+  default_call?: PortDefaultCallSection;
+  ops_speculative?: OpsComponentsSpec;
+  input_profile?: PortInputProfile;
 }
 
 // Vessel input model

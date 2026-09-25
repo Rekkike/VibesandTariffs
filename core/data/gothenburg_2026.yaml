@@ -2723,3 +2723,31 @@ fee_rules:
       clause: "6 - Estimated parameters"
       verified_on: "2026-09-23"
       verified_by: "vibe-session-storage-towage"
+# Per-port default-call data (spec v0.2.59): the port-specific input-form
+# defaults, data-authored in the port's own file. Configuration only -
+# list-price defaults, never rates. The engine overlays these on the shared
+# worst-case core (core/src/defaults.ts); the comparison applies the same
+# merge per port since v0.2.53.
+default_call:
+  towage_cost_per_tug: 60000
+  # tug_count stays blank (engine applies LOA-class tug defaults, estimate-flagged)
+  tug_count: null
+# OPS speculative component descriptor (spec v0.2.57, data-authored v0.2.59):
+# presence, currency, unit - configuration only, no rates. The published OPS
+# connection fee is tanker-segment Energy Port jetties only, not container
+# terminals - no connection-fee input.
+ops_speculative:
+  electricity: { enabled: true, currency: SEK, unit: SEK/kWh }
+  demand: { enabled: true, currency: SEK, unit: SEK/call }
+  connection: { enabled: false, currency: SEK, unit: SEK/call }
+  per_gt: { enabled: true, currency: SEK, unit: SEK/GT }
+# Per-port input profile (spec v0.2.59): the input sections the workspace
+# renders for this port. UI configuration, never rates.
+input_profile:
+  # Field-level inputs inside the shared general-information group (the
+  # CSI-class discount select renders at the Swedish ports).
+  fields:
+    - clean_shipping_index
+  sections:
+    - id: gothenburg_ancillary
+      heading: Gothenburg Ancillary Services (optional)

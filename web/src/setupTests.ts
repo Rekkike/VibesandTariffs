@@ -20,3 +20,17 @@ Object.defineProperty(window, 'matchMedia', {
     dispatchEvent: () => false
   }) as MediaQueryList
 });
+
+// Per-port configuration registration (spec v0.2.59): the test environment
+// registers each port's data sections from the generated registry, exactly
+// as App.tsx does at module scope - the suites that call defaultCall or
+// render workspaces get the registered data without importing App.
+import { registerPortDefinition } from '@port-cost/core';
+import portsRegistry from './data/ports.json';
+
+const registeredPorts = ((portsRegistry as any).ports ?? []).filter(
+  (p: any) => p && p.fee_rules && Array.isArray(p.fee_rules)
+);
+for (const p of registeredPorts) {
+  registerPortDefinition(p);
+}

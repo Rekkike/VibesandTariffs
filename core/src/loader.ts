@@ -786,6 +786,64 @@ export function validatePort(port: PortDefinition): PortValidationResult {
     }
   }
   
+  // Per-port configuration sections (spec v0.2.59): every real port file
+  // must carry its default_call, ops_speculative, and input_profile
+  // sections - the generalization is proven by data, and a missing section
+  // is a load-time error, never a silent fallback at first use.
+  if (!port.default_call || typeof port.default_call !== 'object' || Array.isArray(port.default_call)) {
+    errors.push({
+      message: 'Port missing default_call section (per-port default-call data, spec v0.2.59)',
+      severity: 'error',
+      path: 'default_call'
+    });
+  }
+  if (!port.ops_speculative || typeof port.ops_speculative !== 'object') {
+    errors.push({
+      message: 'Port missing ops_speculative section (OPS component descriptor, spec v0.2.59)',
+      severity: 'error',
+      path: 'ops_speculative'
+    });
+  } else {
+    for (const component of ['electricity', 'demand', 'connection', 'per_gt']) {
+      const spec = (port.ops_speculative as unknown as Record<string, unknown>)[component];
+      if (!spec || typeof spec !== 'object'
+        || typeof (spec as Record<string, unknown>).enabled !== 'boolean'
+        || typeof (spec as Record<string, unknown>).currency !== 'string'
+        || typeof (spec as Record<string, unknown>).unit !== 'string') {
+        errors.push({
+          message: `Port ops_speculative.${component} descriptor malformed (needs enabled/currency/unit, spec v0.2.59)`,
+          severity: 'error',
+          path: `ops_speculative.${component}`
+        });
+      }
+    }
+  }
+  if (!port.input_profile || !Array.isArray(port.input_profile.sections) || port.input_profile.sections.length === 0) {
+    errors.push({
+      message: 'Port missing input_profile section (per-port workspace input profile, spec v0.2.59)',
+      severity: 'error',
+      path: 'input_profile'
+    });
+  } else {
+    if (port.input_profile.fields !== undefined
+      && (!Array.isArray(port.input_profile.fields) || port.input_profile.fields.some(f => typeof f !== 'string'))) {
+      errors.push({
+        message: 'Port input_profile.fields malformed (list of field ids, spec v0.2.59)',
+        severity: 'error',
+        path: 'input_profile.fields'
+      });
+    }
+    for (const section of port.input_profile.sections) {
+      if (!section || typeof section.id !== 'string' || typeof section.heading !== 'string') {
+        errors.push({
+          message: 'Port input_profile section malformed (needs id and heading, spec v0.2.59)',
+          severity: 'error',
+          path: 'input_profile.sections'
+        });
+      }
+    }
+  }
+
   return {
     port_id: port.metadata?.id || 'unknown',
     is_valid: errors.length === 0,

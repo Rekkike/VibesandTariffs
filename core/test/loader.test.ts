@@ -456,6 +456,14 @@ describe('Port Call Cost Analyzer Loader', () => {
         billers: [
           { id: 'biller1', name: 'Biller 1', currency: 'SEK' }
         ],
+        default_call: {},
+        ops_speculative: {
+          electricity: { enabled: false, currency: 'SEK', unit: 'SEK/kWh' },
+          demand: { enabled: false, currency: 'SEK', unit: 'SEK/call' },
+          connection: { enabled: false, currency: 'SEK', unit: 'SEK/call' },
+          per_gt: { enabled: false, currency: 'SEK', unit: 'SEK/GT' }
+        },
+        input_profile: { sections: [{ id: 'general', heading: 'General' }] },
         fee_rules: [
           {
             id: 'rule1',
@@ -527,6 +535,14 @@ describe('Port Call Cost Analyzer Loader', () => {
         billers: [
           { id: 'biller1', name: 'Biller 1', currency: 'SEK' }
         ],
+        default_call: {},
+        ops_speculative: {
+          electricity: { enabled: false, currency: 'SEK', unit: 'SEK/kWh' },
+          demand: { enabled: false, currency: 'SEK', unit: 'SEK/call' },
+          connection: { enabled: false, currency: 'SEK', unit: 'SEK/call' },
+          per_gt: { enabled: false, currency: 'SEK', unit: 'SEK/GT' }
+        },
+        input_profile: { sections: [{ id: 'general', heading: 'General' }] },
         fee_rules: []
       };
       
@@ -548,6 +564,14 @@ describe('Port Call Cost Analyzer Loader', () => {
         billers: [
           { id: 'biller1', name: 'Biller 1', currency: 'SEK' }
         ],
+        default_call: {},
+        ops_speculative: {
+          electricity: { enabled: false, currency: 'SEK', unit: 'SEK/kWh' },
+          demand: { enabled: false, currency: 'SEK', unit: 'SEK/call' },
+          connection: { enabled: false, currency: 'SEK', unit: 'SEK/call' },
+          per_gt: { enabled: false, currency: 'SEK', unit: 'SEK/GT' }
+        },
+        input_profile: { sections: [{ id: 'general', heading: 'General' }] },
         fee_rules: [
           {
             id: 'duplicate_rule',
@@ -602,6 +626,14 @@ describe('Port Call Cost Analyzer Loader', () => {
         billers: [
           { id: 'biller1', name: 'Biller 1', currency: 'SEK' }
         ],
+        default_call: {},
+        ops_speculative: {
+          electricity: { enabled: false, currency: 'SEK', unit: 'SEK/kWh' },
+          demand: { enabled: false, currency: 'SEK', unit: 'SEK/call' },
+          connection: { enabled: false, currency: 'SEK', unit: 'SEK/call' },
+          per_gt: { enabled: false, currency: 'SEK', unit: 'SEK/GT' }
+        },
+        input_profile: { sections: [{ id: 'general', heading: 'General' }] },
         fee_rules: [
           {
             id: 'rule1',

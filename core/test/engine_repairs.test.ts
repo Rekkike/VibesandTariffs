@@ -79,6 +79,13 @@ describe('flag_state warning branch reachability (spec v0.2.53 repair of the v0.
       validity_end: '2026-12-31'
     },
     billers: [{ id: 'pa', name: 'Port Authority', currency: 'SEK' }],
+    // v0.2.59: the synthetic fixture carries the all-disabled OPS posture
+    ops_speculative: {
+      electricity: { enabled: false, currency: 'SEK', unit: 'SEK/kWh' },
+      demand: { enabled: false, currency: 'SEK', unit: 'SEK/call' },
+      connection: { enabled: false, currency: 'SEK', unit: 'SEK/call' },
+      per_gt: { enabled: false, currency: 'SEK', unit: 'SEK/GT' }
+    },
     fee_rules: [
       {
         id: 'retired_flag_rule',

@@ -53,6 +53,8 @@ import {
   opsComponentsForPort,
   DEFAULT_VESSEL,
   defaultCall,
+  registerPortDefinition,
+  portInputProfile,
   namedProfile,
   genericProfile,
   PROFILE_SEEDED_CALL_FIELDS,
@@ -64,7 +66,17 @@ import {
 // The registry contains every port loaded from core/data/*.yaml (spec v0.2.17 section 4.3.1).
 import portsRegistry from './data/ports.json';
 // Cross-currency comparison helpers (spec v0.2.31, commit A)
-import { resolveExchangeRate, toComparisonBasis, conversionLabel, formatRate, rankByConvertedBasis, DEFAULT_EXCHANGE_RATE } from './conversion';
+import {
+  resolveExchangeRate,
+  toComparisonBasis,
+  conversionLabel,
+  formatRate,
+  rankByConvertedBasis,
+  rankOrderByConvertedBasis,
+  resolveComparisonBasis,
+  DEFAULT_EXCHANGE_RATE
+} from './conversion';
+import type { DeclaredRateRow } from './conversion';
 // Vessel library: curated named-vessel table (spec section 3.4), converted to
 // JSON at build time — no runtime API calls.
 import vesselLibrary from './data/vessel_library.json';
@@ -101,6 +113,23 @@ import type { InputGuide } from './envGuidance';
 // Loaded ports; adding a port is a data edit (drop a YAML in core/data/), never a code change
 const LOADED_PORTS: PortDefinition[] = ((portsRegistry as any).ports ?? []).filter(
   (p: any) => p && p.fee_rules && Array.isArray(p.fee_rules)
+);
+// Per-port configuration registration (spec v0.2.59): the default-call,
+// OPS-descriptor, and input-profile sections flow from each port's YAML
+// through the registry; register them with the core lookups once at module
+// scope, before any view computes a default call or renders a workspace.
+// registerPortDefinition throws loudly on a port missing its sections -
+// a broken port file fails at load, never at first use.
+for (const p of LOADED_PORTS) {
+  registerPortDefinition(p);
+}
+// Comparison basis context (spec v0.2.59): the basis currency and the
+// declared conversion paths are data (the registry's exchange_rates, from
+// core/data/exchange_rates.yaml). Every conversion and ranking in the
+// comparison flows through this context; a port whose currency has no
+// declared path fails loudly, never ranks on raw amounts.
+const comparisonBasisContext = resolveComparisonBasis(
+  ((portsRegistry as any).exchange_rates ?? []) as DeclaredRateRow[]
 );
 
 // Theme (spec v0.2.25 Presentation Principles): semantic CSS tokens on :root,
@@ -439,6 +468,24 @@ const EnvGuideHelp: React.FC<{ guide: InputGuide | null }> = ({ guide }) => {
 };
 
 export const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call, onVesselChange, onCallChange, onActiveVesselChange, assumedCallFields = [], onAssumedCallFieldsChange = () => {} }) => {
+  // Per-port input profile (spec v0.2.59): the sections and field-level
+  // inputs this port's workspace renders are data - declared in the
+  // port's YAML input_profile section, registered at module load. The
+  // gates below ask the profile; no port id is named in the code.
+  const inputProfile = useMemo(() => portInputProfile(port.metadata.id), [port.metadata.id]);
+  const profileSections = useMemo(
+    () => new Set(inputProfile.sections.map(sec => sec.id)),
+    [inputProfile]
+  );
+  const profileFields = useMemo(
+    () => new Set(inputProfile.fields ?? []),
+    [inputProfile]
+  );
+  // The operator list for the operator-scoped section, when present:
+  const operatorSection = useMemo(
+    () => inputProfile.sections.find(sec => sec.operators),
+    [inputProfile]
+  );
   // OPS speculative component shape for this port (spec v0.2.57):
   // descriptor-driven presence/currency/unit — the input group renders
   // exactly the components this port's public OPS posture supports.
@@ -966,7 +1013,7 @@ export const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call
                   </Select>
                 </FormControl>
               </Grid>
-              {port.metadata.id === 'hamburg' && (
+              {profileFields.has('build_year') && (
                 <Grid item xs={12} sm={6}>
                   <TextField
                     label="Build Year"
@@ -1154,7 +1201,7 @@ export const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call
                   <EnvGuideHelp guide={guideForInput('fossil_free_fuel_percentage')} />
                 </Box>
               </Grid>
-              {(port.metadata.id === 'gothenburg' || port.metadata.id === 'helsingborg') && (
+              {profileFields.has('clean_shipping_index') && (
                 <Grid item xs={12} sm={6}>
                   <Box display="flex" alignItems="center">
                     <FormControl fullWidth>
@@ -1254,7 +1301,7 @@ export const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call
             <Typography variant="body2" className="segment-description">
               Environmental levers at {port.metadata.name}: {portLevers.join(' · ') || 'none'}. All levers default to the no-discount state — the default call is the worst-case published-rate call (spec v0.2.29); only an explicit entry discounts.
             </Typography>
-            {port.metadata.id === 'gothenburg' && (
+            {profileSections.has('gothenburg_ancillary') && (
               <>
                 <Typography variant="h6" component="h3" className="segment-heading vessel-call-heading">
                   Gothenburg Ancillary Services (optional)
@@ -1365,7 +1412,7 @@ export const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call
                 differ between ports; these fields appear only on the Hamburg
                 workspace. All are list-price defaults (off/zero/100%) unless
                 the user sets them; estimate flags surface in the results. */}
-            {port.metadata.id === 'hamburg' && (
+            {profileSections.has('hamburg_call_parameters') && (
               <>
                 <Typography variant="h6" component="h3" className="segment-heading vessel-call-heading">
                   Hamburg Call Parameters
@@ -1375,12 +1422,13 @@ export const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call
                     <FormControl fullWidth>
                       <InputLabel>Terminal Operator</InputLabel>
                       <Select
-                        value={state.call.terminal_operator || 'HHLA'}
+                        value={state.call.terminal_operator || (operatorSection?.operators?.[0]?.value ?? '')}
                         onChange={(e) => handleCallChange('terminal_operator', e.target.value as string)}
                         label="Terminal Operator"
                       >
-                        <MenuItem value="HHLA">HHLA (CTA/CTB/CTT — reference operator)</MenuItem>
-                        <MenuItem value="Eurogate">EUROGATE Container Terminal Hamburg</MenuItem>
+                        {(operatorSection?.operators ?? []).map(op => (
+                          <MenuItem key={op.value} value={op.value}>{op.label}</MenuItem>
+                        ))}
                       </Select>
                       {/* Terminal scope (spec v0.2.49): ship's dues and terminal
                           items are gated to the named operator; port-wide
@@ -1657,7 +1705,7 @@ export const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call
                 Sjöfartsverket's A-E environmental class), ISSC status driving
                 the double security fee, the datestamped EES level, and the
                 estimated towage parameters with LOA-class tug defaults. */}
-            {port.metadata.id === 'helsingborg' && (
+            {profileSections.has('helsingborg_call_parameters') && (
               <>
                 <Typography variant="h6" component="h3" className="segment-heading vessel-call-heading">
                   Helsingborg Call Parameters
@@ -2428,7 +2476,7 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
   // the per-port page's port-switch reset (PORT_SPECIFIC_CALL_FIELDS):
   // an explicitly set shared input always wins over the per-port default.
   const portResults = useMemo(() => {
-    return selectedPorts.map(port => {
+    const results = selectedPorts.map(port => {
       try {
         const portDefaults = defaultCall(port.metadata.id) as unknown as Record<string, unknown>;
         const merged: Record<string, unknown> = { ...portDefaults, ...call, port_id: port.metadata.id };
@@ -2438,7 +2486,20 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
         return { port, result: null, error: `Calculation failed: ${err}` };
       }
     });
-  }, [selectedPorts, vessel, call]);
+    // Ranked column order (spec v0.2.59): cheapest-first by Grand Total on
+    // the converted comparison basis - the same single ranking rule as the
+    // cheapest/most-expensive markers (spec v0.2.31), now carrying the
+    // full order instead of only the two extremes. Ports whose computation
+    // errored keep their position at the end, after the priced columns.
+    const priced = results.filter(pr => pr.result);
+    const unpriced = results.filter(pr => !pr.result);
+    const ranked = rankOrderByConvertedBasis(
+      priced.map(pr => ({ portId: pr.result!.port_id, amount: pr.result!.total, currency: pr.result!.currency })),
+      rateInfo,
+      comparisonBasisContext
+    ).map(entry => priced.find(pr => pr.port.metadata.id === entry.portId)!);
+    return [...ranked, ...unpriced];
+  }, [selectedPorts, vessel, call, rateInfo]);
 
   const formatCurrency = (amount: number, currency: string) =>
     new Intl.NumberFormat('sv-SE', {
@@ -2644,7 +2705,8 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
     portResults
       .filter(pr => pr.result)
       .map(pr => ({ portId: pr.result!.port_id, amount: pr.result!.total, currency: pr.result!.currency })),
-    rateInfo
+    rateInfo,
+    comparisonBasisContext
   ), [portResults, rateInfo]);
   const cheapestTotalPortId = ranking.cheapestPortId;
   const mostExpensiveTotalPortId = ranking.mostExpensivePortId;
@@ -2662,7 +2724,7 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
       // rules; pinned choice, per-port and comparison alike).
       return <span className="comparison-not-charged">not levied at this port</span>;
     }
-    const conv = toComparisonBasis(entry.amount, entry.currency || fallbackCurrency, rateInfo);
+    const conv = toComparisonBasis(entry.amount, entry.currency || fallbackCurrency, rateInfo, comparisonBasisContext);
     return (
       <Box sx={{ textAlign: 'right' }}>
         <span className="comparison-figure">
@@ -2730,7 +2792,7 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
   // basis (SEK) as a derived secondary figure for non-SEK ports. A converted
   // figure never appears without its rate-and-date basis.
   const convCell = (nativeAmount: number, currency: string) => {
-    const conv = toComparisonBasis(nativeAmount, currency, rateInfo);
+    const conv = toComparisonBasis(nativeAmount, currency, rateInfo, comparisonBasisContext);
     if (!conv.converted) {
       return <span className="comparison-figure">{formatCurrency(nativeAmount, currency)}</span>;
     }
@@ -2780,7 +2842,7 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
         </Box>
       );
     }
-    const conv = toComparisonBasis(total, currency, rateInfo);
+    const conv = toComparisonBasis(total, currency, rateInfo, comparisonBasisContext);
     if (!conv.converted) return null;
     if (isMobile && !conversionsVisible) {
       return (
@@ -2841,7 +2903,7 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
             Comparison basis: reference tariff rates (list prices). Rows group by economic function
             (fee family), never by biller name, so ports that charge the same function differently
             still line up. Data-quality flags from each port's computation are carried through.
-            The comparison prices one identical call at all three ports — same vessel, lay time, moves,
+            The comparison prices one identical call at every selected port — same vessel, lay time, moves,
             and classes — so the port is the only variable; per-port call-size variation is deliberately
             excluded, and the context strip above states the call's assumptions once.
           </Typography>
@@ -2920,7 +2982,7 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
           {/* The conversion disclosure (the ranking strip's one unique mobile
               element) moves here, into the table-header area above the
               table/cards (spec v0.2.47). */}
-          {isMobile && portResults.some(pr => pr.result && toComparisonBasis(pr.result.total, pr.result.currency, rateInfo).converted) && (
+          {isMobile && portResults.some(pr => pr.result && toComparisonBasis(pr.result.total, pr.result.currency, rateInfo, comparisonBasisContext).converted) && (
             <button
               type="button"
               className="disclosure-header comparison-conversion-disclosure"
@@ -3203,7 +3265,7 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
                     <TableCell key={port.metadata.id} align="right" className="comparison-subtotal">
                       {result?.vessel_access
                         ? (() => {
-                            const vaConv = toComparisonBasis(result.vessel_access.amount, result.currency, rateInfo);
+                            const vaConv = toComparisonBasis(result.vessel_access.amount, result.currency, rateInfo, comparisonBasisContext);
                             return (
                               <Box sx={{ textAlign: 'right' }}>
                                 <span>{formatCurrency(result.vessel_access.amount, result.currency)}</span>
@@ -3356,8 +3418,14 @@ const App: React.FC = () => {
     () => `MAREN MAERSK (IMO ${DEFAULT_VESSEL_PROFILE_IMO})`
   );
   const [call, setCall] = useState<CallInput>(() => defaultCall(activePort ? activePort.metadata.id : ''));
+  // Fresh-load comparison selection (spec v0.2.59): bounded, not all-ports.
+  // The first four loaded ports render by default (registry order); at the
+  // current three ports this is all of them - identical DOM to the previous
+  // all-ports default - and at eight ports the comparison opens workable
+  // instead of opening at its worst case. The checkbox list remains the
+  // explicit subset control; nothing is rendered beyond the selection.
   const [comparisonSelection, setComparisonSelection] = useState<string[]>(
-    LOADED_PORTS.map(p => p.metadata.id)
+    LOADED_PORTS.slice(0, 4).map(p => p.metadata.id)
   );
   const [lastPortId, setLastPortId] = useState<string>(activePort?.metadata.id ?? '');
   // Profile-assumption fields (spec v0.2.48), lifted so the comparison view

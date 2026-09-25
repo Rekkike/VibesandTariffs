@@ -1731,3 +1731,55 @@ fee_rules:
       clause: "13.1"
       verified_on: "2026-09-24"
       verified_by: "vibe-session-hamburg-terminal-scope"
+# Per-port default-call data (spec v0.2.59): the port-specific input-form
+# defaults, data-authored in the port's own file. Configuration only -
+# list-price defaults, never rates. The engine overlays these on the shared
+# worst-case core (core/src/defaults.ts); the comparison applies the same
+# merge per port since v0.2.53.
+default_call:
+  # Terminal scope (spec v0.2.49): Hamburg calls are priced against a named
+  # terminal operator; the default and reference operator is HHLA.
+  terminal_operator: HHLA
+  # NOx Tier (spec v0.2.29, amended v0.2.44): not entered by default; the
+  # engine infers from the build year when one is present.
+  engine_tier: null
+  engine_tier_estimated: null
+  infer_engine_tier_from_build_year: false
+  gangway_class: overseas
+  gangway_count: 1
+  gangway_supervision_hours: 0
+  pilotage_segment_pct: 100
+  towage_amount: 15000
+  handling_rate_per_move: 358
+  hpa_berth_usage: false
+  berth_type: quay
+  berth_hours: 0
+  esi_noise_score: null
+  quantum_prior_year_gt: 0
+  waste_short_sea_reduction: false
+  waste_alternative_fuel_reduction: false
+  waste_sustainable_waste_reduction: false
+# OPS speculative component descriptor (spec v0.2.57, data-authored v0.2.59):
+# presence, currency, unit - configuration only, no rates.
+ops_speculative:
+  electricity: { enabled: true, currency: EUR, unit: EUR/kWh }
+  demand: { enabled: false, currency: EUR, unit: EUR/call }
+  connection: { enabled: true, currency: EUR, unit: EUR/call }
+  per_gt: { enabled: false, currency: EUR, unit: EUR/GT }
+# Per-port input profile (spec v0.2.59): the input sections the workspace
+# renders for this port. UI configuration, never rates. The operator list
+# is the user-facing select; the gating values live in the fee rules'
+# terminal_operator applicable_conditions.
+input_profile:
+  # Field-level inputs inside the shared general-information group (the
+  # build-year field drives the engine's Tier inference).
+  fields:
+    - build_year
+  sections:
+    - id: hamburg_call_parameters
+      heading: Hamburg Call Parameters
+      operators:
+        - value: HHLA
+          label: HHLA (CTA/CTB/CTT — reference operator)
+        - value: Eurogate
+          label: EUROGATE Container Terminal Hamburg
