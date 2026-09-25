@@ -178,11 +178,36 @@ European-rate split the schedule already prices (§10's footnote defines
 short sea shipping as the European-arrival case); it is not a separate
 subtractive discount beyond the origin split and the 2022/91 certificate.
 
-**Rotation mode — deferred.** The origin selector is shared across all ports
-per the comparison philosophy (one leg, priced identically everywhere). A
-real rotation's sequence of legs (Asia → Hamburg → Gothenburg) is out of
-scope: a per-port override is a considered future option ("rotation mode"),
-recorded in the spec's deferred list, not implemented.
+**Rotation mode — permanently excluded (spec v0.2.67).** The origin selector
+is shared across all ports per the comparison philosophy (one leg, priced
+identically everywhere). A real rotation's sequence of legs (Asia →
+Hamburg → Gothenburg) is priced by flipping the selector per port. The
+per-port origin override formerly deferred as "rotation mode" is a
+permanent exclusion: the Gothenburg waste rules are the only
+origin-gated rules in the container-call domain, so a per-port origin
+could only ever change this port's own waste lines — a question the shared
+selector already answers — and no charge or discount at any port in scope
+depends on a vessel's port sequence. The tariff's own rotation-shaped
+condition, the §2.2 FREQUENCY DISCOUNT ("Scheduled shipping routes with
+calls at the Port of Gothenburg twice on the same route (import call and
+export call) are entitled to a 50% discount on port dues based on GT for
+the second call", p.10), is served by the explicit same-route attestation
+(`got_same_route_second_call`, spec v0.2.67), not by a rotation model; the
+RORO/RoPax per-week-and-service scales (§§2.3/2.5) key on a
+Port-Authority-recognised service and belong to vessel models outside the
+container-call domain. A line-service rotation product or a RORO/RoPax
+vessel model would reopen it; nothing less does.
+
+**§2.2 frequency discount — attestation-gated at spec v0.2.67.** The 50%
+second-call discount on GT-based port dues is conditioned by the tariff on
+the same-route import/export pair, not on any second call in a calendar
+month. The port file's adjustment is gated on
+`calls_this_month >= 2 && got_same_route_second_call`: the discount fires
+only when the user attests the same-route pair (explicit input, default
+false — the worst case); two unrelated calls in a month earn nothing under
+the tariff. The rule's source citation is corrected against the live G1
+document at the same pass (§2.2, pp.9–10; the earlier "Section 2.1, p.5"
+and "Sections 3.2-3.3" attributions were mis-citations).
 
 **Godsavgift — encoded at spec v0.2.61.** Gothenburg's own transcription
 (port-silo discipline), per the Sjöfartsverket price list "Prislista farleds-

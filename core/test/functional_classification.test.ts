@@ -178,7 +178,12 @@ describe('Vessel-access aggregate (spec v0.2.30)', () => {
     // (it adjusts vessel_fee + readiness only), so the aggregate now nets
     // the halved municipal dues plus the undiscounted godsavgift line:
     // 102,139.60 + 268,800.00 = 370,939.60.
-    expect(res.vessel_access!.amount).toBe(370939.60);
+    // Re-pinned at spec v0.2.67 (classified drift, condition refinement):
+    // the municipal 50% port-dues discount is the §2.2 same-route pair
+    // rule and this call does not attest the pair, so the municipal dues
+    // are undiscounted here: 204,279.20 + 268,800.00 = 473,079.20 (the
+    // old pin 370,939.60 asserted the pre-refinement over-service).
+    expect(res.vessel_access!.amount).toBe(473079.20);
     const nationalSum = res.billers
       .flatMap(b => b.fees)
       .filter(f => [

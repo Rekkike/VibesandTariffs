@@ -1439,6 +1439,15 @@ function evaluateCondition(condition: string, input: CostCalculationInput): bool
   if (condition.includes('||')) {
     return condition.split('||').some(part => evaluateCondition(part.trim(), input));
   }
+
+  // Conjunction (spec v0.2.67): 'a && b' is met only when both sides are
+  // met (e.g. Gothenburg's second-call discount: calls_this_month >= 2 AND
+  // the same-route import/export-pair attestation, Port Tariff 2026
+  // §2.2 FREQUENCY DISCOUNT). Evaluated before any single-operand branch so
+  // a compound condition can never degrade to its left operand alone.
+  if (condition.includes('&&')) {
+    return condition.split('&&').every(part => evaluateCondition(part.trim(), input));
+  }
   
   const call = input.call;
   const vessel = input.vessel;

@@ -56,6 +56,10 @@ export function defaultCall(portId: string): CallInput {
     // back to it.
     lay_time_hours: defaultProfile()!.lay_time_hours,
     calls_this_month: 1,
+    // Gothenburg same-route second-call attestation (spec v0.2.67): off by
+    // default — the worst case; the §2.2 frequency discount requires the
+    // explicit same-route import/export-pair attestation.
+    got_same_route_second_call: false,
     flag_state: 'EU',
     // Godsavgift cargo-technical planning inputs (spec v0.2.61): shared,
     // currency-neutral, visible only where a godsavgift charges. The 14/24 t

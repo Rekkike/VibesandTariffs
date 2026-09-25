@@ -145,10 +145,17 @@ describe('discounts received — the model (spec v0.2.64, item 2)', () => {
     }
   });
 
-  it('the GOT second-call discount fires at calls_this_month=2: 102,139.60 SEK, 3.12% of gross', () => {
-    const result = calculatePortCallCost(portById('gothenburg'), {
+  it('the GOT second-call discount requires the same-route attestation (spec v0.2.67): unattested calls=2 earns nothing, the attested pair earns 102,139.60 SEK, 3.12% of gross', () => {
+    // Unattested: two unrelated calls earn nothing under the tariff
+    // (§2.2: the discount is the same-route import/export pair).
+    const unattested = calculatePortCallCost(portById('gothenburg'), {
       vessel: DEFAULT_VESSEL,
       call: { ...defaultCall('gothenburg'), calls_this_month: 2 } as CallInput
+    });
+    expect(buildDiscountLine(unattested).sum).toBe(0);
+    const result = calculatePortCallCost(portById('gothenburg'), {
+      vessel: DEFAULT_VESSEL,
+      call: { ...defaultCall('gothenburg'), calls_this_month: 2, got_same_route_second_call: true } as CallInput
     });
     const line = buildDiscountLine(result);
     expect(line.sum).toBe(102139.60);
@@ -165,10 +172,17 @@ describe('discounts received — the model (spec v0.2.64, item 2)', () => {
     expect(roundToCent(line.components.reduce((s, c) => s + c.amount, 0))).toBe(line.sum);
   });
 
-  it('the GOT third call stacks both frequency discounts: 167,683.35 SEK, 5.12% of gross', () => {
-    const result = calculatePortCallCost(portById('gothenburg'), {
+  it('the GOT third call stacks both frequency discounts when the pair is attested: 167,683.35 SEK, 5.12% of gross (spec v0.2.67: unattested, only the national 65,543.75 remains)', () => {
+    const unattested = calculatePortCallCost(portById('gothenburg'), {
       vessel: DEFAULT_VESSEL,
       call: { ...defaultCall('gothenburg'), calls_this_month: 3 } as CallInput
+    });
+    const unattestedLine = buildDiscountLine(unattested);
+    expect(unattestedLine.sum).toBe(65543.75);
+    expect(unattestedLine.components.map(c => c.amount)).toEqual([65543.75]);
+    const result = calculatePortCallCost(portById('gothenburg'), {
+      vessel: DEFAULT_VESSEL,
+      call: { ...defaultCall('gothenburg'), calls_this_month: 3, got_same_route_second_call: true } as CallInput
     });
     const line = buildDiscountLine(result);
     expect(line.sum).toBe(167683.35);
@@ -284,7 +298,7 @@ describe('discounts received — the rendering (spec v0.2.64, item 2)', () => {
   it('desktop: a firing discount renders the sum, the percentage, and the itemization with citation', async () => {
     ({ container, root } = await renderComparison(false, {
       ...defaultCall('gothenburg'),
-      calls_this_month: 2
+      calls_this_month: 2, got_same_route_second_call: true
     } as CallInput));
     const discountRow = container!.querySelector('.comparison-discount-row')!;
     expect(discountRow.textContent).toContain('102\u00a0140');
@@ -322,7 +336,7 @@ describe('discounts received — the rendering (spec v0.2.64, item 2)', () => {
   it('mobile: a firing discount renders the sum and percentage on the card', async () => {
     ({ container, root } = await renderComparison(true, {
       ...defaultCall('gothenburg'),
-      calls_this_month: 2
+      calls_this_month: 2, got_same_route_second_call: true
     } as CallInput));
     const got = Array.from(container!.querySelectorAll('.comparison-port-card'))
       .find(c => (c.textContent ?? '').includes('Gothenburg'))!;

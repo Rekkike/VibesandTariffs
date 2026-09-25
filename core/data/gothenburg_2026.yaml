@@ -104,24 +104,30 @@ fee_rules:
         stacking_order: 2
       - type: discount
         percentage: 50
-        condition: "calls_this_month >= 2"
-        description: "Frequency discount: 50% on GT-based port dues for the second call on the same route"
+        condition: "calls_this_month >= 2 && got_same_route_second_call"
+        description: "Frequency discount: 50% on GT-based port dues for the second call on the same route (import call and export call pair; requires the explicit same-route attestation)"
         stacking_order: 3
     source_reference:
       document_name: "port-tariff-2026.pdf"
       document_url: "docs/sources/sweden/gothenburg/port-authority/port-tariff-2026.pdf"
       upstream_url: "https://www.portofgothenburg.com/globalassets/dokument/port-tariff-2026.pdf"
       document_issued: "2025-12-01"
-      page: 5
-      clause: "Section 2.1 - Container Vessel Dues"
-      verified_on: "2025-12-15"
+      page: 9
+      clause: "Section 2.2 - Container Vessels (port infrastructure dues)"
+      verified_on: "2026-09-27"
       verified_by: "Port Cost Analyzer Team"
 
   # --- Environmental and Frequency Discounts on Port Dues ---
   # Encoded as adjustments on the container vessel dues rule above:
   # ESI >= 30 or CSI class 4 -> 10%; >= 30% fossil-free fuel -> +10% (additive
-  # per the tariff's 10 + 10 wording); second call on same route -> 50%
-  # (port-tariff-2026.pdf Sections 3.2-3.3).
+  # per the tariff's 10 + 10 wording); second call on the same route -> 50%
+  # (port-tariff-2026.pdf §2.2 FREQUENCY DISCOUNT, p.10: "Scheduled shipping
+  # routes with calls at the Port of Gothenburg twice on the same route
+  # (import call and export call) are entitled to a 50% discount on port dues
+  # based on GT for the second call" — spec v0.2.67: gated on the explicit
+  # got_same_route_second_call attestation, so two unrelated calls in a
+  # calendar month never earn it; the mis-citation "Sections 3.2-3.3" is
+  # corrected here against the live G1 document).
   # Waste dues (spec v0.2.50): the tariff's split dimension is the arrival
   # origin — the previous port of call's region — never the flag. G1 waste
   # schedule: "Vessels arriving from European ports 0,13 SEK/GT / Vessels
@@ -2772,6 +2778,9 @@ input_profile:
   # CSI-class discount select renders at the Swedish ports).
   fields:
     - clean_shipping_index
+    # Same-route second-call attestation (spec v0.2.67): a Gothenburg-only
+    # call-parameters input (the §2.2 same-route import/export-pair gate).
+    - got_same_route_second_call
   sections:
     - id: godsavgift_parameters
       heading: Cargo tonnage for godsavgift (planning weights)

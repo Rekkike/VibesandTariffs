@@ -489,6 +489,13 @@ export interface CallInput {
   containers_discharged_le20ft: number;
   containers_discharged_gt20ft: number;
   calls_this_month: number; // number of calls this vessel has made at this port this month
+  // Gothenburg same-route second-call attestation (spec v0.2.67): the Port
+  // Tariff 2026 §2.2 FREQUENCY DISCOUNT grants the 50% port-dues discount
+  // only for "calls ... twice on the same route (import call and export
+  // call)" — a route-pair property the call counter alone cannot represent.
+  // An explicit user attestation, default false (worst case): two unrelated
+  // calls in a month do not earn the discount under the tariff.
+  got_same_route_second_call?: boolean;
   flag_state: 'EU' | 'non-EU' | string;
   // Arrival origin (spec v0.2.50): the Gothenburg waste dues split on the
   // previous port of call's region (Port Tariff 2026 waste schedule:

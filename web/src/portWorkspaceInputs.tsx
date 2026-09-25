@@ -528,6 +528,30 @@ export const WorkspaceInputs: React.FC<WorkspaceInputsProps> = (props) => {
                     InputLabelProps={{ shrink: true }}
                   />
                 </Grid>
+                {/* Gothenburg same-route second-call attestation (spec
+                    v0.2.67, Port Tariff 2026 §2.2 FREQUENCY DISCOUNT): the
+                    50% port-dues discount is earned only by a scheduled
+                    route calling "twice on the same route (import call and
+                    export call)" — a route-pair property the call counter
+                    cannot represent. Explicit attestation, off by default
+                    (worst case): two unrelated calls in a month do not earn
+                    the discount; the second call of a same-route pair does. */}
+                {profileFields.has('got_same_route_second_call') && (
+                  <Grid item xs={12} sm={6}>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={state.call.got_same_route_second_call || false}
+                          onChange={(e) => handleCallChange('got_same_route_second_call', e.target.checked)}
+                        />
+                      }
+                      label="Same-route second call (import + export pair, §2.2)"
+                    />
+                    <FormHelperText>
+                      attest only for the second call of a same-route import/export pair; two unrelated calls in a month do not earn the 50% port-dues discount
+                    </FormHelperText>
+                  </Grid>
+                )}
                 <Grid item xs={12} sm={6}>
                   <FormControlLabel
                     control={

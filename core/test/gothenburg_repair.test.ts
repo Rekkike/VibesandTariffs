@@ -175,8 +175,22 @@ describe('Gothenburg repair pass (v0.2.22)', () => {
     expect(dues.amount).toBeCloseTo(17424.40 * 0.9, 2);
   });
 
-  it('CP-c: the port 50% frequency discount on port dues computes from the second call', () => {
+  // Re-pointed at spec v0.2.67 (classified drift, condition refinement):
+  // the tariff's §2.2 FREQUENCY DISCOUNT is earned only by a same-route
+  // import/export pair — "calls ... twice on the same route (import call and
+  // export call)" — so the 50% port-dues discount now requires the explicit
+  // got_same_route_second_call attestation. Unattested calls=2: full dues
+  // (the old pin 8,712.20 was the over-service: any second call discounted).
+  it('CP-c: two unattested calls this month earn no port-dues discount (the §2.2 condition is the same-route pair)', () => {
     const result = calculatePortCallCost(port, makeCall({ calls_this_month: 2 }));
+    const dues = feeByRule(result, 'port_gothenburg_container_vessel_dues');
+    expect(dues.amount).toBe(17424.40);
+  });
+  it('CP-c: the attested same-route second call earns the 50% port-dues discount', () => {
+    const result = calculatePortCallCost(
+      port,
+      makeCall({ calls_this_month: 2, got_same_route_second_call: true })
+    );
     const dues = feeByRule(result, 'port_gothenburg_container_vessel_dues');
     expect(dues.amount).toBe(17424.40 * 0.5);
   });
