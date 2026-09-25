@@ -45,6 +45,7 @@ import type { InputGuide } from './envGuidance';
 import { customVesselLabel, GENERIC_SIZE_CLASS_LABELS, VESSEL_PRESETS } from './vesselOptions';
 import type { LibraryVessel } from './vesselOptions';
 import { WorkspaceInputs } from './portWorkspaceInputs';
+import { FrequencyPanel } from './frequencyPanel';
 
 // Segment metadata for the toggleable pages (spec v0.2.60 decomposition):
 // extracted from App.tsx verbatim.
@@ -944,6 +945,17 @@ export const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call
                     </Box>
                   </Box>
                 )}
+                {/* Call-frequency what-if panel (spec v0.2.63): a
+                    workspace-side speculation surface in the OPS tradition.
+                    Collapsed by default; its input is local React state —
+                    outside the call model, outside every reset_fields list,
+                    never feeding the engine, so rendering it changes no
+                    total (the zero-drift contract). */}
+                <FrequencyPanel
+                  port={port}
+                  result={state.result}
+                  formatCurrency={formatCurrency}
+                />
                 <Typography variant="body2" sx={{ mt: 2, textAlign: 'center' }} className="results-timestamp">
                   Calculation performed: {new Date(state.result.calculation_timestamp).toLocaleString()}
                 </Typography>

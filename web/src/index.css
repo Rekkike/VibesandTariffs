@@ -1429,3 +1429,48 @@ textarea:focus-visible,
   color: var(--text-secondary);
   margin-bottom: var(--space-2);
 }
+/* ================= Call frequency what-if (spec v0.2.63) =================
+   The speculation panel reuses the ops-speculative family's semantics:
+   visibly separated, warning-tinted, user-specified labeling. It rides the
+   disclosure-card chrome (collapsed by default) — theme tokens only. */
+.frequency-panel {
+  margin-top: var(--space-3);
+}
+.frequency-panel-body {
+  padding: var(--space-2) var(--space-4) var(--space-3);
+}
+.frequency-scenario-heading {
+  display: block;
+  margin: var(--space-2) 0 var(--space-1);
+  color: var(--text-primary);
+}
+.frequency-scenario-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2);
+  padding: var(--space-1) 0;
+}
+.frequency-scenario-line-label {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.frequency-scenario-line-detail {
+  flex: 1 1 100%;
+  font-size: var(--font-caption);
+  color: var(--text-secondary);
+}
+.frequency-scenario-line-amount {
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+}
+.frequency-scenario-total {
+  font-weight: 600;
+  border-top: 1px solid var(--border-strong);
+  margin-top: var(--space-2);
+}
+.frequency-scenario-basis {
+  display: block;
+  margin-top: var(--space-2);
+  color: var(--text-secondary);
+}
