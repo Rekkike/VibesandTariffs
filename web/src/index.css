@@ -1263,6 +1263,25 @@ textarea:focus-visible,
   border-top: 2px solid var(--warning);
 }
 
+.comparison-discount-row > td {
+  border-top: 2px solid var(--positive);
+}
+
+.comparison-discount-included-note {
+  display: block;
+  font-size: var(--font-caption);
+  color: var(--text-secondary);
+}
+
+.comparison-card-discount {
+  border-top: 2px solid var(--positive);
+}
+
+.comparison-no-discount {
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
 .comparison-conversion-disclosure {
   min-height: 40px;
   padding: var(--space-2) var(--space-3);

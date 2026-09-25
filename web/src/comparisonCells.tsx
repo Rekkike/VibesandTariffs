@@ -14,7 +14,8 @@ export type ConvCell = (nativeAmount: number, currency: string) => React.ReactNo
 export type GrandTotalPerGtCell = (
   total: number,
   currency: string,
-  opsPresent: boolean
+  opsPresent: boolean,
+  opsPerGtPresent?: boolean
 ) => React.ReactNode;
 
 export interface ComparisonCellsProps {
@@ -159,9 +160,29 @@ export const makeComparisonCells = (props: ComparisonCellsProps) => {
   // nothing (no division artifact). Secondary line under the total per the
   // v0.2.56 rhythm; the mobile converted collapse (spec v0.2.39) applies
   // to the converted Hamburg figure exactly as to every converted figure.
-  const grandTotalPerGtCell = (total: number, currency: string, opsPresent: boolean) => {
+  const grandTotalPerGtCell = (
+    total: number,
+    currency: string,
+    opsPresent: boolean,
+    opsPerGtPresent: boolean = false
+  ) => {
     if (!vesselGt || vesselGt <= 0) return null;
-    const opsNote = opsPresent ? ' (includes user-specified OPS)' : '';
+    // OPS notes (spec v0.2.64): the inclusion note states the user-specified
+    // contribution; the per-GT OPS basis note discloses that where a per-GT
+    // OPS charge was entered, its amount is priced on this same vessel-GT
+    // basis and flows into this derived metric. No published tariff prices
+    // container-terminal OPS per GT (verified against the Gothenburg Port
+    // Tariff 2026: the only published OPS due is the flat 7,000 SEK
+    // connection fee at the Energy Port tanker jetties), so the per-GT
+    // figure is user speculation on the same GT basis the port dues use.
+    let opsNote = '';
+    if (opsPresent) {
+      opsNote = opsPerGtPresent
+        ? ' (includes user-specified OPS; the user-specified per-GT OPS charge uses the same GT basis as the port dues and flows into this derived metric)'
+        : ' (includes user-specified OPS)';
+    } else if (opsPerGtPresent) {
+      opsNote = ' (the user-specified per-GT OPS charge uses the same GT basis as the port dues and flows into this derived metric)';
+    }
     if (currency === 'SEK') {
       const perGt = total / vesselGt;
       return (

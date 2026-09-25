@@ -31,6 +31,7 @@ import {
   computeRanking
 } from './comparisonModel';
 import { makeComparisonCells } from './comparisonCells';
+import { buildDiscountLine } from './discountLine';
 import { ComparisonPortSelection } from './comparisonPortSelection';
 
 interface ComparisonViewProps {
@@ -98,6 +99,20 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
   );
   const cheapestTotalPortId = ranking.cheapestPortId;
   const mostExpensiveTotalPortId = ranking.mostExpensivePortId;
+  // Discounts received (spec v0.2.64): the tariff-derived discount inventory
+  // per port, rendered as a line before the Grand Total on both comparison
+  // surfaces. Speculation inputs are structurally excluded — OPS amounts
+  // carry no fee derivation and the frequency what-if panel never feeds the
+  // engine, so no speculation value can enter the line at any input state.
+  const discountLines = useMemo(
+    () => new Map(portResults.map(({ result }) => [result?.port_id ?? '', result ? buildDiscountLine(result) : null])),
+    [portResults]
+  );
+  // Per-GT OPS presence (spec v0.2.64, item 4): the derived per-GT metric's
+  // GT-basis disclosure renders wherever the port's descriptor carries a
+  // per-GT OPS component and the user entered a value.
+  const opsPerGtPresent = (result: { ops_speculative?: { lines: { id: string }[] } | null }) =>
+    Boolean(result.ops_speculative?.lines.some(l => l.id === 'ops_spec_per_gt'));
   const { amountCell, convCell, grandTotalPerGtCell } = makeComparisonCells({
     rateInfo,
     comparisonBasisContext,
@@ -247,7 +262,7 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
                           <strong>Grand Total</strong>
                           <Box sx={{ textAlign: 'right' }}>
                             {convCell(result.total, result.currency)}
-                            {grandTotalPerGtCell(result.total, result.currency, Boolean(result.ops_speculative))}
+                            {grandTotalPerGtCell(result.total, result.currency, Boolean(result.ops_speculative), opsPerGtPresent(result))}
                           </Box>
                         </Box>
                         {/* Stage grouping and charge-type lines (spec
@@ -276,20 +291,43 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
                                   : <span className="comparison-not-levied">not levied at this port</span>}
                               </Box>
                             ))}
+                            {/* OPS placement (spec v0.2.64, item 3): the
+                                user-specified OPS block renders inside the
+                                "At the berth" stage block on the card,
+                                before the Grand Total, labeled as included
+                                in it — comparison-surface presentation
+                                only; the input-side speculation notices
+                                stay on the workspace inputs. Blank renders
+                                nothing, and no absence wording renders
+                                for ports without values (no user value is
+                                not a tariff assertion). */}
+                            {result.ops_speculative && stage.id === 'at_berth' && (
+                              <Box component="dd" className="comparison-card-family comparison-card-ops">
+                                <span className="comparison-card-family-name">OPS (user-specified, not tariff-derived) — included in the Grand Total</span>
+                                {convCell(result.ops_speculative.amount, result.currency)}
+                              </Box>
+                            )}
                           </React.Fragment>
                         ))}
-                        {/* OPS speculative block on the card (spec v0.2.57):
-                            the user-specified components as their own
-                            separated line under the Grand Total — blank
-                            renders nothing, and no absence wording renders
-                            for ports without values (no user value is not
-                            a tariff assertion). */}
-                        {result.ops_speculative && (
-                          <Box component="dd" className="comparison-card-family comparison-card-ops">
-                            <span className="comparison-card-family-name">OPS (user-specified, not tariff-derived)</span>
-                            {convCell(result.ops_speculative.amount, result.currency)}
-                          </Box>
-                        )}
+                        {/* Discounts received on the card (spec v0.2.64,
+                            item 2): the tariff-derived discount sum before
+                            the Grand Total, clearly labeled as included in
+                            it (not additive). Zero renders the honest
+                            zero; no firing discount renders the honest
+                            no-discounts state. */}
+                        <Box component="dd" className="comparison-card-family comparison-card-discount">
+                          <span className="comparison-card-family-name">Discounts received (included in the Grand Total)</span>
+                          {discountLines.get(port.metadata.id)!.components.length > 0
+                            ? (
+                              <Box sx={{ textAlign: 'right' }}>
+                                {convCell(discountLines.get(port.metadata.id)!.sum, result.currency)}
+                                <Box sx={{ fontSize: '0.75rem' }} className="comparison-secondary">
+                                  {discountLines.get(port.metadata.id)!.percentage.toFixed(2)}% of gross (pre-discount) charges
+                                </Box>
+                              </Box>
+                            )
+                            : <span className="comparison-no-discount">no discounts at this call</span>}
+                        </Box>
                         <Box component="dd" className="comparison-card-family">
                           <span className="comparison-card-family-name">Estimated parameters subtotal</span>
                           {convCell(result.total_estimated_parameters, result.currency)}
@@ -402,8 +440,81 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
                         })}
                       </TableRow>
                     ))}
+                    {/* OPS placement (spec v0.2.64, item 3): the
+                        user-specified OPS block renders inside the
+                        "At the berth" stage block, before the Grand Total,
+                        labeled as included in it — comparison-surface
+                        presentation only; the input-side speculation
+                        notices stay on the workspace inputs. Never
+                        interleaved with tariff lines, and never with
+                        absence wording in other ports' columns (no user
+                        value is not a tariff assertion; blank simply
+                        renders nothing). */}
+                    {portResults.some(({ result }) => result?.ops_speculative) && stage.id === 'at_berth' && (
+                      <TableRow className="comparison-ops-row">
+                        <TableCell>
+                          <strong>OPS (user-specified, not tariff-derived) — included in the Grand Total</strong>
+                        </TableCell>
+                        {portResults.map(({ port, result }) => (
+                          <TableCell key={port.metadata.id} align="right" className="comparison-subtotal">
+                            {result?.ops_speculative
+                              ? <Box sx={{ textAlign: 'right' }}>
+                                  <span className="comparison-figure">{formatCurrency(result.ops_speculative.amount, result.currency)}</span>
+                                  <Box sx={{ fontSize: '0.75rem' }} className="comparison-secondary">
+                                    {result.ops_speculative.lines.map(l => l.label).join('; ')}
+                                  </Box>
+                                </Box>
+                              : <span className="comparison-ops-absent">—</span>}
+                          </TableCell>
+                        ))}
+                      </TableRow>
+                    )}
                   </React.Fragment>
                 ))}
+                {/* Discounts received (spec v0.2.64, item 2): the
+                    tariff-derived discount inventory per port, before the
+                    Grand Total, clearly labeled as included in it (not
+                    additive). The sum follows the existing conversion
+                    disclosure machinery; the percentage is currency-neutral
+                    against the port's gross (pre-discount) charges. Zero
+                    renders the honest zero; no firing discount renders the
+                    honest no-discounts state. */}
+                <TableRow className="comparison-discount-row">
+                  <TableCell>
+                    <strong>Discounts received</strong>
+                    <span className="comparison-discount-included-note">included in the Grand Total</span>
+                  </TableCell>
+                  {portResults.map(({ port, result }) => (
+                    <TableCell key={port.metadata.id} align="right" className="comparison-subtotal">
+                      {result
+                        ? (() => {
+                            const line = discountLines.get(port.metadata.id)!;
+                            return (
+                              <Box sx={{ textAlign: 'right' }} className="comparison-discount-cell">
+                                {line.components.length > 0
+                                  ? (
+                                    <Box sx={{ textAlign: 'right' }}>
+                                      {convCell(line.sum, result.currency)}
+                                      <Box sx={{ fontSize: '0.75rem' }} className="comparison-secondary">
+                                        {line.percentage.toFixed(2)}% of gross (pre-discount) charges
+                                      </Box>
+                                    </Box>
+                                  )
+                                  : <span className="comparison-no-discount">no discounts at this call</span>}
+                                <Box sx={{ fontSize: '0.75rem' }} className="comparison-secondary">
+                                  {line.components.map((c, i) => (
+                                    <Box key={i} component="span" style={{ display: 'block' }}>
+                                      {c.label}{c.detail ? ` (${c.detail})` : ''}: −{formatCurrency(c.amount, result.currency)} — {c.citation}
+                                    </Box>
+                                  ))}
+                                </Box>
+                              </Box>
+                            );
+                          })()
+                        : <span className="comparison-error">error</span>}
+                    </TableCell>
+                  ))}
+                </TableRow>
                 <TableRow className="comparison-total-row">
                   <TableCell>
                     <strong>Grand Total</strong>
@@ -413,37 +524,12 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
                       {result
                         ? <Box sx={{ textAlign: 'right' }}>
                             {convCell(result.total, result.currency)}
-                            {grandTotalPerGtCell(result.total, result.currency, Boolean(result.ops_speculative))}
+                            {grandTotalPerGtCell(result.total, result.currency, Boolean(result.ops_speculative), opsPerGtPresent(result))}
                           </Box>
                         : <span className="comparison-error">error</span>}
                     </TableCell>
                   ))}
                 </TableRow>
-                {/* OPS speculative block in comparison (spec v0.2.57): each
-                    port's user-entered OPS components render as a visibly
-                    separated row after the Grand Total — never interleaved
-                    with tariff lines, and never with absence wording in
-                    other ports' columns (no user value is not a tariff
-                    assertion; blank simply renders nothing). */}
-                {portResults.some(({ result }) => result?.ops_speculative) && (
-                  <TableRow className="comparison-ops-row">
-                    <TableCell>
-                      <strong>OPS (user-specified, not tariff-derived)</strong>
-                    </TableCell>
-                    {portResults.map(({ port, result }) => (
-                      <TableCell key={port.metadata.id} align="right" className="comparison-subtotal">
-                        {result?.ops_speculative
-                          ? <Box sx={{ textAlign: 'right' }}>
-                              <span className="comparison-figure">{formatCurrency(result.ops_speculative.amount, result.currency)}</span>
-                              <Box sx={{ fontSize: '0.75rem' }} className="comparison-secondary">
-                                {result.ops_speculative.lines.map(l => l.label).join('; ')}
-                              </Box>
-                            </Box>
-                          : <span className="comparison-ops-absent">—</span>}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                )}
                 {/* Estimated-parameter separation (spec v0.2.24): the total
                     minus its estimated-parameter lines, shown for every port
                     symmetrically (Hamburg handling/towage, Helsingborg

@@ -1148,7 +1148,7 @@ export const WorkspaceInputs: React.FC<WorkspaceInputsProps> = (props) => {
                       onChange={(e) => handleCallChange('ops_per_gt_charge', e.target.value === '' ? undefined : parseFloat(e.target.value))}
                       fullWidth
                       InputLabelProps={{ shrink: true }}
-                      helperText={`Optional — multiplied by vessel GT; blank disables`}
+                      helperText={`User-specified, not a tariff rate — no published tariff prices container-terminal OPS per GT (Gothenburg's only published OPS due is the flat tanker-jetty connection fee); the amount uses the same GT basis as the port dues and flows into the derived SEK/GT metric. Blank disables.`}
                     />
                   </Grid>
                 )}
