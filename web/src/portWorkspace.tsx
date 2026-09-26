@@ -228,6 +228,10 @@ export const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call
   // whose data is marked estimated (spec v0.2.19: estimated values are never
   // mistaken for registry data — the field shows an "est." badge)
   const [estimatedFields, setEstimatedFields] = useState<string[]>([]);
+  // v0.3.0 re-derivation: whether the current NT is an aggregator-observed
+  // particular (estimate flag retained) — drives the boundary notice's
+  // band basis (the observation, not the type ratio).
+  const [ntObserved, setNtObserved] = useState(false);
   // Profile-seeded assumption fields (spec v0.2.48): selecting a preset
   // seeds lay time and the four container counts as class-based assumptions.
   // Every seeded value carries an assumption flag rendered adjacent to its
@@ -276,6 +280,7 @@ export const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call
     // Manual edits clear the estimate badge for that field: the user has taken
     // ownership of the value
     setEstimatedFields(prev => prev.filter(f => f !== field));
+    if (field === 'nt') setNtObserved(false);
     onVesselChange({ ...vessel, [field]: value });
   };
 
@@ -315,6 +320,7 @@ export const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call
     });
     // Presets carry no library provenance: clear the estimate badges
     setEstimatedFields([]);
+    setNtObserved(false);
     onActiveVesselChange(GENERIC_SIZE_CLASS_LABELS[preset]);
     // Profile seeding (spec v0.2.48): the generic class seeds its profile
     // (class lay time × class-appropriate productivity, sanity-banded).
@@ -373,6 +379,7 @@ export const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call
         : { engine_tier: undefined, engine_tier_estimated: undefined, infer_engine_tier_from_build_year: false })
     });
     setEstimatedFields(selected.estimated_fields ?? []);
+    setNtObserved(selected.nt_observed ?? false);
     // Profile seeding (spec v0.2.48): the named preset seeds its class-based
     // call profile (lay time + the four box counts), each flagged as an
     // assumption. No library vessel carries a certified tier today, so the
@@ -544,6 +551,7 @@ export const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call
           port={port}
           state={state}
           estimatedFields={estimatedFields}
+          ntObserved={ntObserved}
           assumedFields={assumedFields}
           profileAssumptionText={PROFILE_ASSUMPTION_TEXT}
           handleVesselChange={handleVesselChange}

@@ -34,7 +34,7 @@ function makeCall(overrides: Record<string, unknown> = {}): CostCalculationInput
   return {
     vessel: {
       gt: (overrides.gt as number) ?? 8890,
-      nt: (overrides.nt as number) ?? 3200,
+      nt: (overrides.nt as number) ?? 3783,
       loa_m: (overrides.loa_m as number) ?? 137
     },
     call: {

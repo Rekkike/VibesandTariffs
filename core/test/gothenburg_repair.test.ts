@@ -22,7 +22,7 @@ function makeCall(callOverrides: Record<string, unknown>): CostCalculationInput 
   return {
     vessel: {
       gt: (callOverrides.gt as number) ?? 8890,
-      nt: (callOverrides.nt as number) ?? 3200,
+      nt: (callOverrides.nt as number) ?? 3783,
       loa_m: (callOverrides.loa_m as number) ?? 137
     },
     call: {

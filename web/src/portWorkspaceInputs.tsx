@@ -36,11 +36,13 @@ import { DisclosureCard } from './disclosureCard';
 import { EnvGuideHelp } from './envGuideHelp';
 import { BandSelect, bandedInputsForPort } from './bandSelect';
 import { portDuesBanded } from './opsFold';
+import { ntBoundaryNoticeFor, portBillsOnNtClasses } from './ntBoundary';
 
 export interface WorkspaceInputsProps {
   port: PortDefinition;
   state: { vessel: VesselInput; call: CallInput; result: CostCalculationResult | null };
   estimatedFields: string[];
+  ntObserved: boolean;
   assumedFields: string[];
   profileAssumptionText: Record<string, string>;
   handleVesselChange: (field: keyof VesselInput, value: number | undefined) => void;
@@ -66,6 +68,7 @@ export const WorkspaceInputs: React.FC<WorkspaceInputsProps> = (props) => {
     port,
     state,
     estimatedFields,
+    ntObserved,
     assumedFields,
     profileAssumptionText,
     handleVesselChange,
@@ -95,6 +98,13 @@ export const WorkspaceInputs: React.FC<WorkspaceInputsProps> = (props) => {
   // The published-flat-rate ports (a flat per-GT tariff whose per-GT IS
   // the published rate) never fold: the unfolded helper renders there.
   const opsFoldAppliesHere = opsComponents.per_gt.enabled && portDuesBanded(port);
+  // NT class-boundary notice (spec v0.3.0 re-derivation): fires exactly
+  // when the NT is an estimate whose error band spans a class boundary
+  // AND this port's own rules carry nt_class conditions (data-derived:
+  // GOT/HEL render it, HAM never does).
+  const ntNotice = portBillsOnNtClasses(port)
+    ? ntBoundaryNoticeFor(estimatedFields.includes('nt'), state.vessel.nt, state.vessel.gt, ntObserved)
+    : null;
   return (
           <Grid item xs={12} md={6}>
             <Paper className="form-section" elevation={0}>
@@ -208,6 +218,15 @@ export const WorkspaceInputs: React.FC<WorkspaceInputsProps> = (props) => {
                           : `NT class ${getNetTonnageClass(state.vessel.nt)}`
                     }
                   />
+                  {ntNotice && (
+                    <Typography variant="body2" className="nt-boundary-notice" data-testid="nt-boundary-notice">
+                      NT estimate sits in Class {ntNotice.usedClass}, but the honest error band
+                      ({ntNotice.bandLow.toLocaleString('en-US')}–{ntNotice.bandHigh.toLocaleString('en-US')} NT,
+                      0.40–0.58 × GT) spans a class boundary — the fee class is uncertain.
+                      The figures use Class {ntNotice.usedClass}; Class {ntNotice.alternativeClass} is
+                      plausible and would change the Sjöfartsverket vessel fee, readiness fee, and pilotage.
+                    </Typography>
+                  )}
                 </Grid>
                 <Grid item xs={12} sm={6}>
                   <TextField

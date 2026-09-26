@@ -74,27 +74,38 @@ describe('Vessel library data (spec section 3.4)', () => {
     const helgafell = byName.get('HELGAFELL');
     expect(helgafell).toBeDefined();
     expect(helgafell!.gt).toBe(8890);
-    expect(helgafell!.nt).toBe(3200);
+    // v0.3.0 re-derivation: NT observed 3,783 (Marine MAN aggregator, single
+    // source — the estimate flag stays; the former ~36-percent estimate was 3,200).
+    expect(helgafell!.nt).toBe(3783);
     // LOA corrected to the reference 137.5 m in v0.2.48 (the previous 137
     // was a rounding defect; deliberate data correction).
     expect(helgafell!.loa_m).toBe(137.5);
     expect(helgafell!.draught_m).toBe(8.51);
     expect(helgafell!.teu_capacity).toBe(909);
     expect(helgafell!.estimated_fields).toEqual(['nt']);
+    expect(helgafell!.source_note).toContain('Marine MAN');
 
     const vistula = byName.get('VISTULA MAERSK');
     expect(vistula).toBeDefined();
     expect(vistula!.gt).toBe(34882);
-    expect(vistula!.nt).toBe(13000);
+    // v0.3.0 re-derivation: NT confirmed 16,947 (Marine MAN aggregator +
+    // the spec §10 evidence record — two independent records agree); the
+    // estimated flag retires for nt (the masquerade guard: the confirmation
+    // is what retires the flag, never a silent data edit).
+    expect(vistula!.nt).toBe(16947);
     expect(vistula!.loa_m).toBe(200);
     expect(vistula!.draught_m).toBe(10.0);
-    expect(vistula!.estimated_fields).toEqual(['nt', 'draught_m']);
+    expect(vistula!.estimated_fields).toEqual(['draught_m']);
     expect(vistula!.source_note).toContain('Class 7');
+    expect(vistula!.source_note).toContain('NT confirmed: 16,947');
 
     const maren = byName.get('MAREN MAERSK');
     expect(maren).toBeDefined();
     expect(maren!.gt).toBe(194849);
-    expect(maren!.nt).toBe(70000);
+    // v0.3.0 re-derivation: NT observed 79,120 (Marine MAN aggregator,
+    // single source with a reliability caveat — the same page carries a
+    // defective TEU figure; the flag stays, Class 9 either way).
+    expect(maren!.nt).toBe(79120);
     expect(maren!.loa_m).toBe(399);
     expect(maren!.draught_m).toBe(16.0);
     expect(maren!.teu_capacity).toBe(19076);
@@ -106,6 +117,9 @@ describe('Vessel library data (spec section 3.4)', () => {
     expect(kyungmin!.flag).toBe('LR');
     expect(kyungmin!.built).toBe(2024);
     expect(kyungmin!.gt).toBe(21979);
+    // v0.3.0 re-derivation: no confirming source obtained — the estimate
+    // (8,000, Class 5) stays, flagged, with the boundary notice (the
+    // convention band 8,792–12,748 spans the Class 6 boundary at 10,000).
     expect(kyungmin!.nt).toBe(8000);
     expect(kyungmin!.loa_m).toBe(171.92);
     expect(kyungmin!.beam_m).toBe(28.4);

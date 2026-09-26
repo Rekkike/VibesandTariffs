@@ -28,7 +28,7 @@ describe('version chip (spec v0.2.68, item 1)', () => {
     // v0.2.x string anywhere in the web source outside version.ts is a
     // second hand-kept copy (comments citing spec versions are prose,
     // not version carriers).
-    const versionRe = /['"`]v0\.2\.\d+['"`]/;
+    const versionRe = /['"`]v0\.\d+\.\d+['"`]/;
     const carriers = webSrcFiles.filter(f => {
       const text = fs.readFileSync(path.join(__dirname, f), 'utf8');
       return f !== 'version.ts' && versionRe.test(text);
@@ -38,7 +38,7 @@ describe('version chip (spec v0.2.68, item 1)', () => {
 
   it('the constant matches the specification header (the bump ritual, all three agree)', () => {
     const spec = fs.readFileSync(path.join(__dirname, '..', '..', 'docs', 'SPECIFICATION.md'), 'utf8');
-    const header = spec.match(/Specification (v0\.2\.\d+)/);
+    const header = spec.match(/Specification (v0\.\d+\.\d+)/);
     expect(header).not.toBeNull();
     expect(APP_VERSION).toBe(header![1]);
     // And the changelog row for the same version exists.

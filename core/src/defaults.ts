@@ -25,7 +25,7 @@ import { portDefaultCall } from './port_data';
 // moves) seeds the default call the same way a selection would.
 export const DEFAULT_VESSEL: VesselInput = {
   gt: 194849,
-  nt: 70000,
+  nt: 79120,
   loa_m: 399,
   beam_m: 60,
   draft_m: 16,

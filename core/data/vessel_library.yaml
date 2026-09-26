@@ -32,14 +32,15 @@ vessels:
     flag: Faroe Islands
     built: 2005
     gt: 8890
-    nt: 3200
+    nt: 3783
     loa_m: 137.5
     beam_m: 22
     draught_m: 8.51
     teu_capacity: 909
     class_note: "Geared feeder (Samskip Iceland service; North Atlantic / North Europe feeder routes)"
     estimated_fields: [nt]
-    source_note: "Particulars cross-checked via VesselFinder (IMO 9306017) and Flexport Atlas vessel registry, 2026-09-21. LOA 137.5 m per the reference record (the previous 137 m entry was a rounding defect, corrected v0.2.48). Draught confirmed via owner fleet data. NT estimated (~36 percent of GT); fee class estimate: Class 4 (3,000+ NT) — estimate sits mid-class, low sensitivity."
+    nt_observed: true
+    source_note: "Particulars cross-checked via VesselFinder (IMO 9306017) and Flexport Atlas vessel registry, 2026-09-21. LOA 137.5 m per the reference record (the previous 137 m entry was a rounding defect, corrected v0.2.48). Draught confirmed via owner fleet data. NT estimated from an aggregator observation: 3,783 (Marine MAN fleet-data aggregator, IMO 9306017, fetched 2026-09-30, single source — not registry-confirmed, the estimate flag stays; no confirming second source obtained: VesselFinder renders without tonnage particulars, the DNV register and Equasis unreachable, maritime-connector unreachable per the standing rule). Fee class: Class 4 (3,000+ NT) — the observed value sits 783 above the class boundary; the former ~36-percent-of-GT estimate (3,200) is superseded by the observed particular (v0.3.0 re-derivation)."
 
   - name: VISTULA MAERSK
     imo: "9775737"
@@ -47,14 +48,14 @@ vessels:
     flag: Denmark
     built: 2018
     gt: 34882
-    nt: 13000
+    nt: 16947
     loa_m: 200
     beam_m: 35.2
     draught_m: 10.0
     teu_capacity: 3596
     class_note: "Panamax / ice-class intra-Europe (Seago Line Baltic service)"
-    estimated_fields: [nt, draught_m]
-    source_note: "Particulars cross-checked via VesselFinder (IMO 9775737), Flexport Atlas, and VesselTracking registries, 2026-09-21. Draught estimated. NT estimated; fee class estimate: Class 6 (10,000+ NT) with a borderline risk of Class 7 (15,000+) if the true NT is higher — this entry most needs registry confirmation."
+    estimated_fields: [draught_m]
+    source_note: "Particulars cross-checked via VesselFinder (IMO 9775737), Flexport Atlas, and VesselTracking registries, 2026-09-21. Draught estimated. NT confirmed: 16,947 (Marine MAN fleet-data aggregator, IMO 9775737, fetched 2026-09-30; corroborated by the spec open-item-6 evidence record — two independent records agree exactly; the estimated flag retires for nt per the v0.3.0 re-derivation). Fee class: Class 7 (15,000+ NT) — the former estimate (13,000, Class 6) was low; the class moves and the Sjöfartsverket class-keyed fees re-derive at both Swedish ports."
 
   - name: MAREN MAERSK
     imo: "9632129"
@@ -62,14 +63,15 @@ vessels:
     flag: Denmark
     built: 2014
     gt: 194849
-    nt: 70000
+    nt: 79120
     loa_m: 399
     beam_m: 60
     draught_m: 16.0
     teu_capacity: 19076
     class_note: "Ultra-large (Triple-E class, Asia-Europe)"
     estimated_fields: [nt]
-    source_note: "Particulars cross-checked via VesselFinder (IMO 9632129) and Flexport Atlas vessel registry, 2026-09-21. Draught is design draught, class-standard for Triple-E. NT estimated; fee class: Class 7 (15,000+ NT) — the estimate is far above the threshold, so class placement is robust."
+    nt_observed: true
+    source_note: "Particulars cross-checked via VesselFinder (IMO 9632129) and Flexport Atlas vessel registry, 2026-09-21. Draught is design draught, class-standard for Triple-E. NT estimated from an aggregator observation: 79,120 (Marine MAN fleet-data aggregator, IMO 9632129, fetched 2026-09-30, single source with a reliability caveat — the same page carries a defective TEU figure (600 for a 19,076-TEU vessel), so the observation is treated as an observed estimate, not registry confirmation; the estimate flag stays; the DNV register, Equasis, and the Danish Maritime Authority register were all unreachable for confirmation). Fee class: Class 9 (60,000+ NT) — the class placement is arithmetically forced for any plausible NT (the IMO floor NT >= 0.30 x GT = 58,455 excludes Class 8; the Class 10 threshold of 100,000 exceeds the plausible band), and the former note's 'Class 7' claim was a prose error (70,000 NT was already Class 9; corrected, disclosed in the v0.3.0 audit). The observed value replaces the former 36-percent-of-GT estimate (70,000); the class does not move, so no fee moves for this vessel."
 
   - name: MSC KYUNGMIN
     imo: "9967005"
@@ -84,4 +86,4 @@ vessels:
     teu_capacity: 2400
     class_note: "Feeder (Fujian Mawei series; GT and TEU capacity estimated from fleet trackers, not registry-confirmed)"
     estimated_fields: [gt, teu_capacity, nt, draught_m]
-    source_note: "Particulars checked against VesselFinder and fleet-tracker data (IMO 9967005), 2026-09-23. LOA 171.92 m, beam 28.4 m, build year 2024, flag LR, and DWT 29,553 are registry-confirmed; GT (21,979) and TEU capacity (2,400) are tracker estimates — the basis stated per the v0.2.48 data-audit correction (the entry previously claimed GT as registry-confirmed). Draught estimated (typical for the Fujian Mawei 1,700-series feeder; AIS has observed 8.3 m laden). NT estimated; fee class estimate: Class 6 (10,000+ NT) — estimate sits below the Class 6 threshold; verify before relying on class placement."
+    source_note: "Particulars checked against VesselFinder and fleet-tracker data (IMO 9967005), 2026-09-23. LOA 171.92 m, beam 28.4 m, build year 2024, flag LR, and DWT 29,553 are registry-confirmed; GT (21,979) and TEU capacity (2,400) are tracker estimates — the basis stated per the v0.2.48 data-audit correction (the entry previously claimed GT as registry-confirmed). Draught estimated (typical for the Fujian Mawei 1,700-series feeder; AIS has observed 8.3 m laden). NT estimated: 8,000, retained — no confirming source obtained (the Marine MAN aggregator page for IMO 9967005 carries GT but no NT field; VesselFinder, MarineTraffic, TrustedDocks, Linescape, MagicPort, maritimeoptima carry no fetchable NT; the DNV register and Equasis unreachable), per the v0.3.0 registry attempt. Fee class: Class 5 (6,000+ NT) — the former note's 'Class 6' claim was a prose error (8,000 NT was already Class 5; corrected, disclosed in the v0.3.0 audit). The formalized estimation convention (v0.3.0): the error band 0.40–0.58 x GT = 8,792–12,748 NT spans the Class 6 boundary at 10,000, so the boundary notice renders at both Swedish ports (Class 5 used; Class 6 disclosed as the alternative: vessel fee +36,630, readiness +10,935, pilotage start +6,800, +1,465 per half-hour)."

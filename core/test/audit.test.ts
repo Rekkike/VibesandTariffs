@@ -156,10 +156,10 @@ describe('audit d: Sjoefartsverket environmental class — least favourable defa
 // computed fresh and pinned per component so drift is localized on failure.
 // ---------------------------------------------------------------------------
 const LIBRARY_VESSELS: Record<string, { gt: number; nt: number; loa_m: number; built_year: number }> = {
-  HELGAFELL: { gt: 8890, nt: 3200, loa_m: 137, built_year: 2005 },
+  HELGAFELL: { gt: 8890, nt: 3783, loa_m: 137, built_year: 2005 },
   'MSC KYUNGMIN': { gt: 21979, nt: 8000, loa_m: 171.92, built_year: 2024 },
-  'VISTULA MAERSK': { gt: 34882, nt: 13000, loa_m: 200, built_year: 2018 },
-  'MAREN MAERSK': { gt: 194849, nt: 70000, loa_m: 399, built_year: 2014 }
+  'VISTULA MAERSK': { gt: 34882, nt: 16947, loa_m: 200, built_year: 2018 },
+  'MAREN MAERSK': { gt: 194849, nt: 79120, loa_m: 399, built_year: 2014 }
 };
 
 function triPortCall(port: PortDefinition, vesselName: string): any {
@@ -244,7 +244,12 @@ describe('tri-port sanity check: Helsingborg reproduces all four reference check
   it.each([
     ['HELGAFELL', 829166.50],
     ['MSC KYUNGMIN', 1039261.15],
-    ['VISTULA MAERSK', 1354763.20],
+    // v0.3.0 re-derivation drift (VISTULA): NT 13,000 -> 16,947 (confirmed,
+    // Marine MAN aggregator + spec §10 evidence), class 6 -> class 7;
+    // vessel fee 117,385 -> 150,310, readiness 35,100 -> 44,965,
+    // pilotage 63,175 -> 72,020 (29,730 + 6x6,735 + 1,880);
+    // total moves by +51,635.00 (class-keyed fee deltas, script-computed).
+    ['VISTULA MAERSK', 1406398.20],
     ['MAREN MAERSK', 6849502.40]
   ])('%s total SEK', (name, expected) => {
     const vessel = { ...LIBRARY_VESSELS[name as string], vessel_type: 'container' } as any;

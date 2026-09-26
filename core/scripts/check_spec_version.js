@@ -46,7 +46,9 @@ function isBehaviorPath(filePath) {
   return BEHAVIOR_PATHS.some((prefix) => filePath === prefix.slice(0, -1) || filePath.startsWith(prefix));
 }
 
-const CHANGELOG_ROW = /^\|\s*0\.2\.\d+\s*\|/;
+// v0.3.0: the row pattern generalizes to 0.x.y (the guard's first minor
+// boundary - the changelog row records v0.3.0, not v0.2.71).
+const CHANGELOG_ROW = /^\|\s*0\.\d+\.\d+\s*\|/;
 
 function specVersionRows(specText) {
   return specText
@@ -58,7 +60,7 @@ function specVersionRows(specText) {
 // specification version, e.g. '# Port Call Cost Analyzer — Specification
 // v0.2.67'.
 function specHeaderVersion(specText) {
-  const m = specText.match(/Specification v(0\.2\.\d+)/);
+  const m = specText.match(/Specification v(0\.\d+\.\d+)/);
   return m ? `v${m[1]}` : null;
 }
 
@@ -67,7 +69,7 @@ function specHeaderVersion(specText) {
 // from a second hand-kept copy.
 function webVersionConstant(versionTsText) {
   if (!versionTsText) return null;
-  const m = versionTsText.match(/APP_VERSION\s*=\s*'(v0\.2\.\d+)'/);
+  const m = versionTsText.match(/APP_VERSION\s*=\s*'(v0\.\d+\.\d+)'/);
   return m ? m[1] : null;
 }
 

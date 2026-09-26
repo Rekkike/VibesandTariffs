@@ -109,7 +109,7 @@ describe('Loader validation', () => {
 
 describe('CP1 - HELGAFELL (8,890 GT, NT 3,200 class 4, 137 m, 400 moves, 2 pilotage hours)', () => {
   const result = calculatePortCallCost(port, makeCall({
-    gt: 8890, nt: 3200, loa_m: 137,
+    gt: 8890, nt: 3783, loa_m: 137,
     containers_discharged_le20ft: 400,
     pilotage_hours: 2
   }));
@@ -196,9 +196,9 @@ describe('CP2 - MSC KYUNGMIN (21,979 GT, NT 8,000 class 5, 171.92 m, 400 moves, 
   });
 });
 
-describe('CP3 - VISTULA MAERSK (34,882 GT, NT 13,000 class 6, 200 m, 500 moves, 3 pilotage hours)', () => {
+describe('CP3 - VISTULA MAERSK (34,882 GT, NT 16,947 class 7 — v0.3.0 re-derivation: NT confirmed 16,947, Marine MAN aggregator + spec §10 evidence, class 6 -> 7), 200 m, 500 moves, 3 pilotage hours)', () => {
   const result = calculatePortCallCost(port, makeCall({
-    gt: 34882, nt: 13000, loa_m: 200,
+    gt: 34882, nt: 16947, loa_m: 200,
     containers_discharged_le20ft: 500,
     pilotage_hours: 3
   }));
@@ -215,26 +215,26 @@ describe('CP3 - VISTULA MAERSK (34,882 GT, NT 13,000 class 6, 200 m, 500 moves, 
     expect(feeByRule(result, 'poh_lolo_handling').amount).toBe(445000);
     expect(feeByRule(result, 'poh_ees').amount).toBe(17500);
   });
-  it('vessel fee class 6 = 117,385.00', () => {
-    expect(familyTotal(result, 'vessel_fee')).toBe(117385.00);
+  it('vessel fee class 7 = 150,310.00 (v0.3.0 class drift: was 117,385.00 at the 13,000-NT estimate, class 6)', () => {
+    expect(familyTotal(result, 'vessel_fee')).toBe(150310.00);
   });
-  it('readiness fee class 6 = 35,100.00', () => {
-    expect(familyTotal(result, 'readiness_fee')).toBe(35100.00);
+  it('readiness fee class 7 = 44,965.00 (v0.3.0 class drift: was 35,100.00, class 6)', () => {
+    expect(familyTotal(result, 'readiness_fee')).toBe(44965.00);
   });
   it('pilotage: 26,105 + 6 x 5,865 + 1,880 = 63,175.00', () => {
-    expect(familyTotal(result, 'pilotage') + familyTotal(result, 'ordering_fee')).toBe(63175.00);
+    expect(familyTotal(result, 'pilotage') + familyTotal(result, 'ordering_fee')).toBe(72020.00); // v0.3.0 class drift: 29,730 + 6 x 6,735 + 1,880 (was 63,175.00 at class 6)
   });
   it('towage estimate 60,000.00 (1 tug at 150-250 m LOA)', () => {
     expect(feeByRule(result, 'poh_towage_estimate').amount).toBe(60000.00);
   });
-  it('total 1,354,763.20', () => {
-    expect(result.total).toBe(1354763.20);
+  it('total 1,406,398.20 (v0.3.0 class drift: was 1,354,763.20; +51,635.00 = the class-keyed fee deltas)', () => {
+    expect(result.total).toBe(1406398.20);
   });
 });
 
-describe('CP4 - MAREN MAERSK (194,849 GT, NT 70,000 class 9, 399 m, 3,000 moves, 4 pilotage hours)', () => {
+describe('CP4 - MAREN MAERSK (194,849 GT, NT 79,120 class 9 — v0.3.0 re-derivation: observed single-source, flag retained, class unchanged, no fee moves; was NT 70,000, same class), 399 m, 3,000 moves, 4 pilotage hours)', () => {
   const result = calculatePortCallCost(port, makeCall({
-    gt: 194849, nt: 70000, loa_m: 399,
+    gt: 194849, nt: 79120, loa_m: 399,
     containers_discharged_le20ft: 3000,
     pilotage_hours: 4
   }));
@@ -270,7 +270,7 @@ describe('CP4 - MAREN MAERSK (194,849 GT, NT 70,000 class 9, 399 m, 3,000 moves,
 
 describe('CP5 - HELGAFELL with ESI 35 and 35% fossil-free fuel (additive discount stacking)', () => {
   const result = calculatePortCallCost(port, makeCall({
-    gt: 8890, nt: 3200, loa_m: 137,
+    gt: 8890, nt: 3783, loa_m: 137,
     containers_discharged_le20ft: 400,
     pilotage_hours: 2,
     esi_score: 35,
@@ -295,7 +295,7 @@ describe('CP5 - HELGAFELL with ESI 35 and 35% fossil-free fuel (additive discoun
 describe('Boundary behaviour', () => {
   it('missing environmental class defaults to E with a visible flag (spec 4.4.2)', () => {
     const result = calculatePortCallCost(port, makeCall({
-      gt: 8890, nt: 3200, loa_m: 137,
+      gt: 8890, nt: 3783, loa_m: 137,
       containers_discharged_le20ft: 400,
       pilotage_hours: 2
     }));
@@ -307,7 +307,7 @@ describe('Boundary behaviour', () => {
 
   it('Sjöfartsverket frequency discount: 4 calls = 50% of vessel + readiness fees', () => {
     const result = calculatePortCallCost(port, makeCall({
-      gt: 8890, nt: 3200, loa_m: 137,
+      gt: 8890, nt: 3783, loa_m: 137,
       containers_discharged_le20ft: 400,
       pilotage_hours: 2,
       calls_this_month: 4,
@@ -320,7 +320,7 @@ describe('Boundary behaviour', () => {
 
   it('Sjöfartsverket frequency discount: 6+ calls = fully waived', () => {
     const result = calculatePortCallCost(port, makeCall({
-      gt: 8890, nt: 3200, loa_m: 137,
+      gt: 8890, nt: 3783, loa_m: 137,
       containers_discharged_le20ft: 400,
       pilotage_hours: 2,
       calls_this_month: 6,
@@ -332,7 +332,7 @@ describe('Boundary behaviour', () => {
 
   it('ordering fee band boundaries: exactly 4 h is the 4h_plus band (1,880)', () => {
     const result = calculatePortCallCost(port, makeCall({
-      gt: 8890, nt: 3200, loa_m: 137,
+      gt: 8890, nt: 3783, loa_m: 137,
       containers_discharged_le20ft: 400,
       pilotage_hours: 2,
       pilotage_ordering_lead_time_hours: 4,
@@ -343,7 +343,7 @@ describe('Boundary behaviour', () => {
 
   it('ordering fee band boundaries: just under 4 h is the 3-4 h band (3,775)', () => {
     const result = calculatePortCallCost(port, makeCall({
-      gt: 8890, nt: 3200, loa_m: 137,
+      gt: 8890, nt: 3783, loa_m: 137,
       containers_discharged_le20ft: 400,
       pilotage_hours: 2,
       pilotage_ordering_lead_time_hours: 3.99,
@@ -354,7 +354,7 @@ describe('Boundary behaviour', () => {
 
   it('missing ordering lead time defaults to the least favourable band (9,390)', () => {
     const result = calculatePortCallCost(port, makeCall({
-      gt: 8890, nt: 3200, loa_m: 137,
+      gt: 8890, nt: 3783, loa_m: 137,
       containers_discharged_le20ft: 400,
       pilotage_hours: 2,
       pilotage_ordering_lead_time_hours: undefined,
@@ -365,7 +365,7 @@ describe('Boundary behaviour', () => {
 
   it('waste break-even: exactly 33,333 GT takes the flat 25,000 (highest applies)', () => {
     const result = calculatePortCallCost(port, makeCall({
-      gt: 33333, nt: 3200, loa_m: 137,
+      gt: 33333, nt: 3783, loa_m: 137,
       pilotage_hours: 2,
       csi_class: 'E'
     }));
@@ -374,7 +374,7 @@ describe('Boundary behaviour', () => {
 
   it('long-stay surcharge after four days: 100 SEK per commenced metre LOA per 7-day period', () => {
     const result = calculatePortCallCost(port, makeCall({
-      gt: 8890, nt: 3200, loa_m: 137,
+      gt: 8890, nt: 3783, loa_m: 137,
       containers_discharged_le20ft: 400,
       pilotage_hours: 2,
       csi_class: 'E',
@@ -386,7 +386,7 @@ describe('Boundary behaviour', () => {
 
   it('no long-stay surcharge at or under 96 hours', () => {
     const result = calculatePortCallCost(port, makeCall({
-      gt: 8890, nt: 3200, loa_m: 137,
+      gt: 8890, nt: 3783, loa_m: 137,
       containers_discharged_le20ft: 400,
       pilotage_hours: 2,
       csi_class: 'E',
@@ -397,7 +397,7 @@ describe('Boundary behaviour', () => {
 
   it('vessels without a valid ISSC pay the double security fee', () => {
     const result = calculatePortCallCost(port, makeCall({
-      gt: 8890, nt: 3200, loa_m: 137,
+      gt: 8890, nt: 3783, loa_m: 137,
       containers_discharged_le20ft: 400,
       pilotage_hours: 2,
       csi_class: 'E',
@@ -409,7 +409,7 @@ describe('Boundary behaviour', () => {
 
   it('pilotage discount: 40% beyond 7 hours on the half-hour fee only — lathund class-4 row 8,0 h = 77,188', () => {
     const result = calculatePortCallCost(port, makeCall({
-      gt: 8890, nt: 3200, loa_m: 137,
+      gt: 8890, nt: 3783, loa_m: 137,
       containers_discharged_le20ft: 400,
       pilotage_hours: 8,
       csi_class: 'E'
@@ -427,7 +427,7 @@ describe('Boundary behaviour', () => {
 
   it('storage: 7 free days, then 275/day per 20ft import unit', () => {
     const result = calculatePortCallCost(port, makeCall({
-      gt: 8890, nt: 3200, loa_m: 137,
+      gt: 8890, nt: 3783, loa_m: 137,
       containers_discharged_le20ft: 400,
       pilotage_hours: 2,
       csi_class: 'E',
@@ -439,7 +439,7 @@ describe('Boundary behaviour', () => {
 
   it('30ft and 45ft storage rules only bill their dedicated unit counts (no double count)', () => {
     const result = calculatePortCallCost(port, makeCall({
-      gt: 8890, nt: 3200, loa_m: 137,
+      gt: 8890, nt: 3783, loa_m: 137,
       containers_discharged_le20ft: 400,
       containers_discharged_gt20ft: 100,
       pilotage_hours: 2,
@@ -473,7 +473,7 @@ describe('Boundary behaviour', () => {
 
   it('user-supplied tug count overrides the LOA-class default', () => {
     const result = calculatePortCallCost(port, makeCall({
-      gt: 8890, nt: 3200, loa_m: 137,
+      gt: 8890, nt: 3783, loa_m: 137,
       containers_discharged_le20ft: 400,
       pilotage_hours: 2,
       csi_class: 'E',

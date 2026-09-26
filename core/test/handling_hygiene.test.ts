@@ -227,7 +227,7 @@ describe('handling hygiene c: estimated-parameter separation, symmetric across p
     // Towage default off in Hamburg via zero tug count: the estimate line
     // exists but contributes nothing to the subtotal.
     const r = calculatePortCallCost(hamburg, {
-      vessel: { gt: 8890, nt: 3200, loa_m: 137, vessel_type: 'container', built_year: 2005 } as any,
+      vessel: { gt: 8890, nt: 3783, loa_m: 137, vessel_type: 'container', built_year: 2005 } as any,
       call: { containers_loaded_le20ft: 0, containers_loaded_gt20ft: 0, containers_discharged_le20ft: 400, containers_discharged_gt20ft: 0, lay_time_hours: 16 } as any
     });
     expect(r.total_estimated_parameters).toBeGreaterThan(0);

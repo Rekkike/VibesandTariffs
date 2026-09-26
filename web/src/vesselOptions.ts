@@ -20,6 +20,10 @@ export interface LibraryVessel {
   class_note: string;
   engine_tier?: string;
   estimated_fields?: string[];
+  // v0.3.0 re-derivation: true when the NT is an aggregator-observed
+  // particular (single source, estimate flag retained) — the boundary
+  // notice bands around the observation, not the type ratio.
+  nt_observed?: boolean;
   source_note: string;
 }
 export const LOADED_VESSELS: LibraryVessel[] = (vesselLibrary as any).vessels ?? [];

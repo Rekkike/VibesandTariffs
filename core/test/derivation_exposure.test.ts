@@ -244,7 +244,7 @@ describe('Derivation transparency — flat and simple structures', () => {
 
   it('the excess-units reduction names the threshold in its derivation step (SJ\u00d6FS 2025:5 \u00a725)', () => {
     const result = calculatePortCallCost(gothenburg, {
-      vessel: { gt: 8890, nt: 3200, loa_m: 137 },
+      vessel: { gt: 8890, nt: 3783, loa_m: 137 },
       call: {
         port_id: 'gothenburg', date: '2026-06-01', vessel_type: 'container',
         containers_loaded_le20ft: 0, containers_loaded_gt20ft: 0,

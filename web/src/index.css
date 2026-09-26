@@ -209,6 +209,17 @@ body {
   overflow-wrap: break-word;
 }
 
+/* NT class-boundary notice (spec v0.3.0 re-derivation): a sensitivity
+   disclosure, not an estimate badge — the warning tint, tokens only. */
+.nt-boundary-notice {
+  color: var(--text-secondary);
+  background: var(--warning-tint);
+  border-left: 3px solid var(--warning);
+  padding: var(--space-1, 4px) 8px;
+  margin-top: 4px;
+  overflow-wrap: break-word;
+}
+
 /* Header controls (v0.2.68, item 1): the version chip sits beside the
    theme toggle; tokens only, both modes render from one source. */
 .header-controls {
