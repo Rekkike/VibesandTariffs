@@ -858,7 +858,7 @@ export const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call
                                                             <strong>Effective rate for this call</strong> (derived, not a published rate):{' '}
                                                             {fee.effective_rate.effective_per_gt.toFixed(2)} {fee.currency}/GT
                                                             {fee.effective_rate.note && (
-                                                              <span className="status-badge status-caveat" style={{ marginLeft: '6px' }}>
+                                                              <span className="status-badge status-caveat" style={{ marginLeft: 'var(--space-1)' }}>
                                                                 {fee.effective_rate.note}
                                                               </span>
                                                             )}

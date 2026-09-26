@@ -209,6 +209,26 @@ body {
   overflow-wrap: break-word;
 }
 
+/* Header controls (v0.2.68, item 1): the version chip sits beside the
+   theme toggle; tokens only, both modes render from one source. */
+.header-controls {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.version-chip {
+  flex: none;
+  padding: 1px var(--space-2);
+  border: 1px solid var(--border);
+  border-radius: var(--space-1);
+  background: var(--surface-raised);
+  color: var(--text-secondary);
+  font-size: var(--font-caption);
+  line-height: 1.6;
+  white-space: nowrap;
+}
+
 /* Theme toggle: 24x24 minimum target, visible focus */
 .theme-toggle {
   flex: none;

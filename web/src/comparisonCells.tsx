@@ -41,7 +41,7 @@ export const makeComparisonCells = (props: ComparisonCellsProps) => {
   } = props;
   const vesselGt = vessel.gt;
   const amountCell = (
-    entry: { amount: number; currency: string; flags: number; effective_per_gt?: number; lines: { name: string; ruleId: string; biller: string; amount: number; flags: number; estimated: boolean; derivation?: { structure: string; composition: string; total: string } | null }[] } | undefined,
+    entry: { amount: number; currency: string; flags: number; effective_per_gt?: number; published_per_gt?: { rate: number; citation: string }; lines: { name: string; ruleId: string; biller: string; amount: number; flags: number; estimated: boolean; derivation?: { structure: string; composition: string; total: string } | null }[] } | undefined,
     fallbackCurrency: string,
     showDerivation: boolean
   ) => {
@@ -58,7 +58,7 @@ export const makeComparisonCells = (props: ComparisonCellsProps) => {
         <span className="comparison-figure">
           {formatCurrency(entry.amount, entry.currency || fallbackCurrency)}
           {entry.flags > 0 && (
-            <span className="status-badge status-warning" style={{ marginLeft: '6px' }}>
+            <span className="status-badge status-warning" style={{ marginLeft: 'var(--space-1)' }}>
               {entry.flags} flag{entry.flags > 1 ? 's' : ''}
             </span>
           )}
@@ -80,7 +80,15 @@ export const makeComparisonCells = (props: ComparisonCellsProps) => {
         ))}
         {entry.effective_per_gt !== undefined && (
           <Box sx={{ fontSize: '0.75rem' }} className="comparison-secondary">
-            {entry.effective_per_gt.toFixed(2)} {entry.currency || fallbackCurrency}/GT effective — derived, not a published rate
+            {/* Published-vs-derived labeling (v0.2.68, item 3): a family
+                figure that is a single per-GT rule with no adjustments
+                firing is the published flat rate and says so with its
+                citation; every aggregating figure (multiple rules, firing
+                adjustments, non-per-GT basis) keeps the derived label —
+                the condition is data-derived, never port-hardcoded. */}
+            {entry.published_per_gt
+              ? `${entry.published_per_gt.rate.toFixed(2)} ${entry.currency || fallbackCurrency}/GT — published flat rate, no banding${entry.published_per_gt.citation ? ` (${entry.published_per_gt.citation})` : ''}`
+              : `${entry.effective_per_gt.toFixed(2)} ${entry.currency || fallbackCurrency}/GT effective — derived, not a published rate`}
             {conv.converted && (
               <span> (≈ {(entry.effective_per_gt * rateInfo.rate).toFixed(2)} SEK/GT converted)</span>
             )}

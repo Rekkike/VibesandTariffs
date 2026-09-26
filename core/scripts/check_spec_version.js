@@ -6,6 +6,7 @@ const path = require('path');
 const { execFileSync } = require('child_process');
 
 const SPEC_PATH = 'docs/SPECIFICATION.md';
+const VERSION_CONST_PATH = 'web/src/version.ts';
 const BEHAVIOR_PATHS = ['core/src/', 'core/data/', 'core/scripts/', 'web/src/'];
 
 function usage() {
@@ -53,6 +54,23 @@ function specVersionRows(specText) {
     .filter((line) => CHANGELOG_ROW.test(line));
 }
 
+// Spec header version (v0.2.68, item 1): the first heading line carries the
+// specification version, e.g. '# Port Call Cost Analyzer — Specification
+// v0.2.67'.
+function specHeaderVersion(specText) {
+  const m = specText.match(/Specification v(0\.2\.\d+)/);
+  return m ? `v${m[1]}` : null;
+}
+
+// Web-layer version constant (v0.2.68, item 1): the single source of truth
+// the version chip renders. Extracted from the constant's own file, never
+// from a second hand-kept copy.
+function webVersionConstant(versionTsText) {
+  if (!versionTsText) return null;
+  const m = versionTsText.match(/APP_VERSION\s*=\s*'(v0\.2\.\d+)'/);
+  return m ? m[1] : null;
+}
+
 function fail(message) {
   process.stderr.write(`spec-version-guard: FAIL — ${message}\n`);
   process.exit(1);
@@ -63,7 +81,7 @@ function pass(message) {
   process.exit(0);
 }
 
-function check(changedFiles, baseSpec, headSpec) {
+function check(changedFiles, baseSpec, headSpec, headVersionTs) {
   const behaviorChanges = changedFiles.filter(isBehaviorPath);
   if (behaviorChanges.length === 0) {
     pass('no behavior-path changes (engine/data/web); spec bump not required');
@@ -83,11 +101,46 @@ function check(changedFiles, baseSpec, headSpec) {
       ].join('\n')
     );
   }
+  // Version-constant cross-check (v0.2.68, item 1): the web-layer
+  // APP_VERSION constant and the spec header must agree — a chip ahead of
+  // the spec (a bump that skipped the spec row) fails, and a chip behind
+  // (a spec bump that skipped the constant) fails. The same hand-kept-array
+  // drift class the guard exists for; caught in CI, never on the page.
+  const header = specHeaderVersion(headSpec);
+  const constant = headVersionTs === null ? null : webVersionConstant(headVersionTs);
+  if (headVersionTs !== null && constant === null) {
+    fail(
+      `the web version constant (${VERSION_CONST_PATH}) does not carry a parseable APP_VERSION = 'v0.2.x' — the version chip has no source of truth.`
+    );
+  }
+  if (headVersionTs !== null && header !== null && constant !== header) {
+    fail(
+      [
+        `the web version constant and the spec header disagree: ${VERSION_CONST_PATH} says ${constant}, ${SPEC_PATH} header says ${header}.`,
+        `The bump ritual is: spec header, changelog row, and the constant, all in the same change.`,
+        header && constant && compareVersions(constant, header) > 0
+          ? '(the chip is ahead of the spec — a bump that skipped the spec row)'
+          : '(the chip is behind the spec — a spec bump that skipped the constant)'
+      ].join('\n')
+    );
+  }
   pass(
     `behavior changes carry a matching spec changelog entry (${newRows.length} new row(s)): ${newRows
       .map((row) => row.split('|')[1].trim())
       .join(', ')}`
   );
+}
+
+// 'v0.2.10' vs 'v0.2.9' — numeric, never lexical.
+function compareVersions(a, b) {
+  const pa = a.replace(/^v/, '').split('.').map(Number);
+  const pb = b.replace(/^v/, '').split('.').map(Number);
+  for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+    const da = pa[i] ?? 0;
+    const db = pb[i] ?? 0;
+    if (da !== db) return da - db;
+  }
+  return 0;
 }
 
 function readIfExists(p) {
@@ -96,11 +149,17 @@ function readIfExists(p) {
 
 function listSnapshotFiles(root) {
   const acc = [];
-  for (const entry of fs.readdirSync(root, { withFileTypes: true })) {
-    if (entry.isFile() && !['base-spec', 'head-spec', 'changed-files', 'spec-diff'].includes(entry.name)) {
-      acc.push(entry.name);
+  const walk = (dir, prefix) => {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      if (['base-spec', 'head-spec', 'changed-files', 'spec-diff'].includes(entry.name)) continue;
+      if (entry.isDirectory()) {
+        walk(path.join(dir, entry.name), prefix + entry.name + '/');
+      } else if (entry.isFile()) {
+        acc.push(prefix + entry.name);
+      }
     }
-  }
+  };
+  walk(root, '');
   return acc;
 }
 
@@ -127,13 +186,18 @@ if (args.includes('--help') || args.includes('-h')) {
     .filter((line) => line.startsWith('+') && !line.startsWith('+++'))
     .map((line) => line.slice(1))
     .filter((line) => CHANGELOG_ROW.test(line));
-  check(changedFiles, '', addedRows.join('\n') + (addedRows.length ? '\n' : ''));
+  // Fixture directories carry no web source, so the version-constant
+  // cross-check is not exercisable here (the CI demonstration uses
+  // --state fixtures for it); pass null to skip it explicitly.
+  check(changedFiles, '', addedRows.join('\n') + (addedRows.length ? '\n' : ''), null);
 } else if (args.includes('--state')) {
   const dir = argValue('--state');
   const baseSpec = readIfExists(path.join(dir, 'base-spec'));
   const headSpec = readIfExists(path.join(dir, 'head-spec'));
   const changedFiles = listSnapshotFiles(dir);
-  check(changedFiles, baseSpec, headSpec);
+  const versionTsPath = path.join(dir, VERSION_CONST_PATH.replace(/\//g, path.sep));
+  const versionTsExists = fs.existsSync(versionTsPath);
+  check(changedFiles, baseSpec, headSpec, versionTsExists ? fs.readFileSync(versionTsPath, 'utf8') : null);
 } else {
   const base = argValue('--base');
   const head = argValue('--head');
@@ -145,5 +209,14 @@ if (args.includes('--help') || args.includes('-h')) {
   const changedFiles = changedPathsFromGit(base, head);
   const baseSpec = git(['show', `${base}:${SPEC_PATH}`]);
   const headSpec = git(['show', `${head}:${SPEC_PATH}`]);
-  check(changedFiles, baseSpec, headSpec);
+  let headVersionTs = null;
+  try {
+    headVersionTs = git(['show', `${head}:${VERSION_CONST_PATH}`]);
+  } catch (e) {
+    // The constant did not exist at the base era of compared history;
+    // the cross-check is skipped for pre-v0.2.68 comparisons only when
+    // the file is absent at the head too (it never is from v0.2.68 on).
+    headVersionTs = null;
+  }
+  check(changedFiles, baseSpec, headSpec, headVersionTs);
 }

@@ -9,6 +9,7 @@ import {
   defaultCall
 } from '@port-cost/core';
 import { useAppTheme, muiThemeFor } from './appTheme';
+import { APP_VERSION } from './version';
 import { LOADED_PORTS } from './portRegistry';
 import { portLabel } from './portLabel';
 import { PortWorkspace } from './portWorkspace';
@@ -182,15 +183,24 @@ const App: React.FC = () => {
             Ports are data, not code - every figure traceable to a source tariff
           </Typography>
         </Box>
-        <button
-          type="button"
-          className="theme-toggle"
-          onClick={toggleTheme}
-          aria-pressed={themeMode === 'light'}
-          title="Toggle dark / light theme"
-        >
-          {themeMode === 'dark' ? '☽ Light' : '☀ Dark'}
-        </button>
+        <Box className="header-controls">
+          {/* Version chip (spec v0.2.68, item 1): renders the single
+              web-layer version constant beside the theme toggle; the
+              version guard cross-checks the constant against the spec
+              header. Tokens only (the v0.2.51 theme discipline). */}
+          <span className="version-chip" title={`Application version ${APP_VERSION} (matches the specification header; enforced by the version guard)`}>
+            {APP_VERSION}
+          </span>
+          <button
+            type="button"
+            className="theme-toggle"
+            onClick={toggleTheme}
+            aria-pressed={themeMode === 'light'}
+            title="Toggle dark / light theme"
+          >
+            {themeMode === 'dark' ? '☽ Light' : '☀ Dark'}
+          </button>
+        </Box>
       </Paper>
 
       {/* Persistent port selector: one tab per loaded port, plus the

@@ -537,7 +537,7 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
                     is never dominated by estimates. */}
                 <TableRow className="comparison-estimate-row">
                   <TableCell>
-                    <span className="status-badge status-warning" style={{ marginRight: '6px' }}>est.</span>
+                    <span className="status-badge status-warning" style={{ marginRight: 'var(--space-1)' }}>est.</span>
                     Estimated parameters subtotal
                   </TableCell>
                   {portResults.map(({ port, result }) => (
@@ -567,7 +567,7 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
                 <TableRow className="comparison-total-row">
                   <TableCell>
                     <strong>Vessel Access Charges</strong>
-                    <span className="status-badge status-caveat" style={{ marginLeft: '6px' }}>derived metric</span>
+                    <span className="status-badge status-caveat" style={{ marginLeft: 'var(--space-1)' }}>derived metric</span>
                   </TableCell>
                   {portResults.map(({ port, result }) => (
                     <TableCell key={port.metadata.id} align="right" className="comparison-subtotal">

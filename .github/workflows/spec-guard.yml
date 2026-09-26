@@ -64,3 +64,33 @@ jobs:
         run: |
           node core/scripts/check_spec_version.js --fixture .github/fixtures/spec-guard-spec-only
           echo "Demonstration passed: the spec-only fixture passed the guard (no behavior change, no bump required)."
+      - name: Chip-ahead fixture must fail the guard (constant bumped without the spec)
+        run: |
+          set +e
+          node core/scripts/check_spec_version.js --state .github/fixtures/spec-guard-chip-ahead
+          status=$?
+          set -e
+          if [ "$status" -eq 0 ]; then
+            echo "DEMONSTRATION FAILED: the chip-ahead fixture passed the guard; a version chip ahead of the spec does not fail CI."
+            exit 1
+          fi
+          if [ "$status" -ne 1 ]; then
+            echo "DEMONSTRATION FAILED: expected exit code 1 from the chip-ahead fixture run, got $status."
+            exit 1
+          fi
+          echo "Demonstration passed: the chip-ahead fixture (constant ahead of the spec header) failed the guard with exit code 1, as required."
+      - name: Chip-behind fixture must fail the guard (spec bumped without the constant)
+        run: |
+          set +e
+          node core/scripts/check_spec_version.js --state .github/fixtures/spec-guard-chip-behind
+          status=$?
+          set -e
+          if [ "$status" -eq 0 ]; then
+            echo "DEMONSTRATION FAILED: the chip-behind fixture passed the guard; a version chip behind the spec does not fail CI."
+            exit 1
+          fi
+          if [ "$status" -ne 1 ]; then
+            echo "DEMONSTRATION FAILED: expected exit code 1 from the chip-behind fixture run, got $status."
+            exit 1
+          fi
+          echo "Demonstration passed: the chip-behind fixture (constant behind the spec header) failed the guard with exit code 1, as required."

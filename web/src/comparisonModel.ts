@@ -39,14 +39,26 @@ export interface ComparisonFamilyEntry {
   currency: string;
   flags: number;
   effective_per_gt?: number;
+  // Published-flat-rate labeling (v0.2.68, item 3): set exactly when the
+  // family's figure is a single per-GT rule with no adjustments firing —
+  // the tariff basis itself is per-GT, so the effective per-GT figure is
+  // the published rate, not a derivation. Absent for every aggregating
+  // family (multiple rules, firing adjustments, non-per-GT basis).
+  published_per_gt?: { rate: number; citation: string };
   lines: ComparisonLine[];
 }
 
 export interface RuleAttributes {
   minimum?: number;
+  maximum?: number;
   applicable_conditions?: Record<string, unknown>;
   estimated_parameter?: unknown;
   contract_vs_published?: unknown;
+  // v0.2.68 item 3: the published-flat-rate condition reads the rule's
+  // own rate structure and citation; carried beside the collapse-
+  // classifier attributes, never changing them.
+  rate_structure?: { type?: string; unit_type?: string; unit_rate?: number };
+  source_reference?: { document_name: string; page: string | number };
 }
 
 export type RuleAttributesByPortAndId = Map<string, Map<string, RuleAttributes>>;
@@ -109,16 +121,47 @@ export const buildRuleNamesByPort = (ports: PortDefinition[]): RuleNamesByPortAn
     return map;
   };
 
+// Published-flat-rate condition (v0.2.68, item 3): a family figure is the
+// published rate when it is one rule, per_unit on GT, no floor/cap, and no
+// adjustment fired on the line (the engine's own adjustments_applied is
+// empty). Anything else — multiple rules, a firing discount/surcharge, a
+// band/composite/per-call basis — aggregates, and the derived label stays.
+const publishedPerGtForFees = (
+  fees: { fee_rule_id: string; adjustments_applied: unknown[] }[],
+  ruleById: Map<string, RuleAttributes | undefined>
+): { rate: number; citation: string } | undefined => {
+  if (fees.length !== 1) return undefined;
+  const fee = fees[0];
+  if ((fee.adjustments_applied ?? []).length > 0) return undefined;
+  const rule = ruleById.get(fee.fee_rule_id);
+  if (!rule || !rule.rate_structure) return undefined;
+  const rs = rule.rate_structure;
+  if (rs.type !== 'per_unit' || rs.unit_type !== 'gt' || typeof rs.unit_rate !== 'number') return undefined;
+  if (rule.minimum !== undefined && rule.minimum !== null) return undefined;
+  if (rule.maximum !== undefined && rule.maximum !== null) return undefined;
+  const src = rule.source_reference;
+  const citation = src
+    ? `${src.document_name} p.${src.page}`
+    : '';
+  return { rate: rs.unit_rate, citation };
+};
+
 export const buildRuleAttributesByPort = (ports: PortDefinition[]): RuleAttributesByPortAndId => {
-    const map = new Map<string, Map<string, { minimum?: number; applicable_conditions?: Record<string, unknown>; estimated_parameter?: unknown; contract_vs_published?: unknown }>>();
+    const map: RuleAttributesByPortAndId = new Map();
     for (const port of ports) {
-      const inner = new Map<string, { minimum?: number; applicable_conditions?: Record<string, unknown>; estimated_parameter?: unknown; contract_vs_published?: unknown }>();
+      const inner = new Map<string, RuleAttributes>();
       for (const rule of port.fee_rules) {
         inner.set(rule.id, {
           minimum: rule.minimum,
+          maximum: rule.maximum,
           applicable_conditions: rule.applicable_conditions,
           estimated_parameter: rule.estimated_parameter,
-          contract_vs_published: rule.contract_vs_published
+          contract_vs_published: rule.contract_vs_published,
+          // v0.2.68 item 3: the published-flat-rate condition reads the
+          // rule's own rate structure and citation; carried beside the
+          // collapse-classifier attributes, never changing them.
+          rate_structure: rule.rate_structure as { type?: string; unit_type?: string; unit_rate?: number },
+          source_reference: rule.source_reference as { document_name: string; page: string | number }
         });
       }
       map.set(port.metadata.id, inner);
@@ -137,8 +180,16 @@ export const buildRowsBySegment = (
       currency: string;
       flags: number;
       effective_per_gt?: number;
+      published_per_gt?: { rate: number; citation: string };
       lines: { name: string; ruleId: string; biller: string; amount: number; flags: number; estimated: boolean; derivation?: { structure: string; composition: string; total: string } | null }[];
     }>>();
+    // v0.2.68 item 3: the family's own fee records keyed family|port, so
+    // the charge-type split recomputes the published-flat-rate condition
+    // from the remaining lines' own records (never from stale family state).
+    const feesByFamilyRecord = new Map<string, {
+      fees: { fee_rule_id: string; adjustments_applied: unknown[] }[];
+      ruleAttrs: Map<string, unknown>;
+    }>();
     for (const { port, result } of portResults) {
       if (!result) continue;
       // Zero-line collapse (spec v0.2.27): true zero lines collapse out of
@@ -157,6 +208,14 @@ export const buildRowsBySegment = (
         feesByFamily.set(fee.fee_family, arr);
       }
       for (const fees of Array.from(feesByFamily.values())) {
+        // v0.2.68 item 3: the published-flat-rate label applies per figure
+        // — computed from this family's own fee lines at this port, so a
+        // firing discount (an ESI entry, say) moves the figure back to the
+        // derived label automatically.
+        const familyPublishedPerGt = publishedPerGtForFees(fees, ruleAttrs ?? new Map());
+        feesByFamilyRecord.set(
+          `${fees[0].fee_family}|${result.port_id}`,
+          { fees, ruleAttrs: ruleAttrs ?? new Map() });
         for (const fee of fees) {
           if (!familyTotals.has(fee.fee_family)) {
             familyTotals.set(fee.fee_family, new Map());
@@ -167,6 +226,7 @@ export const buildRowsBySegment = (
             currency: fee.currency,
             flags: 0,
             effective_per_gt: undefined,
+            published_per_gt: familyPublishedPerGt,
             lines: []
           };
           entry.amount += fee.amount;
@@ -201,6 +261,7 @@ export const buildRowsBySegment = (
     const chargeTypeTotals = new Map<ChargeTypeId, Map<string, PortEntry>>();
     const remainingFamilies = new Map<string, Map<string, {
       amount: number; currency: string; flags: number; effective_per_gt?: number;
+      published_per_gt?: { rate: number; citation: string };
       lines: { name: string; ruleId: string; biller: string; amount: number; flags: number; estimated: boolean; derivation?: { structure: string; composition: string; total: string } | null }[];
     }>>();
     for (const [family, perPort] of Array.from(familyTotals.entries())) {
@@ -228,10 +289,22 @@ export const buildRowsBySegment = (
         }
         if (remainingLines.length > 0) {
           if (!remainingFamilies.has(family)) remainingFamilies.set(family, new Map());
+          // v0.2.68 item 3: the remaining row keeps the published label only
+          // if its own remaining lines satisfy the condition — recomputed
+          // from the family's fee records, so a single remaining per-GT rule
+          // with no fired adjustment still reads as published (HEL's port
+          // dues after the cargo due splits off to its charge-type line).
+          const record = feesByFamilyRecord.get(`${family}|${portId}`);
+          const remainingFees = record
+            ? record.fees.filter(f => chargeTypeForRule(f.fee_rule_id) === null)
+            : [];
           remainingFamilies.get(family)!.set(portId, {
             amount: entry.amount - chargeLines.reduce((s, l) => s + l.amount, 0),
             currency: entry.currency,
             flags: entry.flags - chargeLines.reduce((s, l) => s + l.flags, 0),
+            published_per_gt: record
+              ? publishedPerGtForFees(remainingFees, record.ruleAttrs as never)
+              : undefined,
             lines: remainingLines
           });
         }
