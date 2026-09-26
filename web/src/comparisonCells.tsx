@@ -41,7 +41,7 @@ export const makeComparisonCells = (props: ComparisonCellsProps) => {
   } = props;
   const vesselGt = vessel.gt;
   const amountCell = (
-    entry: { amount: number; currency: string; flags: number; effective_per_gt?: number; published_per_gt?: { rate: number; citation: string }; lines: { name: string; ruleId: string; biller: string; amount: number; flags: number; estimated: boolean; derivation?: { structure: string; composition: string; total: string } | null }[] } | undefined,
+    entry: { amount: number; currency: string; flags: number; effective_per_gt?: number; ops_fold?: { tariffPortionPerGt: number; userFlatPerGt: number; combinedPerGt: number }; published_per_gt?: { rate: number; citation: string }; lines: { name: string; ruleId: string; biller: string; amount: number; flags: number; estimated: boolean; derivation?: { structure: string; composition: string; total: string } | null }[] } | undefined,
     fallbackCurrency: string,
     showDerivation: boolean
   ) => {
@@ -92,6 +92,24 @@ export const makeComparisonCells = (props: ComparisonCellsProps) => {
             {conv.converted && (
               <span> (≈ {(entry.effective_per_gt * rateInfo.rate).toFixed(2)} SEK/GT converted)</span>
             )}
+          </Box>
+        )}
+        {/* GOT per-GT OPS fold (spec v0.2.70): where the family's derived
+            per-GT figure exists and the port carries an entered per-GT OPS
+            charge on the same GT basis over a banded tariff, the three-part
+            decomposition renders together, each labeled — (a) the tariff
+            portion (the family amount ÷ GT, the figure above), (b) the
+            user-specified flat rate as entered, (c) their sum which the
+            family carries into the comparison. The tariff portion is
+            band-derived (it varies with GT through the bands and with
+            discounts); the OPS portion is flat; the distinction is the
+            point — a single combined figure would hide it. Presentation
+            only: no amount moves (the OPS amount keeps its own row). */}
+        {entry.ops_fold && (
+          <Box sx={{ fontSize: '0.75rem' }} className="comparison-secondary comparison-ops-fold">
+            <span className="ops-fold-part ops-fold-tariff">(a) tariff portion {entry.ops_fold.tariffPortionPerGt.toFixed(2)} {entry.currency || fallbackCurrency}/GT (banded, discounts reflected — derived)</span>
+            <span className="ops-fold-part ops-fold-user">(b) user-specified OPS {entry.ops_fold.userFlatPerGt.toFixed(2)} {entry.currency || fallbackCurrency}/GT (flat rate as entered — user-specified, not tariff-derived)</span>
+            <span className="ops-fold-part ops-fold-combined">(c) combined {entry.ops_fold.combinedPerGt.toFixed(2)} {entry.currency || fallbackCurrency}/GT (a + b — derived)</span>
           </Box>
         )}
         {entry.lines.map((line, index) => (

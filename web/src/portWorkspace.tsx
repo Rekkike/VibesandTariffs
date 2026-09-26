@@ -38,6 +38,7 @@ import {
 } from '@port-cost/core';
 import type { SeededProfile } from '@port-cost/core';
 import { partitionFees } from './zeroCollapse';
+import { opsFoldActive, opsFoldParts, opsPerGtLineFor } from './opsFold';
 import { badgesForFlags } from './flagBadges';
 import { DerivationDetail } from './derivation';
 import { makeComputer, guideFor, leversForPort } from './envGuidance';
@@ -422,6 +423,21 @@ export const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call
     }
     return map;
   }, [port]);
+  // GOT per-GT OPS fold (spec v0.2.70): the three-part decomposition of the
+  // port dues family's derived per-GT when this port carries an entered
+  // per-GT OPS charge and its port dues tariff is genuinely banded — the
+  // data-derived boundary (opsFold.ts); presentation only, the family
+  // amount and every total are untouched.
+  const opsFold = useMemo(() => {
+    if (!state.result) return null;
+    const opsLine = opsPerGtLineFor(state.result);
+    if (!opsLine || !opsFoldActive(port, state.result)) return null;
+    const duesAmount = state.result.billers
+      .flatMap(b => b.fees)
+      .filter(f => f.fee_family === 'port_dues')
+      .reduce((s, f) => s + f.amount, 0);
+    return opsFoldParts(duesAmount, opsLine.amount, state.result.vessel_summary.gt);
+  }, [state.result, port]);
   // Rule attributes that decide the zero-line collapse classification
   // (spec v0.2.27): minimum floors, condition gates, estimate/caveat markers.
   const ruleAttributesById = useMemo(() => {
@@ -864,6 +880,22 @@ export const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call
                                                             )}
                                                           </Typography>
                                                         )}
+                                                        {/* GOT per-GT OPS fold (spec v0.2.70): where the
+                                                            port dues family is banded and a per-GT OPS
+                                                            charge is entered, the family's per-GT note
+                                                            renders the three-part decomposition — the
+                                                            tariff portion (this fee alone, band- and
+                                                            discount-derived), the user-specified flat
+                                                            OPS rate (unbanded), and their sum — each
+                                                            labeled; presentation only, no figure moves. */}
+                                                        {opsFold && fee.fee_family === 'port_dues' && (
+                                                          <Typography variant="body2" sx={{ mb: 1 }} className="ops-fold-decomposition">
+                                                            <strong>Per-GT decomposition with the user-specified OPS charge</strong>:
+                                                            (a) tariff portion <span className="ops-fold-part ops-fold-tariff">{opsFold.tariffPortionPerGt.toFixed(2)} {fee.currency}/GT</span> (banded rate applied to GT, discounts reflected — derived);
+                                                            (b) user-specified OPS <span className="ops-fold-part ops-fold-user">{opsFold.userFlatPerGt.toFixed(2)} {fee.currency}/GT</span> (flat rate as entered — user-specified, not tariff-derived);
+                                                            (c) combined <span className="ops-fold-part ops-fold-combined">{opsFold.combinedPerGt.toFixed(2)} {fee.currency}/GT</span> (a + b — derived).
+                                                          </Typography>
+                                                        )}
                                                         <Typography variant="body2" className="source-ref">
                                                           Source: {fee.source_reference.document_name}
                                                           (Page {fee.source_reference.page}, {fee.source_reference.clause}) -
@@ -926,19 +958,34 @@ export const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call
                     never interleaved with tariff lines — each under the
                     explicit user-specified label. Absent when every OPS
                     input is blank (blank changes no total, renders
-                    nothing). */}
+                    nothing).
+                    GOT per-GT OPS fold (spec v0.2.70): where the fold is
+                    active, the per-GT component renders as part of the
+                    port dues family instead — its amount still adds to
+                    the Grand Total (the block's subtotal and the total
+                    strip keep carrying it); only the per-GT line moves
+                    out of this block, so it never renders twice. */}
                 {state.result.ops_speculative && (
                   <Box className="ops-speculative-block">
                     <Typography variant="subtitle1" className="ops-speculative-title">
                       OPS (user-specified, not tariff-derived)
                     </Typography>
-                    {state.result.ops_speculative.lines.map(line => (
+                    {state.result.ops_speculative.lines
+                      .filter(line => !(opsFold && line.id === 'ops_spec_per_gt'))
+                      .map(line => (
                       <Box key={line.id} className="ops-speculative-line">
                         <span className="ops-speculative-line-label">{line.label}</span>
                         <span className="ops-speculative-line-basis">{line.basis}</span>
                         <span className="ops-speculative-line-amount">{formatCurrency(line.amount)}</span>
                       </Box>
                     ))}
+                    {opsFold && (
+                      <Box className="ops-speculative-line ops-fold-line">
+                        <span className="ops-speculative-line-label">OPS additional per-GT charge — folded into the port dues family</span>
+                        <span className="ops-speculative-line-basis">the entered flat rate renders in the port dues per-GT decomposition; its amount remains included in the totals below (user-specified, not tariff-derived)</span>
+                        <span className="ops-speculative-line-amount">{formatCurrency(opsPerGtLineFor(state.result)!.amount)}</span>
+                      </Box>
+                    )}
                     <Box className="ops-speculative-total">
                       <span className="ops-speculative-total-label">OPS subtotal (user-specified)</span>
                       <span className="ops-speculative-total-amount">{formatCurrency(state.result.ops_speculative.amount)}</span>

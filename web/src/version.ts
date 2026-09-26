@@ -5,4 +5,4 @@
 // (a spec bump that skipped the constant) fails CI. The bump ritual gains
 // one step: spec header, changelog row, and this constant, all in the
 // same change. This is the only place the web layer carries the version.
-export const APP_VERSION = 'v0.2.69';
+export const APP_VERSION = 'v0.2.70';

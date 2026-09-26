@@ -178,8 +178,11 @@ figures that will then move).
 ## Verification plan
 
 514 core / 371 web plus the new pins (web: the version-chip suite, the
-published/derived labeling suite, the badge-margin token pin; core: the
-reset_fields union-semantics pin). Red proofs per item: item 1 — mutate the
+published/derived labeling suite, the badge-margin token pin, and the
+reset_fields union-semantics suite — the web resetFieldsUnion suite; a
+post-delivery docs-text correction per the v0.2.61 precedent: the original
+sentence mislabeled it "core"; commit 3139114 touched web test files only).
+Red proofs per item: item 1 — mutate the
 constant without the spec (guard fails), bump the spec without the constant
 (guard fails); item 3 — swapping the condition to published-default fails
 the GOT pin; forcing HEL derived fails the HEL pin; item 4 — the split

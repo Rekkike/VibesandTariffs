@@ -1255,6 +1255,18 @@ textarea:focus-visible,
   border-top: 1px solid var(--border-strong);
   font-weight: 600;
 }
+/* GOT per-GT OPS fold (spec v0.2.70): the three-part decomposition of the
+   port dues family's derived per-GT — the parts render as block lines so
+   each label is legible beside its figure; tokens only. */
+.comparison-ops-fold .ops-fold-part {
+  display: block;
+}
+.ops-fold-decomposition .ops-fold-part {
+  font-weight: 600;
+}
+.ops-fold-decomposition .ops-fold-user {
+  color: var(--warning);
+}
 
 .ops-speculative-total-label {
   color: var(--text-primary);

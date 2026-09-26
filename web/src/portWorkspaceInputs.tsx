@@ -35,6 +35,7 @@ import { portLabel } from './portLabel';
 import { DisclosureCard } from './disclosureCard';
 import { EnvGuideHelp } from './envGuideHelp';
 import { BandSelect, bandedInputsForPort } from './bandSelect';
+import { portDuesBanded } from './opsFold';
 
 export interface WorkspaceInputsProps {
   port: PortDefinition;
@@ -88,6 +89,12 @@ export const WorkspaceInputs: React.FC<WorkspaceInputsProps> = (props) => {
   // renders no select, and the defaults never move.
   const bandDefs = bandedInputsForPort(port);
   const bandDefFor = (input: string) => bandDefs.find(d => d.input === input);
+  // GOT per-GT OPS fold (spec v0.2.70): the input's helper states the fold
+  // exactly where it applies — the port carries a per-GT OPS component and
+  // its port dues tariff is genuinely banded (data-derived, opsFold.ts).
+  // The published-flat-rate ports (a flat per-GT tariff whose per-GT IS
+  // the published rate) never fold: the unfolded helper renders there.
+  const opsFoldAppliesHere = opsComponents.per_gt.enabled && portDuesBanded(port);
   return (
           <Grid item xs={12} md={6}>
             <Paper className="form-section" elevation={0}>
@@ -1349,7 +1356,9 @@ export const WorkspaceInputs: React.FC<WorkspaceInputsProps> = (props) => {
                       onChange={(e) => handleCallChange('ops_per_gt_charge', e.target.value === '' ? undefined : parseFloat(e.target.value))}
                       fullWidth
                       InputLabelProps={{ shrink: true }}
-                      helperText={`User-specified, not a tariff rate — no published tariff prices container-terminal OPS per GT (Gothenburg's only published OPS due is the flat tanker-jetty connection fee); the amount uses the same GT basis as the port dues and flows into the derived SEK/GT metric. Blank disables.`}
+                      helperText={opsFoldAppliesHere
+                        ? `User-specified, not a tariff rate — no published tariff prices container-terminal OPS per GT (Gothenburg's only published OPS due is the flat tanker-jetty connection fee); this port's port dues tariff is banded, so the entered flat rate renders as part of the port dues family's per-GT decomposition ((a) tariff portion + (b) this flat rate = (c) combined), and its amount still adds to the Grand Total under the user-specified label. Blank disables.`
+                        : `User-specified, not a tariff rate — no published tariff prices container-terminal OPS per GT (Gothenburg's only published OPS due is the flat tanker-jetty connection fee); the amount uses the same GT basis as the port dues and flows into the derived SEK/GT metric. Blank disables.`}
                     />
                   </Grid>
                 )}

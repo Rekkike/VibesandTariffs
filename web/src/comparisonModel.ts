@@ -17,6 +17,7 @@ import {
 } from './chargeTypes';
 import type { ChargeTypeId } from './chargeTypes';
 import { partitionFees } from './zeroCollapse';
+import { opsFoldActive, opsFoldParts, opsPerGtLineFor } from './opsFold';
 
 export interface PortResultEntry {
   port: PortDefinition;
@@ -39,6 +40,12 @@ export interface ComparisonFamilyEntry {
   currency: string;
   flags: number;
   effective_per_gt?: number;
+  // GOT per-GT OPS fold (spec v0.2.70): present exactly where the port
+  // carries an entered per-GT OPS charge and a banded port dues tariff —
+  // the three-part decomposition of the family's derived per-GT figure
+  // ((a) tariff portion, (b) user flat rate, (c) combined). Presentation
+  // only; the family amount never includes the user figure.
+  ops_fold?: { tariffPortionPerGt: number; userFlatPerGt: number; combinedPerGt: number };
   // Published-flat-rate labeling (v0.2.68, item 3): set exactly when the
   // family's figure is a single per-GT rule with no adjustments firing —
   // the tariff basis itself is per-GT, so the effective per-GT figure is
@@ -180,6 +187,7 @@ export const buildRowsBySegment = (
       currency: string;
       flags: number;
       effective_per_gt?: number;
+      ops_fold?: { tariffPortionPerGt: number; userFlatPerGt: number; combinedPerGt: number };
       published_per_gt?: { rate: number; citation: string };
       lines: { name: string; ruleId: string; biller: string; amount: number; flags: number; estimated: boolean; derivation?: { structure: string; composition: string; total: string } | null }[];
     }>>();
@@ -261,6 +269,7 @@ export const buildRowsBySegment = (
     const chargeTypeTotals = new Map<ChargeTypeId, Map<string, PortEntry>>();
     const remainingFamilies = new Map<string, Map<string, {
       amount: number; currency: string; flags: number; effective_per_gt?: number;
+      ops_fold?: { tariffPortionPerGt: number; userFlatPerGt: number; combinedPerGt: number };
       published_per_gt?: { rate: number; citation: string };
       lines: { name: string; ruleId: string; biller: string; amount: number; flags: number; estimated: boolean; derivation?: { structure: string; composition: string; total: string } | null }[];
     }>>();
@@ -346,6 +355,28 @@ export const buildRowsBySegment = (
               entry.effective_per_gt = vesselGt > 0
                 ? Math.round((entry.amount / vesselGt) * 100) / 100
                 : undefined;
+              // GOT per-GT OPS fold (spec v0.2.70): where this port
+              // carries an entered per-GT OPS charge and its port dues
+              // tariff is genuinely banded, the family's per-GT entry
+              // gains the three-part decomposition — (a) the tariff
+              // portion (the figure above, unchanged), (b) the entered
+              // flat rate, (c) their sum which the family carries into
+              // the comparison metric. Presentation only: the family
+              // amount never carries the user figure; the OPS amount
+              // keeps its own row (no double count); the published-flat
+              // condition is untouched (a published-flat family never
+              // folds — the v0.2.68 contract).
+              const portEntry = portResults.find(pr => pr.result?.port_id === portId);
+              if (
+                portEntry &&
+                entry.published_per_gt === undefined &&
+                opsFoldActive(portEntry.port, portEntry.result)
+              ) {
+                const opsLine = opsPerGtLineFor(portEntry.result);
+                if (opsLine) {
+                  entry.ops_fold = opsFoldParts(entry.amount, opsLine.amount, vesselGt) ?? undefined;
+                }
+              }
             }
           }
           return { family, perPort };
