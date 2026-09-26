@@ -106,6 +106,19 @@ export function evaluateFeeRule(
       }
     }
     
+    // Regulatory min-GT gate (spec v0.2.69, the EU regulatory block): the
+    // EU instruments key their scope on gross tonnage — ETS (Directive (EU)
+    // 2023/959 amending Directive 2003/87/EC) applies to cargo and passenger
+    // ships of or above 5,000 GT; FuelEU (Regulation (EU) 2023/1805) to
+    // commercial ships above 5,000 GT. A rule carrying min_gt applies only
+    // when the vessel meets the threshold; below it the rule renders nothing
+    // (the exemption is entire — the <5,000 GT finding, pinned).
+    if (rule.applicable_conditions.min_gt !== undefined) {
+      const threshold = rule.applicable_conditions.min_gt as number;
+      if (!(vessel.gt >= threshold)) {
+        return null;
+      }
+    }
     if (rule.applicable_conditions.ops_usage && 
         rule.applicable_conditions.ops_usage !== call.ops_usage) {
       return null;
@@ -253,7 +266,7 @@ export function evaluateFeeRule(
     // must reach the warning branch below and be ignored visibly, never pass
     // through the generic matcher (the v0.2.50 contract text promised a
     // reachable warning; making it reachable is the v0.2.53 repair).
-    const handled = new Set(['arrival_origin', 'ops_usage', 'esi_score', 'csi_class', 'fuel_percentage', 'nt_class', 'vessel_type', 'ordering_lead_time_band', 'terminal_operator', 'issc_valid']);
+    const handled = new Set(['arrival_origin', 'min_gt', 'ops_usage', 'esi_score', 'csi_class', 'fuel_percentage', 'nt_class', 'vessel_type', 'ordering_lead_time_band', 'terminal_operator', 'issc_valid']);
     for (const [key, value] of Object.entries(rule.applicable_conditions)) {
       if (handled.has(key)) continue;
       if (key === 'flag_state') {
@@ -288,6 +301,17 @@ export function evaluateFeeRule(
       type: 'estimated_parameter',
       description: rule.estimated_parameter.description,
       severity: rule.estimated_parameter.severity ?? 'info'
+    });
+  }
+  // Regulatory notice (spec v0.2.69): an informational disclosure carried
+  // on the line — the FuelEU annual-balance notice. Zero-amount by
+  // construction; the flag is what renders (the informative-zero
+  // convention keeps the line visible).
+  if (rule.regulatory_notice) {
+    qualityFlags.push({
+      type: 'regulatory_notice',
+      description: rule.regulatory_notice.description,
+      severity: rule.regulatory_notice.severity ?? 'info'
     });
   }
   // Contract-vs-published caveat (spec v0.2.4): the published list price may
@@ -386,6 +410,42 @@ export function evaluateFeeRule(
       const flat = rate as FlatRate;
       baseAmount = flat.amount;
       rateApplied = `Flat rate: ${baseAmount}`;
+      // ETS allowance product (spec v0.2.69): allowances = emissions x
+      // price x phase-in fraction, over two user inputs and one data
+      // fraction. Blank inputs render nothing (null before any amount
+      // exists — the blank-means-nothing contract, the OPS precedent);
+      // a partial entry also renders nothing (both factors are required
+      // for an honest figure — one blank factor would silently zero the
+      // line or, worse, imply a hidden default price/emissions basis).
+      if (flat.ets_product) {
+        const ets = flat.ets_product;
+        const emissions = (call as any)[ets.emissions_input];
+        const price = (call as any)[ets.price_input];
+        const emissionsOk = typeof emissions === 'number' && emissions > 0;
+        const priceOk = typeof price === 'number' && price > 0;
+        if (!emissionsOk || !priceOk) {
+          return null;
+        }
+        const allowances = emissions * ets.phase_in_fraction;
+        baseAmount = roundToCent(allowances * price);
+        rateApplied = `ETS allowances: ${emissions} tCO2 x ${ets.phase_in_pct}% phase-in = ${allowances % 1 === 0 ? allowances : allowances.toFixed(4)} allowances x ${price} EUR/t (user-specified)`;
+        bandOrBasis = `in-scope emissions=${emissions} tCO2, phase-in=${ets.phase_in_pct}%, EUA=${price} EUR/t (user-specified, not tariff-derived); ${ets.basis_note}`;
+        pendingStructureLabel = 'ETS allowance product';
+        pendingCompositionSteps = [
+          {
+            kind: 'composition',
+            label: 'Computation',
+            detail: `${emissions} tCO2 (user-specified in-scope portion) x ${ets.phase_in_pct}% surrender fraction x ${price} EUR allowance price`,
+            amount: baseAmount
+          }
+        ];
+        qualityFlags.push({
+          type: 'ets_user_specified_basis',
+          description: 'The emissions basis and the allowance price are user-specified inputs, not tariff or registry data — the figure is a derived estimate from the entered basis (no published per-call emissions figure or EUA price exists; THETIS-MRV annual data may orient the emissions entry but is not per-call data)',
+          severity: 'info'
+        });
+        break;
+      }
       if (flat.amount_input) {
         const override = (call as any)[flat.amount_input];
         if (typeof override === 'number' && override >= 0) {

@@ -52,6 +52,7 @@ export type CostSegment = 'vessel_call' | 'energy_at_berth' | 'terminal_and_yard
 export const FEE_FAMILY_TO_SEGMENT: Record<FeeFamily, CostSegment> = {
   'port_dues': 'vessel_call',
   'environmental_surcharge': 'vessel_call',
+  'regulatory': 'vessel_call',
   'waste': 'vessel_call',
   'security': 'vessel_call',
   'lay_up': 'vessel_call',
@@ -103,6 +104,26 @@ export interface FlatRate {
   type: 'flat';
   amount: number;
   amount_input?: string;    // call input overriding the amount (e.g. towage_amount)
+  // ETS allowance product (spec v0.2.69, the EU regulatory block): the
+  // amount is the product of two user inputs and one data fraction —
+  // allowances = emissions_input x price_input x phase_in_fraction. The
+  // fraction is the instrument's own surrender percentage (Directive
+  // 2003/87/EC Article 3gb as inserted by Directive (EU) 2023/959:
+  // 40% of 2024-reported, 70% of 2025-reported, 100% of 2026-reported
+  // emissions onward), data-authored per port file with its citation.
+  // Both inputs are user-specified and blank by default: blank renders
+  // nothing (the blank-means-nothing contract); a missing rate proration
+  // is never invented. The leg scope is the existing shared
+  // arrival_origin dimension — the entered emissions figure is the
+  // call's in-scope portion per the instrument's own 50/100% split,
+  // disclosed on the line.
+  ets_product?: {
+    emissions_input: string;        // call input: in-scope CO2 tonnes for this call
+    price_input: string;            // call input: EUA price, EUR per tonne CO2
+    phase_in_fraction: number;      // the surrender percentage / 100 (e.g. 1.0 for 2026-reported)
+    phase_in_pct: number;          // the surrender percentage as stated (e.g. 100)
+    basis_note: string;             // rendered basis: the instrument citation, the leg-scope disclosure, the inputs' user-specified basis
+  };
 }
 
 export interface BandedRate {
@@ -345,6 +366,17 @@ export interface FeeRule {
   // price, but shipping lines may hold different contract rates. Carried onto
   // the result line as a quality flag, never hidden.
   contract_vs_published?: {
+    description: string;
+    severity?: 'info' | 'warning';
+  };
+  // Regulatory notice block (spec v0.2.69, the EU regulatory block): an
+  // informational disclosure carried onto the result line as a quality flag
+  // — the FuelEU notice (an annual compliance balance, never a per-call
+  // charge; the notice carries the applicability, the standard, the
+  // penalty rate, and the citation, and the line stays zero-amount by
+  // construction). Never an estimated parameter (nothing is estimated)
+  // and never a contract caveat; its own flag type, rendered as info.
+  regulatory_notice?: {
     description: string;
     severity?: 'info' | 'warning';
   };
@@ -617,6 +649,16 @@ export interface CallInput {
   ops_demand_charge?: number;     // user's assumed demand charge, flat per call (SEK; Sweden only)
   ops_connection_charge?: number; // user's assumed service/connection charge, flat per call (SEK Sweden; EUR Hamburg)
   ops_per_gt_charge?: number;     // user's assumed additional per-GT charge (optional; blank disables)
+  // EU ETS regulatory inputs (spec v0.2.69, the regulatory block): both are
+  // user-specified, blank by default — never seeded, never tariff data. The
+  // emissions basis is the call's in-scope CO2 tonnage (the user states the
+  // basis — the ship's own MRV/bunker records for the leg; THETIS-MRV annual
+  // figures may orient the entry but are not per-call data and are never a
+  // default). The allowance price is EUA market data (EEX auctions), never
+  // a hardcoded rate — the towage/OPS estimate precedents. Blank inputs
+  // render nothing and compute nothing (the blank-means-nothing contract).
+  ets_emissions_tco2?: number;    // user-specified in-scope CO2 emissions for this call's ETS portion (tonnes)
+  ets_allowance_price?: number;   // user-specified EUA price (EUR per tonne CO2)
 }
 
 // OPS speculative block (spec v0.2.57): the user-entered OPS components

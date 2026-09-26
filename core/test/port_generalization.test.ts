@@ -326,7 +326,8 @@ describe('port-specific reset fields (spec v0.2.60)', () => {
       'fossil_free_fuel_percentage', 'pilotage_hours', 'pilotage_extra_pilot',
       'pilotage_ordering_lead_time_hours', 'hatch_cover_count',
       'gearbox_count', 'lay_up_days', 'ops_electricity_price',
-      'ops_demand_charge', 'ops_connection_charge', 'ops_per_gt_charge'
+      'ops_demand_charge', 'ops_connection_charge', 'ops_per_gt_charge',
+      'ets_emissions_tco2', 'ets_allowance_price'
     ],
     hamburg: [
       'engine_tier', 'engine_tier_estimated', 'esi_noise_score',
@@ -338,7 +339,8 @@ describe('port-specific reset fields (spec v0.2.60)', () => {
       'ops_electricity_price', 'ops_demand_charge', 'ops_connection_charge',
       'ops_per_gt_charge',
       'lashing_containers', 'twistlock_containers', 'imo_containers',
-      'layby_hours', 'reefer_extra_days', 'small_call_containers'
+      'layby_hours', 'reefer_extra_days', 'small_call_containers',
+      'ets_emissions_tco2', 'ets_allowance_price'
     ],
     helsingborg: [
       'engine_tier', 'engine_tier_estimated', 'esi_score', 'esi_noise_score',
@@ -347,7 +349,8 @@ describe('port-specific reset fields (spec v0.2.60)', () => {
       'fossil_free_fuel_percentage', 'pilotage_hours', 'pilotage_extra_pilot',
       'pilotage_ordering_lead_time_hours', 'hatch_cover_count',
       'gearbox_count', 'lay_up_days', 'ops_electricity_price',
-      'ops_demand_charge', 'ops_connection_charge', 'ops_per_gt_charge'
+      'ops_demand_charge', 'ops_connection_charge', 'ops_per_gt_charge',
+      'ets_emissions_tco2', 'ets_allowance_price'
     ]
   };
 
@@ -376,7 +379,10 @@ describe('port-specific reset fields (spec v0.2.60)', () => {
       // v0.2.66 Eurogate optional-service inputs (Hamburg, spec v0.2.66):
       // the union grows by exactly the six new data-authored fields.
       'lashing_containers', 'twistlock_containers', 'imo_containers',
-      'layby_hours', 'reefer_extra_days', 'small_call_containers'
+      'layby_hours', 'reefer_extra_days', 'small_call_containers',
+      // v0.2.69 EU regulatory inputs: the union grows by exactly the two
+      // new data-authored fields (declared at every port).
+      'ets_emissions_tco2', 'ets_allowance_price'
     ];
     const union = allPortResetFields();
     expect([...union].sort()).toEqual([...legacy].sort());

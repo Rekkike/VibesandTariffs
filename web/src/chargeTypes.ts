@@ -156,7 +156,15 @@ const STAGE_BY_FAMILY: Record<string, ComparisonStageId> = {
   gate_hazardous: 'quayside_operations',
   hatch_cover: 'quayside_operations',
   gearbox_handling: 'quayside_operations',
-  ancillary_service: 'quayside_operations'
+  ancillary_service: 'quayside_operations',
+  // EU regulatory block (spec v0.2.69): a statutory call-and-leg emissions
+  // levy — the same statutory-dues company as the Hafenfonds ("and similar
+  // nautical and call dues"). A new stage was considered and rejected: the
+  // obligation attaches to the whole voyage-and-port scope (50/100 percent
+  // of the leg plus 100 percent in-port), not to the berth stay or to the
+  // cargo, so neither the at-berth nor the quayside stage describes it;
+  // one family does not re-shape the comparison surface.
+  regulatory: 'reach_berth'
 };
 
 export const STAGE_BY_CHARGE_TYPE: Record<ChargeTypeId, ComparisonStageId> = {

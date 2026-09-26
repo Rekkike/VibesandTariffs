@@ -528,6 +528,50 @@ export const WorkspaceInputs: React.FC<WorkspaceInputsProps> = (props) => {
                     InputLabelProps={{ shrink: true }}
                   />
                 </Grid>
+                {/* EU regulatory inputs (spec v0.2.69, the regulatory block):
+                    rendered at every port (the port file's input_profile
+                    carries the eu_regulatory section id); the instruments
+                    are EU-wide and port-blind, and the shared
+                    arrival-origin selector above carries the leg. Both
+                    inputs are user-specified and blank by default — blank
+                    renders nothing (the blank-means-nothing contract); a
+                    per-port entry (reset_fields) so one port's assumption
+                    never prices another's. */}                {profileSections.has('eu_regulatory') && (
+                  <Grid item xs={12}>
+                    <Typography variant="subtitle2" className="eu-regulatory-group-label">
+                      EU ETS (user-specified basis — not tariff-derived)
+                    </Typography>
+                    <Typography variant="caption" className="eu-regulatory-group-note">
+                      Applies to cargo and passenger ships of or above 5,000 GT (Directive (EU) 2023/959, amending Directive 2003/87/EC). The leg scope follows the Arrival Origin selector: an arrival from outside Europe carries 50 percent of the voyage's emissions plus all in-port emissions; an arrival from a European port carries 100 percent. Enter the call's in-scope CO2 and your own allowance price — both a user-specified basis, not tariff-derived; blank renders no ETS line.
+                    </Typography>
+                  </Grid>
+                )}
+                {profileSections.has('eu_regulatory') && (
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      label="ETS in-scope emissions (tCO2, user-specified)"
+                      type="number"
+                      value={state.call.ets_emissions_tco2 ?? ''}
+                      onChange={(e) => handleCallChange('ets_emissions_tco2', e.target.value === '' ? undefined : parseFloat(e.target.value))}
+                      fullWidth
+                      InputLabelProps={{ shrink: true }}
+                      helperText="The call's in-scope CO2 tonnage per the instrument's own scope split (the 50/100 percent leg rule) — your figure, e.g. from the voyage's own MRV/bunker records. THETIS-MRV annual data may orient the entry but is not per-call data. Blank = no ETS line. Per-port entry; never a seeded default."
+                    />
+                  </Grid>
+                )}
+                {profileSections.has('eu_regulatory') && (
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      label="EUA allowance price (EUR/tCO2, user-specified)"
+                      type="number"
+                      value={state.call.ets_allowance_price ?? ''}
+                      onChange={(e) => handleCallChange('ets_allowance_price', e.target.value === '' ? undefined : parseFloat(e.target.value))}
+                      fullWidth
+                      InputLabelProps={{ shrink: true }}
+                      helperText="Market data, never an encoded rate — state your own basis. Observed 2024 EEX auction band for context: 49.50-75.35 EUR/tCO2, average 64.74 (Commission 2024 carbon-market report). Blank = no ETS line. Per-port entry."
+                    />
+                  </Grid>
+                )}
                 {/* Gothenburg same-route second-call attestation (spec
                     v0.2.67, Port Tariff 2026 §2.2 FREQUENCY DISCOUNT): the
                     50% port-dues discount is earned only by a scheduled

@@ -1279,6 +1279,18 @@ textarea:focus-visible,
   border-top: 2px solid var(--warning);
 }
 
+/* EU regulatory input group (spec v0.2.69): the same label/note treatment
+   as the OPS speculation group - tokens only. */
+.eu-regulatory-group-label {
+  color: var(--text-primary);
+}
+
+.eu-regulatory-group-note {
+  display: block;
+  color: var(--text-secondary);
+  margin-bottom: var(--space-2);
+}
+
 .comparison-card-ops {
   border-top: 2px solid var(--warning);
 }

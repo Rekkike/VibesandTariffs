@@ -47,6 +47,16 @@ export function badgesForFlags(flags: QualityFlag[]): FlagBadge[] {
       }
     } else if (flag.type === 'fallback_value') {
       badges.push({ label: 'default applied', kind: 'info', title: flag.description });
+    } else if (flag.type === 'regulatory_notice') {
+      // EU regulatory notice (spec v0.2.69): the FuelEU annual-balance
+      // disclosure — its own badge so the notice reads as the regulatory
+      // disclosure it is, not a generic flag count (badge honesty).
+      badges.push({ label: 'FuelEU notice', kind: 'info', title: flag.description });
+    } else if (flag.type === 'ets_user_specified_basis') {
+      // ETS user-specified basis (spec v0.2.69): the emissions basis and
+      // the EUA price are the user's own inputs — named, never a generic
+      // estimate badge.
+      badges.push({ label: 'ETS user basis', kind: 'assumed', title: flag.description });
     } else {
       infoCount.n += 1;
     }

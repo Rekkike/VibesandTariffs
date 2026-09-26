@@ -47,7 +47,8 @@ export const KNOWN_FEE_FAMILIES: Set<string> = new Set([
   'idle_berth',
   'hafenfonds',
   'frequency_discount',
-  'ancillary_service'
+  'ancillary_service',
+  'regulatory'
 ]);
 
 /**

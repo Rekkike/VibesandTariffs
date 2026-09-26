@@ -2671,6 +2671,66 @@ fee_rules:
     description: estimated; no published Helsingborg tug tariff; default 60,000 SEK per tug-assist, tug-count defaults
       by LOA class
     severity: info
+
+## ===========================================================================
+## EU REGULATORY BLOCK (spec v0.2.69) — ETS allowances and the FuelEU notice
+## Transcribed into this port's own file per the silo principle, exactly as
+## the national Sjöfartsverket rules are: the EU instruments are EU-wide, but
+## every port file carries its own rules with its own citations and never
+## references another port's. Authority of record:
+## docs/sources/eu/EU_REGULATORY_EXTRACTION_REFERENCE.md.
+## ===========================================================================
+- id: helsingborg_eu_ets_allowances
+  fee_family: regulatory
+  biller: EU (European Union) — shipping company's administering authority
+  name: EU ETS Allowances (user-specified basis)
+  description: "EU ETS surrender obligation for this call's in-scope emissions (Directive (EU) 2023/959 amending Directive 2003/87/EC, Articles 3ga-3gb): cargo and passenger ships of or above 5,000 GT, regardless of flag. Scope: 100 percent of in-port emissions plus the voyage fraction — 50 percent of extra-EU leg emissions, 100 percent of intra-EU (the shared arrival-origin selector carries the leg). The entered emissions figure is the user's own in-scope tonnage for this call — no published per-call figure exists; THETIS-MRV annual data may orient the entry but is never a default. The allowance price is EUA market data (EEX auctions), never a hardcoded rate. Blank inputs render nothing (the blank-means-nothing contract)."
+  rate_structure:
+    type: flat
+    amount: 0
+    ets_product:
+      emissions_input: ets_emissions_tco2
+      price_input: ets_allowance_price
+      phase_in_fraction: 1.0
+      phase_in_pct: 100
+      basis_note: "ETS surrender for 2026-reported emissions at 100 percent (Directive 2003/87/EC Art. 3gb(1), inserted by Directive (EU) 2023/959: 40 percent of 2024-reported, 70 percent of 2025-reported, 100 percent of 2026-reported onward); leg scope per the shared arrival-origin selector (extra-EU leg: 50 percent of voyage emissions + 100 percent in-port; intra-EU: 100 percent); allowances are surrendered in EUR (the EU-market instrument's own currency)"
+  applicable_conditions:
+    min_gt: 5000
+  estimated_parameter:
+    description: "derived from user-specified inputs — the emissions basis and the EUA price are the user's own (no published per-call emissions figure or allowance price exists; THETIS-MRV annual figures orient the entry, never default it)"
+    severity: info
+  source_reference:
+    document_name: "faq-maritime-ets.html.md (official Commission FAQ; Directive (EU) 2023/959 the instrument)"
+    document_url: "docs/sources/eu/ets/faq-maritime-ets.html.md"
+    upstream_url: "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32023L0959"
+    document_issued: "2023-05-10"
+    page: "Timing & scope"
+    clause: "Directive 2003/87/EC Art. 3ga-3gb as inserted by Directive (EU) 2023/959; surrender fractions 40/70/100 percent of 2024/2025/2026-reported emissions"
+    verified_on: "2026-09-29"
+    verified_by: "vibe-session-eu-regulatory"
+- id: helsingborg_fueleu_notice
+  fee_family: regulatory
+  biller: EU (European Union) — FuelEU compliance balance
+  name: FuelEU Maritime — annual compliance balance (notice, no per-call charge)
+  description: "FuelEU Maritime (Regulation (EU) 2023/1805, Art. 4) applies to this vessel at this port (commercial ship above 5,000 GT): the yearly average GHG intensity of the energy used on board is limited against the 2020 reference value 91.16 gCO2e/MJ, reduced 2 percent for 2025-2029 (limit 89.34 gCO2e/MJ); in-scope energy is 100 percent intra-EU voyages and at berth, 50 percent on extra-EU legs. The compliance balance is assessed ANNUALLY per ship (with pooling, banking, and borrowing across ships and years, Arts. 20-21); a deficit is penalised at 2,400 EUR per tonne VLSFO-equivalent energy (Art. 23, Annex IV B). A per-call FuelEU charge cannot be computed honestly — no per-call figure is rendered; this line is a notice only and adds nothing to any total."
+  rate_structure:
+    type: flat
+    amount: 0
+  regulatory_notice:
+    description: "FuelEU Maritime applies to this vessel at this port (commercial ship above 5,000 GT, Regulation (EU) 2023/1805 Art. 2/4): the yearly average GHG intensity of the energy used on board is limited against the 2020 reference value 91.16 gCO2e/MJ minus 2 percent for 2025-2029 (limit 89.34 gCO2e/MJ), well-to-wake; a compliance deficit is penalised at 2,400 EUR per tonne VLSFO-equivalent energy (Art. 23, Annex IV B). The compliance balance is ANNUAL per ship with pooling, banking, and borrowing across ships and years (Arts. 20-21) — a per-call FuelEU charge cannot be computed honestly, so no per-call figure is rendered; this notice adds nothing to any total."
+    severity: info
+  applicable_conditions:
+    min_gt: 5000
+  source_reference:
+    document_name: "fueleu-maritime.html.md + fueleu-qa.html.md (official Commission pages; Regulation (EU) 2023/1805 the instrument)"
+    document_url: "docs/sources/eu/fueleu/fueleu-maritime.html.md"
+    upstream_url: "https://eur-lex.europa.eu/eli/reg/2023/1805/oj/eng"
+    document_issued: "2023-09-13"
+    page: "Key facts"
+    clause: "Regulation (EU) 2023/1805 Art. 4 (91.16 reference, 2 percent 2025-2029), Arts. 20-21 (banking/borrowing/pooling), Art. 23 + Annex IV B (2,400 EUR/t VLSFO-eq penalty)"
+    verified_on: "2026-09-29"
+    verified_by: "vibe-session-eu-regulatory"
+
 # Per-port default-call data (spec v0.2.59): the port-specific input-form
 # defaults, data-authored in the port's own file. Configuration only -
 # list-price defaults, never rates. The engine overlays these on the shared
@@ -2720,6 +2780,8 @@ input_profile:
     - ops_demand_charge
     - ops_connection_charge
     - ops_per_gt_charge
+    - ets_emissions_tco2
+    - ets_allowance_price
   # Field-level inputs inside the shared general-information group (the
   # CSI-class port-discount select, class 1-5).
   fields:
@@ -2729,3 +2791,5 @@ input_profile:
       heading: Cargo tonnage for godsavgift (planning weights)
     - id: helsingborg_call_parameters
       heading: Helsingborg Call Parameters
+    - id: eu_regulatory
+      heading: EU Regulatory (ETS allowances - user-specified basis)

@@ -703,6 +703,26 @@ export function classifyRule(ruleId: string): FunctionalClassInfo | undefined {
       source: 'prislista-farleds-lotsavgifter-2026.pdf p.4'
     };
   }
+  // EU regulatory block (spec v0.2.69): the ETS allowances line is a
+  // statutory emissions levy accompanying the call (Directive (EU) 2023/959
+  // amending Directive 2003/87/EC); the FuelEU notice line is informational
+  // (zero-amount by construction — Regulation (EU) 2023/1805's balance is
+  // annual, never a per-call charge). Both classify to the environmental
+  // class; neither enters the vessel-access aggregate (excluded by design).
+  if (/_eu_ets_allowances$/.test(ruleId)) {
+    return {
+      functional_class: 'waste_environmental',
+      basis_note: 'EU ETS allowance surrender for the call\'s in-scope emissions (Directive (EU) 2023/959 amending Directive 2003/87/EC, Art. 3ga-3gb; user-specified emissions basis and EUA price — derived, never published rates)',
+      source: 'docs/sources/eu/ets/faq-maritime-ets.html.md (Directive 2003/87/EC Art. 3ga-3gb)'
+    };
+  }
+  if (/_fueleu_notice$/.test(ruleId)) {
+    return {
+      functional_class: 'waste_environmental',
+      basis_note: 'FuelEU Maritime notice — annual GHG-intensity compliance balance, not a per-call charge (Regulation (EU) 2023/1805 Art. 4/20-23; no amount computed)',
+      source: 'docs/sources/eu/fueleu/fueleu-maritime.html.md (Regulation (EU) 2023/1805)'
+    };
+  }
   // Per-port explicit tables
   for (const portTable of Object.values(PORT_FUNCTIONAL_CLASSIFICATION)) {
     const hit = portTable[ruleId];
