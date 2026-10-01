@@ -220,7 +220,11 @@ describe('comparison shared-call per-port defaults (spec v0.2.53 defect fix)', (
       // Norrköping's seeded one chargeable export day (328,400 kr —
       // the v0.4.0 disclosure); every other port moves zero.
       norrkoping: 8297772.5,
-      gavle: 1370979.35,
+      // v0.4.2 re-baseline (the Yilport terminal layer, in-test attribution):
+      // Gävle's gap notices are replaced by the verified operator rules -
+      // 1,370,979.35 + 8,936,000 (throughput 6,716,000 + cargo due
+      // 1,928,000 + ISPS 292,000) = 10,306,979.35; every other port moves zero.
+      gavle: 10306979.35,
       norvik: 11952324.05
     };
     for (const port of LOADED_PORTS) {

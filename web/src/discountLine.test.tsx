@@ -109,7 +109,6 @@ describe('comparison-legibility zero-drift pins (spec v0.2.64)', () => {
     // Baseline captured at 5cc7a98 before any edit of this pass.
     expect(cells).toEqual([
       'Grand Total',
-      '1\u00a0370\u00a0979\u00a0kr7.04 SEK/GT effective \u2014 derived, not a published rate',
       '3\u00a0275\u00a0851\u00a0kr16.81 SEK/GT effective \u2014 derived, not a published rate',
       // v0.4.1 re-baseline (the storage-default convention correction,
       // in-test attribution): Norrköping's Grand Total loses the seeded
@@ -117,6 +116,11 @@ describe('comparison-legibility zero-drift pins (spec v0.2.64)', () => {
       // 44.27 → 42.59); every other cell byte-identical.
       '8\u00a0297\u00a0773\u00a0kr42.59 SEK/GT effective \u2014 derived, not a published rate',
       '8\u00a0750\u00a0057\u00a0kr44.91 SEK/GT effective \u2014 derived, not a published rate',
+      // v0.4.2 re-baseline (the Yilport terminal layer, in-test attribution):
+      // G\u00e4vle 1,370,979.35 + 8,936,000 = 10,306,979.35; per-GT
+      // 10,306,979.35 / 194,849 = 52.8973 -> 52.90 (was 7.04); the column
+      // order re-ranks cheapest-first on the moved total.
+      '10\u00a0306\u00a0979\u00a0kr52.90 SEK/GT effective \u2014 derived, not a published rate',
       '11\u00a0952\u00a0324\u00a0kr61.34 SEK/GT effective \u2014 derived, not a published rate',
       // v0.3.2 ritual drift (the only movement): the conversion-only figure moves with the standing rate re-verification — 11.331 as of 2026-09-30 (was 11.275, 2026-09-21); 2,204,910.90 EUR × 11.331 = 24,983,845 kr; ÷ 194,849 GT = 128.22 SEK/GT. The native totals (3,275,851 kr / 2,204,911 € / 8,750,057 kr) and per-GT 16.81 / 44.91 are untouched.
       '2\u00a0204\u00a0911\u00a0\u20ac\u2248 24\u00a0983\u00a0845\u00a0kr converted \u2014 at 11.331 kr/EUR, 2026-09-30128.22 SEK/GT effective \u2014 derived, not a published rate; converted at the exchange-rate input (at 11.331 kr/EUR, 2026-09-30)'
@@ -128,14 +132,25 @@ describe('comparison-legibility zero-drift pins (spec v0.2.64)', () => {
     const stageRows = container!.querySelectorAll('.comparison-stage-row');
     expect(stageRows.length).toBe(3);
     expect((stageRows[0].textContent ?? '').trim())
-      .toBe('To reach the berth1\u00a0370\u00a0979\u00a0kr1\u00a0068\u00a0651\u00a0kr3\u00a0828\u00a0688\u00a0kr2\u00a0378\u00a0057\u00a0kr3\u00a0628\u00a0324\u00a0kr119\u00a0740\u00a0\u20ac');
+      // v0.4.2 re-baseline (the Yilport terminal layer, in-test attribution):
+      // the column order re-ranks cheapest-first on the moved Grand Total
+      // (G\u00e4vle 10,306,979.35 - no longer the cheapest port), and G\u00e4vle's
+      // reach-the-berth stage gains the Yilport cargo due (1,928,000 kr of
+      // the operator layer's port-dues-family figure): 1,370,979 ->
+      // 3,298,979. Every other port's stage cell byte-identical.
+      .toBe('To reach the berth1\u00a0068\u00a0651\u00a0kr3\u00a0828\u00a0688\u00a0kr2\u00a0378\u00a0057\u00a0kr3\u00a0298\u00a0979\u00a0kr3\u00a0628\u00a0324\u00a0kr119\u00a0740\u00a0\u20ac');
     expect((stageRows[1].textContent ?? '').trim())
       .toBe('At the berth0\u00a0kr0\u00a0kr0\u00a0kr0\u00a0kr0\u00a0kr553\u00a0371\u00a0\u20ac');
     expect((stageRows[2].textContent ?? '').trim())
       // v0.4.1 re-baseline (in-test attribution): Norrköping's quayside
       // stage loses the seeded 328,400 kr storage charge (4,797,485 →
       // 4,469,085); every other stage cell byte-identical.
-      .toBe('Quayside operations0\u00a0kr2\u00a0207\u00a0200\u00a0kr4\u00a0469\u00a0085\u00a0kr6\u00a0372\u00a0000\u00a0kr8\u00a0324\u00a0000\u00a0kr1\u00a0531\u00a0800\u00a0\u20ac');
+      // v0.4.2 re-baseline (the Yilport terminal layer, in-test attribution):
+      // G\u00e4vle's quayside stage gains the operator layer (throughput
+      // 6,716,000 + ISPS 292,000 = 7,008,000; the cargo due sits on the
+      // reach-the-berth stage above per its fee family) and the column
+      // re-ranks cheapest-first; every other stage cell byte-identical.
+      .toBe('Quayside operations2\u00a0207\u00a0200\u00a0kr4\u00a0469\u00a0085\u00a0kr6\u00a0372\u00a0000\u00a0kr7\u00a0008\u00a0000\u00a0kr8\u00a0324\u00a0000\u00a0kr1\u00a0531\u00a0800\u00a0\u20ac');
   });
 });
 

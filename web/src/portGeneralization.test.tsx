@@ -152,14 +152,17 @@ describe('comparison scalability controls (spec v0.2.59)', () => {
       .map(th => th.textContent ?? '');
     // First cell is the row label.
     // v0.4.0 Swedish domestic expansion: the six-port ranked order at the
-    // default rate — Gävle, Gothenburg, Norrköping, Helsingborg, Norvik,
-    // Hamburg (cheapest-first on the converted basis; HAM's converted
-    // 24,983,845 kr ranks last). The single ranking rule is unchanged.
+    // default rate. v0.4.2 re-baseline (the Yilport terminal layer, in-test
+    // attribution): Gävle's Grand Total moves 1,370,979.35 ->
+    // 10,306,979.35, so the ranked order becomes Gothenburg, Norrköping,
+    // Helsingborg, Gävle, Norvik, Hamburg (cheapest-first on the converted
+    // basis; HAM's converted 24,983,845 kr ranks last). The single ranking
+    // rule is unchanged.
     expect(headerCells).toHaveLength(LOADED_PORTS.length + 1);
-    expect(headerCells[1]).toContain('Gävle');
-    expect(headerCells[2]).toContain('Gothenburg');
-    expect(headerCells[3]).toContain('Norrköping');
-    expect(headerCells[4]).toContain('Helsingborg');
+    expect(headerCells[1]).toContain('Gothenburg');
+    expect(headerCells[2]).toContain('Norrköping');
+    expect(headerCells[3]).toContain('Helsingborg');
+    expect(headerCells[4]).toContain('Gävle');
     expect(headerCells[5]).toContain('Norvik');
     expect(headerCells[6]).toContain('Hamburg');
   });
@@ -170,7 +173,8 @@ describe('comparison scalability controls (spec v0.2.59)', () => {
     const mostExpensive = container!.querySelectorAll('.comparison-marker.comparison-most-expensive');
     expect(cheapest.length).toBe(1);
     expect(mostExpensive.length).toBe(1);
-    expect((cheapest[0].closest('th')?.textContent ?? '')).toContain('Gävle');
+    // v0.4.2 re-baseline (the Yilport terminal layer): Gothenburg ranks cheapest.
+    expect((cheapest[0].closest('th')?.textContent ?? '')).toContain('Gothenburg');
     expect((mostExpensive[0].closest('th')?.textContent ?? '')).toContain('Hamburg');
   });
 
@@ -179,10 +183,11 @@ describe('comparison scalability controls (spec v0.2.59)', () => {
     const cards = Array.from(container!.querySelectorAll('.comparison-port-card'))
       .map(c => c.textContent ?? '');
     expect(cards.length).toBe(LOADED_PORTS.length);
-    expect(cards[0]).toContain('Gävle');
-    expect(cards[1]).toContain('Gothenburg');
-    expect(cards[2]).toContain('Norrköping');
-    expect(cards[3]).toContain('Helsingborg');
+    // v0.4.2 re-baseline (the Yilport terminal layer): same ranked order as desktop.
+    expect(cards[0]).toContain('Gothenburg');
+    expect(cards[1]).toContain('Norrköping');
+    expect(cards[2]).toContain('Helsingborg');
+    expect(cards[3]).toContain('Gävle');
     expect(cards[4]).toContain('Norvik');
     expect(cards[5]).toContain('Hamburg');
   });

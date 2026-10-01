@@ -569,6 +569,30 @@ export const WorkspaceInputs: React.FC<WorkspaceInputsProps> = (props) => {
                     InputLabelProps={{ shrink: true }}
                   />
                 </Grid>
+                {/* Norrköping liner-service attestation (spec v0.4.2): the
+                    tariff publishes "LINER TARIFF 5,70 SEK GT" beside the
+                    standard 6.60 with no definition of the liner condition
+                    anywhere in the document - the attestation renders beside
+                    the call-frequency input it must never be guessed from
+                    (the call count expresses how many times the vessel
+                    called, never whether the service is a liner service).
+                    Off by default - the worst case prices the standard rate. */}
+                {profileFields.has('nrk_liner_service') && (
+                  <Grid item xs={12} sm={6}>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={state.call.nrk_liner_service || false}
+                          onChange={(e) => handleCallChange('nrk_liner_service', e.target.checked)}
+                        />
+                      }
+                      label="Liner service (Norrköping LINER TARIFF 5,70 SEK/GT)"
+                    />
+                    <FormHelperText>
+                      attest only for a vessel in liner service; the tariff publishes no qualifying criterion, so eligibility is the user's attestation - never derived from the call count
+                    </FormHelperText>
+                  </Grid>
+                )}
                 {/* EU regulatory inputs (spec v0.2.69, the regulatory block):
                     rendered at every port (the port file's input_profile
                     carries the eu_regulatory section id); the instruments

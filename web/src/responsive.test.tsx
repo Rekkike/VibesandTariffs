@@ -227,11 +227,13 @@ describe('comparison view responsive rendering paths', () => {
     expect(cheapest.length).toBe(1);
     expect(mostExpensive.length).toBe(1);
     // deterministic: with the default rate the cheapest badge sits on
-    // Gävle's column header (the six-port expansion's cheapest default
-    // call; Gothenburg ranked cheapest of the original three) and
-    // most-expensive on Hamburg's
+    // Gothenburg's column header and most-expensive on Hamburg's.
+    // v0.4.2 re-baseline (the Yilport terminal layer, in-test attribution):
+    // Gävle's Grand Total moves 1,370,979.35 -> 10,306,979.35 (the
+    // verified operator layer), so Gävle no longer ranks cheapest -
+    // Gothenburg (3,275,851.15) does; the single ranking rule is unchanged.
     const cheapestHeader = cheapest[0].closest('th') ?? cheapest[0].closest('.comparison-port-card');
-    expect((cheapestHeader?.textContent ?? '')).toContain('Gävle');
+    expect((cheapestHeader?.textContent ?? '')).toContain('Gothenburg');
     const mostExpensiveHeader = mostExpensive[0].closest('th') ?? mostExpensive[0].closest('.comparison-port-card');
     expect((mostExpensiveHeader?.textContent ?? '')).toContain('Hamburg');
   });

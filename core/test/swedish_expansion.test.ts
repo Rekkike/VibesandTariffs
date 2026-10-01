@@ -72,12 +72,21 @@ const defaultInputFor = (portId: string): CostCalculationInput => ({
 // 8,297,772.50 ÷ 194,849 = 42.5857, pinned 42.59 at the engine's own rounding). Every other port moves zero — the
 // seeds sat inside their free allowances (verified, not assumed, in
 // docs/STORAGE_DEFAULT_AUDIT.md).
+// v0.4.2 re-baseline (the Yilport terminal layer, in-test attribution):
+// Gävle's v0.4.0 terminal-handling and container-cargo-due gap notices
+// are replaced by the verified operator rules (the archived 2026 Yilport
+// tariff, extraction reference section 11) - the default call now prices
+// the container throughput 1,679 × 4,000 units = 6,716,000, cargo due
+// 482 × 4,000 = 1,928,000, and ISPS 73 × 4,000 = 292,000: the total
+// moves 1,370,979.35 + 8,936,000 = 10,306,979.35 kr (per-GT
+// 10,306,979.35 ÷ 194,849 = 52.8973, pinned 52.90). Every other port
+// moves zero - pinned below.
 const PINNED_TOTALS: Record<string, number> = {
   gothenburg: 3275851.15,
   hamburg: 2204910.90,
   helsingborg: 8750057.40,
   norrkoping: 8297772.50,
-  gavle: 1370979.35,
+  gavle: 10306979.35, // v0.4.2 Yilport terminal layer (attribution note above)
   norvik: 11952324.05
 };
 
@@ -94,7 +103,7 @@ describe('Swedish domestic expansion — default-call baselines (spec v0.4.0)', 
     const perGt = result.total / DEFAULT_VESSEL.gt;
     const expected: Record<string, number> = {
       norrkoping: 42.59,
-      gavle: 7.04,
+      gavle: 52.90, // v0.4.2 Yilport terminal layer: 10,306,979.35 / 194,849 = 52.8973
       norvik: 61.34
     };
     expect(Math.round(perGt * 100) / 100).toBe(expected[id]);
@@ -199,21 +208,19 @@ describe('Swedish domestic expansion — gap notices render (never silently fill
     expect(flagsOf(notice!)).toContain('service_gap_notice');
   });
 
-  it('Gävle: the container-handling gap (Yilport concession, unpublished) renders as a notice', () => {
+  it('Gävle: the v0.4.0 handling gap is superseded by the Yilport throughput rule - the notice is gone and the verified figure prices (v0.4.2 re-baseline, attribution in-suite)', () => {
     const result = calculatePortCallCost(loadPort('gavle'), defaultInputFor('gavle'));
-    const handling = feesOf(result).find(f => f.fee_rule_id === 'gvh_terminal_handling_gap');
-    expect(handling).toBeDefined();
-    expect(handling!.amount).toBe(0);
-    expect(flagsOf(handling!)).toContain('service_gap_notice');
-    expect(handling!.amount).not.toBeGreaterThan(0);
+    const oldNotice = feesOf(result).find(f => f.fee_rule_id === 'gvh_terminal_handling_gap');
+    expect(oldNotice).toBeUndefined();
+    expect(feeByRule(result, 'gvh_yilport_handling_full').amount).toBe(1679 * 4000);
   });
 
-  it('Gävle: the container cargo-due gap (no container rate in the varuhamnsavgift) renders as a notice', () => {
+  it('Gävle: the v0.4.0 cargo-due gap is superseded by the Yilport cargo due - the notice is gone and the verified figure prices (v0.4.2 re-baseline)', () => {
     const result = calculatePortCallCost(loadPort('gavle'), defaultInputFor('gavle'));
-    const cargoGap = feesOf(result).find(f => f.fee_rule_id === 'gvh_cargo_due_gap');
-    expect(cargoGap).toBeDefined();
-    expect(cargoGap!.amount).toBe(0);
-    expect(flagsOf(cargoGap!)).toContain('service_gap_notice');
+    const oldNotice = feesOf(result).find(f => f.fee_rule_id === 'gvh_cargo_due_gap');
+    expect(oldNotice).toBeUndefined();
+    expect(feeByRule(result, 'gvh_yilport_cargo_due').amount).toBe(482 * 4000);
+    expect(feeByRule(result, 'gvh_yilport_isps').amount).toBe(73 * 4000);
   });
 
   it('Norvik: the Hutchison energy surcharge (Price on Application) renders as a notice', () => {
@@ -338,5 +345,191 @@ describe('Swedish domestic expansion — vessel library computes at the new port
       expect(result.total).toBeGreaterThan(0);
       expect(Number.isFinite(result.total)).toBe(true);
     }
+  });
+});
+
+describe('Yilport terminal layer (spec v0.4.2) - the archived operator tariff prices verbatim', () => {
+  it('Gävle: the Yilport throughput, cargo due, and ISPS price the archived 2026 figures at the default call', () => {
+    const result = calculatePortCallCost(loadPort('gavle'), defaultInputFor('gavle'));
+    expect(feeByRule(result, 'gvh_yilport_handling_full').amount).toBe(1679 * 4000);
+    expect(feeByRule(result, 'gvh_yilport_cargo_due').amount).toBe(482 * 4000);
+    expect(feeByRule(result, 'gvh_yilport_isps').amount).toBe(73 * 4000);
+  });
+  it('Gävle: the throughput rule carries the bundled-basis description verbatim (the comparability contract)', () => {
+    const raw = yaml.load(fs.readFileSync(path.join(DATA_DIR, 'gavle_2026.yaml'), 'utf8')) as PortDefinition;
+    const rule = raw.fee_rules.find(r => r.id === 'gvh_yilport_handling_full')!;
+    expect(rule.description).toContain('Includes lift off vessel, train or truck into terminal and lift to vessel, train or truck out of terminal');
+  });
+  it('Gävle: OOG units price the +100% throughput surcharge (each OOG unit prices the throughput rate again)', () => {
+    const port = loadPort('gavle');
+    const entered = calculatePortCallCost(port, {
+      vessel: DEFAULT_VESSEL,
+      call: { ...defaultCall('gavle'), oog_units: 10 } as any
+    });
+    expect(feeByRule(entered, 'gvh_yilport_oog_surcharge').amount).toBe(1679 * 10);
+  });
+  it('Gävle: IMDG and reefer units price the 401 per-unit surcharge on their own counts', () => {
+    const port = loadPort('gavle');
+    const entered = calculatePortCallCost(port, {
+      vessel: DEFAULT_VESSEL,
+      call: { ...defaultCall('gavle'), reefer_units: 5, dangerous_goods_units: 3 } as any
+    });
+    expect(feeByRule(entered, 'gvh_yilport_imdg_reefer').amount).toBe(401 * 5);
+    expect(feeByRule(entered, 'gvh_yilport_imdg_dangerous').amount).toBe(401 * 3);
+  });
+  it('Gävle: the Yilport storage scenario prices the verbatim free time and band (10 days, 7 free; per TEU per day)', () => {
+    const port = loadPort('gavle');
+    const entered = calculatePortCallCost(port, {
+      vessel: DEFAULT_VESSEL,
+      call: { ...defaultCall('gavle'), storage_days_import: 10 } as any
+    });
+    // 10 days, 7 free -> days 8-10 at 135/TEU/day: 20' box = 3 * 135 = 405;
+    // 40' box (2 TEU) = 3 * 270 = 810.
+    expect(feeByRule(entered, 'gvh_yilport_storage_full_20ft').amount).toBe(800 * 3 * 135);
+    expect(feeByRule(entered, 'gvh_yilport_storage_full_40ft').amount).toBe(1200 * 3 * 270);
+  });
+  it('Gävle: the Yilport storage default renders no line (the zero-storage-default convention holds at the operator layer)', () => {
+    const result = calculatePortCallCost(loadPort('gavle'), defaultInputFor('gavle'));
+    const storageLines = feesOf(result).filter(f => f.fee_rule_id.startsWith('gvh_yilport_storage'));
+    expect(storageLines).toEqual([]);
+  });
+  it('Gävle: the recorded-not-encoded surfaces stay out of the model (the credit, the EDI fee, the empty rate)', () => {
+    const raw = yaml.load(fs.readFileSync(path.join(DATA_DIR, 'gavle_2026.yaml'), 'utf8')) as PortDefinition;
+    const ids = raw.fee_rules.map(r => r.id);
+    expect(ids).not.toContain('gvh_yilport_compensation_credit');
+    expect(ids).not.toContain('gvh_yilport_coprar_fee');
+    expect(ids).not.toContain('gvh_yilport_handling_empty');
+    // The credit's figure is documented in the handling rule's description - never an unconditional credit line
+    const handling = raw.fee_rules.find(r => r.id === 'gvh_yilport_handling_full')!;
+    expect(handling.description).toContain('1,235');
+  });
+});
+
+describe('Yilport terminal layer (spec v0.4.2) - red proofs (each mutation observed red)', () => {
+  const mutatedPort = (mutate: (raw: PortDefinition) => void): PortDefinition => {
+    const raw = yaml.load(fs.readFileSync(path.join(DATA_DIR, 'gavle_2026.yaml'), 'utf8')) as PortDefinition;
+    mutate(raw);
+    return raw;
+  };
+  it('RED: a mutated throughput rate (1,679 -> 1,700) fails the default-call pin', () => {
+    const port = mutatedPort(raw => {
+      const r = raw.fee_rules.find(x => x.id === 'gvh_yilport_handling_full')!;
+      (r.rate_structure as any).unit_rate = 1700;
+    });
+    const result = calculatePortCallCost(port, defaultInputFor('gavle'));
+    expect(Math.round(result.total * 100) / 100).not.toBe(10306979.35);
+    expect(feesOf(result).find(f => f.fee_rule_id === 'gvh_yilport_handling_full')!.amount).not.toBe(1679 * 4000);
+  });
+  it('RED: a mutated cargo due (482 -> 500) fails the default-call pin', () => {
+    const port = mutatedPort(raw => {
+      const r = raw.fee_rules.find(x => x.id === 'gvh_yilport_cargo_due')!;
+      (r.rate_structure as any).unit_rate = 500;
+    });
+    const result = calculatePortCallCost(port, defaultInputFor('gavle'));
+    expect(Math.round(result.total * 100) / 100).not.toBe(10306979.35);
+  });
+  it('RED: a storage rule firing from the zero default fails (the manufactured-charge class stays impossible)', () => {
+    const port = mutatedPort(raw => {
+      const r = raw.fee_rules.find(x => x.id === 'gvh_yilport_storage_full_20ft')!;
+      (r.rate_structure as any).free_days = 0;
+    });
+    const result = calculatePortCallCost(port, defaultInputFor('gavle'));
+    // the zero-day default still renders no line: days input is zero, so the
+    // mutated free time cannot manufacture a charge - the pin is the absence
+    const storageLines = feesOf(result).filter(f => f.fee_rule_id.startsWith('gvh_yilport_storage'));
+    expect(storageLines).toEqual([]);
+    // and the entered-days scenario still prices the verbatim band after restore
+    const restored = loadPort('gavle');
+    const entered = calculatePortCallCost(restored, {
+      vessel: DEFAULT_VESSEL,
+      call: { ...defaultCall('gavle'), storage_days_import: 10 } as any
+    });
+    expect(feeByRule(entered, 'gvh_yilport_storage_full_20ft').amount).toBe(800 * 3 * 135);
+  });
+});
+
+describe('Norrköping liner tariff rider (spec v0.4.2) - the attestation-gated 5.70 SEK/GT', () => {
+  // The audit's finding (docs/TERMINAL_BASIS_COMPARABILITY_AUDIT.md section 3):
+  // the tariff publishes "STANDARD TARIFF 6,60 SEK GT / LINER TARIFF 5,70 SEK
+  // GT" with no definition of the liner condition anywhere in the document -
+  // the attestation (nrk_liner_service, default off) is the honest surface,
+  // never a guess from the call count. Eligible vessels receive 5.70/GT in
+  // place of the standard rate; ineligible vessels price unchanged.
+  it('the default call is unchanged: the attestation is off, the standard rate prices (worst case)', () => {
+    const result = calculatePortCallCost(loadPort('norrkoping'), defaultInputFor('norrkoping'));
+    expect(feeByRule(result, 'pon_port_dues_standard').amount).toBe(6.6 * DEFAULT_VESSEL.gt);
+    expect((feesOf(result).find(f => f.fee_rule_id === 'pon_port_dues_standard') as any).adjustments_applied ?? []).toHaveLength(0);
+    expect(Math.round(result.total * 100) / 100).toBe(8297772.50);
+  });
+  it('the attested liner service prices 5.70 SEK/GT exactly - an exact 0.90 SEK/GT reduction of the standard line', () => {
+    const result = calculatePortCallCost(loadPort('norrkoping'), {
+      vessel: DEFAULT_VESSEL,
+      call: { ...defaultCall('norrkoping'), nrk_liner_service: true } as any
+    });
+    const dues = feeByRule(result, 'pon_port_dues_standard');
+    expect(Math.round(dues.amount * 100) / 100).toBe(Math.round(5.7 * DEFAULT_VESSEL.gt * 100) / 100);
+    expect(Math.round(result.total * 100) / 100).toBe(Math.round((8297772.50 - 0.9 * DEFAULT_VESSEL.gt) * 100) / 100);
+  });
+  it.each([
+    ['MAREN MAERSK', 194849, 175364.10],
+    ['VISTULA MAERSK', 34882, 31393.80],
+    ['MSC KYUNGMIN', 21979, 19781.10],
+    ['HELGAFELL', 8890, 8001.00]
+  ] as const)('%s: the liner rider moves the Norrköping dues by exactly 0.90 x GT (the per-vessel declared consequence)', (_name, gt, expectedDelta) => {
+    const vessel = { ...DEFAULT_VESSEL, gt, nt: Math.round(gt * 0.5) };
+    const port = loadPort('norrkoping');
+    const base = calculatePortCallCost(port, { vessel, call: defaultCall('norrkoping') });
+    const liner = calculatePortCallCost(port, {
+      vessel, call: { ...defaultCall('norrkoping'), nrk_liner_service: true } as any
+    });
+    expect(Math.round((base.total - liner.total) * 100) / 100).toBe(expectedDelta);
+  });
+  it('the rider is Norrköping-only: no other port carries the nrk_liner_service input or a liner-gated dues line', () => {
+    for (const id of ['gothenburg', 'hamburg', 'helsingborg', 'gavle', 'norvik'] as const) {
+      const raw = yaml.load(fs.readFileSync(path.join(DATA_DIR, `${id}_2026.yaml`), 'utf8')) as PortDefinition;
+      expect(raw.input_profile?.fields ?? []).not.toContain('nrk_liner_service');
+      expect(JSON.stringify(raw.fee_rules)).not.toContain('nrk_liner_service');
+    }
+  });
+  it('RED (both ways): the liner rate applied without the attestation fails, and withheld from an attested call fails', () => {
+    // Ineligible: attestation off must price 6.60 - a mis-keyed condition
+    // (always-on) is observed failing here.
+    const ineligible = calculatePortCallCost(loadPort('norrkoping'), {
+      vessel: DEFAULT_VESSEL,
+      call: { ...defaultCall('norrkoping'), nrk_liner_service: false } as any
+    });
+    expect(Math.round(feeByRule(ineligible, 'pon_port_dues_standard').amount * 100) / 100)
+      .toBe(Math.round(6.6 * DEFAULT_VESSEL.gt * 100) / 100);
+    // Eligible: attestation on must price 5.70 - a suppressed adjustment
+    // (the condition never met) is observed failing here.
+    const eligible = calculatePortCallCost(loadPort('norrkoping'), {
+      vessel: DEFAULT_VESSEL,
+      call: { ...defaultCall('norrkoping'), nrk_liner_service: true } as any
+    });
+    expect(Math.round(feeByRule(eligible, 'pon_port_dues_standard').amount * 100) / 100)
+      .toBe(Math.round(5.7 * DEFAULT_VESSEL.gt * 100) / 100);
+    // The mutations: a mutated rate (6.60 -> 6.70 in the data) must fail the
+    // standard pin, and a mutated discount (0.90 -> 0.80) must fail the liner
+    // pin - both observed red at the data level.
+    const mutate = (fn: (raw: PortDefinition) => void) => {
+      const raw = yaml.load(fs.readFileSync(path.join(DATA_DIR, 'norrkoping_2026.yaml'), 'utf8')) as PortDefinition;
+      fn(raw);
+      return raw;
+    };
+    const badRate = mutate(raw => {
+      (raw.fee_rules.find(r => r.id === 'pon_port_dues_standard')!.rate_structure as any).unit_rate = 6.70;
+    });
+    const badRateResult = calculatePortCallCost(badRate, defaultInputFor('norrkoping'));
+    expect(Math.round(feeByRule(badRateResult, 'pon_port_dues_standard').amount * 100) / 100)
+      .not.toBe(Math.round(6.6 * DEFAULT_VESSEL.gt * 100) / 100);
+    const badDiscount = mutate(raw => {
+      ((raw.fee_rules.find(r => r.id === 'pon_port_dues_standard') as any).adjustments[0]).amount_per_gt = 0.80;
+    });
+    const badDiscountResult = calculatePortCallCost(badDiscount, {
+      vessel: DEFAULT_VESSEL,
+      call: { ...defaultCall('norrkoping'), nrk_liner_service: true } as any
+    });
+    expect(Math.round(feeByRule(badDiscountResult, 'pon_port_dues_standard').amount * 100) / 100)
+      .not.toBe(Math.round(5.7 * DEFAULT_VESSEL.gt * 100) / 100);
   });
 });

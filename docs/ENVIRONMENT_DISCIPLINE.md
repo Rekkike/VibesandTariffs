@@ -71,3 +71,8 @@ A directive states only what is new: the scope decision, the items, the report r
 ## Incorporation note
 
 This document is standing from its creation. The next delivery pass records it in its changelog row and may incorporate its content into the specification as numbered sections; from that point the specification governs and this document serves as its concordance.
+
+**Incorporated at v0.4.2** (specification §§12–15, changelog row 0.4.2):
+from that point docs/SPECIFICATION.md governs and this document serves as
+its concordance. The two record the same rules; any drift between them is
+a defect in the concordance, never a silent resolve in either direction.

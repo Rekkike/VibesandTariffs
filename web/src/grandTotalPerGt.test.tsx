@@ -102,7 +102,9 @@ describe('Grand Total derived per-GT — desktop comparison (spec v0.2.58)', () 
     // chargeable export day (−328,400 kr), 8,297,772.50 ÷ 194,849 =
     // 42.5857 → 42.59 (was 44.27); Gävle and Norvik byte-identical.
     expect(text).toContain('42.59 SEK/GT');
-    expect(text).toContain('7.04 SEK/GT');
+    // v0.4.2 re-baseline (the Yilport terminal layer, in-test attribution):
+    // Gävle 10,306,979.35 / 194,849 = 52.8973 -> 52.90 (was 7.04).
+    expect(text).toContain('52.90 SEK/GT');
     expect(text).toContain('61.34 SEK/GT');
   });
 

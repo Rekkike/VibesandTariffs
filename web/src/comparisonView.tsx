@@ -32,6 +32,13 @@ import {
 } from './comparisonModel';
 import { equivalenceNoteForFamily, equivalenceNoteForRule, EQUIVALENCE_ANNOTATED_PORTS } from './equivalenceNotes';
 import { makeComparisonCells } from './comparisonCells';
+import {
+  containerThroughParts,
+  handlingBasisAnnotationFor,
+  CONTAINER_THROUGH_DISCLOSURE,
+  CONTAINER_THROUGH_BILLING_FOOTNOTE
+} from './handlingBasis';
+import type { HinterlandMode } from './handlingBasis';
 import { buildDiscountLine } from './discountLine';
 import { ComparisonPortSelection } from './comparisonPortSelection';
 
@@ -69,6 +76,14 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
   const isMobile = useIsMobile();
   const [conversionsVisible, setConversionsVisible] = useState(false);
   const [derivationsVisible, setDerivationsVisible] = useState(false);
+  // Compare container-through toggle (spec v0.4.2, item 3): default OFF -
+  // the off state is byte-identical to the pre-toggle view (pinned). ON
+  // adds the published landside legs to the unbundled ports; the
+  // hinterland mode rides a comparison-scoped selector (default truck; no
+  // truck/rail call input exists on the call surface). Presentation-only:
+  // never feeds the engine, never changes any Grand Total.
+  const [containerThroughVisible, setContainerThroughVisible] = useState(false);
+  const [hinterlandMode, setHinterlandMode] = useState<HinterlandMode>('truck');
   const [rateInput, setRateInput] = useState<string>('');
   const dataRate = (portsRegistry as { exchange_rates?: { from_currency: string; to_currency: string; rate: number; as_of: string; source: string }[] }).exchange_rates?.find(
     r => r.from_currency === 'EUR' && r.to_currency === 'SEK'
@@ -295,6 +310,11 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
                             {familyRows.map(({ family, perPort }) => (
                               <Box component="dd" key={`${stage.id}-${family}`} className="comparison-card-family">
                                 <span className="comparison-card-family-name">{family.replace(/_/g, ' ')}</span>
+                                {family === 'terminal_handling' && handlingBasisAnnotationFor(port.metadata.id) && (
+                                  <Box component="span" className="comparison-handling-basis-note" sx={{ fontSize: '0.75rem', display: 'block' }}>
+                                    {handlingBasisAnnotationFor(port.metadata.id)!.text}
+                                  </Box>
+                                )}
                                 {/* Cross-port functional-equivalence annotation
                                     (spec v0.3.3, item 2): the same verified
                                     note renders on the mobile card. */}
@@ -377,6 +397,57 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
           >
             {derivationsVisible ? 'Hide fee derivations' : 'Show fee derivations'}
           </button>
+          {/* Compare container-through toggle (spec v0.4.2, item 3):
+              default OFF - the off state is byte-identical to the
+              pre-toggle view (pinned). ON adds the published landside legs
+              to the unbundled ports per the selected hinterland mode;
+              presentation-only, never in any Grand Total. The naming
+              decision is recorded in the spec: the industry term "door to
+              door" appears nowhere - it covers first/last-mile road
+              haulage, which no figure here includes. */}
+          <Box className="comparison-container-through-toggle" data-testid="container-through-toggle-block" sx={{ mb: 1 }}>
+            <label className="disclosure-header comparison-container-through-disclosure" aria-expanded={containerThroughVisible}>
+              <input
+                type="checkbox"
+                checked={containerThroughVisible}
+                onChange={(e) => setContainerThroughVisible(e.target.checked)}
+                data-testid="container-through-checkbox"
+              />
+              {' '}Compare container-through (adds published landside legs; never in the Grand Total)
+            </label>
+            {containerThroughVisible && (
+              <Box sx={{ fontSize: '0.75rem' }} className="comparison-container-through-mode">
+                <label>
+                  <input
+                    type="radio"
+                    name="hinterland-mode"
+                    value="truck"
+                    checked={hinterlandMode === 'truck'}
+                    onChange={() => setHinterlandMode('truck')}
+                    data-testid="hinterland-mode-truck"
+                  />
+                  {' '}truck gate (default)
+                </label>
+                <label style={{ marginLeft: 8 }}>
+                  <input
+                    type="radio"
+                    name="hinterland-mode"
+                    value="rail"
+                    checked={hinterlandMode === 'rail'}
+                    onChange={() => setHinterlandMode('rail')}
+                    data-testid="hinterland-mode-rail"
+                  />
+                  {' '}rail stack
+                </label>
+                <Typography variant="caption" className="comparison-basis" sx={{ display: 'block' }} data-testid="container-through-disclosure">
+                  {CONTAINER_THROUGH_DISCLOSURE}
+                </Typography>
+                <Typography variant="caption" className="comparison-basis" sx={{ display: 'block' }} data-testid="container-through-billing-footnote">
+                  {CONTAINER_THROUGH_BILLING_FOOTNOTE}
+                </Typography>
+              </Box>
+            )}
+          </Box>
           <TableContainer id="comparison-derivation-panel" className="comparison-table-container">
             <Table size="small" className="comparison-table">
               <TableHead>
@@ -472,11 +543,49 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
                               {entry
                                 ? amountCell(entry, port.metadata.currency, derivationsVisible)
                                 : <span className="comparison-not-levied">not levied at this port</span>}
+                              {/* Handling-basis annotation (spec v0.4.2, item 2):
+                                  a new annotation family, never an extension
+                                  of the cargo-family equivalence notes - the
+                                  port's own published basis, verbatim from
+                                  the audit's basis table; "not stated in the
+                                  document" where that is the finding. */}
+                              {family === 'terminal_handling' && handlingBasisAnnotationFor(port.metadata.id) && (
+                                <Box component="span" className="comparison-handling-basis-note" sx={{ fontSize: '0.75rem', display: 'block' }}>
+                                  {handlingBasisAnnotationFor(port.metadata.id)!.text}
+                                </Box>
+                              )}
                             </TableCell>
                           );
                         })}
                       </TableRow>
                     ))}
+                    {/* Compare container-through row (spec v0.4.2, item 3):
+                        renders only when the toggle is ON (default-off,
+                        off-state byte-identity pinned). Presentation-only:
+                        the added landside legs never enter the Grand Total. */}
+                    {containerThroughVisible && stage.id === 'quayside_operations' && (
+                      <TableRow className="comparison-container-through-row" data-testid="container-through-row">
+                        <TableCell>
+                          <strong>Container-through addition (user-selected comparison surface)</strong>
+                          <span className="comparison-handling-basis-note" style={{ display: 'block', fontSize: '0.75rem' }}>
+                            Hinterland mode: {hinterlandMode === 'truck' ? 'truck gate' : 'rail stack'} (comparison-scoped selector; never a call input)
+                          </span>
+                        </TableCell>
+                        {portResults.map(({ port }) => {
+                          const le = (call.containers_loaded_le20ft || 0) + (call.containers_discharged_le20ft || 0);
+                          const gt = (call.containers_loaded_gt20ft || 0) + (call.containers_discharged_gt20ft || 0);
+                          const part = containerThroughParts(port.metadata.id, hinterlandMode, le, gt);
+                          return (
+                            <TableCell key={port.metadata.id} align="right" className="amount" data-testid={`container-through-${port.metadata.id}`}>
+                              <Box component="span" sx={{ fontSize: '0.75rem', display: 'block' }}>{part.note}</Box>
+                              {part.addedAmount !== null
+                                ? <span className="comparison-figure">+{formatCurrency(part.addedAmount, port.metadata.currency)}</span>
+                                : <span className="comparison-not-levied">{part.bundled ? 'bundled rate unchanged' : 'not published'}</span>}
+                            </TableCell>
+                          );
+                        })}
+                      </TableRow>
+                    )}
                     {/* OPS placement (spec v0.2.64, item 3): the
                         user-specified OPS block renders inside the
                         "At the berth" stage block, before the Grand Total,

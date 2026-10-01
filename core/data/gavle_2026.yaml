@@ -5,16 +5,24 @@
 #
 # All amounts in SEK, ex-VAT. Authority of record:
 # docs/sources/sweden/gavle/GAVLE_EXTRACTION_REFERENCE.md;
-# tariff PDF archived at docs/sources/sweden/gavle/hamntaxa-2026.pdf
+# tariff PDFs archived at docs/sources/sweden/gavle/hamntaxa-2026.pdf
 # (SHA-256 793b43ad0750ddd057304aa2be8025eecd3f723b5b365799eddcc9e41f2b0d68,
 # fetched 2026-10-02; the tariff's own reservation clause - the right to
-# revise during the year - makes the checksum the vintage pin).
+# revise during the year - makes the checksum the vintage pin) and at
+# docs/sources/sweden/gavle/yilport-container-terminal-tariff-2026.pdf
+# (SHA-256 c80d0c673e1821b487cb1d1b42a457a39046089fd9dbe651cf853ce396e5d014,
+# fetched 2026-10-01; the operator layer, source S2 of the same reference).
 #
-# Not modeled (reference section 9, surfaced as notices, never estimated):
-# container terminal handling - Yilport Gävle's concession, separate
-# unpublished tariff (gap notice);
-# container cargo due - no container rate in the varuhamnsavgift table
-# (gap notice);
+# Not modeled (reference sections 9 and 11; the v0.4.2 re-baseline: the
+# container terminal handling and container cargo due gap notices are
+# superseded by the Yilport operator rules gvh_yilport_handling_full /
+# gvh_yilport_cargo_due - the v0.4.0 gaps close with the archived 2026
+# operator tariff; the Yilport operational surfaces - overtime gangs,
+# out-of-window surcharge, waiting time, COPRAR-absence fee, the
+# productivity-compensation credit, the empty-container throughput rate,
+# section 6 additional services, reefer plug/monitoring, the re-nomination
+# fee, the incremental rebate - are recorded in the extraction reference
+# section 11.5, never encoded: their conditions are not call inputs):
 # bulk/liquid commodity cargo dues - out of scope for the container model;
 # rail, truck weighing, pass cards - land-side;
 # scrubber waste actual cost + 500 SEK admin - actual-cost basis, not a
@@ -32,7 +40,7 @@ metadata:
   currency: SEK
   validity_start: '2026-01-01'
   validity_end: '2026-12-31'
-  description: 'Gävle Hamn AB acts as port authority (hamnavgift, miljötillägg, varuhamnsavgift outside the Yilport concession); Yilport Gävle operates the container terminal under concession with a separate unpublished tariff (gap notice); Sjöfartsverket levies national fairway and pilotage fees. Source: Hamntaxa Gävle Hamn 2026 (S1, effective 1 January 2026).'
+  description: 'Gävle Hamn AB acts as port authority (hamnavgift, miljötillägg, varuhamnsavgift outside the Yilport concession); Yilport Gävle operates the container terminal under concession with its own archived 2026 tariff (encoded since v0.4.2); Sjöfartsverket levies national fairway and pilotage fees. Source: Hamntaxa Gävle Hamn 2026 (S1, effective 1 January 2026); Yilport Gävle Container Terminal General Tariff 2026 (S2).'
   document_url: https://gavlehamn.se/wp-content/uploads/2025/11/Hamntaxa-Gavle-Hamn-2026.pdf
 
 billers:
@@ -76,7 +84,7 @@ billers:
         document_issued: '2025-11-01'
   - id: yilport_gavle
     name: Yilport Gävle (container terminal)
-    description: 'Container-terminal operator inside the concession area; separate tariff, unpublished - container handling surfaces as a gap notice'
+    description: 'Container-terminal operator inside the concession area; Yilport Gävle Container Terminal General Tariff, 2026 Tariff Rates (valid 1 January - 31 December 2026, SEK ex-VAT, Ports of Sweden General Conditions 1989) - archived 2026-10-01, the operator layer of this silo (the v0.4.2 terminal-layer pass)'
     currency: SEK
   - id: towage_provider
     name: Towage operator (estimated)
@@ -189,48 +197,170 @@ fee_rules:
       verified_by: vibe-session-swedish-expansion
       document_issued: '2026-01-01'
 
-  # --- Gap notice: container terminal handling (Yilport, unpublished) ---
-  - id: gvh_terminal_handling_gap
+  # --- Yilport terminal layer (S2 sections 4/5, the v0.4.2 terminal-layer pass;
+  # replaces the v0.4.0 terminal-handling gap notice with its verified rule) ---
+  - id: gvh_yilport_handling_full
     fee_family: terminal_handling
     biller: Yilport Gävle (container terminal)
-    name: Container Terminal Handling (no published rate - notice)
-    description: 'The container terminal inside Yilport Gävle''s concession area is operated under a separate tariff the port''s hamntaxa does not publish (the hamntaxa''s own scope sentences place container-terminal goods inside the concession, section 5.1). No container handling figure is published in this document - the handling surface is a gap, never an invented rate. A verified Yilport tariff would enter as a data addition.'
+    name: Container Throughput Rate - Full Container
+    description: 'Yilport Gävle throughput rate, full container: 1,679 SEK per unit. Bundled basis (S2 section 4.1 verbatim): "Includes lift off vessel, train or truck into terminal and lift to vessel, train or truck out of terminal. Hatch covers and twist-lock handling is included" - one rate both directions, the through figure. The empty-container rate (1,235 SEK per unit, section 4.2, the same bundled basis) is recorded, not encoded: the call model carries no empty-unit count input (extraction reference section 11.6).'
     rate_structure:
-      type: flat
-      amount: 0
-    service_gap_notice:
-      description: 'Container handling at Gävle: the Yilport Gävle container-terminal tariff is separate and unpublished (the hamntaxa reaches only outside the concession, section 5.1). The call''s total EXCLUDES terminal handling - the figure, if any, is the operator''s own quote, never estimated or tariff-derived.'
-      severity: info
+      type: per_unit
+      unit_type: container_total
+      unit_rate: 1679
     source_reference:
-      document_name: hamntaxa-2026.pdf
-      document_url: docs/sources/sweden/gavle/hamntaxa-2026.pdf
-      page: 7
-      clause: '5.1 Varuhamnsavgift - VHA debiteras ... utanför Yilport Gävles koncessionsområden (the concession structure)
-'
-      verified_on: '2026-10-02'
-      verified_by: vibe-session-swedish-expansion
+      document_name: yilport-container-terminal-tariff-2026.pdf
+      document_url: docs/sources/sweden/gavle/yilport-container-terminal-tariff-2026.pdf
+      upstream_url: "https://yilport.com/en/images/PartDocuments/2026_yilport_ga_vle_container_terminal_general_tariff.pdf"
+      page: 3
+      clause: '4.1 Full container SEK 1 679 (Includes lift off vessel, train or truck into terminal and lift to vessel, train or truck out of terminal. Hatch covers and twist-lock handling is included)'
+      verified_on: '2026-10-01'
+      verified_by: vibe-session-terminal-basis
       document_issued: '2026-01-01'
-
-  # --- Gap notice: container cargo due (no container rate) ---
-  - id: gvh_cargo_due_gap
-    fee_family: port_dues
-    biller: Gävle Hamn AB
-    name: Container Cargo Due (no published container rate - notice)
-    description: 'The varuhamnsavgift table publishes per-commodity rates for liquid bulk and bulk goods only - no container rate exists in the table, and the section''s own scope sentence places container-terminal goods inside the Yilport concession where this cargo due does not reach. No container cargo due is invented; the cargo-side surface is a gap at this port.'
+  - id: gvh_yilport_oog_surcharge
+    fee_family: terminal_handling
+    biller: Yilport Gävle (container terminal)
+    name: OOG Container Throughput Surcharge
+    description: 'Yilport Gävle out-of-gauge throughput: "additional 100% of the above rates" (S2 section 4.3) - each OOG unit prices the full-container throughput rate again on top of the base throughput. Blank OOG count = no OOG units, charges zero.'
     rate_structure:
-      type: flat
-      amount: 0
-    service_gap_notice:
-      description: 'Container cargo due at Gävle: the varuhamnsavgift table (section 5.1) publishes no container rate - its scope is quay 1/27 goods and goods outside the Yilport concession. The call''s total includes no port cargo due for container goods; a verified figure (port or operator) would enter as a data addition, never an invention.'
+      type: per_unit
+      unit_type: oog
+      unit_rate: 1679
+    source_reference:
+      document_name: yilport-container-terminal-tariff-2026.pdf
+      document_url: docs/sources/sweden/gavle/yilport-container-terminal-tariff-2026.pdf
+      upstream_url: "https://yilport.com/en/images/PartDocuments/2026_yilport_ga_vle_container_terminal_general_tariff.pdf"
+      page: 3
+      clause: '4.3 OOG Containers - additional 100% of the above rates'
+      verified_on: '2026-10-01'
+      verified_by: vibe-session-terminal-basis
+      document_issued: '2026-01-01'
+  # --- Yilport cargo due and ISPS (S2 section 5; the cargo-due side replaces
+  # the v0.4.0 container-cargo-due gap notice with its verified operator rule) ---
+  - id: gvh_yilport_cargo_due
+    fee_family: port_dues
+    biller: Yilport Gävle (container terminal)
+    name: Cargo Due (per full container)
+    description: 'Yilport Gävle cargo due: 482 SEK per full container (S2 section 5.1). The port-authority varuhamnsavgift table publishes no container rate (its scope is outside the Yilport concession); the operator''s cargo due is the container cargo-side figure at this port - the v0.4.0 gap notice is superseded by this verified rule (re-baselined with attribution, the v0.4.2 pass).'
+    rate_structure:
+      type: per_unit
+      unit_type: container_total
+      unit_rate: 482
+    source_reference:
+      document_name: yilport-container-terminal-tariff-2026.pdf
+      document_url: docs/sources/sweden/gavle/yilport-container-terminal-tariff-2026.pdf
+      upstream_url: "https://yilport.com/en/images/PartDocuments/2026_yilport_ga_vle_container_terminal_general_tariff.pdf"
+      page: 3
+      clause: '5.1 Cargo Due (per full container) SEK 482'
+      verified_on: '2026-10-01'
+      verified_by: vibe-session-terminal-basis
+      document_issued: '2026-01-01'
+  - id: gvh_yilport_isps
+    fee_family: security
+    biller: Yilport Gävle (container terminal)
+    name: ISPS (per full container)
+    description: 'Yilport Gävle ISPS: 73 SEK per full container (S2 section 5.2).'
+    rate_structure:
+      type: per_unit
+      unit_type: container_total
+      unit_rate: 73
+    source_reference:
+      document_name: yilport-container-terminal-tariff-2026.pdf
+      document_url: docs/sources/sweden/gavle/yilport-container-terminal-tariff-2026.pdf
+      upstream_url: "https://yilport.com/en/images/PartDocuments/2026_yilport_ga_vle_container_terminal_general_tariff.pdf"
+      page: 3
+      clause: '5.2 ISPS (per full container) SEK 73'
+      verified_on: '2026-10-01'
+      verified_by: vibe-session-terminal-basis
+      document_issued: '2026-01-01'
+  - id: gvh_yilport_imdg_reefer
+    fee_family: dangerous_goods
+    biller: Yilport Gävle (container terminal)
+    name: IMDG / Reefer Surcharge (per unit)
+    description: 'Yilport Gävle IMDG / Reefer surcharge: 401 SEK per unit (S2 section 5.3), keyed on the reefer-unit count; the same per-unit rate applies to IMDG units via the companion rule below. Blank counts = no units, charges zero.'
+    rate_structure:
+      type: per_unit
+      unit_type: reefer
+      unit_rate: 401
+    source_reference:
+      document_name: yilport-container-terminal-tariff-2026.pdf
+      document_url: docs/sources/sweden/gavle/yilport-container-terminal-tariff-2026.pdf
+      upstream_url: "https://yilport.com/en/images/PartDocuments/2026_yilport_ga_vle_container_terminal_general_tariff.pdf"
+      page: 3
+      clause: '5.3 IMDG / Reefer Surcharge (per unit) SEK 401'
+      verified_on: '2026-10-01'
+      verified_by: vibe-session-terminal-basis
+      document_issued: '2026-01-01'
+  - id: gvh_yilport_imdg_dangerous
+    fee_family: dangerous_goods
+    biller: Yilport Gävle (container terminal)
+    name: IMDG / Reefer Surcharge - IMDG Units (per unit)
+    description: 'The IMDG-unit share of the Yilport Gävle IMDG / Reefer surcharge: the same 401 SEK per unit (S2 section 5.3) keyed on the dangerous-goods unit count. Blank count = no units, charges zero.'
+    rate_structure:
+      type: per_unit
+      unit_type: dangerous_goods
+      unit_rate: 401
+    source_reference:
+      document_name: yilport-container-terminal-tariff-2026.pdf
+      document_url: docs/sources/sweden/gavle/yilport-container-terminal-tariff-2026.pdf
+      upstream_url: "https://yilport.com/en/images/PartDocuments/2026_yilport_ga_vle_container_terminal_general_tariff.pdf"
+      page: 3
+      clause: '5.3 IMDG / Reefer Surcharge (per unit) SEK 401'
+      verified_on: '2026-10-01'
+      verified_by: vibe-session-terminal-basis
+      document_issued: '2026-01-01'
+  # --- Yilport storage (S2 section 7, scenario surface; zero-storage-default holds) ---
+  - id: gvh_yilport_storage_full_20ft
+    fee_family: storage
+    biller: Yilport Gävle (container terminal)
+    name: Storage - Full Containers 20ft (scenario)
+    description: 'Yilport Gävle storage of full containers, per TEU per day: 7 calendar days free ("Arrival and departure days will be calculated"), 8+ days at 135 SEK per TEU per day (S2 section 7.1). TEU basis per S2 section 1.3: units over 20'' to 40'' count 2 TEU; 45'' containers 2.25 TEU (no 45'' bucket or count input exists - the established two-bucket convention prices <=20'' as 1 TEU and >20'' as 2 TEU; the 45'' refinement is recorded here with its citation, never a re-profiled call). The tariff''s empty-container rate ("SEK 13,46", the Swedish decimal comma, read 13.46 per TEU per day, no free time stated) and the OOG +100% storage uplift are recorded in the extraction reference, not encoded (no empty-unit input; OOG storage has no day input of its own). Scenario surface - fires only when storage days are entered beyond the free time; blank renders no line (the zero-storage-default convention, spec v0.4.1).'
+    rate_structure:
+      type: progressive_daily
+      days_input: storage_days_import
+      container_count_input: containers_discharged_le20ft
+      free_days: 7
+      bands:
+        - min_days: 1
+          max_days: null
+          rate_per_container_per_day: 135
+    scenario_adjusted:
+      description: 'scenario-derived figure - the storage-day count is the user''s scenario input over the pinned tariff schedule; never tariff-transcribed usage'
       severity: info
     source_reference:
-      document_name: hamntaxa-2026.pdf
-      document_url: docs/sources/sweden/gavle/hamntaxa-2026.pdf
-      page: 7
-      clause: '5.1 Varuhamnsavgift per godsslag (no container row; scope: kaj 1 och 27 samt utanför Yilport Gävles koncessionsområde)
-'
-      verified_on: '2026-10-02'
-      verified_by: vibe-session-swedish-expansion
+      document_name: yilport-container-terminal-tariff-2026.pdf
+      document_url: docs/sources/sweden/gavle/yilport-container-terminal-tariff-2026.pdf
+      upstream_url: "https://yilport.com/en/images/PartDocuments/2026_yilport_ga_vle_container_terminal_general_tariff.pdf"
+      page: 4
+      clause: '7. Storage (per TEU per Day) - 7.1 Full Containers: Free Time 7 calendar days; 8+ days SEK 135'
+      verified_on: '2026-10-01'
+      verified_by: vibe-session-terminal-basis
+      document_issued: '2026-01-01'
+  - id: gvh_yilport_storage_full_40ft
+    fee_family: storage
+    biller: Yilport Gävle (container terminal)
+    name: Storage - Full Containers 40ft (scenario)
+    description: 'Yilport Gävle storage of full containers, the >20ft bucket at its 2-TEU share: 7 calendar days free, 8+ days at 135 SEK per TEU per day (S2 section 7.1; each >20ft unit counts 2 TEU per section 1.3, so the per-unit day rate is 270). Scenario surface - fires only when storage days are entered beyond the free time; blank renders no line.'
+    rate_structure:
+      type: progressive_daily
+      days_input: storage_days_import
+      container_count_input: containers_discharged_gt20ft
+      free_days: 7
+      bands:
+        - min_days: 1
+          max_days: null
+          rate_per_container_per_day: 270
+    scenario_adjusted:
+      description: 'scenario-derived figure - the storage-day count is the user''s scenario input over the pinned tariff schedule; never tariff-transcribed usage'
+      severity: info
+    source_reference:
+      document_name: yilport-container-terminal-tariff-2026.pdf
+      document_url: docs/sources/sweden/gavle/yilport-container-terminal-tariff-2026.pdf
+      upstream_url: "https://yilport.com/en/images/PartDocuments/2026_yilport_ga_vle_container_terminal_general_tariff.pdf"
+      page: 4
+      clause: '7. Storage (per TEU per Day) - 7.1 Full Containers: 8+ days SEK 135 per TEU (2 TEU per >20ft unit, section 1.3)'
+      verified_on: '2026-10-01'
+      verified_by: vibe-session-terminal-basis
       document_issued: '2026-01-01'
 
   # --- Towage (estimated; no published Gävle tug tariff) ---

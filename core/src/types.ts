@@ -566,6 +566,15 @@ export interface CallInput {
   // An explicit user attestation, default false (worst case): two unrelated
   // calls in a month do not earn the discount under the tariff.
   got_same_route_second_call?: boolean;
+  // Norrköping liner-service attestation (spec v0.4.2): the tariff publishes
+  // "STANDARD TARIFF 6,60 SEK GT / LINER TARIFF 5,70 SEK GT" with no
+  // definition of the liner condition anywhere in the document (verified,
+  // audit §3) — neither frequency-shaped nor qualitative. Eligibility is a
+  // service property the user attests, never a guess from the call count
+  // (the frequency input expresses how many times the vessel called, never
+  // whether the service is a liner service). Default false (worst case:
+  // the standard rate).
+  nrk_liner_service?: boolean;
   flag_state: 'EU' | 'non-EU' | string;
   // Arrival origin (spec v0.2.50): the Gothenburg waste dues split on the
   // previous port of call's region (Port Tariff 2026 waste schedule:

@@ -1556,6 +1556,15 @@ textarea:focus-visible,
   margin-top: var(--space-1);
   max-width: 46ch;
 }
+/* Handling-basis annotations (spec v0.4.2, item 2): each port's own
+   published handling basis beside its terminal-handling figure - the
+   same secondary-context treatment, a new annotation family (never an
+   extension of the equivalence notes). */
+.comparison-handling-basis-note {
+  color: var(--text-secondary);
+  margin-top: var(--space-1);
+  max-width: 46ch;
+}
 /* NT observation provenance (spec v0.3.3, item 4): the class indication's
    evidentiary status — flagged, never presented as registry-confirmed. */
 .vessel-option-observation-note {

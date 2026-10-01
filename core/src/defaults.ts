@@ -60,6 +60,11 @@ export function defaultCall(portId: string): CallInput {
     // default — the worst case; the §2.2 frequency discount requires the
     // explicit same-route import/export-pair attestation.
     got_same_route_second_call: false,
+    // Norrköping liner-service attestation (spec v0.4.2): off by default —
+    // the worst case; the liner tariff (5.70 SEK/GT) requires the explicit
+    // liner-service attestation, and the tariff publishes no qualifying
+    // criterion the model could key on instead.
+    nrk_liner_service: false,
     flag_state: 'EU',
     // Godsavgift cargo-technical planning inputs (spec v0.2.61): shared,
     // currency-neutral, visible only where a godsavgift charges. The 14/24 t

@@ -83,24 +83,30 @@ fee_rules:
     fee_family: port_dues
     biller: Port of Norrköping
     name: Port Dues for Vessels (Standard Tariff)
-    description: 'Port dues per GT, standard tariff 6.60 SEK/GT (the default; the liner tariff 5.70 SEK/GT applies to liner-service vessels - the tariff publishes both without a selection rule, so the standard rate is the worst-case default and the liner rate is the attestation-gated adjustment below).'
+    description: 'Port dues per GT, standard tariff 6.60 SEK/GT (the default; the liner tariff 5.70 SEK/GT applies to liner-service vessels - the tariff publishes both rates side by side, "STANDARD TARIFF 6,60 SEK GT / LINER TARIFF 5,70 SEK GT", with no definition of the liner condition anywhere in the document, so the standard rate is the worst-case default and the liner rate is the attestation-gated adjustment below, keyed on the explicit liner-service attestation input - never on the call count; the tariff''s own wording is cited in the adjustment description).'
     rate_structure:
       type: per_unit
       unit_type: gt
       unit_rate: 6.60
+    adjustments:
+      - type: discount
+        amount_per_gt: 0.90
+        condition: nrk_liner_service
+        description: 'Liner tariff (v0.4.2): the tariff publishes "LINER TARIFF 5,70 SEK GT" beside the standard 6.60 - eligible liner-service vessels pay 5.70 SEK/GT in place of the standard rate, an exact 0.90 SEK/GT reduction on this line. The tariff states no qualifying criterion (no frequency shape, no qualitative definition - the full document searched, audit section 3); eligibility is the user''s liner-service attestation (nrk_liner_service, default off - the worst case), never a guess from the calls_this_month number.'
+        stacking_order: 1
     source_reference:
       document_name: tariff-2026-v2.pdf
       document_url: docs/sources/sweden/norrkoping/tariff-2026-v2.pdf
       page: 7
-      clause: PORT DUES FOR VESSELS - STANDARD TARIFF 6,60 SEK GT
+      clause: PORT DUES FOR VESSELS - STANDARD TARIFF 6,60 SEK GT / LINER TARIFF 5,70 SEK GT
       verified_on: '2026-10-02'
       verified_by: vibe-session-swedish-expansion
       document_issued: '2026-01-01'
-    # The LINER TARIFF (5.70 SEK/GT) is recorded, not encoded as an
-    # adjustment: the model''s call input surface carries no liner-service
-    # attestation, and an adjustment without its input would be dead data.
-    # The standard rate is the worst-case default; the liner rate is a
-    # recorded finding (extraction reference section 3.1 / section 10.1).
+    # v0.4.2 re-baseline: the LINER TARIFF (5.70 SEK/GT) moves from
+    # recorded-not-encoded to the attestation-gated adjustment above (the
+    # audit's finding: no published definition, so the yes/no attestation is
+    # the honest surface - the extraction reference section 3.1 open
+    # decision 1 resolves this way).
 
   - id: pon_port_security_fee_vessels
     fee_family: security
@@ -2547,7 +2553,11 @@ input_profile:
   # Field-level inputs inside the shared general-information group: the
   # port carries none (no port-side CSI-class discount key exists at this
   # port - declared explicitly, never silently absent).
-  fields: []
+  fields:
+    # Norrköping liner-service attestation (spec v0.4.2): the LINER TARIFF
+    # gate - renders beside the call-frequency surface (the same
+    # call-parameters group), never derived from the call count.
+    - nrk_liner_service
   sections:
     - id: godsavgift_parameters
       heading: Cargo tonnage for godsavgift (planning weights)
