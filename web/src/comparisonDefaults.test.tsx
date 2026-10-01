@@ -215,7 +215,11 @@ describe('comparison shared-call per-port defaults (spec v0.2.53 defect fix)', (
       // default-call baselines (MAREN MAERSK's profile, worst case,
       // no environmental lever) — the expansion adds ports; it changes
       // nothing existing.
-      norrkoping: 8626172.5,
+      // v0.4.1 re-baseline (the storage-default convention correction,
+      // in-test attribution): the zero storage-day default removes
+      // Norrköping's seeded one chargeable export day (328,400 kr —
+      // the v0.4.0 disclosure); every other port moves zero.
+      norrkoping: 8297772.5,
       gavle: 1370979.35,
       norvik: 11952324.05
     };

@@ -93,8 +93,17 @@ export function defaultCall(portId: string): CallInput {
     fossil_free_fuel_percentage: undefined,
     ops_usage: false,
     lay_up_days: 0,
-    storage_days_export: 5,
-    storage_days_import: 3,
+    // Storage days default zero (spec v0.4.1, the convention correction):
+    // the default call carries no storage stay. These are user-entered
+    // scenario surfaces (spec v0.2.33's clean-baseline principle, the same
+    // discipline as the blank unit counts below) - a seeded planning
+    // assumption manufactured a charge at Norrkoping (the v0.4.0 disclosure:
+    // one seeded export day, 328,400 kr), a defect in the convention itself.
+    // User-entered days price honestly against each port's verbatim free
+    // time and bands, exactly as before; zero manufactures nothing at any
+    // port.
+    storage_days_export: 0,
+    storage_days_import: 0,
     // Special-cargo unit counts default blank (spec v0.2.33): a count that
     // drives charges is never seeded - the default vessel carries no reefer,
     // OOG, dangerous-goods, or overdue units, and a seeded count would

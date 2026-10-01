@@ -190,40 +190,40 @@ describe('Default-call zero-storage pin (spec v0.2.33)', () => {
     expect(surchargeTotal).toBe(0);
   });
 
-  it.each(PORT_IDS)('%s: the seeded storage days sit within the port free allowance', (id) => {
+  // Re-baselined at v0.4.1 (the convention correction, in-test
+  // attribution): the v0.2.33 seeds (5 export / 3 import) asserted a
+  // property of the seeds — that they sat within each port's free
+  // allowance. The v0.4.0 Norrköping disclosure (one seeded chargeable
+  // export day, 328,400 kr) proved that property false in general: the
+  // pin held only because GOT/HAM/HEL's free times happened to
+  // accommodate the seeds. The contract is now stronger and asserts the
+  // convention itself, not a property of any seed.
+  it.each(PORT_IDS)('%s: the default call carries zero storage days and manufactures no storage charge at any port (spec v0.4.1)', (id) => {
     const call = defaultCall(id);
-    expect(call.storage_days_export).toBe(5);
-    expect(call.storage_days_import).toBe(3);
+    expect(call.storage_days_export).toBe(0);
+    expect(call.storage_days_import).toBe(0);
     const port = loadPort(id);
-    // The first day that actually charges, per flow, across every storage rule
-    // shape: progressive_daily (free_days, bands keyed on chargeable day
-    // numbers) and banded_by_time (absolute min_days with a zero free band).
-    const firstChargedDay = (flow: 'export' | 'import'): number => {
-      const basis = flow === 'export' ? 'storage_days_export' : 'storage_days_import';
-      const relevant = port.fee_rules.filter(r => {
-        if (r.fee_family !== 'storage') return false;
-        const rs = r.rate_structure as any;
-        const daysField = rs.days_input ?? rs.basis;
-        return daysField === basis;
-      });
-      let first = Infinity;
-      for (const rule of relevant) {
-        const rs = rule.rate_structure as any;
-        if (rs.free_days !== undefined) {
-          // progressive_daily: chargeable days are 1..n beyond free_days
-          const earliestBand = Math.min(...(rs.bands as any[]).map(b => b.min_days ?? 1));
-          first = Math.min(first, rs.free_days + earliestBand);
-        } else if (rs.bands) {
-          // banded_by_time: first band with a nonzero rate
-          const charged = (rs.bands as any[]).filter(b => (b.daily_rate ?? 0) > 0);
-          if (charged.length > 0) first = Math.min(first, ...charged.map(b => b.min_days));
-        }
-      }
-      return first;
-    };
-    // Seeds must sit strictly below the first charged day on every flow.
-    expect(5).toBeLessThan(firstChargedDay('export'));
-    expect(3).toBeLessThan(firstChargedDay('import'));
+    const result = calculatePortCallCost(port, defaultInputFor(port));
+    const storageLines = feesOf(result).filter(f => f.fee_family === 'storage');
+    const storageTotal = storageLines.reduce((s, f) => s + f.amount, 0);
+    expect(storageTotal).toBe(0);
+  });
+  it.each(PORT_IDS)('%s: a storage rule firing from the zero default fails (red proof — the manufactured-charge defect class is impossible, spec v0.4.1)', (id) => {
+    // The red proof harness: every storage rule at this port, evaluated
+    // at the zero-day default call, must yield no charge. If any port's
+    // storage rule ever fires at zero days, the manufactured-charge
+    // defect the v0.4.1 convention correction removes has returned —
+    // this pin fails.
+    const port = loadPort(id);
+    const call = defaultCall(id);
+    expect(call.storage_days_export).toBe(0);
+    expect(call.storage_days_import).toBe(0);
+    for (const rule of port.fee_rules.filter(r => r.fee_family === 'storage')) {
+      const flags: any[] = [];
+      const biller = (port as any).billers?.find((b: any) => b.id === rule.biller || b.name === rule.biller);
+      const result = evaluateFeeRule(rule, { vessel: DEFAULT_VESSEL, call } as any, flags, biller?.currency ?? port.metadata.currency);
+      expect(result === null || result.amount === 0).toBe(true);
+    }
   });
 
   it.each(PORT_IDS)('%s: no charge may fire from a seeded unit count', (id) => {
@@ -240,13 +240,17 @@ describe('Default-call zero-storage pin (spec v0.2.33)', () => {
     // billed the seeded unit days (5 * (437 + 709 + 382 + 1025) = 12,765).
     // Post-fix the storage lines render as informative zero lines (free
     // time) and the surcharges compute 0 units.
+    // v0.4.1 re-baseline (in-test attribution): at the zero-day default
+    // (spec v0.4.1) the banded-by-time rate strings render the zero-day
+    // free-time wording, not the seed-era day-range wording; the
+    // zero-amount contract is unchanged.
     const port = loadPort('gothenburg');
     const result = calculatePortCallCost(port, defaultInputFor(port));
     const storage = feesOf(result).filter(f => f.fee_family === 'storage');
     const surcharges = feesOf(result).filter(f => f.fee_family === 'yard_surcharge');
     expect(storage.map(f => f.amount).reduce((s, a) => s + a, 0)).toBe(0);
     expect(surcharges.map(f => f.amount).reduce((s, a) => s + a, 0)).toBe(0);
-    expect(storage.every(f => f.rate_applied.includes('days 0-6') || f.rate_applied.includes('days 0-4'))).toBe(true);
+    expect(storage.every(f => f.rate_applied.includes('0 chargeable days'))).toBe(true);
     expect(surcharges.every(f => f.rate_applied.includes('* 0 units'))).toBe(true);
   });
 });

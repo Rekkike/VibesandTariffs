@@ -331,7 +331,8 @@ fee_rules:
   # line and the train/truck-arriving and empty-unit tables are recorded in
   # the extraction reference (the empty-table assignment is ambiguous in the
   # extracted text - recorded, never guessed). Storage days are the user's
-  # scenario input; the seeded defaults sit inside the free time.
+  # scenario input; the default is zero days (spec v0.4.1) - the default call
+  # prices no storage stay, and entered days price this verbatim ladder.
   - id: pon_storage_import_20ft
     fee_family: storage
     biller: Port of Norrköping

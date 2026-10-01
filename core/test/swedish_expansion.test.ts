@@ -65,11 +65,18 @@ const defaultInputFor = (portId: string): CostCalculationInput => ({
 // GOT 3,275,851.15 / HAM 2,204,910.90 / HEL 8,750,057.40 are the
 // pre-expansion baselines (byte-identical); NRK/GLE/NVK are this
 // pass's own.
+// v0.4.1 re-baseline (the storage-default convention correction, in-test
+// attribution): the zero storage-day default removes Norrköping's seeded
+// one chargeable export day (82,400 + 246,000 = 328,400 kr — the v0.4.0
+// disclosure); 8,626,172.50 − 328,400 = 8,297,772.50 kr (per-GT
+// 8,297,772.50 ÷ 194,849 = 42.5857, pinned 42.59 at the engine's own rounding). Every other port moves zero — the
+// seeds sat inside their free allowances (verified, not assumed, in
+// docs/STORAGE_DEFAULT_AUDIT.md).
 const PINNED_TOTALS: Record<string, number> = {
   gothenburg: 3275851.15,
   hamburg: 2204910.90,
   helsingborg: 8750057.40,
-  norrkoping: 8626172.50,
+  norrkoping: 8297772.50,
   gavle: 1370979.35,
   norvik: 11952324.05
 };
@@ -86,7 +93,7 @@ describe('Swedish domestic expansion — default-call baselines (spec v0.4.0)', 
     const result = calculatePortCallCost(port, defaultInputFor(id));
     const perGt = result.total / DEFAULT_VESSEL.gt;
     const expected: Record<string, number> = {
-      norrkoping: 44.27,
+      norrkoping: 42.59,
       gavle: 7.04,
       norvik: 61.34
     };
@@ -273,15 +280,25 @@ describe('Swedish domestic expansion — scenario surfaces stay scenario', () =>
     }
   });
 
-  it('Norrköping: the shared storage seed (5 export days) exceeds the tariff free time (arrival + 3 working days) by exactly one day — the honest consequence is one chargeable export day at the published band rates, pinned and disclosed (never a misencoded free time)', () => {
+  it('Norrköping: the default call manufactures no storage charge — the zero storage-day default (spec v0.4.1) prices the seeded one-day stay out; entered days price the verbatim ladder exactly', () => {
+    // v0.4.1 re-baseline of the v0.4.0 disclosure pin (in-test
+    // attribution): the shared export seed (5 days) exceeded the tariff's
+    // verbatim free time (arrival + 3 working days, free through day 4)
+    // by exactly one day — the seeded default call carried one chargeable
+    // export day (82,400 + 246,000 = 328,400 kr at the published day-5-6
+    // band rates). The v0.4.1 convention correction sets the default to
+    // zero days: the default call now renders no storage line at all —
+    // the manufactured-charge defect class is impossible at any port.
+    // The tariff's free time is (and remains) encoded verbatim, never
+    // stretched; entering 5 export days still prices exactly 328,400 kr
+    // (pinned here).
     const result = calculatePortCallCost(loadPort('norrkoping'), defaultInputFor('norrkoping'));
-    // Day 5 at the day-5-6 band: 20' 103 x 800 = 82,400; 40' 205 x 1,200 = 246,000.
-    expect(feeByRule(result, 'pon_storage_export_20ft').amount).toBe(82400);
-    expect(feeByRule(result, 'pon_storage_export_40ft').amount).toBe(246000);
-    // Import seed (3 days) sits inside the free time: the import rules
-    // render no line at all (progressive_daily chargeable <= 0).
-    const import20 = feesOf(result).find(f => f.fee_rule_id === 'pon_storage_import_20ft');
-    expect(import20).toBeUndefined();
+    const storageLines = feesOf(result).filter(f => f.fee_family === 'storage');
+    expect(storageLines).toEqual([]);
+    const port = loadPort('norrkoping');
+    const entered = calculatePortCallCost(port, { vessel: DEFAULT_VESSEL, call: { ...defaultCall('norrkoping'), storage_days_export: 5 } as any });
+    expect(feeByRule(entered, 'pon_storage_export_20ft').amount).toBe(82400);
+    expect(feeByRule(entered, 'pon_storage_export_40ft').amount).toBe(246000);
   });
 
   it('Norvik: a storage scenario prices the Hutchison ladder exactly (10 days, 5 free)', () => {

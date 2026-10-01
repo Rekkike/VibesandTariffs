@@ -196,4 +196,20 @@ describe('mobile zero-suppression re-activation (spec v0.2.55 structural pin)', 
       expect((el.textContent ?? '')).toContain('not levied at this port');
     }
   });
+  it('the zero-default storage stay renders no storage charge line at any port (spec v0.4.1 zero-default pin, desktop)', async () => {
+    // The v0.4.1 convention correction: the default call carries zero
+    // storage days, and no port's storage rule may fire from it — the
+    // manufactured-charge defect class (the v0.4.0 Norrköping disclosure:
+    // one seeded day, 328,400 kr) is impossible. If any port's desktop
+    // storage family row ever carries a chargeable figure at the default
+    // call, this pin fails.
+    ({ container, root } = await renderComparison(false, defaultCall('gothenburg') as CallInput));
+    const familyRows = Array.from(container!.querySelectorAll('.comparison-family-row, .comparison-card-family'));
+    for (const el of familyRows) {
+      const text = (el.textContent ?? '').toLowerCase();
+      if (text.includes('storage')) {
+        expect(text).not.toMatch(/storage[^]*[1-9][\d\s\u00a0,.]*\s*(kr|SEK|EUR|€)/);
+      }
+    }
+  });
 });

@@ -97,9 +97,11 @@ describe('Grand Total derived per-GT — desktop comparison (spec v0.2.58)', () 
     expect(text).toContain('16.81 SEK/GT');
     expect(text).toContain('44.91 SEK/GT');
     // v0.4.0 Swedish domestic expansion: the three new ports' pure-division
-    // figures (Norrköping 8,626,172.50 ÷ 194,849 = 44.27; Gävle
-    // 1,370,979.35 ÷ 194,849 = 7.04; Norvik 11,952,324.05 ÷ 194,849 = 61.34).
-    expect(text).toContain('44.27 SEK/GT');
+    // figures; v0.4.1 re-baseline (the storage-default convention
+    // correction, in-test attribution): Norrköping loses the seeded one
+    // chargeable export day (−328,400 kr), 8,297,772.50 ÷ 194,849 =
+    // 42.5857 → 42.59 (was 44.27); Gävle and Norvik byte-identical.
+    expect(text).toContain('42.59 SEK/GT');
     expect(text).toContain('7.04 SEK/GT');
     expect(text).toContain('61.34 SEK/GT');
   });

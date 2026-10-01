@@ -86,11 +86,17 @@ tariff's overdue state is an operational fact the user must attest.
 
 ## 5. Default-call storage and unit-count contract (spec v0.2.33)
 
-The default call seeds `storage_days_export: 5` and `storage_days_import: 3` —
-both inside every port's free allowance (Gothenburg export 0–6 / import 0–4;
-Hamburg import 3 / export 5 free days before storage escalates from day one of
-chargeable time; Helsingborg 7 calendar days), so the default call charges zero
-storage at every port. Seeded special-cargo unit counts (reefer, OOG,
+The default call carries **zero storage days** (`storage_days_export: 0`,
+`storage_days_import: 0` — spec v0.4.1, the convention correction; the
+prior v0.2.33 seeds of 5/3 are superseded). Storage days are user-entered
+scenario inputs: entered days price honestly against each port's verbatim free
+time and bands (Gothenburg export 0–6 / import 0–4; Hamburg free 3 import /
+5 export before storage escalates from day one of chargeable time;
+Helsingborg 7 calendar days; Norrköping free through day 4; Norvik 5 free
+days), and the zero default manufactures no storage charge at any port — the
+v0.4.0 Norrköping disclosure (one seeded chargeable export day, 328,400 kr)
+proved a seeded planning assumption can manufacture a charge, a defect in the
+convention itself. Seeded special-cargo unit counts (reefer, OOG,
 dangerous, overdue) are **blank**: a default that manufactures charges no user
 entered violates the clean-baseline principle. Blank unit inputs therefore
 charge zero on the yard surcharges; a user-entered zero is a value, not a flag.
