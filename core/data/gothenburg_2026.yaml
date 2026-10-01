@@ -60,6 +60,10 @@ billers:
     name: Towage operator (estimated)
     description: "Commercial tug services at Port of Gothenburg; no published tariff - estimated parameter (spec v0.2.33)"
     currency: SEK
+  - id: klippans_batmansstation
+    name: AB Klippans Båtmansstation
+    description: "Mooring boatman company holding the city-lease mooring concession (arrendeavtal with Göteborgs Stad, org.nr 556132-5233); four mooring boats; mandatory per Sjöfartsverket's båtmän instruction; billed separately from the Port of Gothenburg tariff; no published rate (spec v0.3.1)"
+    currency: SEK
 
 # ============================================================================
 # PORT OF GOTHENBURG FEES
@@ -2791,6 +2795,57 @@ fee_rules:
       clause: "Regulation (EU) 2023/1805 Art. 4 (91.16 reference, 2 percent 2025-2029), Arts. 20-21 (banking/borrowing/pooling), Art. 23 + Annex IV B (2,400 EUR/t VLSFO-eq penalty)"
       verified_on: "2026-09-29"
       verified_by: "vibe-session-eu-regulatory"
+  # ===========================================================================
+  # GOT MOORING DISCLOSURE (spec v0.3.1) — AB Klippans Båtmansstation.
+  # Authority of record: docs/GOT_MOORING_DISCLOSURE_AUDIT.md and the
+  # archived sources under docs/sources/sweden/gothenburg/klippan/.
+  # Mooring is a separate biller from the port tariff (the Port Tariff's
+  # own §4 lists mooring among independent providers); the Sjöfartsverket
+  # båtmän page makes trained boatmen obligatorisk for every vessel of
+  # LOA 80 m or more — the entire modeled domain. No published rate
+  # exists anywhere: the notice is zero-amount, never additive; the
+  # charge line is user-specified only (blank renders nothing).
+  # ===========================================================================
+  - id: gothenburg_mooring_notice
+    fee_family: mooring
+    biller: AB Klippans Båtmansstation
+    name: Mooring (boatmen) — separately billed, no published rate (notice)
+    description: "Mooring at the Port of Gothenburg is performed by AB Klippans Båtmansstation (est. 1972, org.nr 556132-5233, four mooring boats), which holds the city-lease mooring concession (arrendeavtal with Göteborgs Stad). Trained boatmen are mandatory — Sjöfartsverket's Göteborg pilot-area restriction states it is obligatoriskt att använda utbildade båtmän vid förtöjning i Göteborgs hamn for every vessel in the Energy Harbour and all vessels of LOA 80 m or more elsewhere. The service is billed by Klippan separately from the Port of Gothenburg tariff (the tariff's §4 lists mooring among independent providers) and no published rate exists — the company's site is contact-based, no price list. This call's total EXCLUDES the mooring cost; this line is a notice only and adds nothing to any total. An optional user-specified mooring charge may be entered in the Gothenburg Ancillary Services section."
+    rate_structure:
+      type: flat
+      amount: 0
+    service_gap_notice:
+      description: "Mooring at Gothenburg is a separately-billed service with no published rate: performed by AB Klippans Båtmansstation under the city-lease mooring concession, mandatory for commercial calls (Sjöfartsverket båtmän instruction), billed separately from the Port of Gothenburg tariff. The call's total excludes it — the figure, if any, is the user's own entry, never estimated or tariff-derived."
+      severity: info
+    source_reference:
+      document_name: "batman-obligatoriskt.html.md + klippan-boatmangbg-com.html.md (Sjöfartsverket båtmän page; company site)"
+      document_url: "docs/sources/sweden/gothenburg/klippan/batman-obligatoriskt.html.md"
+      document_issued: "2023-10-11"
+      page: "Båtmän"
+      clause: "Det är obligatoriskt att använda utbildade båtmän vid förtöjning i Göteborgs hamn (Energy Harbour: all vessels; elsewhere: LOA 80 m or more); company site: mooring vessels in the Port of Gothenburg, four mooring boats"
+      verified_on: "2026-10-01"
+      verified_by: "vibe-session-got-mooring"
+  - id: gothenburg_mooring_charge
+    fee_family: mooring
+    biller: AB Klippans Båtmansstation
+    name: Mooring charge (user-specified)
+    description: "User-specified mooring charge per call (SEK, flat). AB Klippans Båtmansstation bills mooring separately from the Port of Gothenburg tariff and publishes no rate; the entered figure is the user's own (from Klippan's quote), never estimated or tariff-derived. Blank renders nothing."
+    rate_structure:
+      type: flat
+      amount: 0
+      amount_input: mooring_charge
+    # No estimated_parameter block and no default amount (the audit's
+    # verdict: unlike towage nothing is estimated and nothing defaults —
+    # blank renders a clean zero line the web layer collapses; the
+    # entered figure carries the engine's user-specified flag).
+    source_reference:
+      document_name: "klippan-boatmangbg-com.html.md + batman-obligatoriskt.html.md (company site; Sjöfartsverket båtmän page)"
+      document_url: "docs/sources/sweden/gothenburg/klippan/klippan-boatmangbg-com.html.md"
+      document_issued: "2026-10-01"
+      page: "Contact / mooring services"
+      clause: "Company site is contact-based, no price list; mooring mandatory per Sjöfartsverket båtmän instruction; billed separately from the port tariff"
+      verified_on: "2026-10-01"
+      verified_by: "vibe-session-got-mooring"
 
 # Per-port default-call data (spec v0.2.59): the port-specific input-form
 # defaults, data-authored in the port's own file. Configuration only -
@@ -2836,6 +2891,7 @@ input_profile:
     - ops_per_gt_charge
     - ets_emissions_tco2
     - ets_allowance_price
+    - mooring_charge
   # Field-level inputs inside the shared general-information group (the
   # CSI-class discount select renders at the Swedish ports).
   fields:

@@ -766,6 +766,28 @@ export const WorkspaceInputs: React.FC<WorkspaceInputsProps> = (props) => {
                         helperText="500 SEK/hour, explicit request only; blank = not ordered"
                       />
                     </Grid>
+                    {/* GOT mooring disclosure (spec v0.3.1): the optional
+                        user-specified mooring charge. AB Klippans
+                        Båtmansstation performs mooring under the city-lease
+                        concession, bills separately from the Port of
+                        Gothenburg tariff, and publishes no rate — the
+                        entered figure is the user's own (Klippan's quote),
+                        never estimated or tariff-derived. Blank renders
+                        nothing (no default exists); the notice line above
+                        the results discloses the exclusion at every GOT
+                        call. Per-port entry (reset_fields): HAM and HEL
+                        crew-handle lines and render no mooring surface. */}
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        label="Mooring charge (SEK, user-specified)"
+                        type="number"
+                        value={state.call.mooring_charge ?? ''}
+                        onChange={(e) => handleCallChange('mooring_charge', e.target.value === '' ? undefined : parseFloat(e.target.value))}
+                        fullWidth
+                        InputLabelProps={{ shrink: true }}
+                        helperText="AB Klippans Båtmansstation (city-lease mooring concession) — mandatory boatmen, billed separately from the Port of Gothenburg tariff; no published rate exists. Enter Klippan's quoted charge for this call — user-specified, never estimated or tariff-derived. Blank = not entered (the call's total excludes mooring; the notice line discloses it). Per-port entry (Gothenburg only)."
+                      />
+                    </Grid>
                   </Grid>
                   <Typography variant="h6" component="h3" className="segment-heading vessel-call-heading">
                     Gothenburg Towage (estimated)

@@ -327,7 +327,7 @@ describe('port-specific reset fields (spec v0.2.60)', () => {
       'pilotage_ordering_lead_time_hours', 'hatch_cover_count',
       'gearbox_count', 'lay_up_days', 'ops_electricity_price',
       'ops_demand_charge', 'ops_connection_charge', 'ops_per_gt_charge',
-      'ets_emissions_tco2', 'ets_allowance_price'
+      'ets_emissions_tco2', 'ets_allowance_price', 'mooring_charge'
     ],
     hamburg: [
       'engine_tier', 'engine_tier_estimated', 'esi_noise_score',
@@ -382,7 +382,10 @@ describe('port-specific reset fields (spec v0.2.60)', () => {
       'layby_hours', 'reefer_extra_days', 'small_call_containers',
       // v0.2.69 EU regulatory inputs: the union grows by exactly the two
       // new data-authored fields (declared at every port).
-      'ets_emissions_tco2', 'ets_allowance_price'
+      'ets_emissions_tco2', 'ets_allowance_price',
+      // v0.3.1 GOT mooring input: the union grows by exactly the one new
+      // data-authored field (Gothenburg only).
+      'mooring_charge'
     ];
     const union = allPortResetFields();
     expect([...union].sort()).toEqual([...legacy].sort());

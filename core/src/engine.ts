@@ -314,6 +314,17 @@ export function evaluateFeeRule(
       severity: rule.regulatory_notice.severity ?? 'info'
     });
   }
+  // Service gap notice (spec v0.3.1, the GOT mooring disclosure): an
+  // informational disclosure of a separately-billed service with no
+  // published rate. Zero-amount by construction; the flag is what renders
+  // (the informative-zero convention keeps the line visible).
+  if (rule.service_gap_notice) {
+    qualityFlags.push({
+      type: 'service_gap_notice',
+      description: rule.service_gap_notice.description,
+      severity: rule.service_gap_notice.severity ?? 'info'
+    });
+  }
   // Contract-vs-published caveat (spec v0.2.4): the published list price may
   // differ from shipping-line contract rates; carried as a visible flag.
   if (rule.contract_vs_published) {
@@ -451,12 +462,31 @@ export function evaluateFeeRule(
         if (typeof override === 'number' && override >= 0) {
           baseAmount = override;
           rateApplied = `Flat rate: ${baseAmount} (input override: ${flat.amount_input}=${override})`;
+          // Spec v0.3.1 (the GOT mooring disclosure): a flat input rule
+          // that declares no default amount (amount 0) carries no
+          // estimate of anything — the entered figure is the user's own
+          // (no published rate exists for the service), labeled
+          // user-specified, never estimated or tariff-derived.
+          if (baseAmount > 0 && flat.amount === 0) {
+            qualityFlags.push({
+              type: 'user_specified_amount',
+              description: `user-specified amount — no published rate exists for this service; the entered ${baseAmount} figure is the user's own, never estimated or tariff-derived`,
+              severity: 'info'
+            });
+          }
         } else {
-          qualityFlags.push({
-            type: 'estimated_parameter',
-            description: rule.estimated_parameter?.description ?? `Amount defaults to ${baseAmount} (no user value in ${flat.amount_input})`,
-            severity: rule.estimated_parameter?.severity ?? 'warning'
-          });
+          // No user value: a rule declaring a real default (towage) falls
+          // back to it estimate-flagged; a rule declaring no default at all
+          // (the mooring charge, amount 0) renders zero with no flags —
+          // the blank-means-nothing contract (the web layer collapses the
+          // clean zero line; nothing is estimated and nothing defaults).
+          if (baseAmount !== 0) {
+            qualityFlags.push({
+              type: 'estimated_parameter',
+              description: rule.estimated_parameter?.description ?? `Amount defaults to ${baseAmount} (no user value in ${flat.amount_input})`,
+              severity: rule.estimated_parameter?.severity ?? 'warning'
+            });
+          }
         }
       }
       bandOrBasis = 'flat';

@@ -52,6 +52,17 @@ export function badgesForFlags(flags: QualityFlag[]): FlagBadge[] {
       // disclosure — its own badge so the notice reads as the regulatory
       // disclosure it is, not a generic flag count (badge honesty).
       badges.push({ label: 'FuelEU notice', kind: 'info', title: flag.description });
+    } else if (flag.type === 'service_gap_notice') {
+      // GOT mooring disclosure (spec v0.3.1): a separately-billed service
+      // with no published rate — its own badge so the notice reads as the
+      // service-gap disclosure it is (badge honesty, never a generic flag
+      // count); the line is zero-amount and never additive.
+      badges.push({ label: 'Mooring notice', kind: 'info', title: flag.description });
+    } else if (flag.type === 'user_specified_amount') {
+      // Spec v0.3.1: a flat input rule declaring no default — the entered
+      // figure is the user's own (no published rate exists), labeled
+      // user-specified, never estimated or tariff-derived.
+      badges.push({ label: 'user-specified', kind: 'assumed', title: flag.description });
     } else if (flag.type === 'ets_user_specified_basis') {
       // ETS user-specified basis (spec v0.2.69): the emissions basis and
       // the EUA price are the user's own inputs — named, never a generic

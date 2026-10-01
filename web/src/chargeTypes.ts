@@ -164,7 +164,13 @@ const STAGE_BY_FAMILY: Record<string, ComparisonStageId> = {
   // of the leg plus 100 percent in-port), not to the berth stay or to the
   // cargo, so neither the at-berth nor the quayside stage describes it;
   // one family does not re-shape the comparison surface.
-  regulatory: 'reach_berth'
+  regulatory: 'reach_berth',
+  // GOT mooring disclosure (spec v0.3.1): a berth-side purchased nautical
+  // service — the boatmen make fast the lines at the berth; the final act
+  // of the same nautical sequence as pilotage and towage (Sjöfartsverket's
+  // own page files the båtmän restriction under the Göteborg pilotage
+  // area). The audit's stage adjudication: "To reach the berth".
+  mooring: 'reach_berth'
 };
 
 export const STAGE_BY_CHARGE_TYPE: Record<ChargeTypeId, ComparisonStageId> = {

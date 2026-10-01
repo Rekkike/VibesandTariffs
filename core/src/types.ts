@@ -72,6 +72,7 @@ export const FEE_FAMILY_TO_SEGMENT: Record<FeeFamily, CostSegment> = {
   'gearbox_handling': 'vessel_call',
   'fairway_dues': 'vessel_call',
   'towage': 'vessel_call',
+  'mooring': 'vessel_call',
   'hafenfonds': 'vessel_call',
   'frequency_discount': 'vessel_call',
   '': 'vessel_call'
@@ -380,6 +381,17 @@ export interface FeeRule {
     description: string;
     severity?: 'info' | 'warning';
   };
+  // Service gap notice (spec v0.3.1, the GOT mooring disclosure): an
+  // informational disclosure of a separately-billed service with no
+  // published rate (mooring at Gothenburg — AB Klippans Båtmansstation's
+  // city-lease concession; mandatory per Sjöfartsverket's båtmän
+  // instruction; billed separately from the port tariff). The
+  // regulatory_notice pattern generalized: zero-amount by construction,
+  // never estimated, never a regulatory instrument, never additive.
+  service_gap_notice?: {
+    description: string;
+    severity?: 'info' | 'warning';
+  };
   // Optional percentage scaling from a call input (e.g. pilotage segment %).
   scale_by?: {
     input_field: string;
@@ -577,6 +589,7 @@ export interface CallInput {
   gangway_supervision_hours?: number;
   pilotage_segment_pct?: number;  // Elbe transit percentage, default 100
   towage_amount?: number;          // estimated towage amount per call (default 15,000 EUR)
+  mooring_charge?: number;         // user-specified mooring charge per call, SEK (Gothenburg only, spec v0.3.1; blank = nothing rendered — no published rate exists)
   tug_count?: number;              // number of tug assists (drives towage unit counts where billed per tug)
   ees_rate_per_move?: number;      // Emergency Energy Surcharge per move (Helsingborg; datestamped monthly level)
   handling_rate_per_move?: number; // estimated handling rate per move (default 358 EUR)

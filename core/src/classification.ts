@@ -67,6 +67,16 @@ export interface FunctionalClassInfo {
 // beredskapsavgift p.4, godsavgift p.5, pilotage p.4, ordering fee p.4;
 // APMT Terminal Tariff 2026 §4 handling, §3 security).
 const got: Record<string, FunctionalClassInfo> = {
+  gothenburg_mooring_notice: {
+    functional_class: 'purchased_service',
+    basis_note: 'Mooring boatmen service — AB Klippans Båtmansstation holds the city-lease mooring concession; mandatory per the Sjöfartsverket båtmän instruction (obligatorisk for LOA ≥ 80 m and all Energy Harbour vessels); billed separately from the Port of Gothenburg tariff; no published rate exists (notice only, zero-amount)',
+    source: 'docs/sources/sweden/gothenburg/klippan/batman-obligatoriskt.html.md'
+  },
+  gothenburg_mooring_charge: {
+    functional_class: 'purchased_service',
+    basis_note: 'Mooring boatmen service, user-specified amount per call — AB Klippans Båtmansstation (no published rate; the entered figure is the users own, never tariff-derived)',
+    source: 'docs/sources/sweden/gothenburg/klippan/klippan-boatmangbg-com.html.md'
+  },
   port_gothenburg_container_vessel_dues: {
     functional_class: 'berth_terminal_infrastructure',
     basis_note: 'Municipal port dues on the vessel, progressive per GT (Port Tariff 2026 §2.1)',

@@ -269,7 +269,9 @@ describe('port-specific reset fields (spec v0.2.60)', () => {
         'gearbox_count', 'lay_up_days', 'ops_electricity_price',
         'ops_demand_charge', 'ops_connection_charge', 'ops_per_gt_charge',
         // v0.2.69 EU regulatory inputs (declared at every port):
-        'ets_emissions_tco2', 'ets_allowance_price'
+        'ets_emissions_tco2', 'ets_allowance_price',
+        // v0.3.1 GOT mooring input (Gothenburg only, per-port):
+        'mooring_charge'
       ],
       hamburg: [
         'engine_tier', 'engine_tier_estimated', 'esi_noise_score',
