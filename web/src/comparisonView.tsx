@@ -97,12 +97,17 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
     const result = await fetchLatestEcbRate(dataRate.from_currency, dataRate.to_currency);
     if (result.ok) {
       setRateInput(String(result.rate.rate));
-      setFetchedProvenance({ date: result.rate.date, source: result.rate.source });
+      setFetchedProvenance({ date: result.rate.date, source: result.rate.source, endpoint: result.rate.endpoint });
       setRateFetchState({ busy: false, note: null, error: false });
     } else {
+      // v0.3.5 fallback chain: the failure note renders only when every
+      // endpoint failed; it names each endpoint tried and each per-endpoint
+      // failure reason (network vs status vs parse), never silent, and the
+      // current value stays in effect.
+      const tried = result.failure.attempts.map(a => `${a.endpoint} (${a.reason})`).join('; ');
       setRateFetchState({
         busy: false,
-        note: `Failed to fetch the latest ECB rate — showing the current rate (${result.failure.error}).`,
+        note: `Failed to fetch the latest ECB rate — showing the current rate. Every endpoint failed: ${tried}.`,
         error: true
       });
     }
@@ -738,7 +743,7 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
               </Button>
               {fetchedProvenance && !rateFetchState.error && (
                 <Typography variant="caption" className="rate-fetched-note" data-testid="rate-fetched-note">
-                  Latest ECB rate fetched: {rateInfo.rate} kr/EUR, published {fetchedProvenance.date} ({fetchedProvenance.source}). Applied as an override — the pinned default ({dataRate?.rate ?? DEFAULT_EXCHANGE_RATE.rate} kr/EUR, {dataRate?.as_of ?? DEFAULT_EXCHANGE_RATE.date}) remains the model's rate.
+                  Latest ECB rate fetched: {rateInfo.rate} kr/EUR, published {fetchedProvenance.date} (ECB euro reference rate, via {fetchedProvenance.endpoint}). Applied as an override — the pinned default ({dataRate?.rate ?? DEFAULT_EXCHANGE_RATE.rate} kr/EUR, {dataRate?.as_of ?? DEFAULT_EXCHANGE_RATE.date}) remains the model's rate.
                 </Typography>
               )}
               {rateFetchState.note && (

@@ -107,6 +107,9 @@ export function declaredRateFor(
 export interface OverrideProvenance {
   date: string;
   source: string;
+  // v0.3.5 fallback chain: the endpoint that answered, named in the
+  // fetched rendering. Absent for pre-v0.3.5 callers (manual overrides).
+  endpoint?: string;
 }
 
 export function resolveExchangeRate(

@@ -24,7 +24,12 @@ import type { CallInput, PortDefinition } from '@port-cost/core/types';
 import {
   fetchLatestEcbRate,
   frankfurterUrl,
-  parseFrankfurterResponse
+  parseFrankfurterResponse,
+  parseEcbDailyXml,
+  parseEcbSdmxResponse,
+  ecbSdmxUrl,
+  ecbDailyXmlUrl,
+  RATE_ENDPOINTS
 } from './ecbRateFetch';
 import { resolveExchangeRate } from './conversion';
 import yaml from 'js-yaml';
@@ -67,18 +72,12 @@ describe('pair-parameterized fetch utility (spec v0.3.2, item 2)', () => {
     expect(frankfurterUrl('EUR', 'PLN')).toBe('https://api.frankfurter.app/latest?from=EUR&to=PLN');
   });
 
-  it('parses a published pair body: rate, publication date, and fetched source', () => {
+    it('parses a published pair body: rate and publication date (re-baselined to the v0.3.5 chain, attributed: the parser is now a chain element returning rate/date; the fetched source string is composed by the chain on success)', () => {
     const result = parseFrankfurterResponse(
       { base: 'EUR', date: '2026-09-30', rates: { SEK: 11.331 } },
       'EUR', 'SEK'
     );
-    expect(result.ok).toBe(true);
-    if (result.ok) {
-      expect(result.rate.rate).toBe(11.331);
-      expect(result.rate.date).toBe('2026-09-30');
-      expect(result.rate.source).toContain('ECB euro reference rate');
-      expect(result.rate.source).toContain('fetched');
-    }
+    expect(result).toEqual({ rate: 11.331, date: '2026-09-30' });
   });
 
   it('a second pair parses through the same signature with no code change (the pair pin)', () => {
@@ -86,29 +85,159 @@ describe('pair-parameterized fetch utility (spec v0.3.2, item 2)', () => {
       { base: 'EUR', date: '2026-09-30', rates: { DKK: 7.46 } },
       'EUR', 'DKK'
     );
-    expect(result.ok).toBe(true);
-    if (result.ok) {
-      expect(result.rate.rate).toBe(7.46);
-      expect(result.rate.source).toContain('DKK per EUR');
-    }
+    expect(result).toEqual({ rate: 7.46, date: '2026-09-30' });
   });
 
-  it('failure modes return ok:false, never throw: network error, malformed body, missing rate', async () => {
+  it('failure modes return ok:false, never throwing — every endpoint failing is the only failure (re-baselined to the v0.3.5 chain, attributed: the fetch is now a chain, so single-endpoint failure must fall through before failing)', async () => {
     const originalFetch = global.fetch;
     global.fetch = (async () => { throw new Error('connection refused'); }) as typeof fetch;
     const networkFailure = await fetchLatestEcbRate('EUR', 'SEK');
     expect(networkFailure.ok).toBe(false);
-    if (!networkFailure.ok) expect(networkFailure.failure.error).toContain('network error');
+    if (!networkFailure.ok) {
+      expect(networkFailure.failure.error).toContain('all rate endpoints failed');
+      expect(networkFailure.failure.attempts).toHaveLength(RATE_ENDPOINTS.length);
+    }
 
     global.fetch = (async () => ({ ok: false, status: 503 }) as unknown as Response) as typeof fetch;
     const httpFailure = await fetchLatestEcbRate('EUR', 'SEK');
     expect(httpFailure.ok).toBe(false);
-    if (!httpFailure.ok) expect(httpFailure.failure.error).toContain('API unreachable');
+    if (!httpFailure.ok) {
+      expect(httpFailure.failure.error).toContain('all rate endpoints failed');
+      expect(httpFailure.failure.attempts.every(a => a.reason.includes('HTTP 503'))).toBe(true);
+    }
 
-    global.fetch = (async () => ({ ok: true, json: async () => ({ base: 'EUR' }) }) as unknown as Response) as typeof fetch;
+    global.fetch = (async () => ({ ok: true, text: async () => 'not json' }) as unknown as Response) as typeof fetch;
     const malformed = await fetchLatestEcbRate('EUR', 'SEK');
     expect(malformed.ok).toBe(false);
+    if (!malformed.ok) {
+      expect(malformed.failure.attempts.every(a => a.reason.includes('no published EUR->SEK rate'))).toBe(true);
+    }
     global.fetch = originalFetch;
+  });
+});
+
+describe('fetch fallback chain (spec v0.3.5, defect fix — docs/RATE_FETCH_FALLBACK_AUDIT.md)', () => {
+  const originalFetch = global.fetch;
+  afterEach(() => { global.fetch = originalFetch; });
+
+  it('the chain is the ordered endpoint data: primary Frankfurter mirror first, then the ECB daily XML, then the ECB SDMX API — the .dev mirror is rejected (404, verified live, must not ship)', () => {
+    expect(RATE_ENDPOINTS).toHaveLength(3);
+    expect(RATE_ENDPOINTS[0].name).toBe('api.frankfurter.app');
+    expect(RATE_ENDPOINTS[1].name).toContain('www.ecb.europa.eu');
+    expect(RATE_ENDPOINTS[2].name).toContain('data-api.ecb.europa.eu');
+    expect(RATE_ENDPOINTS.some(e => e.url('EUR', 'SEK').includes('frankfurter.dev'))).toBe(false);
+  });
+
+  it('primary succeeds — applied, the primary named as the answering endpoint', async () => {
+    const calls: string[] = [];
+    global.fetch = (async (input: RequestInfo | URL) => {
+      const url = String(input);
+      calls.push(url);
+      return { ok: true, text: async () => JSON.stringify({ base: 'EUR', date: '2026-09-30', rates: { SEK: 11.331 } }) } as unknown as Response;
+    }) as typeof fetch;
+    const result = await fetchLatestEcbRate('EUR', 'SEK');
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.rate.rate).toBe(11.331);
+      expect(result.rate.endpoint).toBe('api.frankfurter.app');
+      expect(result.rate.date).toBe('2026-09-30');
+    }
+    expect(calls).toEqual([frankfurterUrl('EUR', 'SEK')]);
+  });
+
+  it('primary fails, fallback succeeds — applied, the fallback named, no failure note (red proof: rendering the failure note when a fallback succeeded fails)', async () => {
+    global.fetch = (async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.includes('frankfurter.app')) throw new Error('Failed to fetch');
+      return { ok: true, text: async () => `<gesmes:Envelope><Cube><Cube time='2026-09-30'><Cube currency='SEK' rate='11.3310'/></Cube></Cube></gesmes:Envelope>` } as unknown as Response;
+    }) as typeof fetch;
+    const result = await fetchLatestEcbRate('EUR', 'SEK');
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.rate.rate).toBe(11.331);
+      expect(result.rate.endpoint).toContain('www.ecb.europa.eu');
+    }
+  });
+
+  it('all endpoints fail — the failure names every endpoint and every per-endpoint reason (network vs status vs parse)', async () => {
+    global.fetch = (async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.includes('frankfurter.app')) throw new Error('Failed to fetch');
+      if (url.includes('www.ecb.europa.eu')) return { ok: false, status: 403 } as unknown as Response;
+      return { ok: true, text: async () => '<html>security check</html>' } as unknown as Response;
+    }) as typeof fetch;
+    const result = await fetchLatestEcbRate('EUR', 'SEK');
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.failure.attempts).toHaveLength(3);
+      expect(result.failure.attempts[0].endpoint).toBe('api.frankfurter.app');
+      expect(result.failure.attempts[0].reason).toContain('network error');
+      expect(result.failure.attempts[1].endpoint).toContain('www.ecb.europa.eu');
+      expect(result.failure.attempts[1].reason).toContain('HTTP 403');
+      expect(result.failure.attempts[2].endpoint).toContain('data-api.ecb.europa.eu');
+      expect(result.failure.attempts[2].reason).toContain('no published EUR->SEK rate');
+      expect(result.failure.error).toContain('api.frankfurter.app');
+      expect(result.failure.error).toContain('www.ecb.europa.eu');
+      expect(result.failure.error).toContain('data-api.ecb.europa.eu');
+    }
+  });
+
+  it('a non-OK status on the primary falls through to the next endpoint', async () => {
+    const calls: string[] = [];
+    global.fetch = (async (input: RequestInfo | URL) => {
+      const url = String(input);
+      calls.push(url);
+      if (url.includes('frankfurter.app')) return { ok: false, status: 503 } as unknown as Response;
+      return { ok: true, text: async () => `<Cube time='2026-09-30'><Cube currency='SEK' rate='11.330'/></Cube>` } as unknown as Response;
+    }) as typeof fetch;
+    const result = await fetchLatestEcbRate('EUR', 'SEK');
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.rate.endpoint).toContain('www.ecb.europa.eu');
+      expect(result.rate.rate).toBe(11.33);
+    }
+    expect(calls).toHaveLength(2);
+  });
+
+  it('a parse failure falls through to the next endpoint', async () => {
+    const calls: string[] = [];
+    global.fetch = (async (input: RequestInfo | URL) => {
+      const url = String(input);
+      calls.push(url);
+      if (url.includes('frankfurter.app')) return { ok: true, text: async () => JSON.stringify({ base: 'EUR', date: '2026-09-30', rates: { DKK: 7.46 } }) } as unknown as Response;
+      return { ok: true, text: async () => `<Cube time='2026-09-30'><Cube currency='SEK' rate='11.3310'/></Cube>` } as unknown as Response;
+    }) as typeof fetch;
+    const result = await fetchLatestEcbRate('EUR', 'SEK');
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.rate.endpoint).toContain('www.ecb.europa.eu');
+    expect(calls).toHaveLength(2);
+  });
+
+  it('the chain order and every parser is pair-parameterized — a second pair traverses the same chain with no code change (the pair pin, extended to the chain)', async () => {
+    expect(ecbSdmxUrl('EUR', 'DKK')).toContain('D.DKK.EUR.SP00.A');
+    expect(ecbDailyXmlUrl()).not.toContain('SEK');
+    const xml = parseEcbDailyXml(`<Cube time='2026-09-30'><Cube currency='DKK' rate='7.4755'/></Cube>`, 'EUR', 'DKK');
+    expect(xml).toEqual({ rate: 7.4755, date: '2026-09-30' });
+    const sdmx = parseEcbSdmxResponse({ data: { cubes: [{ TIME_PERIOD: '2026-09-30', DKK: 7.4755 }] } }, 'EUR', 'DKK');
+    expect(sdmx).toEqual({ rate: 7.4755, date: '2026-09-30' });
+    global.fetch = (async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.includes('frankfurter.app')) return { ok: true, text: async () => JSON.stringify({ base: 'EUR', date: '2026-09-30', rates: { DKK: 7.4755 } }) } as unknown as Response;
+      throw new Error('unreachable in this pin');
+    }) as typeof fetch;
+    const result = await fetchLatestEcbRate('EUR', 'DKK');
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.rate.rate).toBe(7.4755);
+      expect(result.rate.source).toContain('DKK per EUR');
+    }
+  });
+
+  it('the ECB daily XML parser is strict: a missing pair, a missing date, or a non-numeric rate is a parse failure (falls through)', () => {
+    expect(parseEcbDailyXml(`<Cube time='2026-09-30'><Cube currency='NOK' rate='10.9015'/></Cube>`, 'EUR', 'SEK')).toBeNull();
+    expect(parseEcbDailyXml(`<Cube currency='SEK' rate='11.3310'/>`, 'EUR', 'SEK')).toBeNull();
+    expect(parseEcbDailyXml(`<Cube time='2026-09-30'><Cube currency='SEK' rate='abc'/></Cube>`, 'EUR', 'SEK')).toBeNull();
+    expect(parseEcbSdmxResponse({ data: { cubes: [] } }, 'EUR', 'SEK')).toBeNull();
   });
 });
 
@@ -208,7 +337,7 @@ describe('rate-refresh button in the comparison view (spec v0.3.2, item 1)', () 
   it('a successful fetch applies the fetched rate as an override, rendered with its publication date and source, labeled fetched — and the pinned default remains stated as the model rate', async () => {
     global.fetch = (async (input: RequestInfo | URL) => {
       expect(String(input)).toBe(frankfurterUrl('EUR', 'SEK'));
-      return { ok: true, json: async () => ({ base: 'EUR', date: '2026-09-18', rates: { SEK: 11.29 } }) } as unknown as Response;
+      return { ok: true, text: async () => JSON.stringify({ base: 'EUR', date: '2026-09-18', rates: { SEK: 11.29 } }) } as unknown as Response;
     }) as typeof fetch;
     ({ container, root } = await renderComparison(defaultCall('gothenburg') as CallInput));
     const button = container!.querySelector('button[aria-label="Fetch latest ECB rate"]') as HTMLButtonElement;
@@ -219,6 +348,7 @@ describe('rate-refresh button in the comparison view (spec v0.3.2, item 1)', () 
     expect(note!.textContent).toContain('11.29 kr/EUR');
     expect(note!.textContent).toContain('published 2026-09-18');
     expect(note!.textContent).toContain('ECB euro reference rate');
+    expect(note!.textContent).toContain('via api.frankfurter.app');
     expect(note!.textContent).toContain(`the pinned default (${eurSek.rate} kr/EUR, ${eurSek.as_of}) remains the model's rate`);
     expect(block.textContent).toContain('Fetched rate 11.29 kr/EUR in effect');
     expect(block.textContent).toContain('TARGET business days');
@@ -226,7 +356,7 @@ describe('rate-refresh button in the comparison view (spec v0.3.2, item 1)', () 
 
   it('a fetched override moves exactly the converted figures and nothing else (native totals pinned)', async () => {
     global.fetch = (async () => ({
-      ok: true, json: async () => ({ base: 'EUR', date: '2026-09-30', rates: { SEK: 11.29 } })
+      ok: true, text: async () => JSON.stringify({ base: 'EUR', date: '2026-09-30', rates: { SEK: 11.29 } })
     }) as unknown as Response) as typeof fetch;
     ({ container, root } = await renderComparison(defaultCall('gothenburg') as CallInput));
     const totalRow = Array.from(container!.querySelectorAll('.comparison-total-row'))
@@ -248,7 +378,7 @@ describe('rate-refresh button in the comparison view (spec v0.3.2, item 1)', () 
     );
   });
 
-  it('a failed fetch leaves the current value in effect and surfaces the visible failure note (red proof: suppressing the note fails)', async () => {
+  it('a failed fetch leaves the current value in effect and surfaces the visible failure note — every endpoint tried, each with its reason (re-baselined to the v0.3.5 chain, attributed: all endpoints fail here, so the note names them all; red proof: suppressing the note fails)', async () => {
     global.fetch = (async () => { throw new Error('connection refused'); }) as typeof fetch;
     ({ container, root } = await renderComparison(defaultCall('gothenburg') as CallInput));
     const button = container!.querySelector('button[aria-label="Fetch latest ECB rate"]') as HTMLButtonElement;
@@ -258,6 +388,10 @@ describe('rate-refresh button in the comparison view (spec v0.3.2, item 1)', () 
     expect(failureNote).not.toBeNull();
     expect(failureNote!.textContent).toContain('Failed to fetch the latest ECB rate');
     expect(failureNote!.textContent).toContain('showing the current rate');
+    expect(failureNote!.textContent).toContain('Every endpoint failed');
+    expect(failureNote!.textContent).toContain('api.frankfurter.app');
+    expect(failureNote!.textContent).toContain('www.ecb.europa.eu');
+    expect(failureNote!.textContent).toContain('data-api.ecb.europa.eu');
     // The current value stays in effect: still the pinned default, never a stale value masquerading as fresh.
     expect(block.textContent).toContain(`Default: ${eurSek.rate} kr/EUR (${eurSek.source}, ${eurSek.as_of})`);
     expect(block.querySelector('[data-testid="rate-fetched-note"]')).toBeNull();
@@ -269,7 +403,7 @@ describe('rate-refresh button in the comparison view (spec v0.3.2, item 1)', () 
     let fail = false;
     global.fetch = (async () => {
       if (fail) throw new Error('connection refused');
-      return { ok: true, json: async () => ({ base: 'EUR', date: '2026-09-30', rates: { SEK: 11.3 } }) } as unknown as Response;
+      return { ok: true, text: async () => JSON.stringify({ base: 'EUR', date: '2026-09-30', rates: { SEK: 11.3 } }) } as unknown as Response;
     }) as typeof fetch;
     ({ container, root } = await renderComparison(defaultCall('gothenburg') as CallInput));
     const block0 = container!.querySelector('.comparison-conversion')!;
@@ -287,9 +421,26 @@ describe('rate-refresh button in the comparison view (spec v0.3.2, item 1)', () 
     expect(block.textContent).toContain('User rate 11.4 kr/EUR in effect');
   });
 
+  it('primary fails, the ECB fallback succeeds — applied, the fallback named, no failure note (red proof: rendering the failure note when a fallback succeeded fails)', async () => {
+    global.fetch = (async (input: RequestInfo | URL) => {
+      if (String(input).includes('frankfurter.app')) throw new Error('Failed to fetch');
+      return { ok: true, text: async () => `<Cube time='2026-09-30'><Cube currency='SEK' rate='11.3310'/></Cube>` } as unknown as Response;
+    }) as typeof fetch;
+    ({ container, root } = await renderComparison(defaultCall('gothenburg') as CallInput));
+    const button = container!.querySelector('button[aria-label="Fetch latest ECB rate"]') as HTMLButtonElement;
+    await act(async () => { button.click(); });
+    const block = container!.querySelector('.comparison-conversion')!;
+    expect(block.querySelector('[data-testid="rate-fetch-failure-note"]')).toBeNull();
+    const note = block.querySelector('[data-testid="rate-fetched-note"]');
+    expect(note).not.toBeNull();
+    expect(note!.textContent).toContain('11.331 kr/EUR');
+    expect(note!.textContent).toContain('via www.ecb.europa.eu (daily reference-rate XML)');
+    expect(block.textContent).toContain('Fetched rate 11.331 kr/EUR in effect');
+  });
+
   it('the pinned default remains the model rate regardless of any override: the rendered default surface names the pinned rate with its as_of, never the override (red proof: the default surface picking up an override fails)', async () => {
     global.fetch = (async () => ({
-      ok: true, json: async () => ({ base: 'EUR', date: '2026-09-18', rates: { SEK: 11.29 } })
+      ok: true, text: async () => JSON.stringify({ base: 'EUR', date: '2026-09-18', rates: { SEK: 11.29 } })
     }) as unknown as Response) as typeof fetch;
     ({ container, root } = await renderComparison(defaultCall('gothenburg') as CallInput));
     const button = container!.querySelector('button[aria-label="Fetch latest ECB rate"]') as HTMLButtonElement;
