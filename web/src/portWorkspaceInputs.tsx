@@ -227,7 +227,7 @@ export const WorkspaceInputs: React.FC<WorkspaceInputsProps> = (props) => {
                     InputLabelProps={{ shrink: true }}
                     helperText={
                       estimatedFields.includes('nt') && state.vessel.nt
-                        ? `Estimated value from the vessel library (see source note) — editable · NT class ${getNetTonnageClass(state.vessel.nt)}`
+                        ? `${ntObserved ? 'Observed value (aggregator observation, not registry-confirmed — see source note)' : 'Estimated value from the vessel library (see source note)'} — editable · NT class ${getNetTonnageClass(state.vessel.nt)}`
                         : !state.vessel.nt
                           ? 'Will be estimated as 0.55 × GT'
                           : `NT class ${getNetTonnageClass(state.vessel.nt)}`
@@ -235,9 +235,9 @@ export const WorkspaceInputs: React.FC<WorkspaceInputsProps> = (props) => {
                   />
                   {ntNotice && (
                     <Typography variant="body2" className="nt-boundary-notice" data-testid="nt-boundary-notice">
-                      NT estimate sits in Class {ntNotice.usedClass}, but the honest error band
+                      {ntObserved ? 'Observed NT figure (aggregator observation, not registry-confirmed)' : 'NT estimate'} sits in Class {ntNotice.usedClass}, but the honest error band
                       ({ntNotice.bandLow.toLocaleString('en-US')}–{ntNotice.bandHigh.toLocaleString('en-US')} NT,
-                      0.40–0.58 × GT) spans a class boundary — the fee class is uncertain.
+                      {ntObserved ? ' ±10% of the observed figure' : ' 0.40–0.58 × GT'}) spans a class boundary — the fee class is uncertain.
                       The figures use Class {ntNotice.usedClass}; Class {ntNotice.alternativeClass} is
                       plausible and would change the Sjöfartsverket vessel fee, readiness fee, and pilotage.
                     </Typography>

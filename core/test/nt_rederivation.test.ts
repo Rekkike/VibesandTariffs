@@ -139,13 +139,17 @@ describe('Registry-citation and masquerade-guard pins (v0.3.0 item 4.2)', () => 
     expect(m.source_note).toContain('reliability caveat');
   });
 
-  it('MSC KYUNGMIN: no confirming source — the estimate stays flagged with the band disclosed', () => {
+  it('MSC KYUNGMIN: the v0.3.4 promotion — the observed figure is the model NT, flagged, with the observed band disclosed', () => {
     const k = byName.get('MSC KYUNGMIN')!;
-    expect(k.nt).toBe(8000);
+    // v0.3.4 promotion (re-baselined, attributed): 9,654 — the Flexport
+    // Atlas aggregator observation (fetched 2026-10-01) corroborating the
+    // Marine MAN v0.3.0-era figure; the placement basis is the observation,
+    // so the observed band (±10 percent: 8,689–10,619) is the honest band.
+    expect(k.nt).toBe(9654);
     expect(k.estimated_fields).toContain('nt');
-    expect(k.source_note.toLowerCase()).toContain('nt estimated');
-    // The formalized convention band and the boundary risk are in the note:
-    expect(k.source_note).toContain('0.40–0.58');
+    expect(k.source_note).toContain('observed, not registry-confirmed');
+    // The observed band and the boundary risk are in the note:
+    expect(k.source_note).toContain('±10 percent');
     expect(k.source_note).toContain('Class 6 boundary');
   });
 
@@ -155,7 +159,6 @@ describe('Registry-citation and masquerade-guard pins (v0.3.0 item 4.2)', () => 
     expect(m.source_note).not.toContain('Class 7 (15,000+ NT) — the estimate is far above');
     const k = byName.get('MSC KYUNGMIN')!;
     expect(k.source_note).toContain('Class 5');
-    expect(k.source_note).toContain('prose error');
   });
 
   it('DEFAULT_VESSEL follows the library (the MAREN NT flows into every default-call figure)', () => {
@@ -203,8 +206,8 @@ describe('The re-derived class-keyed arithmetic per vessel per port (v0.3.0 item
     }
   });
 
-  it('MSC KYUNGMIN (estimate 8,000, Class 5) — the honest class used, the boundary notice a web-layer contract', () => {
-    const v = { gt: 21979, nt: 8000, loa_m: 171.92, vessel_type: 'container', built_year: 2024 } as any;
+  it('MSC KYUNGMIN (observed 9,654, Class 5 — the v0.3.4 promotion; both 8,000 and 9,654 are Class 5, no dues movement) — the honest class used, the boundary notice a web-layer contract', () => {
+    const v = { gt: 21979, nt: 9654, loa_m: 171.92, vessel_type: 'container', built_year: 2024 } as any;
     const r = calculatePortCallCost(hel, makeCall(hel, v));
     expect(familyTotal(r, 'vessel_fee')).toBe(80755.00); // Class 5 used
     // The alternative class (6) is disclosed by the web notice, never billed:

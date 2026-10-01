@@ -42,7 +42,7 @@ function regRules(port: PortDefinition): FeeRule[] {
 
 // The four library vessels (registry-verified particulars, spec 3.4).
 const HELGAFELL = { gt: 8890, nt: 3783, loa_m: 137.5, teu_capacity: 909, built_year: 2005, name: 'HELGAFELL', imo: '9306017' };
-const MSC_KYUNGMIN = { gt: 21979, nt: 8000, loa_m: 171.92, teu_capacity: 2600, built_year: 2024, name: 'MSC KYUNGMIN', imo: '9967005' };
+const MSC_KYUNGMIN = { gt: 21979, nt: 9654, loa_m: 171.92, teu_capacity: 2600, built_year: 2024, name: 'MSC KYUNGMIN', imo: '9967005' };
 const VISTULA = { gt: 34882, nt: 16947, loa_m: 200, teu_capacity: 3596, built_year: 2018, name: 'VISTULA MAERSK', imo: '9775737' };
 const MAREN = { gt: 194849, nt: 79120, loa_m: 399, teu_capacity: 19076, built_year: 2014, name: 'MAREN MAERSK', imo: '9632129' };
 

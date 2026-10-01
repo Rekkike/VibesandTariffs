@@ -37,7 +37,7 @@ describe('audit a: Hamburg rule inventory — reference rules now present', () =
 });
 
 describe('audit b/c: the new Hamburg rules fire under the right inputs', () => {
-  const vessel = { gt: 21979, nt: 8000, loa_m: 171.92, built_year: 2024, vessel_type: 'container' } as any;
+  const vessel = { gt: 21979, nt: 9654, loa_m: 171.92, built_year: 2024, vessel_type: 'container' } as any;
   const base = {
     port_id: 'hamburg', date: '2026-09-21',
     // v0.2.66 promotion re-point (disclosed, assertion-preserving): these
@@ -90,7 +90,7 @@ describe('audit b/c: the new Hamburg rules fire under the right inputs', () => {
 });
 
 describe('audit b: Gothenburg idle-berth service is gated (explicit request only)', () => {
-  const vessel = { gt: 21979, nt: 8000, loa_m: 171.92, built_year: 2024, vessel_type: 'container' } as any;
+  const vessel = { gt: 21979, nt: 9654, loa_m: 171.92, built_year: 2024, vessel_type: 'container' } as any;
   const base = {
     port_id: 'gothenburg', date: '2026-09-21', calls_this_month: 1,
     containers_discharged_le20ft: 200, containers_discharged_gt20ft: 200,
@@ -113,7 +113,7 @@ describe('audit b: Gothenburg idle-berth service is gated (explicit request only
 });
 
 describe('audit d/f: contract-vs-published caveat carries onto APMT handling lines', () => {
-  const vessel = { gt: 21979, nt: 8000, loa_m: 171.92, built_year: 2024, vessel_type: 'container' } as any;
+  const vessel = { gt: 21979, nt: 9654, loa_m: 171.92, built_year: 2024, vessel_type: 'container' } as any;
   const call = {
     port_id: 'gothenburg', date: '2026-09-21', calls_this_month: 1,
     containers_discharged_le20ft: 200, containers_discharged_gt20ft: 200,
@@ -132,7 +132,7 @@ describe('audit d/f: contract-vs-published caveat carries onto APMT handling lin
 });
 
 describe('audit d: Sjoefartsverket environmental class — least favourable default', () => {
-  const vessel = { gt: 21979, nt: 8000, loa_m: 171.92, built_year: 2024, vessel_type: 'container' } as any;
+  const vessel = { gt: 21979, nt: 9654, loa_m: 171.92, built_year: 2024, vessel_type: 'container' } as any;
   const base = {
     port_id: 'helsingborg', date: '2026-09-21', calls_this_month: 1,
     containers_discharged_le20ft: 200, containers_discharged_gt20ft: 200,
@@ -157,7 +157,7 @@ describe('audit d: Sjoefartsverket environmental class — least favourable defa
 // ---------------------------------------------------------------------------
 const LIBRARY_VESSELS: Record<string, { gt: number; nt: number; loa_m: number; built_year: number }> = {
   HELGAFELL: { gt: 8890, nt: 3783, loa_m: 137, built_year: 2005 },
-  'MSC KYUNGMIN': { gt: 21979, nt: 8000, loa_m: 171.92, built_year: 2024 },
+  'MSC KYUNGMIN': { gt: 21979, nt: 9654, loa_m: 171.92, built_year: 2024 },
   'VISTULA MAERSK': { gt: 34882, nt: 16947, loa_m: 200, built_year: 2018 },
   'MAREN MAERSK': { gt: 194849, nt: 79120, loa_m: 399, built_year: 2014 }
 };

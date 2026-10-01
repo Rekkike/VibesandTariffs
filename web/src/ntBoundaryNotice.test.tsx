@@ -25,7 +25,7 @@ import portsRegistry from './data/ports.json';
 import vesselLibrary from './data/vessel_library.json';
 import { DEFAULT_VESSEL, defaultCall, getNetTonnageClass } from '@port-cost/core';
 import type { CallInput, PortDefinition, VesselInput } from '@port-cost/core/types';
-import { ntBoundaryNoticeFor, portBillsOnNtClasses, NT_ESTIMATE_BAND } from './ntBoundary';
+import { ntBoundaryNoticeFor, portBillsOnNtClasses, NT_ESTIMATE_BAND, NT_OBSERVED_BAND } from './ntBoundary';
 import { readDecomposedAppSource } from './appSource';
 
 const appSource = readDecomposedAppSource();
@@ -47,16 +47,28 @@ describe('the notice condition is data-derived (the module contract)', () => {
     expect(portBillsOnNtClasses(HAMBURG)).toBe(false);
   });
 
-  it('MSC KYUNGMIN (8,000 NT est., 21,979 GT): the band spans the Class 6 boundary — the notice fires', () => {
-    const notice = ntBoundaryNoticeFor(true, KYUNGMIN.nt, KYUNGMIN.gt);
+  it('MSC KYUNGMIN (re-baselined at v0.3.4: the observed 9,654 is the model NT, so the observed band ±10% = 8,689–10,619 spans the Class 6 boundary — the notice keeps firing with the observed band)', () => {
+    // v0.3.4 promotion, attributed: the placement basis is the observation
+    // (nt_observed: true), so the honest band is ±10 percent of 9,654,
+    // never the 0.40–0.58 x GT ratio band. 8,689 is Class 5; 10,619 is
+    // Class 6 — the boundary at 10,000 is still reachable inside the
+    // observed band, so the notice honestly keeps firing.
+    expect(KYUNGMIN.nt).toBe(9654);
+    expect(KYUNGMIN.nt_observed).toBe(true);
+    const notice = ntBoundaryNoticeFor(true, KYUNGMIN.nt, KYUNGMIN.gt, true);
     expect(notice).not.toBeNull();
     expect(notice!.usedClass).toBe(5);
     expect(notice!.alternativeClass).toBe(6);
-    // The band arithmetic: 0.40 x 21,979 = 8,792 (Class 5); 0.58 x 21,979 = 12,748 (Class 6)
-    expect(notice!.bandLow).toBe(Math.round(21979 * NT_ESTIMATE_BAND.low));
-    expect(notice!.bandHigh).toBe(Math.round(21979 * NT_ESTIMATE_BAND.high));
+    expect(notice!.bandLow).toBe(Math.round(9654 * NT_OBSERVED_BAND.low));
+    expect(notice!.bandHigh).toBe(Math.round(9654 * NT_OBSERVED_BAND.high));
     expect(getNetTonnageClass(notice!.bandLow)).toBe(5);
     expect(getNetTonnageClass(notice!.bandHigh)).toBe(6);
+    // The authored-estimate band path is unchanged (the default \u00b110 no
+    // longer applies to this vessel; the ratio band still works for a
+    // hypothetical authored estimate at the same GT):
+    const authored = ntBoundaryNoticeFor(true, 8000, KYUNGMIN.gt, false);
+    expect(authored!.bandLow).toBe(Math.round(21979 * NT_ESTIMATE_BAND.low));
+    expect(authored!.bandHigh).toBe(Math.round(21979 * NT_ESTIMATE_BAND.high));
   });
 
   it('HELGAFELL (3,783 NT est., 8,890 GT): the band spans 3,000 and 6,000 — the notice fires for the estimate', () => {
@@ -143,6 +155,13 @@ describe('the notice renders at the workspace (GOT and HEL; never HAM)', () => {
     expect(text).toContain('Class 5');
     expect(text).toContain('Class 6');
     expect(text.toLowerCase()).toContain('uncertain');
+    // v0.3.4: the observed promotion — the notice copy carries the
+    // observation status and the observed band description, never the
+    // ratio band, for this vessel.
+    expect(text).toContain('Observed NT figure (aggregator observation, not registry-confirmed)');
+    expect(text).toContain('±10% of the observed figure');
+    expect(text).not.toContain('0.40–0.58 × GT');
+    expect(text).toContain('10,619');
   });
 
   it('MSC KYUNGMIN at HEL: the same notice renders (both Swedish ports)', async () => {

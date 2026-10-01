@@ -117,10 +117,11 @@ describe('Vessel library data (spec section 3.4)', () => {
     expect(kyungmin!.flag).toBe('LR');
     expect(kyungmin!.built).toBe(2024);
     expect(kyungmin!.gt).toBe(21979);
-    // v0.3.0 re-derivation: no confirming source obtained — the estimate
-    // (8,000, Class 5) stays, flagged, with the boundary notice (the
-    // convention band 8,792–12,748 spans the Class 6 boundary at 10,000).
-    expect(kyungmin!.nt).toBe(8000);
+    // v0.3.4 promotion (re-baselined, attributed): the Flexport Atlas
+    // aggregator observation (9,654, fetched 2026-10-01) is promoted to the
+    // model NT under the observation-quality flag; the former authored
+    // default (8,000, unknown provenance) is superseded.
+    expect(kyungmin!.nt).toBe(9654);
     expect(kyungmin!.loa_m).toBe(171.92);
     expect(kyungmin!.beam_m).toBe(28.4);
     expect(kyungmin!.draught_m).toBe(9.8);

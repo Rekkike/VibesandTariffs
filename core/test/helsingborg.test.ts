@@ -158,9 +158,9 @@ describe('CP1 - HELGAFELL (8,890 GT, NT 3,200 class 4, 137 m, 400 moves, 2 pilot
   });
 });
 
-describe('CP2 - MSC KYUNGMIN (21,979 GT, NT 8,000 class 5, 171.92 m, 400 moves, 3 pilotage hours)', () => {
+describe('CP2 - MSC KYUNGMIN (21,979 GT, NT 9,654 observed, class 5 (the v0.3.4 promotion — 8,000 was also class 5, no dues movement), 171.92 m, 400 moves, 3 pilotage hours)', () => {
   const result = calculatePortCallCost(port, makeCall({
-    gt: 21979, nt: 8000, loa_m: 171.92,
+    gt: 21979, nt: 9654, loa_m: 171.92,
     containers_discharged_le20ft: 400,
     pilotage_hours: 3
   }));
@@ -461,7 +461,7 @@ describe('Boundary behaviour', () => {
 
   it('towage is a flagged estimate, never verified data', () => {
     const result = calculatePortCallCost(port, makeCall({
-      gt: 21979, nt: 8000, loa_m: 171.92,
+      gt: 21979, nt: 9654, loa_m: 171.92,
       containers_discharged_le20ft: 400,
       pilotage_hours: 3,
       csi_class: 'E'

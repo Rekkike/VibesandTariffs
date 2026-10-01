@@ -49,7 +49,7 @@ describe('handling hygiene a: line label carries the estimate and its anchor', (
 
   it('the estimated_parameter flag is emitted on the computed line (HHLA variant; v0.2.66 re-point)', () => {
     const result = calculatePortCallCost(hamburg, {
-      vessel: { gt: 21979, nt: 8000, loa_m: 171.92, vessel_type: 'container', built_year: 2024 } as any,
+      vessel: { gt: 21979, nt: 9654, loa_m: 171.92, vessel_type: 'container', built_year: 2024 } as any,
       call: { containers_loaded_le20ft: 0, containers_loaded_gt20ft: 0, containers_discharged_le20ft: 400, containers_discharged_gt20ft: 0, terminal_operator: 'HHLA' } as any
     });
     const line = result.billers.flatMap(b => b.fees).find(f => f.fee_rule_id === 'hhla_container_handling')!;
@@ -60,7 +60,7 @@ describe('handling hygiene a: line label carries the estimate and its anchor', (
 
   it('the flag persists when the user overrides the rate (HHLA variant; v0.2.66 re-point)', () => {
     const result = calculatePortCallCost(hamburg, {
-      vessel: { gt: 21979, nt: 8000, loa_m: 171.92, vessel_type: 'container', built_year: 2024 } as any,
+      vessel: { gt: 21979, nt: 9654, loa_m: 171.92, vessel_type: 'container', built_year: 2024 } as any,
       call: { containers_loaded_le20ft: 0, containers_loaded_gt20ft: 0, containers_discharged_le20ft: 400, containers_discharged_gt20ft: 0, handling_rate_per_move: 400, terminal_operator: 'HHLA' } as any
     });
     const line = result.billers.flatMap(b => b.fees).find(f => f.fee_rule_id === 'hhla_container_handling')!;
@@ -115,7 +115,7 @@ describe('handling hygiene b: terminal-hygiene constraint (no Eurogate mixing)',
     // HHLA dues and Eurogate handling cannot co-fire: an HHLA call (the
     // default) bills no Eurogate line at all.
     const result = calculatePortCallCost(hamburg, {
-      vessel: { gt: 21979, nt: 8000, loa_m: 171.92, vessel_type: 'container', built_year: 2024 } as any,
+      vessel: { gt: 21979, nt: 9654, loa_m: 171.92, vessel_type: 'container', built_year: 2024 } as any,
       call: { containers_loaded_le20ft: 0, containers_loaded_gt20ft: 0, containers_discharged_le20ft: 400, containers_discharged_gt20ft: 0, lay_time_hours: 16, terminal_operator: 'HHLA' } as any
     });
     const eurogateLines = result.billers
@@ -131,7 +131,7 @@ describe('handling hygiene b: terminal-hygiene constraint (no Eurogate mixing)',
     // published 5.1.1 handling line. Locked for future edits.
     for (const [op, duesId] of [['HHLA', 'hhla_tonnage_dues'], ['Eurogate', 'eurogate_berthing_charge']] as const) {
       const result = calculatePortCallCost(hamburg, {
-        vessel: { gt: 21979, nt: 8000, loa_m: 171.92, vessel_type: 'container', built_year: 2024 } as any,
+        vessel: { gt: 21979, nt: 9654, loa_m: 171.92, vessel_type: 'container', built_year: 2024 } as any,
         call: { containers_loaded_le20ft: 0, containers_loaded_gt20ft: 0, containers_discharged_le20ft: 400, containers_discharged_gt20ft: 0, lay_time_hours: 16, terminal_operator: op } as any
       });
       const handlingBiller = result.billers
@@ -148,9 +148,9 @@ describe('handling hygiene b: terminal-hygiene constraint (no Eurogate mixing)',
 describe('handling hygiene c: estimated-parameter separation, symmetric across ports', () => {
   const vesselFor = (port: PortDefinition) => {
     if (port.metadata.id === 'hamburg') {
-      return { gt: 21979, nt: 8000, loa_m: 171.92, vessel_type: 'container', built_year: 2024 } as any;
+      return { gt: 21979, nt: 9654, loa_m: 171.92, vessel_type: 'container', built_year: 2024 } as any;
     }
-    return { gt: 21979, nt: 8000, loa_m: 171.92, vessel_type: 'container', built_year: 2024, flag_state: 'LR' } as any;
+    return { gt: 21979, nt: 9654, loa_m: 171.92, vessel_type: 'container', built_year: 2024, flag_state: 'LR' } as any;
   };
   const callFor = (port: PortDefinition) => {
     const base: any = {
