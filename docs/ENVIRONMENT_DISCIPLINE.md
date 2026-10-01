@@ -1,6 +1,6 @@
 # Port Call Cost Analyzer — Environment and Verification Discipline (Standing)
 
-This document records the standing environment and verification discipline for every build session. It is a companion to `docs/SPECIFICATION.md`, which remains the sole governing authority for the data model, engine, and UI contracts; where the two overlap on deployment verification, the specification's §8 protocol governs. Every rule below was paid for in lost sessions and is part of the project's incident record (the specification changelog rows for v0.3.5 and v0.4.0 record the workspace resets; the v0.3.5 row records the tally double-count). No session should re-learn these rules through failure: every session reads this document before its first long-running step and follows it without needing a directive to restate it.
+This document records the standing environment and verification discipline for every build session, and the standing working discipline that governs every pass. It is a companion to `docs/SPECIFICATION.md`, which remains the sole governing authority for the data model, engine, and UI contracts; where the two overlap on deployment verification, the specification's §8 protocol governs. Every rule below was paid for in lost sessions or defect repairs and is part of the project's incident record (the specification changelog rows for v0.3.5 and v0.4.0 record the workspace resets; the v0.3.5 row records the tally double-count). No session should re-learn these rules through failure, and no directive should restate them: this document is the canonical text; directives invoke it by reference so that repeated-but-slightly-different phrasings cannot drift the rules.
 
 ## 1. Chunking (strict)
 
@@ -32,7 +32,7 @@ Never wait on a hung fetch. Abandon it, mark the source unreachable, and move on
 ## 6. Session-start order
 
 1. Confirm the repository head and the delivered ledger (core and web test counts) before any change.
-2. Perform the standing verification ritual (the ECB EUR→SEK rate re-verification; update the YAML if the rate has moved; report the drift).
+2. Perform the standing verification ritual (section 10).
 3. Fresh-clone environment setup per ADR-001: per-workspace installs, core build, ports.json regeneration.
 4. Re-verify the baseline suites (chunked) to the exact delivered counts before starting implementation.
 
@@ -48,6 +48,26 @@ Never wait on a hung fetch. Abandon it, mark the source unreachable, and move on
 
 A report is true only if every stated fact is checkable. State deviations plainly; never report predictions or intentions as accomplishments.
 
+## 9. Working discipline (standing, governs every pass)
+
+- Extraction references under `docs/sources/` are the authorities of record and prevail over directives. A directive's identifications are expectations: a mismatch is reported, never archived as expected.
+- Never invent rates and never fill gaps silently; gaps surface as notices. "Not published" is always available and is never rendered as a zero.
+- Ports are data silos; shared national rules (the Sjöfartsverket block) are referenced, never duplicated.
+- Formal tone, no contractions, in code, specification, and reports.
+- Currency local throughout; conversions only at the pinned rate through the established machinery.
+- Zero-drift: every prior feature and every baseline survives byte-identically except a pass's own declared, attributed movements. A movement is never unexplained.
+- One directive pass at a time; one delivery, one spec bump.
+- Every contract is pinned, and every pin has a red proof where the tooling allows one: the mutated state is observed failing before the pin is trusted.
+- Reports state the archive and adjudication results, the declared movements with their arithmetic, the exact suite counts with their arithmetic, the served-artifact verification, deviations, and the deferred queue restated verbatim with findings appended.
+
+## 10. Standing verification ritual (every session, first)
+
+Re-verify the ECB EUR→SEK reference rate to the latest TARGET-business-day publication (the Frankfurter mirror in `core/data/exchange_rates.yaml`); update the YAML if the rate has moved, regenerate, and report the drift. The pinned default is static, versioned data; this ritual is its maintenance.
+
+## 11. Directive format
+
+A directive states only what is new: the scope decision, the items, the report requirements, the scope guards, and the deferred queue context. The standing rules are not restated; a directive's preamble is a single line invoking this document. A conflict between a directive and this document is reported, never silently resolved in either direction; this document's sections 1-8 may be overridden only by an explicit, attributed instruction in the directive naming the section and the reason.
+
 ## Incorporation note
 
-This document is standing from its creation. The next delivery pass records it in its changelog row and may incorporate its content into the specification as a numbered section; from that point the specification governs and this document serves as its concordance.
+This document is standing from its creation. The next delivery pass records it in its changelog row and may incorporate its content into the specification as numbered sections; from that point the specification governs and this document serves as its concordance.
