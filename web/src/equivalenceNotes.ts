@@ -49,10 +49,24 @@ const RULE_EQUIVALENCE_NOTES: Record<string, EquivalenceNote> = {
   }
 };
 
-export function equivalenceNoteForFamily(family: string): EquivalenceNote | undefined {
+// The ports the verified map annotates (the audit's scope: the v0.3.3
+// three-port comparison surface). The Swedish domestic expansion ports
+// (Norrköping, Gävle, Norvik) do NOT receive the annotations this pass —
+// a future verified equivalence audit extends the map with its own
+// terminology verification per the v0.3.3 discipline; extending by
+// default would assert correspondence no audit verified.
+export const EQUIVALENCE_ANNOTATED_PORTS: ReadonlySet<string> = new Set([
+  'gothenburg',
+  'hamburg',
+  'helsingborg'
+]);
+
+export function equivalenceNoteForFamily(family: string, portId?: string): EquivalenceNote | undefined {
+  if (portId !== undefined && !EQUIVALENCE_ANNOTATED_PORTS.has(portId)) return undefined;
   return FAMILY_EQUIVALENCE_NOTES[family];
 }
 
-export function equivalenceNoteForRule(ruleId: string): EquivalenceNote | undefined {
+export function equivalenceNoteForRule(ruleId: string, portId?: string): EquivalenceNote | undefined {
+  if (portId !== undefined && !EQUIVALENCE_ANNOTATED_PORTS.has(portId)) return undefined;
   return RULE_EQUIVALENCE_NOTES[ruleId];
 }

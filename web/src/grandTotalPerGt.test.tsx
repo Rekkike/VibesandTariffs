@@ -80,7 +80,7 @@ describe('Grand Total derived per-GT — desktop comparison (spec v0.2.58)', () 
       .find(r => (r.textContent ?? '').includes('Grand Total'))!;
     expect(totalRow).toBeDefined();
     const perGtCells = totalRow.querySelectorAll('.comparison-total-pergt');
-    expect(perGtCells.length).toBe(3);
+    expect(perGtCells.length).toBe(6);
     for (const cell of Array.from(perGtCells)) {
       expect(cell.textContent).toContain('SEK/GT effective — derived, not a published rate');
     }
@@ -96,6 +96,12 @@ describe('Grand Total derived per-GT — desktop comparison (spec v0.2.58)', () 
     // 8,750,057.40 ÷ 194,849 = 44.9069 → 44.91.
     expect(text).toContain('16.81 SEK/GT');
     expect(text).toContain('44.91 SEK/GT');
+    // v0.4.0 Swedish domestic expansion: the three new ports' pure-division
+    // figures (Norrköping 8,626,172.50 ÷ 194,849 = 44.27; Gävle
+    // 1,370,979.35 ÷ 194,849 = 7.04; Norvik 11,952,324.05 ÷ 194,849 = 61.34).
+    expect(text).toContain('44.27 SEK/GT');
+    expect(text).toContain('7.04 SEK/GT');
+    expect(text).toContain('61.34 SEK/GT');
   });
 
   it('HAM converts through the rate input: 128.22 SEK/GT at the default 11.331, with the derived-and-converted disclosure naming the rate dependency (v0.3.2 ritual re-baseline)', async () => {
@@ -179,7 +185,7 @@ describe('Grand Total derived per-GT — OPS honesty (spec v0.2.58)', () => {
     const totalRow = Array.from(container!.querySelectorAll('.comparison-total-row'))
       .find(r => (r.textContent ?? '').includes('Grand Total'))!;
     const perGtCells = totalRow.querySelectorAll('.comparison-total-pergt');
-    expect(perGtCells.length).toBe(3);
+    expect(perGtCells.length).toBe(6);
     for (const cell of Array.from(perGtCells)) {
       expect(cell.textContent).toContain('includes user-specified OPS');
       expect(cell.textContent).toContain('derived, not a published rate');

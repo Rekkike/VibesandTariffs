@@ -151,10 +151,17 @@ describe('comparison scalability controls (spec v0.2.59)', () => {
     const headerCells = Array.from(container!.querySelectorAll('.comparison-table thead th'))
       .map(th => th.textContent ?? '');
     // First cell is the row label.
+    // v0.4.0 Swedish domestic expansion: the six-port ranked order at the
+    // default rate — Gävle, Gothenburg, Norrköping, Helsingborg, Norvik,
+    // Hamburg (cheapest-first on the converted basis; HAM's converted
+    // 24,983,845 kr ranks last). The single ranking rule is unchanged.
     expect(headerCells).toHaveLength(LOADED_PORTS.length + 1);
-    expect(headerCells[1]).toContain('Gothenburg');
-    expect(headerCells[2]).toContain('Helsingborg');
-    expect(headerCells[3]).toContain('Hamburg');
+    expect(headerCells[1]).toContain('Gävle');
+    expect(headerCells[2]).toContain('Gothenburg');
+    expect(headerCells[3]).toContain('Norrköping');
+    expect(headerCells[4]).toContain('Helsingborg');
+    expect(headerCells[5]).toContain('Norvik');
+    expect(headerCells[6]).toContain('Hamburg');
   });
 
   it('the cheapest/most-expensive markers are consistent with the column order (same single ranking rule)', async () => {
@@ -163,7 +170,7 @@ describe('comparison scalability controls (spec v0.2.59)', () => {
     const mostExpensive = container!.querySelectorAll('.comparison-marker.comparison-most-expensive');
     expect(cheapest.length).toBe(1);
     expect(mostExpensive.length).toBe(1);
-    expect((cheapest[0].closest('th')?.textContent ?? '')).toContain('Gothenburg');
+    expect((cheapest[0].closest('th')?.textContent ?? '')).toContain('Gävle');
     expect((mostExpensive[0].closest('th')?.textContent ?? '')).toContain('Hamburg');
   });
 
@@ -172,9 +179,12 @@ describe('comparison scalability controls (spec v0.2.59)', () => {
     const cards = Array.from(container!.querySelectorAll('.comparison-port-card'))
       .map(c => c.textContent ?? '');
     expect(cards.length).toBe(LOADED_PORTS.length);
-    expect(cards[0]).toContain('Gothenburg');
-    expect(cards[1]).toContain('Helsingborg');
-    expect(cards[2]).toContain('Hamburg');
+    expect(cards[0]).toContain('Gävle');
+    expect(cards[1]).toContain('Gothenburg');
+    expect(cards[2]).toContain('Norrköping');
+    expect(cards[3]).toContain('Helsingborg');
+    expect(cards[4]).toContain('Norvik');
+    expect(cards[5]).toContain('Hamburg');
   });
 
   it('a subset selection renders only the selected ports - the bounded fresh-load default does not render unselected ports', async () => {
@@ -313,6 +323,38 @@ describe('port-specific reset fields (spec v0.2.60)', () => {
         'gearbox_count', 'lay_up_days', 'ops_electricity_price',
         'ops_demand_charge', 'ops_connection_charge', 'ops_per_gt_charge',
         'ets_emissions_tco2', 'ets_allowance_price'
+      ],
+      // v0.4.0 Swedish domestic expansion: the three new ports declare the
+      // shared Swedish call inputs (the national machinery) and their own
+      // per-port entries - Norvik additionally declares the transshipment
+      // and hazardous-storage scenario counts (its own rules price them).
+      norrkoping: [
+        'engine_tier', 'engine_tier_estimated', 'esi_score', 'issc_valid',
+        'clean_shipping_index_class', 'towage_cost_per_tug', 'tug_count',
+        'csi_class', 'fossil_free_fuel_percentage', 'pilotage_hours',
+        'pilotage_extra_pilot', 'pilotage_ordering_lead_time_hours',
+        'hatch_cover_count', 'gearbox_count', 'lay_up_days',
+        'ops_electricity_price', 'ops_demand_charge', 'ops_connection_charge',
+        'ops_per_gt_charge', 'ets_emissions_tco2', 'ets_allowance_price'
+      ],
+      gavle: [
+        'engine_tier', 'engine_tier_estimated', 'esi_score', 'issc_valid',
+        'clean_shipping_index_class', 'towage_cost_per_tug', 'tug_count',
+        'csi_class', 'fossil_free_fuel_percentage', 'pilotage_hours',
+        'pilotage_extra_pilot', 'pilotage_ordering_lead_time_hours',
+        'hatch_cover_count', 'gearbox_count', 'lay_up_days',
+        'ops_electricity_price', 'ops_demand_charge', 'ops_connection_charge',
+        'ops_per_gt_charge', 'ets_emissions_tco2', 'ets_allowance_price'
+      ],
+      norvik: [
+        'engine_tier', 'engine_tier_estimated', 'esi_score', 'issc_valid',
+        'clean_shipping_index_class', 'towage_cost_per_tug', 'tug_count',
+        'csi_class', 'fossil_free_fuel_percentage', 'pilotage_hours',
+        'pilotage_extra_pilot', 'pilotage_ordering_lead_time_hours',
+        'hatch_cover_count', 'gearbox_count', 'lay_up_days',
+        'ops_electricity_price', 'ops_demand_charge', 'ops_connection_charge',
+        'ops_per_gt_charge', 'ets_emissions_tco2', 'ets_allowance_price',
+        'transshipment_units', 'storage_days_hazardous'
       ]
     };
     for (const port of LOADED_PORTS) {

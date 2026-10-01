@@ -1696,7 +1696,7 @@ fee_rules:
     fee_family: terminal_handling
     biller: EUROGATE Container Terminal Hamburg
     name: Container Handling (waterside lift)
-    description: "Eurogate waterside handling: loading/discharging ISO containers (full or empty) from/to main vessel, feeder or barge, 358.00 EUR per container lift (S9 5.1.1). A move is one container lifted once. Published rate - no estimated-parameter flag. Does not bundle berth time; vessel charges are a separate chapter (verdict two, spec v0.2.49)."
+    description: "Eurogate waterside handling: loading/discharging ISO containers (full or empty) from/to main vessel, feeder or barge, 358.00 EUR per container lift (S9 5.1.1). A move is one container lifted once. Published rate - no estimated-parameter flag. Does not bundle berth time; vessel charges are a separate chapter (verdict two, spec v0.2.49). Basis note (v0.4.0 item 3, re-verified against the archived S9): the 358.00 covers the vessel-to-quay lift ONLY - ch. 6 receiving and delivery from/to rail/truck is a separate 152.00 EUR per movement (S9 6.1.1) never included in this figure, and ch. 5.6 conventional-cargo quay receiving/delivery is its own schedule; no onward rail/truck delivery is bundled."
     rate_structure:
       type: per_unit
       unit_type: move

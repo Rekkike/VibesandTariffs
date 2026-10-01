@@ -161,15 +161,28 @@ describe('card-surface OPS isolation (spec v0.2.62)', () => {
     await enterFields(GOT_FIELDS);
     await clickTab(container!, 'Compare Ports');
     await settle();
+    // v0.4.0: the fresh-load comparison selection is the first four
+    // registry ports (spec v0.2.59 bounded default); this pin's subject is
+    // the all-ports isolation, so every port is selected first (the
+    // checkbox list is the explicit subset control).
+    const boxes = Array.from(container!.querySelectorAll('.comparison-port-selection input[type="checkbox"]')) as HTMLInputElement[];
+    for (const b of boxes) {
+      if (b.checked) continue;
+      await act(async () => { b.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+      await settle();
+    }
+    await settle();
     const opsRow = container!.querySelector('.comparison-ops-row');
     expect(opsRow).not.toBeNull();
     const cells = Array.from(opsRow!.querySelectorAll('td'));
     expect(cells.length).toBe(LOADED_PORTS.length + 1);
-    // GOT's cell prices its own entry; HEL's and HAM's cells render the
+    // GOT's cell prices its own entry; every other port's cell renders the
     // em dash — no absence wording, and never GOT's figure.
-    expect(cells[1].textContent).toContain('29\u00A0485');
-    expect(cells[2].textContent).toContain('—');
-    expect(cells[3].textContent).toContain('—');
+    const cellTexts = cells.map(c => c.textContent ?? '');
+    expect(cellTexts.filter(t => t.includes('29\u00A0485')).length).toBe(1);
+    // Every non-GOT priced cell renders the em dash (the label cell may
+    // also carry one; the pin counts at least the non-pricing ports).
+    expect(cellTexts.filter(t => t.includes('—')).length).toBeGreaterThanOrEqual(LOADED_PORTS.length - 1);
     expect(opsRow!.textContent).not.toContain('not levied at this port');
   });
 

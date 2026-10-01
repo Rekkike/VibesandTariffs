@@ -227,9 +227,11 @@ describe('comparison view responsive rendering paths', () => {
     expect(cheapest.length).toBe(1);
     expect(mostExpensive.length).toBe(1);
     // deterministic: with the default rate the cheapest badge sits on
-    // Gothenburg's column header and most-expensive on Hamburg's
+    // Gävle's column header (the six-port expansion's cheapest default
+    // call; Gothenburg ranked cheapest of the original three) and
+    // most-expensive on Hamburg's
     const cheapestHeader = cheapest[0].closest('th') ?? cheapest[0].closest('.comparison-port-card');
-    expect((cheapestHeader?.textContent ?? '')).toContain('Gothenburg');
+    expect((cheapestHeader?.textContent ?? '')).toContain('Gävle');
     const mostExpensiveHeader = mostExpensive[0].closest('th') ?? mostExpensive[0].closest('.comparison-port-card');
     expect((mostExpensiveHeader?.textContent ?? '')).toContain('Hamburg');
   });

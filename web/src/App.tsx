@@ -60,7 +60,16 @@ export const splitCallByPersistence = (
 
 const App: React.FC = () => {
   const [themeMode, toggleTheme] = useAppTheme();
-  const activePort = LOADED_PORTS[0];
+  // Fresh-load workspace (spec v0.2.59 behavior, held stable at v0.4.0):
+  // the workspace opens on Gothenburg — the model's reference port since
+  // the first build and the port whose workspace the input contracts
+  // (GOT's fresh-load OPS inputs) were pinned against. Registry order is
+  // alphabetical and now begins with the new ports; the fresh-load
+  // workspace is a pinned behavior, not a registry artifact — the
+  // expansion adds ports, it changes no existing fresh-load surface.
+  // Falls back to the first port if the id is ever absent.
+  const activePort =
+    LOADED_PORTS.find(p => p.metadata.id === 'gothenburg') ?? LOADED_PORTS[0];
 
   const [page, setPage] = useState<Page>(
     activePort ? { kind: 'port', portId: activePort.metadata.id } : { kind: 'comparison' }

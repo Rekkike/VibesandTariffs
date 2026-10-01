@@ -188,8 +188,12 @@ describe('mobile zero-suppression re-activation (spec v0.2.55 structural pin)', 
     const got = Array.from(container!.querySelectorAll('.comparison-port-card'))
       .find(c => (c.textContent ?? '').includes('Gothenburg'));
     expect(got).toBeDefined();
-    const storageLine = Array.from(got!.querySelectorAll('.comparison-card-family'))
-      .find(el => (el.textContent ?? '').toLowerCase().includes('storage'));
-    expect(storageLine).toBeUndefined();
+    const storageLines = Array.from(got!.querySelectorAll('.comparison-card-family'))
+      .filter(el => (el.textContent ?? '').toLowerCase().includes('storage'));
+    // v0.4.0: any rendered storage family line on the GOT card must be the
+    // honest zero (a not-levied family absence), never a chargeable figure.
+    for (const el of storageLines) {
+      expect((el.textContent ?? '')).toContain('not levied at this port');
+    }
   });
 });

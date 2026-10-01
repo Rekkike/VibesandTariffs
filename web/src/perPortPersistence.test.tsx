@@ -176,6 +176,15 @@ describe('per-port persisted call state (spec v0.2.60, port-switch reset defect 
     await settle();
     await clickTab(container!, 'Compare Ports');
     await settle();
+    // v0.4.0: the fresh-load comparison selection is bounded (first four
+    // registry ports); this pin's subject is the all-ports per-port merge,
+    // so the remaining ports are selected via the checkbox control first.
+    const boxes = Array.from(container!.querySelectorAll('.comparison-port-selection input[type="checkbox"]')) as HTMLInputElement[];
+    for (const b of boxes) {
+      if (b.checked) continue;
+      await act(async () => { b.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+      await settle();
+    }
     // The GOT column prices OPS (kWh default from the shared call seeds
     // nothing by itself - only GOT carries the entered price); the HAM
     // column carries no GOT electricity price. HAM's OPS row stays absent

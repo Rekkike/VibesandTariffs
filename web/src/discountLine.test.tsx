@@ -109,8 +109,11 @@ describe('comparison-legibility zero-drift pins (spec v0.2.64)', () => {
     // Baseline captured at 5cc7a98 before any edit of this pass.
     expect(cells).toEqual([
       'Grand Total',
+      '1\u00a0370\u00a0979\u00a0kr7.04 SEK/GT effective \u2014 derived, not a published rate',
       '3\u00a0275\u00a0851\u00a0kr16.81 SEK/GT effective \u2014 derived, not a published rate',
+      '8\u00a0626\u00a0173\u00a0kr44.27 SEK/GT effective \u2014 derived, not a published rate',
       '8\u00a0750\u00a0057\u00a0kr44.91 SEK/GT effective \u2014 derived, not a published rate',
+      '11\u00a0952\u00a0324\u00a0kr61.34 SEK/GT effective \u2014 derived, not a published rate',
       // v0.3.2 ritual drift (the only movement): the conversion-only figure moves with the standing rate re-verification — 11.331 as of 2026-09-30 (was 11.275, 2026-09-21); 2,204,910.90 EUR × 11.331 = 24,983,845 kr; ÷ 194,849 GT = 128.22 SEK/GT. The native totals (3,275,851 kr / 2,204,911 € / 8,750,057 kr) and per-GT 16.81 / 44.91 are untouched.
       '2\u00a0204\u00a0911\u00a0\u20ac\u2248 24\u00a0983\u00a0845\u00a0kr converted \u2014 at 11.331 kr/EUR, 2026-09-30128.22 SEK/GT effective \u2014 derived, not a published rate; converted at the exchange-rate input (at 11.331 kr/EUR, 2026-09-30)'
     ]);
@@ -121,11 +124,11 @@ describe('comparison-legibility zero-drift pins (spec v0.2.64)', () => {
     const stageRows = container!.querySelectorAll('.comparison-stage-row');
     expect(stageRows.length).toBe(3);
     expect((stageRows[0].textContent ?? '').trim())
-      .toBe('To reach the berth1\u00a0068\u00a0651\u00a0kr2\u00a0378\u00a0057\u00a0kr119\u00a0740\u00a0\u20ac');
+      .toBe('To reach the berth1\u00a0370\u00a0979\u00a0kr1\u00a0068\u00a0651\u00a0kr3\u00a0828\u00a0688\u00a0kr2\u00a0378\u00a0057\u00a0kr3\u00a0628\u00a0324\u00a0kr119\u00a0740\u00a0\u20ac');
     expect((stageRows[1].textContent ?? '').trim())
-      .toBe('At the berth0\u00a0kr0\u00a0kr553\u00a0371\u00a0\u20ac');
+      .toBe('At the berth0\u00a0kr0\u00a0kr0\u00a0kr0\u00a0kr0\u00a0kr553\u00a0371\u00a0\u20ac');
     expect((stageRows[2].textContent ?? '').trim())
-      .toBe('Quayside operations2\u00a0207\u00a0200\u00a0kr6\u00a0372\u00a0000\u00a0kr1\u00a0531\u00a0800\u00a0\u20ac');
+      .toBe('Quayside operations0\u00a0kr2\u00a0207\u00a0200\u00a0kr4\u00a0797\u00a0485\u00a0kr6\u00a0372\u00a0000\u00a0kr8\u00a0324\u00a0000\u00a0kr1\u00a0531\u00a0800\u00a0\u20ac');
   });
 });
 
@@ -308,7 +311,7 @@ describe('discounts received — the rendering (spec v0.2.64, item 2)', () => {
     expect(discountRow.textContent).toContain('port-tariff-2026.pdf');
     // The honest zero still renders for the ports that fired nothing.
     const noDiscount = discountRow.querySelectorAll('.comparison-no-discount');
-    expect(noDiscount.length).toBe(2);
+    expect(noDiscount.length).toBe(5);
   });
 
   it('desktop: the discount sum follows the conversion disclosure machinery (Hamburg native EUR with the converted secondary)', async () => {
@@ -431,16 +434,23 @@ describe('the derived per-GT metric\u2019s per-GT-OPS disclosure (spec v0.2.64, 
     const totalRow = Array.from(container!.querySelectorAll('.comparison-total-row'))
       .find(r => (r.textContent ?? '').includes('Grand Total'))!;
     const perGtCells = totalRow.querySelectorAll('.comparison-total-pergt');
-    expect(perGtCells.length).toBe(3);
+    expect(perGtCells.length).toBe(6);
     // GOT and HEL (per-GT descriptor enabled + value entered) carry the
     // disclosure; HAM (no per-GT component) carries only the inclusion note.
     const texts = Array.from(perGtCells).map(c => c.textContent ?? '');
+    // v0.4.0: the ranked order is GLE, GOT, NRK, HEL, NVK, HAM. The five SEK
+    // ports carry the per-GT OPS disclosure (their per_gt descriptors are
+    // enabled and the entered per-GT value flows in); HAM (no per-GT
+    // component) carries only the inclusion note - the last cell.
     expect(texts[0]).toContain('includes user-specified OPS');
     expect(texts[0]).toContain('per-GT OPS charge uses the same GT basis as the port dues');
     expect(texts[0]).toContain('flows into this derived metric');
     expect(texts[1]).toContain('per-GT OPS charge uses the same GT basis as the port dues');
-    expect(texts[2]).not.toContain('per-GT OPS charge uses the same GT basis');
-    expect(texts[2]).toContain('includes user-specified OPS');
+    expect(texts[2]).toContain('per-GT OPS charge uses the same GT basis as the port dues');
+    expect(texts[3]).toContain('per-GT OPS charge uses the same GT basis as the port dues');
+    expect(texts[4]).toContain('per-GT OPS charge uses the same GT basis as the port dues');
+    expect(texts[5]).not.toContain('per-GT OPS charge uses the same GT basis');
+    expect(texts[5]).toContain('includes user-specified OPS');
   });
 
   it('without OPS the note carries no disclosure (the plain derived note only, unchanged)', async () => {

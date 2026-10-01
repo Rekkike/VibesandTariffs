@@ -1,5 +1,4 @@
 import React, { useMemo, useState } from 'react';
-import { Button } from '@mui/material';
 import {
   Box,
   Paper,
@@ -18,8 +17,7 @@ import type {
   QualityFlag,
   VesselInput
 } from '@port-cost/core';
-import { DEFAULT_EXCHANGE_RATE, conversionLabel, formatRate, resolveExchangeRate, toComparisonBasis, type OverrideProvenance } from './conversion';
-import { fetchLatestEcbRate } from './ecbRateFetch';
+import { DEFAULT_EXCHANGE_RATE, conversionLabel, formatRate, resolveExchangeRate, toComparisonBasis } from './conversion';
 import portsRegistry from './data/ports.json';
 import { useIsMobile } from './appTheme';
 import { comparisonBasisContext } from './portRegistry';
@@ -32,7 +30,7 @@ import {
   buildRowsBySegment,
   computeRanking
 } from './comparisonModel';
-import { equivalenceNoteForFamily, equivalenceNoteForRule } from './equivalenceNotes';
+import { equivalenceNoteForFamily, equivalenceNoteForRule, EQUIVALENCE_ANNOTATED_PORTS } from './equivalenceNotes';
 import { makeComparisonCells } from './comparisonCells';
 import { buildDiscountLine } from './discountLine';
 import { ComparisonPortSelection } from './comparisonPortSelection';
@@ -72,9 +70,6 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
   const [conversionsVisible, setConversionsVisible] = useState(false);
   const [derivationsVisible, setDerivationsVisible] = useState(false);
   const [rateInput, setRateInput] = useState<string>('');
-  const [rateFetchState, setRateFetchState] =
-    useState<{ busy: boolean; note: string | null; error: boolean }>({ busy: false, note: null, error: false });
-  const [fetchedProvenance, setFetchedProvenance] = useState<OverrideProvenance | null>(null);
   const dataRate = (portsRegistry as { exchange_rates?: { from_currency: string; to_currency: string; rate: number; as_of: string; source: string }[] }).exchange_rates?.find(
     r => r.from_currency === 'EUR' && r.to_currency === 'SEK'
   );
@@ -82,36 +77,9 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
     () => resolveExchangeRate(
       rateInput,
       dataRate ? { rate: dataRate.rate, date: dataRate.as_of, source: dataRate.source } : undefined,
-      fetchedProvenance ?? undefined
-    ),
-    [rateInput, dataRate, fetchedProvenance]
+),
+    [rateInput, dataRate]
   );
-  // The rate-refresh action (spec v0.3.2): fetch the latest published ECB
-  // rate for the declared pair and apply it as an override. The pinned
-  // default never changes — the fetch only writes the override input and
-  // its provenance. A failure leaves the current value (default or
-  // existing override) in effect and surfaces a visible note.
-  const handleFetchLatestRate = async () => {
-    if (!dataRate) return;
-    setRateFetchState({ busy: true, note: null, error: false });
-    const result = await fetchLatestEcbRate(dataRate.from_currency, dataRate.to_currency);
-    if (result.ok) {
-      setRateInput(String(result.rate.rate));
-      setFetchedProvenance({ date: result.rate.date, source: result.rate.source, endpoint: result.rate.endpoint });
-      setRateFetchState({ busy: false, note: null, error: false });
-    } else {
-      // v0.3.5 fallback chain: the failure note renders only when every
-      // endpoint failed; it names each endpoint tried and each per-endpoint
-      // failure reason (network vs status vs parse), never silent, and the
-      // current value stays in effect.
-      const tried = result.failure.attempts.map(a => `${a.endpoint} (${a.reason})`).join('; ');
-      setRateFetchState({
-        busy: false,
-        note: `Failed to fetch the latest ECB rate — showing the current rate. Every endpoint failed: ${tried}.`,
-        error: true
-      });
-    }
-  };
   const portResults = useMemo(
     () => computePortResults(selectedPorts, vessel, call, rateInfo, comparisonBasisContext, perPortCallOverrides),
     [selectedPorts, vessel, call, rateInfo, perPortCallOverrides]
@@ -314,9 +282,9 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
                             {chargeTypeRows.map(({ chargeType, perPort, leviedAt }) => (
                               <Box component="dd" key={chargeType.id} className="comparison-card-family comparison-card-chargetype">
                                 <span className="comparison-card-family-name">{chargeType.label}</span>
-                                {chargeType.id === 'berth_dues' && equivalenceNoteForRule('hhla_tonnage_dues') && (
+                                {chargeType.id === 'berth_dues' && equivalenceNoteForRule('hhla_tonnage_dues', port.metadata.id) && (
                                   <Box component="span" className="comparison-equivalence-note" sx={{ fontSize: '0.75rem', display: 'block' }}>
-                                    {equivalenceNoteForRule('hhla_tonnage_dues')!.text}
+                                    {equivalenceNoteForRule('hhla_tonnage_dues', port.metadata.id)!.text}
                                   </Box>
                                 )}
                                 {leviedAt.includes(port.metadata.id)
@@ -330,7 +298,7 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
                                 {/* Cross-port functional-equivalence annotation
                                     (spec v0.3.3, item 2): the same verified
                                     note renders on the mobile card. */}
-                                {equivalenceNoteForFamily(family) && (
+                                {equivalenceNoteForFamily(family, port.metadata.id) && (
                                   <Box component="span" className="comparison-equivalence-note" sx={{ fontSize: '0.75rem', display: 'block' }}>
                                     {equivalenceNoteForFamily(family)!.text}
                                   </Box>
@@ -462,7 +430,7 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
                               (spec v0.3.3, item 2): the berth-dues line's
                               verified correspondence — stated as functional
                               correspondence, never identity. */}
-                          {chargeType.id === 'berth_dues' && equivalenceNoteForRule('hhla_tonnage_dues') && (
+                          {chargeType.id === 'berth_dues' && equivalenceNoteForRule('hhla_tonnage_dues') && portResults.some(({ port }) => EQUIVALENCE_ANNOTATED_PORTS.has(port.metadata.id)) && (
                             <Box component="span" className="comparison-equivalence-note" sx={{ fontSize: '0.75rem', display: 'block' }}>
                               {equivalenceNoteForRule('hhla_tonnage_dues')!.text}
                             </Box>
@@ -491,7 +459,7 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
                               as functional correspondence, never identity of
                               amounts or labels; no figure moves, no label
                               changes, no port's own terminology is altered. */}
-                          {equivalenceNoteForFamily(family) && (
+                          {equivalenceNoteForFamily(family) && portResults.some(({ port }) => EQUIVALENCE_ANNOTATED_PORTS.has(port.metadata.id)) && (
                             <Box component="span" className="comparison-equivalence-note" sx={{ fontSize: '0.75rem', display: 'block' }}>
                               {equivalenceNoteForFamily(family)!.text}
                             </Box>
@@ -702,11 +670,12 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
               v0.3.2): the exchange rate behind every converted figure in
               this view. The pinned default is static, versioned data
               (core/data/exchange_rates.yaml, the published-pairs
-              structure); the user may override it manually or fetch the
-              latest published ECB rate — a fetched value applies as an
-              override at the UI layer only, rendered with its publication
-              date and source, never replacing the pinned default. A
-              failed fetch leaves the current value with a visible note.
+              structure); the user may override it manually. The runtime
+              fetch (v0.3.2, reversed at v0.4.0) was removed on live
+              evidence — every candidate endpoint failed in the reporting
+              user's browser (two network-blocked, one bot-checked,
+              2026-10-01) — and replaced by the ECB's published-rates
+              link below; a link cannot fail and needs no fetch machinery.
               Blank or invalid input falls back to the documented default
               with a visible flag. */}
           <Box className="comparison-conversion" sx={{ mt: 3, p: 2, border: '1px solid var(--border)', borderRadius: 1 }}>
@@ -720,38 +689,26 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
               label="Exchange rate (kr per EUR)"
               type="number"
               value={rateInput}
-              onChange={(e) => { setRateInput(e.target.value); setFetchedProvenance(null); }}
+              onChange={(e) => { setRateInput(e.target.value); }}
               sx={{ maxWidth: 280, mt: 1 }}
               InputLabelProps={{ shrink: true }}
               inputProps={{ step: 'any', 'aria-label': 'Exchange rate, kronor per euro' }}
               helperText={rateInfo.is_default
                 ? `Default: ${dataRate?.rate ?? DEFAULT_EXCHANGE_RATE.rate} kr/EUR (${dataRate?.source ?? DEFAULT_EXCHANGE_RATE.source}, ${dataRate?.as_of ?? DEFAULT_EXCHANGE_RATE.date}). Blank uses the default.`
-                : fetchedProvenance
-                  ? `Fetched rate ${rateInfo.rate} kr/EUR in effect — ${fetchedProvenance.source}, published ${fetchedProvenance.date} (ECB publishes on TARGET business days). The model's pinned default remains ${dataRate?.rate ?? DEFAULT_EXCHANGE_RATE.rate} kr/EUR (${dataRate?.as_of ?? DEFAULT_EXCHANGE_RATE.date}).`
-                  : `User rate ${rateInfo.rate} kr/EUR in effect.`}
+                : `User rate ${rateInfo.rate} kr/EUR in effect.`}
             />
-            <Box sx={{ mt: 1, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-              <Button
-                variant="outlined"
-                size="small"
-                sx={{ maxWidth: 280 }}
-                disabled={rateFetchState.busy || !dataRate}
-                onClick={handleFetchLatestRate}
-                aria-label="Fetch latest ECB rate"
+            <Typography variant="body2" sx={{ mt: 1 }}>
+              <a
+                href="https://www.ecb.europa.eu/stats/policy_and_exchange_rates/euro_reference_exchange_rates/html/index.en.html"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="ECB's published euro reference rates"
+                data-testid="ecb-rates-link"
               >
-                {rateFetchState.busy ? 'Fetching latest rate…' : 'Fetch latest ECB rate'}
-              </Button>
-              {fetchedProvenance && !rateFetchState.error && (
-                <Typography variant="caption" className="rate-fetched-note" data-testid="rate-fetched-note">
-                  Latest ECB rate fetched: {rateInfo.rate} kr/EUR, published {fetchedProvenance.date} (ECB euro reference rate, via {fetchedProvenance.endpoint}). Applied as an override — the pinned default ({dataRate?.rate ?? DEFAULT_EXCHANGE_RATE.rate} kr/EUR, {dataRate?.as_of ?? DEFAULT_EXCHANGE_RATE.date}) remains the model's rate.
-                </Typography>
-              )}
-              {rateFetchState.note && (
-                <Typography variant="caption" color="error" className="rate-fetch-failure-note" data-testid="rate-fetch-failure-note">
-                  {rateFetchState.note}
-                </Typography>
-              )}
-            </Box>
+                ECB's published euro reference rates
+              </a>{' '}
+              — the ECB's own page for the latest published rates (published on TARGET business days; the machine-readable daily XML sits alongside). The model's pinned default is verified against them at each pass.
+            </Typography>
           </Box>
           {portResults.some(pr => pr.error) && (
             <Typography color="error" sx={{ mt: 2 }}>

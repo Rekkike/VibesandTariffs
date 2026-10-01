@@ -202,7 +202,7 @@ describe('comparison shared-call per-port defaults (spec v0.2.53 defect fix)', (
     expect(ees!.amount).toBe(168000);
   });
 
-  it('zero drift: the comparison columns equal the pinned per-port totals at all three ports (re-pinned v0.2.61)', () => {
+  it('zero drift: the comparison columns equal the pinned per-port totals at all six ports (re-pinned v0.2.61; extended v0.4.0)', () => {
     const sharedCall = defaultCall('gothenburg');
     const pinned: Record<string, number> = {
       // v0.2.61 drift re-pin (godsavgift promotion, expected per the
@@ -210,7 +210,14 @@ describe('comparison shared-call per-port defaults (spec v0.2.53 defect fix)', (
       // HAM is untouched.
       gothenburg: 3275851.15,
       hamburg: 2204910.9,
-      helsingborg: 8750057.4
+      helsingborg: 8750057.4,
+      // v0.4.0 Swedish domestic expansion: the three new ports' own
+      // default-call baselines (MAREN MAERSK's profile, worst case,
+      // no environmental lever) — the expansion adds ports; it changes
+      // nothing existing.
+      norrkoping: 8626172.5,
+      gavle: 1370979.35,
+      norvik: 11952324.05
     };
     for (const port of LOADED_PORTS) {
       const result = calculatePortCallCost(port, {
