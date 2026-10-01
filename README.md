@@ -62,7 +62,8 @@ The application will be available at `http://localhost:3000`
 **Decision**: Workflow and local development must install dependencies directly in each workspace, never at the root level.
 
 **Consequences**:
-- GitHub Actions workflow must use `cd core && npm install` and `cd web && npm install` separately
+- GitHub Actions workflow must use `cd core
+ && npm install` and `cd web && npm install` separately
 - Running `npm install` at root will install `@types/react-dom` which will break the core build
 - This applies to both CI/CD and local development
 
@@ -90,6 +91,11 @@ npm test
 # Run tests with watch mode
 npm run test:watch
 ```
+
+## Standing Documents
+
+- `docs/SPECIFICATION.md` — the sole governing authority for the data model, engine, and UI contracts (its §8 carries the deployment-verification protocol).
+- `docs/ENVIRONMENT_DISCIPLINE.md` — the standing environment and verification discipline for build sessions: strict chunking, exact-path tally anchors, the checkpoint protocol, runner and fetch rules, session-start and delivery order. Every session reads it before its first long-running step.
 
 ## Data Model
 
@@ -151,7 +157,8 @@ fee_rules:
      amount: 1000
    ```
 
-2. **`banded`** - Value falls in one band, that band's rate applies to all
+2. **`banded`** - Value falls in one band, that band's rate applies 
+to all
    ```yaml
    rate_structure:
      type: banded
@@ -241,7 +248,8 @@ fee_rules:
 ```yaml
 fee_rules:
   - id: waste_fee_eu
-    fee_family: waste
+    fee_famil
+y: waste
     biller: Port of Gothenburg
     name: Waste Fee - EU
     rate_structure: {...}
@@ -319,7 +327,8 @@ The UI provides quick preset buttons for common vessel types:
 
 - **Feeder** - ~8,000 GT
 - **Feeder-Max** - ~15,000 GT
-- **Panamax** - ~55,000 GT
+- **P
+anamax** - ~55,000 GT
 - **Post-Panamax** - ~100,000 GT
 - **Ultra-Large** - ~215,000 GT
 
@@ -362,7 +371,8 @@ The UI provides quick preset buttons for common vessel types:
 | `dangerous_goods_units` | number | No | Dangerous goods unit count |
 | `pilotage_required` | boolean | Yes | Pilotage required |
 | `pilotage_hours` | number | No | Pilotage hours |
-| `pilotage_extra_pilot` | boolean | No | Extra pilot required |
+| `pilotage_extra_pilot` | bool
+ean | No | Extra pilot required |
 | `pilotage_ordering_lead_time_hours` | number | No | Lead time for pilotage ordering |
 
 ## Output Model
