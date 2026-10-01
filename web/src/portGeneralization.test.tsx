@@ -50,8 +50,10 @@ describe('currency declaration is data (spec v0.2.59)', () => {
     expect(ctx.rows[0]).toEqual({
       from_currency: 'EUR',
       to_currency: 'SEK',
-      rate: 11.275,
-      as_of: '2026-09-21',
+      // v0.3.2 ritual pin: 11.331 as of 2026-09-30 (previously 11.275,
+      // 2026-09-21) — conversion-only expectations move with the ritual.
+      rate: 11.331,
+      as_of: '2026-09-30',
       source: 'ECB euro reference rate (SEK per EUR)'
     });
   });

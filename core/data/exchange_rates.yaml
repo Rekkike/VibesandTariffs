@@ -1,21 +1,41 @@
 # Exchange-rate reference data for the cross-currency comparison view
-# (spec v0.2.31, commit A).
+# (spec v0.2.31, commit A; published-pairs structure at v0.3.2).
 #
 # The comparison basis is SEK: the Swedish ports bill in SEK and Hamburg in
-# EUR, so the single conversion needed is EUR->SEK. The rate is static,
-# versioned data — no runtime API calls. The default below is the verified
-# ECB euro reference rate; the comparison view renders it beside every
-# converted figure, and the user may override it at the UI.
+# EUR, so the single conversion needed is EUR->SEK. The pinned default is
+# static, versioned data. The comparison view renders it beside every
+# converted figure, the user may override it at the UI, and the
+# rate-refresh button (v0.3.2) fetches the latest published rate on demand
+# — a fetched value is an override at the UI layer only; the pinned default
+# below remains the model's rate in every default rendering.
 #
-# Sources: the ECB euro foreign-exchange reference rate (SEK per EUR),
-# mirrored by the Frankfurter API. Verified at implementation time:
+# Published-pairs structure (v0.3.2): each entry is one published,
+# EUR-anchored pair — a rate actually published by the ECB, never a
+# derived cross. Adding a future pair (DKK at Aarhus, PLN at Gdynia) is a
+# data-only addition: one more entry below, no code change. The settled
+# design for those expansions, documented here and deliberately NOT
+# implemented: a Danish/Polish port bills in DKK/PLN; the ECB publishes
+# EUR->DKK and EUR->PLN; a DKK->SEK or PLN->SEK conversion would be a
+# derived cross (SEK per DKK = (EUR->SEK) / (EUR->DKK)). Those crosses
+# activate at the Aarhus/Gdynia expansion pass, not now — no speculative
+# pair is populated in this file, and no derived-cross code exists.
+#
+# Sources: the ECB euro foreign-exchange reference rates,
+# mirrored by the Frankfurter API (https://api.frankfurter.app).
+# The ECB publishes reference rates on TARGET business days only; the
+# as_of date below is the publication date of the recorded rate.
+#
+# Standing verification ritual (effective v0.3.2, permanent): every pass
+# re-verifies the EUR->SEK rate against the latest TARGET-business-day
+# publication and updates the rate and as_of below.
+#   Previous pin (v0.3.1): 11.275 as of 2026-09-21.
+#   Current  pin (v0.3.2 ritual, verified 2026-10-01):
 #   https://api.frankfurter.app/latest?from=EUR&to=SEK
-#   { "base": "EUR", "date": "2026-09-21", "rates": { "SEK": 11.275 } }
-# The ECB publishes reference rates on TARGET business days; 2026-09-21 is
-# the most recent publication at implementation time (2026-09-22).
-rates:
-  - from_currency: EUR
+#   { "base": "EUR", "date": "2026-09-30", "rates": { "SEK": 11.331 } }
+published_pairs:
+  - pair: EUR-SEK
+    from_currency: EUR
     to_currency: SEK
-    rate: 11.275
-    as_of: 2026-09-21
+    rate: 11.331
+    as_of: 2026-09-30
     source: ECB euro reference rate (SEK per EUR)

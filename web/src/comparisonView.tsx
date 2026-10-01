@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { Button } from '@mui/material';
 import {
   Box,
   Paper,
@@ -17,7 +18,8 @@ import type {
   QualityFlag,
   VesselInput
 } from '@port-cost/core';
-import { DEFAULT_EXCHANGE_RATE, conversionLabel, formatRate, resolveExchangeRate, toComparisonBasis } from './conversion';
+import { DEFAULT_EXCHANGE_RATE, conversionLabel, formatRate, resolveExchangeRate, toComparisonBasis, type OverrideProvenance } from './conversion';
+import { fetchLatestEcbRate } from './ecbRateFetch';
 import portsRegistry from './data/ports.json';
 import { useIsMobile } from './appTheme';
 import { comparisonBasisContext } from './portRegistry';
@@ -69,13 +71,41 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
   const [conversionsVisible, setConversionsVisible] = useState(false);
   const [derivationsVisible, setDerivationsVisible] = useState(false);
   const [rateInput, setRateInput] = useState<string>('');
+  const [rateFetchState, setRateFetchState] =
+    useState<{ busy: boolean; note: string | null; error: boolean }>({ busy: false, note: null, error: false });
+  const [fetchedProvenance, setFetchedProvenance] = useState<OverrideProvenance | null>(null);
   const dataRate = (portsRegistry as { exchange_rates?: { from_currency: string; to_currency: string; rate: number; as_of: string; source: string }[] }).exchange_rates?.find(
     r => r.from_currency === 'EUR' && r.to_currency === 'SEK'
   );
   const rateInfo = useMemo(
-    () => resolveExchangeRate(rateInput, dataRate ? { rate: dataRate.rate, date: dataRate.as_of, source: dataRate.source } : undefined),
-    [rateInput, dataRate]
+    () => resolveExchangeRate(
+      rateInput,
+      dataRate ? { rate: dataRate.rate, date: dataRate.as_of, source: dataRate.source } : undefined,
+      fetchedProvenance ?? undefined
+    ),
+    [rateInput, dataRate, fetchedProvenance]
   );
+  // The rate-refresh action (spec v0.3.2): fetch the latest published ECB
+  // rate for the declared pair and apply it as an override. The pinned
+  // default never changes — the fetch only writes the override input and
+  // its provenance. A failure leaves the current value (default or
+  // existing override) in effect and surfaces a visible note.
+  const handleFetchLatestRate = async () => {
+    if (!dataRate) return;
+    setRateFetchState({ busy: true, note: null, error: false });
+    const result = await fetchLatestEcbRate(dataRate.from_currency, dataRate.to_currency);
+    if (result.ok) {
+      setRateInput(String(result.rate.rate));
+      setFetchedProvenance({ date: result.rate.date, source: result.rate.source });
+      setRateFetchState({ busy: false, note: null, error: false });
+    } else {
+      setRateFetchState({
+        busy: false,
+        note: `Failed to fetch the latest ECB rate — showing the current rate (${result.failure.error}).`,
+        error: true
+      });
+    }
+  };
   const portResults = useMemo(
     () => computePortResults(selectedPorts, vessel, call, rateInfo, comparisonBasisContext, perPortCallOverrides),
     [selectedPorts, vessel, call, rateInfo, perPortCallOverrides]
@@ -629,11 +659,17 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
           </Box>
           )}
 
-          {/* Rate input (spec v0.2.31, commit A): the exchange rate behind
-              every converted figure in this view. Static, versioned data
-              (core/data/exchange_rates.yaml — no runtime API calls);
-              the user may override it. Blank or invalid input falls back to
-              the documented default with a visible flag. */}
+          {/* Rate input (spec v0.2.31, commit A; rate-refresh button at
+              v0.3.2): the exchange rate behind every converted figure in
+              this view. The pinned default is static, versioned data
+              (core/data/exchange_rates.yaml, the published-pairs
+              structure); the user may override it manually or fetch the
+              latest published ECB rate — a fetched value applies as an
+              override at the UI layer only, rendered with its publication
+              date and source, never replacing the pinned default. A
+              failed fetch leaves the current value with a visible note.
+              Blank or invalid input falls back to the documented default
+              with a visible flag. */}
           <Box className="comparison-conversion" sx={{ mt: 3, p: 2, border: '1px solid var(--border)', borderRadius: 1 }}>
             <Typography variant="h6" component="h3">
               Exchange rate
@@ -645,14 +681,38 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
               label="Exchange rate (kr per EUR)"
               type="number"
               value={rateInput}
-              onChange={(e) => setRateInput(e.target.value)}
+              onChange={(e) => { setRateInput(e.target.value); setFetchedProvenance(null); }}
               sx={{ maxWidth: 280, mt: 1 }}
               InputLabelProps={{ shrink: true }}
               inputProps={{ step: 'any', 'aria-label': 'Exchange rate, kronor per euro' }}
               helperText={rateInfo.is_default
                 ? `Default: ${dataRate?.rate ?? DEFAULT_EXCHANGE_RATE.rate} kr/EUR (${dataRate?.source ?? DEFAULT_EXCHANGE_RATE.source}, ${dataRate?.as_of ?? DEFAULT_EXCHANGE_RATE.date}). Blank uses the default.`
-                : `User rate ${rateInfo.rate} kr/EUR in effect.`}
+                : fetchedProvenance
+                  ? `Fetched rate ${rateInfo.rate} kr/EUR in effect — ${fetchedProvenance.source}, published ${fetchedProvenance.date} (ECB publishes on TARGET business days). The model's pinned default remains ${dataRate?.rate ?? DEFAULT_EXCHANGE_RATE.rate} kr/EUR (${dataRate?.as_of ?? DEFAULT_EXCHANGE_RATE.date}).`
+                  : `User rate ${rateInfo.rate} kr/EUR in effect.`}
             />
+            <Box sx={{ mt: 1, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+              <Button
+                variant="outlined"
+                size="small"
+                sx={{ maxWidth: 280 }}
+                disabled={rateFetchState.busy || !dataRate}
+                onClick={handleFetchLatestRate}
+                aria-label="Fetch latest ECB rate"
+              >
+                {rateFetchState.busy ? 'Fetching latest rate…' : 'Fetch latest ECB rate'}
+              </Button>
+              {fetchedProvenance && !rateFetchState.error && (
+                <Typography variant="caption" className="rate-fetched-note" data-testid="rate-fetched-note">
+                  Latest ECB rate fetched: {rateInfo.rate} kr/EUR, published {fetchedProvenance.date} ({fetchedProvenance.source}). Applied as an override — the pinned default ({dataRate?.rate ?? DEFAULT_EXCHANGE_RATE.rate} kr/EUR, {dataRate?.as_of ?? DEFAULT_EXCHANGE_RATE.date}) remains the model's rate.
+                </Typography>
+              )}
+              {rateFetchState.note && (
+                <Typography variant="caption" color="error" className="rate-fetch-failure-note" data-testid="rate-fetch-failure-note">
+                  {rateFetchState.note}
+                </Typography>
+              )}
+            </Box>
           </Box>
           {portResults.some(pr => pr.error) && (
             <Typography color="error" sx={{ mt: 2 }}>

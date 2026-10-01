@@ -98,17 +98,17 @@ describe('Grand Total derived per-GT — desktop comparison (spec v0.2.58)', () 
     expect(text).toContain('44.91 SEK/GT');
   });
 
-  it('HAM converts through the rate input: 127.59 SEK/GT at the default 11.275, with the derived-and-converted disclosure naming the rate dependency (v0.2.66 re-baseline)', async () => {
+  it('HAM converts through the rate input: 128.22 SEK/GT at the default 11.331, with the derived-and-converted disclosure naming the rate dependency (v0.3.2 ritual re-baseline)', async () => {
     ({ container, root } = await renderComparison(false, defaultCall('gothenburg')));
     const totalRow = Array.from(container!.querySelectorAll('.comparison-total-row'))
       .find(r => (r.textContent ?? '').includes('Grand Total'))!;
     const hamCell = Array.from(totalRow.querySelectorAll('.comparison-total-pergt'))
       .find(c => (c.textContent ?? '').includes('converted at the exchange-rate input'))!;
     expect(hamCell).toBeDefined();
-    // v0.2.66 promotion re-baseline: 2,204,910.90 × 11.275 ÷ 194,849 =
-    // 127.59 SEK/GT (the Eurogate terminal layer; §17.5).
-    expect(hamCell.textContent).toContain('127.59 SEK/GT');
-    expect(hamCell.textContent).toContain('11.275 kr/EUR');
+    // v0.3.2 ritual re-baseline: 2,204,910.90 × 11.331 ÷ 194,849 =
+    // 128.22 SEK/GT (the Eurogate terminal layer; §17.5).
+    expect(hamCell.textContent).toContain('128.22 SEK/GT');
+    expect(hamCell.textContent).toContain('11.331 kr/EUR');
   });
 
   it('the figure changes when GT changes (a different vessel re-derives it)', async () => {
@@ -166,7 +166,7 @@ describe('Grand Total derived per-GT — mobile comparison cards (spec v0.2.58)'
     const hiddenTags = ham.querySelectorAll('.comparison-card-total .comparison-converted-hidden-tag');
     expect(hiddenTags.length).toBe(2);
     expect(Array.from(hiddenTags).some(t => (t.textContent ?? '').includes('converted per-GT figure hidden'))).toBe(true);
-    expect(ham.querySelector('.comparison-card-total')!.textContent).not.toContain('127.59');
+    expect(ham.querySelector('.comparison-card-total')!.textContent).not.toContain('128.22');
   });
 });
 

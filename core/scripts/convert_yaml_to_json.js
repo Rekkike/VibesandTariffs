@@ -94,10 +94,30 @@ function main() {
         }
         ports.push(data);
         console.log(`Loaded port ${data.metadata.id} (${data.metadata.name}) from ${file}: ${data.fee_rules.length} fee rules`);
-      } else if (data && Array.isArray(data.rates) && data.rates.length > 0) {
-        // Spec v0.2.31: exchange-rate reference data (static, versioned;
-        // no runtime API calls). Emitted as exchange_rates on ports.json.
-        for (const r of data.rates) {
+      } else if (data && Array.isArray(data.published_pairs) && data.published_pairs.length > 0) {
+        // Spec v0.3.2: published-pairs exchange-rate reference data
+        // (EUR-anchored published pairs; static, versioned pins; the UI's
+        // rate-refresh fetch is an override layer, never a default).
+        // Emitted as exchange_rates on ports.json. Adding a pair is a
+        // data-only addition to published_pairs — no code change.
+        const pairs = data.published_pairs;
+        const seen = new Set();
+        for (const p of pairs) {
+          if (typeof p.pair !== 'string' || !/^[A-Z]{3}-[A-Z]{3}$/.test(p.pair)) {
+            throw new Error(`Invalid published pair in ${file}: pair must be an AAA-BBB code`);
+          }
+          if (seen.has(p.pair)) {
+            throw new Error(`Invalid published pair in ${file}: duplicate pair ${p.pair}`);
+          }
+          seen.add(p.pair);
+          if (p.from_currency !== p.pair.slice(0, 3) || p.to_currency !== p.pair.slice(4)) {
+            throw new Error(`Invalid published pair in ${file}: pair ${p.pair} contradicts from/to currencies`);
+          }
+          if (p.from_currency !== 'EUR') {
+            throw new Error(`Invalid published pair in ${file}: ${p.pair} — published pairs are EUR-anchored (the ECB publishes EUR-base rates only)`);
+          }
+        }
+        for (const r of pairs) {
           for (const field of ['from_currency', 'to_currency', 'rate', 'as_of', 'source']) {
             if (r[field] === undefined || r[field] === null || r[field] === '') {
               throw new Error(`Invalid exchange-rate entry in ${file}: missing ${field}`);
@@ -112,8 +132,8 @@ function main() {
             r.as_of = r.as_of.toISOString().slice(0, 10);
           }
         }
-        exchangeRates = data.rates;
-        console.log(`Loaded ${data.rates.length} exchange rate(s) from ${file}`);
+        exchangeRates = pairs.map(({ pair, ...row }) => row);
+        console.log(`Loaded ${pairs.length} published pair(s) from ${file}: ${pairs.map(p => p.pair).join(', ')}`);
       } else {
         throw new Error(`Unrecognized data file ${file}: expected fee_rules (port) or vessels (vessel library)`);
       }

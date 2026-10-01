@@ -18,9 +18,13 @@
 // the module's exported labels render exactly as before for it.
 //
 // The rate is a user-editable input with a documented default stored in
-// the data. No runtime API calls — the rate is static, versioned data.
-// Blank or invalid input falls back to the default with a visible flag;
-// a converted figure never appears without its rate and date.
+// the data. The pinned default is static, versioned data. The rate-refresh
+// button (v0.3.2) fetches the latest ECB publication on demand — a
+// user-initiated UI-layer action that applies the fetched value as an
+// override, never a replacement of the pinned default. Blank or invalid
+// input falls back to the default with a visible flag; a converted figure
+// never appears without its rate and date; a failed fetch leaves the
+// current value in effect with a visible failure note — never silent.
 //
 // This module is pure presentation logic — it never touches computation.
 
@@ -32,12 +36,13 @@ export interface ExchangeRateInfo {
 }
 
 // Fallback default, identical to the value the conversion script emits into
-// ports.json. The data block is the source of truth; this constant exists so
-// the module is testable without the registry and so a missing data block
-// degrades to the documented default rather than an unconverted comparison.
+// ports.json (the published-pairs structure, v0.3.2). The data block is the
+// source of truth; this constant exists so the module is testable without
+// the registry and so a missing data block degrades to the documented
+// default rather than an unconverted comparison.
 export const DEFAULT_EXCHANGE_RATE: ExchangeRateInfo = {
-  rate: 11.275,
-  date: '2026-09-21',
+  rate: 11.331,
+  date: '2026-09-30',
   source: 'ECB euro reference rate (SEK per EUR)',
   is_default: true
 };
@@ -95,9 +100,19 @@ export function declaredRateFor(
   return row;
 }
 
+// Provenance metadata for an override whose date and source differ from the
+// pinned default (v0.3.2): the rate-refresh button applies a fetched ECB
+// publication, and that publication date must render with the fetched rate
+// — never the pinned as_of, never a stale date masquerading as fresh.
+export interface OverrideProvenance {
+  date: string;
+  source: string;
+}
+
 export function resolveExchangeRate(
   userInput: string | undefined,
-  dataRate?: { rate: number; date: string; source: string }
+  dataRate?: { rate: number; date: string; source: string },
+  overrideProvenance?: OverrideProvenance
 ): ExchangeRateInfo {
   const trimmed = (userInput ?? '').trim();
   if (trimmed === '') {
@@ -113,8 +128,8 @@ export function resolveExchangeRate(
   }
   return {
     rate: parsed,
-    date: dataRate?.date ?? DEFAULT_EXCHANGE_RATE.date,
-    source: 'User-entered rate',
+    date: overrideProvenance?.date ?? dataRate?.date ?? DEFAULT_EXCHANGE_RATE.date,
+    source: overrideProvenance?.source ?? 'User-entered rate',
     is_default: false
   };
 }
