@@ -63,6 +63,7 @@ The application will be available at `http://localhost:3000`
 
 **Consequences**:
 - GitHub Actions workflow must use `cd core
+
  && npm install` and `cd web && npm install` separately
 - Running `npm install` at root will install `@types/react-dom` which will break the core build
 - This applies to both CI/CD and local development
@@ -95,7 +96,7 @@ npm run test:watch
 ## Standing Documents
 
 - `docs/SPECIFICATION.md` — the sole governing authority for the data model, engine, and UI contracts (its §8 carries the deployment-verification protocol).
-- `docs/ENVIRONMENT_DISCIPLINE.md` — the standing environment and verification discipline for build sessions: strict chunking, exact-path tally anchors, the checkpoint protocol, runner and fetch rules, session-start and delivery order. Every session reads it before its first long-running step.
+- `docs/ENVIRONMENT_DISCIPLINE.md` — the standing discipline for build sessions and the canonical text directives invoke by reference: strict chunking, exact-path tally anchors, the checkpoint protocol, runner and fetch rules, session-start and delivery order, the working discipline (authorities of record, never-invent, data silos, zero-drift), the verification ritual, and the directive format. Every session reads it before its first long-running step; directives do not restate it.
 
 ## Data Model
 
@@ -139,7 +140,8 @@ fee_rules:
           rate: 0.80
     minimum: 500
     source_reference:
-      document_name: "Port Tariff 2026"
+ 
+     document_name: "Port Tariff 2026"
       document_url: "https://www.portofgothenburg.com/en/shipping/port-dues"
       document_issued: "2025-12-01"
       page: 5
@@ -227,6 +229,7 @@ to all
 
 ```yaml
 fee_rules:
+
   - id: env_discount
     fee_family: environmental_surcharge
     biller: Port of Gothenburg
@@ -309,7 +312,8 @@ The loader enforces the following validation rules:
    - `verified_on`
    - `verified_by`
 
-2. **Rate Structures**
+2
+. **Rate Structures**
    - No gaps between bands in banded/progressive structures
    - No overlapping bands
    - All required fields present
@@ -363,7 +367,8 @@ anamax** - ~55,000 GT
 | `csi_class` | string | No | Clean Shipping Index class (A-E) |
 | `fossil_free_fuel_percentage` | number | No | Percentage of fossil-free fuel |
 | `ops_usage` | boolean | Yes | Onshore Power Supply usage |
-| `lay_up_days` | number | No | Lay-up days |
+| `lay_up_days` | number | No | L
+ay-up days |
 | `storage_days_export` | number | No | Storage days for export units |
 | `storage_days_import` | number | No | Storage days for import units |
 | `reefer_units` | number | No | Reefer unit count |
@@ -444,7 +449,8 @@ fly deploy
 ## Contributing
 
 1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/your-feature`)
+2. Create a feature branch (`git checkout -b feature/your-feature
+`)
 3. Make your changes
 4. Run tests (`npm test`)
 5. Commit your changes (`git commit -m 'Add your feature'`)
