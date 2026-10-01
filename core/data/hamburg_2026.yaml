@@ -1944,6 +1944,265 @@ fee_rules:
 # list-price defaults, never rates. The engine overlays these on the shared
 # worst-case core (core/src/defaults.ts); the comparison applies the same
 # merge per port since v0.2.53.
+  # ==========================================================================
+  # EUROGATE SCENARIO-ADJUSTMENT LAYER (spec v0.3.3) - the deferred layer the
+  # extraction adjudicated ("storage is a scenario layer"; ch. 3-4 are
+  # scenario-dependent per-shift/per-hour charges requiring an operational
+  # schedule). Adjust, never re-transcribe: every figure derives from the
+  # pinned published rates by stated arithmetic; scenario-off renders no line
+  # and moves no total (byte-identical to v0.3.2). Storage stays excluded from
+  # the 1.5% social-fund base (S9 1.3.13).
+  # ==========================================================================
+  - id: eurogate_storage_import_20ft
+    fee_family: storage
+    biller: EUROGATE Container Terminal Hamburg
+    name: Storage Import 20ft (scenario)
+    description: "Eurogate import storage (S9 7.2): ISO 20' full containers, 3 calendar days free, then 42.00 EUR/container/day for days 4-8, 84.00 for days 9-13, 126.00 for days 14-18, 168.00 as from day 19. Counting per S9 7.5.3 (the day of delivery to the terminal is free; the day of redelivery counts as a full day). Scenario surface - fires only when storage days are entered; blank renders no line."
+    rate_structure:
+      type: progressive_daily
+      days_input: storage_days_import
+      container_count_input: containers_discharged_le20ft
+      free_days: 3
+      bands:
+        - min_days: 1
+          max_days: 5
+          rate_per_container_per_day: 42.00
+        - min_days: 6
+          max_days: 10
+          rate_per_container_per_day: 84.00
+        - min_days: 11
+          max_days: 15
+          rate_per_container_per_day: 126.00
+        - min_days: 16
+          max_days: null
+          rate_per_container_per_day: 168.00
+    applicable_conditions:
+      terminal_operator: Eurogate
+    scenario_adjusted:
+      description: "scenario-derived figure - the storage-day count is the user's scenario input over the pinned S9 7.2 schedule; never tariff-transcribed usage"
+      severity: info
+    source_reference:
+      document_name: "prices-and-conditions-2026.pdf"
+      document_url: "docs/sources/germany/hamburg/eurogate/prices-and-conditions-2026.pdf"
+      document_issued: "2026-01-01"
+      page: 9
+      clause: "7.2"
+      verified_on: "2026-10-02"
+      verified_by: "vibe-session-v0.3.3"
+  - id: eurogate_storage_import_40ft
+    fee_family: storage
+    biller: EUROGATE Container Terminal Hamburg
+    name: Storage Import 40ft (scenario)
+    description: "Eurogate import storage (S9 7.2): ISO 40' full containers, 3 calendar days free, then 84.00 EUR/container/day for days 4-8, 168.00 for days 9-13, 252.00 for days 14-18, 336.00 as from day 19. Counting per S9 7.5.3. Scenario surface - blank renders no line."
+    rate_structure:
+      type: progressive_daily
+      days_input: storage_days_import
+      container_count_input: containers_discharged_gt20ft
+      free_days: 3
+      bands:
+        - min_days: 1
+          max_days: 5
+          rate_per_container_per_day: 84.00
+        - min_days: 6
+          max_days: 10
+          rate_per_container_per_day: 168.00
+        - min_days: 11
+          max_days: 15
+          rate_per_container_per_day: 252.00
+        - min_days: 16
+          max_days: null
+          rate_per_container_per_day: 336.00
+    applicable_conditions:
+      terminal_operator: Eurogate
+    scenario_adjusted:
+      description: "scenario-derived figure - the storage-day count is the user's scenario input over the pinned S9 7.2 schedule; never tariff-transcribed usage"
+      severity: info
+    source_reference:
+      document_name: "prices-and-conditions-2026.pdf"
+      document_url: "docs/sources/germany/hamburg/eurogate/prices-and-conditions-2026.pdf"
+      document_issued: "2026-01-01"
+      page: 9
+      clause: "7.2"
+      verified_on: "2026-10-02"
+      verified_by: "vibe-session-v0.3.3"
+  - id: eurogate_storage_export_20ft
+    fee_family: storage
+    biller: EUROGATE Container Terminal Hamburg
+    name: Storage Export 20ft (scenario)
+    description: "Eurogate export storage (S9 7.1): ISO 20' full containers, 5 calendar days free, then 42.00 EUR/container/day for days 6-13, 84.00 as from day 14. Counting per S9 7.5.3. Scenario surface - blank renders no line."
+    rate_structure:
+      type: progressive_daily
+      days_input: storage_days_export
+      container_count_input: containers_loaded_le20ft
+      free_days: 5
+      bands:
+        - min_days: 1
+          max_days: 8
+          rate_per_container_per_day: 42.00
+        - min_days: 9
+          max_days: null
+          rate_per_container_per_day: 84.00
+    applicable_conditions:
+      terminal_operator: Eurogate
+    scenario_adjusted:
+      description: "scenario-derived figure - the storage-day count is the user's scenario input over the pinned S9 7.1 schedule; never tariff-transcribed usage"
+      severity: info
+    source_reference:
+      document_name: "prices-and-conditions-2026.pdf"
+      document_url: "docs/sources/germany/hamburg/eurogate/prices-and-conditions-2026.pdf"
+      document_issued: "2026-01-01"
+      page: 8
+      clause: "7.1"
+      verified_on: "2026-10-02"
+      verified_by: "vibe-session-v0.3.3"
+  - id: eurogate_storage_export_40ft
+    fee_family: storage
+    biller: EUROGATE Container Terminal Hamburg
+    name: Storage Export 40ft (scenario)
+    description: "Eurogate export storage (S9 7.1): ISO 40' full containers, 5 calendar days free, then 84.00 EUR/container/day for days 6-13, 168.00 as from day 14. Counting per S9 7.5.3. Scenario surface - blank renders no line."
+    rate_structure:
+      type: progressive_daily
+      days_input: storage_days_export
+      container_count_input: containers_loaded_gt20ft
+      free_days: 5
+      bands:
+        - min_days: 1
+          max_days: 8
+          rate_per_container_per_day: 84.00
+        - min_days: 9
+          max_days: null
+          rate_per_container_per_day: 168.00
+    applicable_conditions:
+      terminal_operator: Eurogate
+    scenario_adjusted:
+      description: "scenario-derived figure - the storage-day count is the user's scenario input over the pinned S9 7.1 schedule; never tariff-transcribed usage"
+      severity: info
+    source_reference:
+      document_name: "prices-and-conditions-2026.pdf"
+      document_url: "docs/sources/germany/hamburg/eurogate/prices-and-conditions-2026.pdf"
+      document_issued: "2026-01-01"
+      page: 8
+      clause: "7.1"
+      verified_on: "2026-10-02"
+      verified_by: "vibe-session-v0.3.3"
+  - id: eurogate_shift_surcharges
+    fee_family: ancillary_service
+    biller: EUROGATE Container Terminal Hamburg
+    name: Shift Surcharges, Overtime and Waiting Times (scenario)
+    description: "Eurogate waterside work outside weekday 1st/2nd shift (S9 ch. 3), per shift / per gang: weekday 3rd shift 2,097.00 EUR; Saturdays 1st/2nd 4,956.00; Saturdays 3rd/4th 6,947.00; Sundays and public holidays 1st/2nd 4,956.00; Sundays and public holidays 3rd/4th 6,947.00; pre-high-holiday weekday 1st shift 5,566.00; pre-high-holiday Saturday 1st shift 5,301.00. Overtime per hour/part thereof per gang (S9 3.3): weekdays by 1st shift 700.00, by 2nd 1,154.00; Saturdays 1,243.00/1,639.00/2,030.00 by shift; Sundays/holidays 1,639.00 (1st/2nd), 2,030.00 (3rd/4th). Waiting time per S9 3.4 is charged by shift per man per hour at the ch. 4 staff rate (142.00 EUR). Common costs for the line operating the vessel (S9 3.5). Scenario surface - the shift schedule is the user's scenario input; blank renders no line."
+    rate_structure:
+      type: scenario_input_sum
+      gang_count_field: shift_gangs
+      items:
+        - input_field: scenario_shifts_weekday_3rd
+          rate: 2097.00
+          unit_label: "weekday 3rd shifts"
+        - input_field: scenario_shifts_saturday_12
+          rate: 4956.00
+          unit_label: "Saturday 1st/2nd shifts"
+        - input_field: scenario_shifts_saturday_34
+          rate: 6947.00
+          unit_label: "Saturday 3rd/4th shifts"
+        - input_field: scenario_shifts_sunday_12
+          rate: 4956.00
+          unit_label: "Sunday/holiday 1st/2nd shifts"
+        - input_field: scenario_shifts_sunday_34
+          rate: 6947.00
+          unit_label: "Sunday/holiday 3rd/4th shifts"
+        - input_field: scenario_shifts_preholiday_weekday_1
+          rate: 5566.00
+          unit_label: "pre-high-holiday weekday 1st shifts"
+        - input_field: scenario_shifts_preholiday_saturday_1
+          rate: 5301.00
+          unit_label: "pre-high-holiday Saturday 1st shifts"
+        - input_field: scenario_overtime_hours_weekday_1
+          rate: 700.00
+          unit_label: "overtime h by weekday 1st shift"
+        - input_field: scenario_overtime_hours_weekday_2
+          rate: 1154.00
+          unit_label: "overtime h by weekday 2nd shift"
+        - input_field: scenario_overtime_hours_saturday_1
+          rate: 1243.00
+          unit_label: "overtime h by Saturday 1st shift"
+        - input_field: scenario_overtime_hours_saturday_2
+          rate: 1639.00
+          unit_label: "overtime h by Saturday 2nd shift"
+        - input_field: scenario_overtime_hours_saturday_3
+          rate: 2030.00
+          unit_label: "overtime h by Saturday 3rd shift"
+        - input_field: scenario_overtime_hours_sunday_12
+          rate: 1639.00
+          unit_label: "overtime h on Sundays/holidays 1st/2nd"
+        - input_field: scenario_overtime_hours_sunday_34
+          rate: 2030.00
+          unit_label: "overtime h on Sundays/holidays 3rd/4th"
+        - input_field: scenario_waiting_man_hours
+          rate: 142.00
+          unit_label: "waiting-time man-hours (per S9 3.4 at the ch. 4.1 staff rate)"
+    applicable_conditions:
+      terminal_operator: Eurogate
+    scenario_adjusted:
+      description: "scenario-derived figure - the shift/overtime/waiting schedule is the user's scenario input over the pinned S9 ch. 3/4 rates; never tariff-transcribed usage"
+      severity: info
+    source_reference:
+      document_name: "prices-and-conditions-2026.pdf"
+      document_url: "docs/sources/germany/hamburg/eurogate/prices-and-conditions-2026.pdf"
+      document_issued: "2026-01-01"
+      page: 5
+      clause: "3.1-3.4"
+      verified_on: "2026-10-02"
+      verified_by: "vibe-session-v0.3.3"
+  - id: eurogate_equipment_hire
+    fee_family: ancillary_service
+    biller: EUROGATE Container Terminal Hamburg
+    name: Hire of Handling Equipment and Staff (scenario)
+    description: "Eurogate hire of staff and equipment with terminal employees, per hour or part thereof (S9 ch. 4): staff incl. commercial 142.00 EUR; container crane incl. driver 1,841.00; van carrier incl. driver 699.00; mafi incl. driver 244.00; fork-lift up to 5 t 190.00; fork-lift over 5 t 309.00; reachstacker incl. driver 583.00; security vehicle incl. driver 190.00; security inspector 169.00; mafi trailer rental per day 212.00. Changes to the wage agreement have an immediate effect on the stated rates (S9 ch. 4 note). Scenario surface - the hire schedule is the user's scenario input; blank renders no line."
+    rate_structure:
+      type: scenario_input_sum
+      items:
+        - input_field: scenario_staff_hours
+          rate: 142.00
+          unit_label: "staff hours"
+        - input_field: scenario_crane_hours
+          rate: 1841.00
+          unit_label: "container-crane hours"
+        - input_field: scenario_van_carrier_hours
+          rate: 699.00
+          unit_label: "van-carrier hours"
+        - input_field: scenario_mafi_hours
+          rate: 244.00
+          unit_label: "mafi hours"
+        - input_field: scenario_forklift_small_hours
+          rate: 190.00
+          unit_label: "fork-lift (up to 5 t) hours"
+        - input_field: scenario_forklift_large_hours
+          rate: 309.00
+          unit_label: "fork-lift (over 5 t) hours"
+        - input_field: scenario_reachstacker_hours
+          rate: 583.00
+          unit_label: "reachstacker hours"
+        - input_field: scenario_security_vehicle_hours
+          rate: 190.00
+          unit_label: "security-vehicle hours"
+        - input_field: scenario_security_inspector_hours
+          rate: 169.00
+          unit_label: "security-inspector hours"
+        - input_field: scenario_mafi_trailer_days
+          rate: 212.00
+          unit_label: "mafi-trailer rental days"
+    applicable_conditions:
+      terminal_operator: Eurogate
+    scenario_adjusted:
+      description: "scenario-derived figure - the equipment/staff hire schedule is the user's scenario input over the pinned S9 ch. 4 rates; never tariff-transcribed usage"
+      severity: info
+    source_reference:
+      document_name: "prices-and-conditions-2026.pdf"
+      document_url: "docs/sources/germany/hamburg/eurogate/prices-and-conditions-2026.pdf"
+      document_issued: "2026-01-01"
+      page: 6
+      clause: "4.1-4.9"
+      verified_on: "2026-10-02"
+      verified_by: "vibe-session-v0.3.3"
 default_call:
   # Terminal scope (spec v0.2.49; promotion per v0.2.66): Hamburg calls are
   # priced against a named terminal operator; the default and reference
@@ -1969,6 +2228,7 @@ default_call:
   waste_short_sea_reduction: false
   waste_alternative_fuel_reduction: false
   waste_sustainable_waste_reduction: false
+
 # OPS speculative component descriptor (spec v0.2.57, data-authored v0.2.59):
 # presence, currency, unit - configuration only, no rates.
 ops_speculative:
@@ -1980,6 +2240,8 @@ ops_speculative:
 # renders for this port. UI configuration, never rates. The operator list
 # is the user-facing select; the gating values live in the fee rules'
 # terminal_operator applicable_conditions.
+
+
 input_profile:
   # Port-specific reset fields (spec v0.2.60): the call inputs a port
   # switch resets to their default. Declared per port; the App reset
@@ -2013,6 +2275,35 @@ input_profile:
     - small_call_containers
     - ets_emissions_tco2
     - ets_allowance_price
+    - storage_days_import
+    - storage_days_export
+    - storage_empty_days
+    - shift_gangs
+    - scenario_shifts_weekday_3rd
+    - scenario_shifts_saturday_12
+    - scenario_shifts_saturday_34
+    - scenario_shifts_sunday_12
+    - scenario_shifts_sunday_34
+    - scenario_shifts_preholiday_weekday_1
+    - scenario_shifts_preholiday_saturday_1
+    - scenario_overtime_hours_weekday_1
+    - scenario_overtime_hours_weekday_2
+    - scenario_overtime_hours_saturday_1
+    - scenario_overtime_hours_saturday_2
+    - scenario_overtime_hours_saturday_3
+    - scenario_overtime_hours_sunday_12
+    - scenario_overtime_hours_sunday_34
+    - scenario_waiting_man_hours
+    - scenario_staff_hours
+    - scenario_crane_hours
+    - scenario_van_carrier_hours
+    - scenario_mafi_hours
+    - scenario_forklift_small_hours
+    - scenario_forklift_large_hours
+    - scenario_reachstacker_hours
+    - scenario_security_vehicle_hours
+    - scenario_security_inspector_hours
+    - scenario_mafi_trailer_days
   # Field-level inputs inside the shared general-information group (the
   # build-year field drives the engine's Tier inference).
   fields:
@@ -2025,5 +2316,7 @@ input_profile:
           label: EUROGATE Container Terminal Hamburg (default — reference operator)
         - value: HHLA
           label: HHLA (CTA/CTB/CTT — switchable terminal variant)
+    - id: hamburg_scenario_parameters
+      heading: Hamburg Scenario Parameters (Eurogate - user-specified schedule)
     - id: eu_regulatory
       heading: EU Regulatory (ETS allowances - user-specified basis)

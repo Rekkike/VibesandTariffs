@@ -91,7 +91,8 @@ export type RateStructureType =
   | 'tiered_per_period'
   | 'per_commenced_period'
   | 'progressive_daily'
-  | 'flat_by_input';
+  | 'flat_by_input'
+  | 'scenario_input_sum';
 
 // Band definition for banded/progressive rates
 export interface RateBand {
@@ -295,6 +296,18 @@ export interface FlatByInputRate {
   fallback_option: string;   // used when input missing (flagged)
   count_field?: string;      // e.g. gangway_count (default 1)
 }
+// Scenario-input sum (spec v0.3.3, the scenario-adjustment layer): each
+// declared scenario input contributes (count x rate) — a shift count priced
+// at the printed per-shift/gang rate, an hours input priced at the printed
+// per-hour rate, a staff-hours input priced at the ch. 4 staff rate. Every
+// input is blank-by-default; blank contributes zero and the rule renders no
+// line (scenario-off byte-identical). Never invents a rate: the rate fields
+// carry the pinned ch. 3/4 figures verbatim.
+export interface ScenarioInputSumRate {
+  type: 'scenario_input_sum';
+  items: { input_field: string; rate: number; unit_label: string }[];
+  gang_count_field?: string;  // per-gang items multiply by the gang count
+}
 
 export type RateStructure = 
   | FlatRate
@@ -308,7 +321,8 @@ export type RateStructure =
   | TieredPerPeriodRate
   | PerCommencedPeriodRate
   | ProgressiveDailyRate
-  | FlatByInputRate;
+  | FlatByInputRate
+  | ScenarioInputSumRate;
 
 // Discount/Surcharge types
 export type AdjustmentType = 'discount' | 'surcharge';
@@ -378,6 +392,18 @@ export interface FeeRule {
   // construction). Never an estimated parameter (nothing is estimated)
   // and never a contract caveat; its own flag type, rendered as info.
   regulatory_notice?: {
+    description: string;
+    severity?: 'info' | 'warning';
+  };
+  // Scenario-adjusted marker (spec v0.3.3, the scenario-adjustment layer):
+  // the rule prices a scenario parameter set the reference call does not
+  // carry (the Eurogate ch. 3-4 shift/equipment and ch. 7 storage schedules
+  // — the extraction's own adjudication: "storage is a scenario layer").
+  // The rates are the pinned published rates; the usage quantities are the
+  // user's scenario inputs. The rendered figure is labeled scenario-derived,
+  // never tariff-transcribed (a mislabeled rendering fails a pin). Blank
+  // scenario inputs render no line (scenario-off is byte-identical).
+  scenario_adjusted?: {
     description: string;
     severity?: 'info' | 'warning';
   };
@@ -672,6 +698,35 @@ export interface CallInput {
   // render nothing and compute nothing (the blank-means-nothing contract).
   ets_emissions_tco2?: number;    // user-specified in-scope CO2 emissions for this call's ETS portion (tonnes)
   ets_allowance_price?: number;   // user-specified EUA price (EUR per tonne CO2)
+  // Scenario-adjustment layer (spec v0.3.3): the Eurogate ch. 3-4
+  // shift/equipment scenario schedule - blank by default, per-port entries;
+  // blank inputs render no line (scenario-off byte-identical).
+  shift_gangs?: number;
+  scenario_shifts_weekday_3rd?: number;
+  scenario_shifts_saturday_12?: number;
+  scenario_shifts_saturday_34?: number;
+  scenario_shifts_sunday_12?: number;
+  scenario_shifts_sunday_34?: number;
+  scenario_shifts_preholiday_weekday_1?: number;
+  scenario_shifts_preholiday_saturday_1?: number;
+  scenario_overtime_hours_weekday_1?: number;
+  scenario_overtime_hours_weekday_2?: number;
+  scenario_overtime_hours_saturday_1?: number;
+  scenario_overtime_hours_saturday_2?: number;
+  scenario_overtime_hours_saturday_3?: number;
+  scenario_overtime_hours_sunday_12?: number;
+  scenario_overtime_hours_sunday_34?: number;
+  scenario_waiting_man_hours?: number;
+  scenario_staff_hours?: number;
+  scenario_crane_hours?: number;
+  scenario_van_carrier_hours?: number;
+  scenario_mafi_hours?: number;
+  scenario_forklift_small_hours?: number;
+  scenario_forklift_large_hours?: number;
+  scenario_reachstacker_hours?: number;
+  scenario_security_vehicle_hours?: number;
+  scenario_security_inspector_hours?: number;
+  scenario_mafi_trailer_days?: number;
 }
 
 // OPS speculative block (spec v0.2.57): the user-entered OPS components

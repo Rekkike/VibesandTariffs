@@ -409,6 +409,42 @@ const ham: Record<string, FunctionalClassInfo> = {
     basis_note: 'Waterside container lift charge per move (Prices and Conditions 5.1.1)',
     source: 'prices-and-conditions-2026.pdf 5.1.1'
   },
+  // Scenario-adjustment layer (spec v0.3.3): the Eurogate ch. 3-4 and ch. 7
+  // scenario surfaces. Storage beyond free time is a cargo-throughput levy
+  // (the HHLA storage classification); the shift/overtime/waiting and
+  // equipment/staff-hire schedules are purchased services (terminal labour
+  // and equipment hired by the vessel's line). Every figure derives from
+  // the user's scenario inputs over the pinned published rates.
+  eurogate_storage_import_20ft: {
+    functional_class: 'cargo_throughput_levy',
+    basis_note: 'Scenario: import storage beyond the 3-day free time, 20 ft full containers (Prices and Conditions 7.2; counting per 7.5.3)',
+    source: 'prices-and-conditions-2026.pdf 7.2'
+  },
+  eurogate_storage_import_40ft: {
+    functional_class: 'cargo_throughput_levy',
+    basis_note: 'Scenario: import storage beyond the 3-day free time, 40 ft full containers (Prices and Conditions 7.2; counting per 7.5.3)',
+    source: 'prices-and-conditions-2026.pdf 7.2'
+  },
+  eurogate_storage_export_20ft: {
+    functional_class: 'cargo_throughput_levy',
+    basis_note: 'Scenario: export storage beyond the 5-day free time, 20 ft full containers (Prices and Conditions 7.1; counting per 7.5.3)',
+    source: 'prices-and-conditions-2026.pdf 7.1'
+  },
+  eurogate_storage_export_40ft: {
+    functional_class: 'cargo_throughput_levy',
+    basis_note: 'Scenario: export storage beyond the 5-day free time, 40 ft full containers (Prices and Conditions 7.1; counting per 7.5.3)',
+    source: 'prices-and-conditions-2026.pdf 7.1'
+  },
+  eurogate_shift_surcharges: {
+    functional_class: 'purchased_service',
+    basis_note: 'Scenario: waterside shift surcharges, overtime and waiting times per shift/gang or hour (Prices and Conditions 3.1-3.4)',
+    source: 'prices-and-conditions-2026.pdf 3.1-3.4'
+  },
+  eurogate_equipment_hire: {
+    functional_class: 'purchased_service',
+    basis_note: 'Scenario: hire of handling equipment and staff per hour or part thereof (Prices and Conditions 4.1-4.9)',
+    source: 'prices-and-conditions-2026.pdf 4.1-4.9'
+  },
   eurogate_security_charge: {
     functional_class: 'cargo_throughput_levy',
     basis_note: 'Security charge per container handled (Prices and Conditions 13.1)',

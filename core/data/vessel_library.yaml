@@ -23,6 +23,14 @@
 #   class_note:      free-text size-class note
 #   estimated_fields: list of fields whose values are estimates rather than
 #                    registry-confirmed data (drives the form's "est." badge)
+#   nt_observation_records: documented aggregator observations of the NT
+#                    particular (spec v0.3.3, item 4) - each carries the
+#                    observed value, the source, the fetch date, and the
+#                    evidentiary status (observation-not-confirmation); a
+#                    registry confirmation remains the only closing evidence.
+#                    Surfaced at the NT-class indication so the class
+#                    assignment carries its own provenance - flagged, never
+#                    presented as registry-confirmed.
 #   source_note:     provenance — where the particulars were verified
 
 vessels:
@@ -86,4 +94,10 @@ vessels:
     teu_capacity: 2400
     class_note: "Feeder (Fujian Mawei series; GT and TEU capacity estimated from fleet trackers, not registry-confirmed)"
     estimated_fields: [gt, teu_capacity, nt, draught_m]
+    nt_observation_records:
+      - observed_nt: 9654
+        source: "Flexport Atlas vessel registry (aggregator)"
+        fetched: "2026-10-01"
+        status: "observation-not-confirmation"
+        note: "An aggregator observation, not a registry confirmation. The registry routes remain automation-blocked (the DNV register blocks automated access - verified 2026-10-01; Equasis automation-blocked; the Korean register not fetchable by automated retrieval). A second aggregator now carries an NT figure where the v0.3.0 pass found none (Marine MAN carried GT but no NT for IMO 9967005); the observation corroborates nothing numerically and the default NT estimate (8,000) does not move; a registry confirmation remains the only closing evidence."
     source_note: "Particulars checked against VesselFinder and fleet-tracker data (IMO 9967005), 2026-09-23. LOA 171.92 m, beam 28.4 m, build year 2024, flag LR, and DWT 29,553 are registry-confirmed; GT (21,979) and TEU capacity (2,400) are tracker estimates — the basis stated per the v0.2.48 data-audit correction (the entry previously claimed GT as registry-confirmed). Draught estimated (typical for the Fujian Mawei 1,700-series feeder; AIS has observed 8.3 m laden). NT estimated: 8,000, retained — no confirming source obtained (the Marine MAN aggregator page for IMO 9967005 carries GT but no NT field; VesselFinder, MarineTraffic, TrustedDocks, Linescape, MagicPort, maritimeoptima carry no fetchable NT; the DNV register and Equasis unreachable), per the v0.3.0 registry attempt. Fee class: Class 5 (6,000+ NT) — the former note's 'Class 6' claim was a prose error (8,000 NT was already Class 5; corrected, disclosed in the v0.3.0 audit). The formalized estimation convention (v0.3.0): the error band 0.40–0.58 x GT = 8,792–12,748 NT spans the Class 6 boundary at 10,000, so the boundary notice renders at both Swedish ports (Class 5 used; Class 6 disclosed as the alternative: vessel fee +36,630, readiness +10,935, pilotage start +6,800, +1,465 per half-hour)."

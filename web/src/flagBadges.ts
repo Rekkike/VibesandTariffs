@@ -68,6 +68,13 @@ export function badgesForFlags(flags: QualityFlag[]): FlagBadge[] {
       // the EUA price are the user's own inputs — named, never a generic
       // estimate badge.
       badges.push({ label: 'ETS user basis', kind: 'assumed', title: flag.description });
+    } else if (flag.type === 'scenario_adjusted_basis') {
+      // Scenario-adjustment layer (spec v0.3.3): the line's usage
+      // quantities are the user's scenario inputs over the pinned
+      // published rates — its own badge so the figure reads as
+      // scenario-derived, never tariff-transcribed (presentation honesty;
+      // a mislabeled rendering fails a pin).
+      badges.push({ label: 'scenario-derived', kind: 'assumed', title: flag.description });
     } else {
       infoCount.n += 1;
     }

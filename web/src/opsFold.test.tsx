@@ -138,7 +138,7 @@ describe('GOT per-GT OPS fold — the comparison surface (spec v0.2.70)', () => 
   const portDuesCells = async (call: CallInput) => {
     await renderComparison(call, false);
     const row = Array.from(container!.querySelectorAll('tr'))
-      .find(tr => (tr.querySelector('.comparison-family-cell')?.textContent ?? '').trim() === 'port dues');
+      .find(tr => (tr.querySelector('.comparison-family-label')?.textContent ?? '').trim() === 'port dues');
     expect(row).toBeDefined();
     return Array.from(row!.querySelectorAll('td'));
   };
@@ -225,7 +225,7 @@ describe('GOT per-GT OPS fold — the comparison surface (spec v0.2.70)', () => 
     // override through perPortCallOverrides; here the shared call carries
     // no HEL value — the surface must show no fold anywhere)
     const row = Array.from(container!.querySelectorAll('tr'))
-      .find(tr => (tr.querySelector('.comparison-family-cell')?.textContent ?? '').trim() === 'port dues');
+      .find(tr => (tr.querySelector('.comparison-family-label')?.textContent ?? '').trim() === 'port dues');
     const helCell = Array.from(row!.querySelectorAll('td'))
       .find(td => (td.textContent ?? '').includes('published flat rate'))!;
     expect(helCell.querySelector('.comparison-ops-fold')).toBeNull();

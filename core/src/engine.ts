@@ -21,6 +21,7 @@ import {
   PerCommencedPeriodRate,
   ProgressiveDailyRate,
   FlatByInputRate,
+  ScenarioInputSumRate,
   Adjustment,
   PortDefinition,
   Biller,
@@ -323,6 +324,19 @@ export function evaluateFeeRule(
       type: 'service_gap_notice',
       description: rule.service_gap_notice.description,
       severity: rule.service_gap_notice.severity ?? 'info'
+    });
+  }
+  // Scenario-adjusted marker (spec v0.3.3, the scenario-adjustment layer):
+  // the line's usage quantities are the user's scenario inputs over the
+  // pinned published rates (the extraction's own adjudication — the Eurogate
+  // ch. 3-4 shift/equipment and ch. 7 storage schedules are scenario
+  // surfaces). The rendered figure is labeled scenario-derived, never
+  // tariff-transcribed; the flag is the label's data source.
+  if (rule.scenario_adjusted) {
+    qualityFlags.push({
+      type: 'scenario_adjusted_basis',
+      description: rule.scenario_adjusted.description,
+      severity: rule.scenario_adjusted.severity ?? 'info'
     });
   }
   // Contract-vs-published caveat (spec v0.2.4): the published list price may
@@ -1267,6 +1281,41 @@ export function evaluateFeeRule(
       break;
     }
     
+    case 'scenario_input_sum': {
+      const sc = rate as ScenarioInputSumRate;
+      const gangs = sc.gang_count_field
+        ? (call as any)[sc.gang_count_field]
+        : undefined;
+      const gangMultiplier = typeof gangs === 'number' && gangs > 0 ? gangs : 1;
+      let amount = 0;
+      const parts: string[] = [];
+      for (const item of sc.items) {
+        const count = (call as any)[item.input_field];
+        if (typeof count !== 'number' || count <= 0) continue;
+        const line = roundToCent(count * item.rate * gangMultiplier);
+        amount += line;
+        parts.push(`${count} ${item.unit_label} x ${item.rate.toFixed(2)}${gangMultiplier > 1 ? ` x ${gangMultiplier} gangs` : ''} = ${line.toFixed(2)}`);
+      }
+      // Scenario-off contract: every scenario input blank contributes zero
+      // and the rule renders no line at all — never a zero-amount placeholder
+      // (the default call carries no shift schedule and no storage stay).
+      if (amount <= 0) return null;
+      baseAmount = roundToCent(amount);
+      rateApplied = `Scenario inputs: ${parts.join('; ')}`;
+      bandOrBasis = parts.join('; ');
+      pendingStructureLabel = 'Scenario-parameter sum';
+      pendingCompositionSteps = [
+        ...parts.map((p, i) => ({
+          kind: 'components' as const,
+          label: sc.items[i] ? `${sc.items[i].input_field} (${sc.items[i].unit_label})` : 'scenario component',
+          detail: p,
+          amount: 0
+        })),
+        { kind: 'composition' as const, label: 'Scenario total', amount: baseAmount }
+      ];
+      break;
+    }
+
     case 'flat_by_input': {
       const fi = rate as FlatByInputRate;
       const raw = (call as any)[fi.input_field];

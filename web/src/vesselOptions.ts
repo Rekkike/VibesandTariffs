@@ -24,6 +24,21 @@ export interface LibraryVessel {
   // particular (single source, estimate flag retained) — the boundary
   // notice bands around the observation, not the type ratio.
   nt_observed?: boolean;
+  // MSC KYUNGMIN observation provenance (spec v0.3.3, item 4): documented
+  // aggregator observations of the NT particular — each carries the
+  // observed value, the source, the fetch date, and the evidentiary
+  // status (observation-not-confirmation). Surfaced at the NT-class
+  // indication so the class assignment carries its own provenance —
+  // flagged, never presented as registry-confirmed. The honest-data
+  // pattern applied to the vessel record: a registry confirmation
+  // remains the only closing evidence.
+  nt_observation_records?: {
+    observed_nt: number;
+    source: string;
+    fetched: string;
+    status: string;
+    note: string;
+  }[];
   source_note: string;
 }
 export const LOADED_VESSELS: LibraryVessel[] = (vesselLibrary as any).vessels ?? [];

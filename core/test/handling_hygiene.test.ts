@@ -104,7 +104,11 @@ describe('handling hygiene b: terminal-hygiene constraint (no Eurogate mixing)',
     // v0.2.66: the promotion adds the optional services (lashing,
     // twistlocks, IMO, small-call minimum, lay-by, reefer first/subsequent)
     // - all operator-gated like the original three.
-    expect(eurogateRules.length).toBe(10);
+    // v0.3.3: the scenario-adjustment layer adds the ch. 7 storage schedules
+    // (import/export x 20/40 ft) and the ch. 3-4 shift/equipment scenario
+    // rules - six more, all operator-gated, all scenario-gated (blank
+    // inputs fire no line).
+    expect(eurogateRules.length).toBe(16);
     for (const rule of eurogateRules) {
       expect(rule.applicable_conditions?.terminal_operator).toBe('Eurogate');
     }

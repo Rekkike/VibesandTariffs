@@ -20,6 +20,7 @@ import {
   PerCommencedPeriodRate,
   ProgressiveDailyRate,
   FlatByInputRate,
+  ScenarioInputSumRate,
   SourceReference,
   ValidationError,
   PortValidationResult
@@ -581,6 +582,21 @@ export function validateRateStructure(
       break;
     }
     
+        case 'scenario_input_sum': {
+      const sc = rate as ScenarioInputSumRate;
+      if (!sc.items || sc.items.length === 0) {
+        errors.push({ rule_id: ruleId, message: 'Scenario input sum rate must have at least one item', severity: 'error', path: 'rate_structure.items' });
+        break;
+      }
+      for (let i = 0; i < sc.items.length; i++) {
+        const item = sc.items[i];
+        if (!item.input_field || typeof item.rate !== 'number' || item.rate < 0 || !item.unit_label) {
+          errors.push({ rule_id: ruleId, message: `Scenario input sum item ${i} requires input_field, unit_label, and a non-negative rate`, severity: 'error', path: `rate_structure.items[${i}]` });
+        }
+      }
+      break;
+    }
+
     default:
       errors.push({
         rule_id: ruleId,

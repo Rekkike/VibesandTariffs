@@ -280,7 +280,12 @@ export function guideFor(
         title: 'OPS (onshore power) usage',
         what: 'Whether the ship connects to onshore power at berth.',
         issuer: 'per the port tariff (OPS connection per call)',
-        rule: 'Off by default. At Hamburg, OPS connection gives a rebate of 0.015 €/GT on the GT component of the port fee.',
+        // AFIR regulatory context (spec v0.3.3, item 3): the EU reference
+        // layer for why OPS exists and is being tariffed at these ports.
+        // Zero-amount context, never a fee rule: AFIR levies no vessel-side
+        // charge (Regulation (EU) 2023/1804 Art. 9 is the port-side mandate;
+        // the ship-side connect obligation is FuelEU Maritime's Art. 6).
+        rule: 'Off by default. At Hamburg, OPS connection gives a rebate of 0.015 €/GT on the GT component of the port fee. Regulatory context: AFIR (Reg. (EU) 2023/1804 Art. 9) requires TEN-T maritime ports to provide shore-side electricity — capability by 31 December 2029, minimum supply of 90% of port calls from 1 January 2030 — a port-side infrastructure mandate that levies no vessel-side fee; the ship-side obligation to connect from 2030 is FuelEU Maritime (Reg. (EU) 2023/1805 Art. 6).',
         bands: [
           { label: 'Hamburg OPS rebate', detail: '−0.015 €/GT on the GT component', source: 'pricelist-maritime-shipping-2026.pdf, S1 item 217' }
         ],

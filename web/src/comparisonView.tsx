@@ -32,6 +32,7 @@ import {
   buildRowsBySegment,
   computeRanking
 } from './comparisonModel';
+import { equivalenceNoteForFamily, equivalenceNoteForRule } from './equivalenceNotes';
 import { makeComparisonCells } from './comparisonCells';
 import { buildDiscountLine } from './discountLine';
 import { ComparisonPortSelection } from './comparisonPortSelection';
@@ -308,6 +309,11 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
                             {chargeTypeRows.map(({ chargeType, perPort, leviedAt }) => (
                               <Box component="dd" key={chargeType.id} className="comparison-card-family comparison-card-chargetype">
                                 <span className="comparison-card-family-name">{chargeType.label}</span>
+                                {chargeType.id === 'berth_dues' && equivalenceNoteForRule('hhla_tonnage_dues') && (
+                                  <Box component="span" className="comparison-equivalence-note" sx={{ fontSize: '0.75rem', display: 'block' }}>
+                                    {equivalenceNoteForRule('hhla_tonnage_dues')!.text}
+                                  </Box>
+                                )}
                                 {leviedAt.includes(port.metadata.id)
                                   ? amountCell(perPort.get(port.metadata.id), port.metadata.currency, true)
                                   : <span className="comparison-not-levied">not levied at this port</span>}
@@ -316,6 +322,14 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
                             {familyRows.map(({ family, perPort }) => (
                               <Box component="dd" key={`${stage.id}-${family}`} className="comparison-card-family">
                                 <span className="comparison-card-family-name">{family.replace(/_/g, ' ')}</span>
+                                {/* Cross-port functional-equivalence annotation
+                                    (spec v0.3.3, item 2): the same verified
+                                    note renders on the mobile card. */}
+                                {equivalenceNoteForFamily(family) && (
+                                  <Box component="span" className="comparison-equivalence-note" sx={{ fontSize: '0.75rem', display: 'block' }}>
+                                    {equivalenceNoteForFamily(family)!.text}
+                                  </Box>
+                                )}
                                 {perPort.get(port.metadata.id)
                                   ? amountCell(perPort.get(port.metadata.id), port.metadata.currency, true)
                                   : <span className="comparison-not-levied">not levied at this port</span>}
@@ -439,6 +453,15 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
                         <TableCell className="comparison-family-cell">
                           <span className="comparison-chargetype-label">{chargeType.label}</span>
                           <span className="comparison-chargetype-desc">{chargeType.description}</span>
+                          {/* Cross-port functional-equivalence annotation
+                              (spec v0.3.3, item 2): the berth-dues line's
+                              verified correspondence — stated as functional
+                              correspondence, never identity. */}
+                          {chargeType.id === 'berth_dues' && equivalenceNoteForRule('hhla_tonnage_dues') && (
+                            <Box component="span" className="comparison-equivalence-note" sx={{ fontSize: '0.75rem', display: 'block' }}>
+                              {equivalenceNoteForRule('hhla_tonnage_dues')!.text}
+                            </Box>
+                          )}
                         </TableCell>
                         {portResults.map(({ port }) => (
                           <TableCell key={port.metadata.id} align="right" className="amount">
@@ -456,7 +479,18 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
                     {familyRows.map(({ family, perPort }) => (
                       <TableRow key={`${stage.id}-${family}`}>
                         <TableCell className="comparison-family-cell">
-                          {family.replace(/_/g, ' ')}
+                          <span className="comparison-family-label">{family.replace(/_/g, ' ')}</span>
+                          {/* Cross-port functional-equivalence annotation
+                              (spec v0.3.3, item 2): the verified pairs from
+                              the audit render beside the family row — stated
+                              as functional correspondence, never identity of
+                              amounts or labels; no figure moves, no label
+                              changes, no port's own terminology is altered. */}
+                          {equivalenceNoteForFamily(family) && (
+                            <Box component="span" className="comparison-equivalence-note" sx={{ fontSize: '0.75rem', display: 'block' }}>
+                              {equivalenceNoteForFamily(family)!.text}
+                            </Box>
+                          )}
                         </TableCell>
                         {portResults.map(({ port }) => {
                           const entry = perPort.get(port.metadata.id);

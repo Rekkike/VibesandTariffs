@@ -285,7 +285,24 @@ describe('port-specific reset fields (spec v0.2.60)', () => {
         'ops_electricity_price', 'ops_demand_charge', 'ops_connection_charge',
         'ops_per_gt_charge', 'lashing_containers', 'twistlock_containers',
         'imo_containers', 'layby_hours', 'reefer_extra_days', 'small_call_containers',
-        'ets_emissions_tco2', 'ets_allowance_price'
+        'ets_emissions_tco2', 'ets_allowance_price',
+        // v0.3.3 scenario-adjustment layer (Hamburg, per-port): the Eurogate
+        // ch. 7 storage and ch. 3-4 shift/equipment scenario inputs.
+        'storage_days_import', 'storage_days_export', 'storage_empty_days',
+        'shift_gangs',
+        'scenario_shifts_weekday_3rd', 'scenario_shifts_saturday_12',
+        'scenario_shifts_saturday_34', 'scenario_shifts_sunday_12',
+        'scenario_shifts_sunday_34', 'scenario_shifts_preholiday_weekday_1',
+        'scenario_shifts_preholiday_saturday_1',
+        'scenario_overtime_hours_weekday_1', 'scenario_overtime_hours_weekday_2',
+        'scenario_overtime_hours_saturday_1', 'scenario_overtime_hours_saturday_2',
+        'scenario_overtime_hours_saturday_3', 'scenario_overtime_hours_sunday_12',
+        'scenario_overtime_hours_sunday_34', 'scenario_waiting_man_hours',
+        'scenario_staff_hours', 'scenario_crane_hours',
+        'scenario_van_carrier_hours', 'scenario_mafi_hours',
+        'scenario_forklift_small_hours', 'scenario_forklift_large_hours',
+        'scenario_reachstacker_hours', 'scenario_security_vehicle_hours',
+        'scenario_security_inspector_hours', 'scenario_mafi_trailer_days'
       ],
       helsingborg: [
         'engine_tier', 'engine_tier_estimated', 'esi_score', 'esi_noise_score',

@@ -57,7 +57,7 @@ const cleanup = async (container: HTMLDivElement, root: Root) => {
 // The desktop table cell for a port's port-dues family row.
 const familyCell = (container: HTMLDivElement, portName: string) => {
   const row = Array.from(container.querySelectorAll('.comparison-table tbody tr'))
-    .find(tr => (tr.querySelector('td')?.textContent ?? '').trim() === 'port dues');
+    .find(tr => (tr.querySelector('.comparison-family-label')?.textContent ?? '').trim() === 'port dues');
   expect(row).toBeDefined();
   const cells = Array.from(row!.querySelectorAll('td'));
   return cells.find(td => (td.textContent ?? '').includes(portName));

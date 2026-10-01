@@ -1548,3 +1548,19 @@ textarea:focus-visible,
   margin-top: var(--space-2);
   color: var(--text-secondary);
 }
+/* Cross-port functional-equivalence annotations (spec v0.3.3, item 2):
+   the verified notes render beside the relevant comparison rows, styled
+   as secondary context — never as a tariff figure or a label change. */
+.comparison-equivalence-note {
+  color: var(--text-secondary);
+  margin-top: var(--space-1);
+  max-width: 46ch;
+}
+/* NT observation provenance (spec v0.3.3, item 4): the class indication's
+   evidentiary status — flagged, never presented as registry-confirmed. */
+.vessel-option-observation-note {
+  display: block;
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  margin-top: var(--space-1);
+}

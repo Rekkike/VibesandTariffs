@@ -143,6 +143,21 @@ export const WorkspaceInputs: React.FC<WorkspaceInputsProps> = (props) => {
                         {option.kind === 'library' && option.vessel.class_note && (
                           <span className="vessel-option-note">{option.vessel.class_note}</span>
                         )}
+                        {/* NT observation provenance (spec v0.3.3, item 4):
+                            where the vessel carries documented NT
+                            observations, the class indication carries the
+                            observation's evidentiary status — flagged,
+                            never presented as registry-confirmed. The
+                            observation moves no default and no class
+                            boundary. */}
+                        {option.kind === 'library' && (option.vessel as any).nt_observation_records?.some((r: any) => r.status === 'observation-not-confirmation') && (
+                          <span className="vessel-option-observation-note">
+                            {'NT observation: '}
+                            {(option.vessel as any).nt_observation_records
+                              .map((r: any) => `${r.observed_nt} (${r.source}, ${r.fetched} — observation, not registry-confirmed)`)
+                              .join('; ')}
+                          </span>
+                        )}
                       </li>
                     );
                   }}
@@ -1337,6 +1352,22 @@ export const WorkspaceInputs: React.FC<WorkspaceInputsProps> = (props) => {
                     No published container-terminal OPS rate exists at this port — enter your own assumptions; entered values render in a separate block and add to the Grand Total.
                     The price inputs are this port's own (per-port; they survive port switches and never price another port); the consumption (kWh) input is shared across all ports — it prices the electricity line at every port with its own entered price.
                   </Typography>
+                  {/* AFIR regulatory-context note (spec v0.3.3, item 3): the
+                      EU reference layer for why OPS exists and is being
+                      tariffed at these ports — the same treatment the ETS
+                      directive received (the v0.2.69 regulatory block).
+                      Zero-amount context: AFIR levies no vessel-side charge;
+                      it is a port-side infrastructure mandate. Never
+                      additive, never a fee rule. Facts per the extraction
+                      (docs/sources/eu/afir/): Regulation (EU) 2023/1804
+                      Article 9 — capability by 31 December 2029, minimum
+                      supply of 90 percent of port calls from 1 January 2030,
+                      thresholds above 100 container / 40 ro-ro passenger /
+                      25 cruise calls per year. */}
+                  
+                  <Typography variant="caption" className="afir-context-note" display="block">
+                    AFIR context (Regulation (EU) 2023/1804, Art. 9): TEN-T maritime ports must provide shore-side electricity for seagoing container and passenger ships — capability by 31 December 2029, minimum supply of 90% of port calls from 1 January 2030. A port-side infrastructure mandate: AFIR levies no vessel-side fee (the ship-side connect obligation is FuelEU Maritime's, Reg. (EU) 2023/1805 Art. 6, from 2030 for container and passenger ships ≥5,000 GT).
+                  </Typography>
                 </Grid>
                 <Grid item xs={12} sm={6}>
                   <TextField
@@ -1439,6 +1470,313 @@ export const WorkspaceInputs: React.FC<WorkspaceInputsProps> = (props) => {
                     InputLabelProps={{ shrink: true }}
                   />
                 </Grid>
+                {/* ============ SCENARIO-ADJUSTMENT LAYER (spec v0.3.3) ============ */}
+                {/* The deferred layer the Eurogate extraction adjudicated: the
+                    ch. 7 storage schedules and the ch. 3-4 shift/equipment
+                    rates price the user's scenario parameters over the pinned
+                    published rates (adjust, never re-transcribe). Every input
+                    is blank by default and per-port (reset_fields); blank
+                    renders no line and moves no total (scenario-off
+                    byte-identical). Scenario figures render labeled
+                    scenario-derived, never tariff-transcribed. */}
+                {profileSections.has('hamburg_scenario_parameters') && (
+                  <>
+                    <Grid item xs={12}>
+                      <Typography variant="subtitle2" className="scenario-group-label">
+                        Eurogate scenario parameters (user-specified schedule — scenario-derived figures)
+                      </Typography>
+                      <Typography variant="caption" className="scenario-group-note">
+                        The storage-day inputs above and the shift/equipment schedule below price the Eurogate Prices and Conditions ch. 7 storage and ch. 3-4 shift/equipment schedules. The rates are the pinned published rates; the schedule quantities are your scenario inputs. Every scenario figure renders labeled scenario-derived, never tariff-transcribed. Blank inputs render no line and change no total. Per-port entries: they survive port switches and never price another port.
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        label="Shift gangs (waterside work outside weekday 1st/2nd shift)"
+                        type="number"
+                        value={(state.call as any).shift_gangs ?? ''}
+                        onChange={(e) => handleCallChange('shift_gangs', e.target.value === '' ? undefined : parseInt(e.target.value))}
+                        fullWidth
+                        InputLabelProps={{ shrink: true }}
+                        helperText="Gang count multiplying the per-shift/per-gang ch. 3 surcharges and the per-gang overtime hours. Blank = no gang multiplier (single gang)."
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        label="Weekday 3rd shifts (Mon-Fri)"
+                        type="number"
+                        value={(state.call as any).scenario_shifts_weekday_3rd ?? ''}
+                        onChange={(e) => handleCallChange('scenario_shifts_weekday_3rd', e.target.value === '' ? undefined : parseInt(e.target.value))}
+                        fullWidth
+                        InputLabelProps={{ shrink: true }}
+                        helperText="2,097.00 EUR per shift/gang (S9 3.1.1). Blank = none."
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        label="Saturday 1st/2nd shifts"
+                        type="number"
+                        value={(state.call as any).scenario_shifts_saturday_12 ?? ''}
+                        onChange={(e) => handleCallChange('scenario_shifts_saturday_12', e.target.value === '' ? undefined : parseInt(e.target.value))}
+                        fullWidth
+                        InputLabelProps={{ shrink: true }}
+                        helperText="4,956.00 EUR per shift/gang (S9 3.1.2). Blank = none."
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        label="Saturday 3rd/4th shifts"
+                        type="number"
+                        value={(state.call as any).scenario_shifts_saturday_34 ?? ''}
+                        onChange={(e) => handleCallChange('scenario_shifts_saturday_34', e.target.value === '' ? undefined : parseInt(e.target.value))}
+                        fullWidth
+                        InputLabelProps={{ shrink: true }}
+                        helperText="6,947.00 EUR per shift/gang (S9 3.1.3). Blank = none."
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        label="Sunday/holiday 1st/2nd shifts"
+                        type="number"
+                        value={(state.call as any).scenario_shifts_sunday_12 ?? ''}
+                        onChange={(e) => handleCallChange('scenario_shifts_sunday_12', e.target.value === '' ? undefined : parseInt(e.target.value))}
+                        fullWidth
+                        InputLabelProps={{ shrink: true }}
+                        helperText="4,956.00 EUR per shift/gang (S9 3.1.4). Blank = none."
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        label="Sunday/holiday 3rd/4th shifts"
+                        type="number"
+                        value={(state.call as any).scenario_shifts_sunday_34 ?? ''}
+                        onChange={(e) => handleCallChange('scenario_shifts_sunday_34', e.target.value === '' ? undefined : parseInt(e.target.value))}
+                        fullWidth
+                        InputLabelProps={{ shrink: true }}
+                        helperText="6,947.00 EUR per shift/gang (S9 3.1.5). Blank = none."
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        label="Pre-high-holiday weekday 1st shifts"
+                        type="number"
+                        value={(state.call as any).scenario_shifts_preholiday_weekday_1 ?? ''}
+                        onChange={(e) => handleCallChange('scenario_shifts_preholiday_weekday_1', e.target.value === '' ? undefined : parseInt(e.target.value))}
+                        fullWidth
+                        InputLabelProps={{ shrink: true }}
+                        helperText="5,566.00 EUR per shift/gang (S9 3.1.6). Blank = none."
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        label="Pre-high-holiday Saturday 1st shifts"
+                        type="number"
+                        value={(state.call as any).scenario_shifts_preholiday_saturday_1 ?? ''}
+                        onChange={(e) => handleCallChange('scenario_shifts_preholiday_saturday_1', e.target.value === '' ? undefined : parseInt(e.target.value))}
+                        fullWidth
+                        InputLabelProps={{ shrink: true }}
+                        helperText="5,301.00 EUR per shift/gang (S9 3.1.7). Blank = none."
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        label="Overtime hours by weekday 1st shift"
+                        type="number"
+                        value={(state.call as any).scenario_overtime_hours_weekday_1 ?? ''}
+                        onChange={(e) => handleCallChange('scenario_overtime_hours_weekday_1', e.target.value === '' ? undefined : parseInt(e.target.value))}
+                        fullWidth
+                        InputLabelProps={{ shrink: true }}
+                        helperText="700.00 EUR per hour/part per gang (S9 3.3.1). Blank = none."
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        label="Overtime hours by weekday 2nd shift"
+                        type="number"
+                        value={(state.call as any).scenario_overtime_hours_weekday_2 ?? ''}
+                        onChange={(e) => handleCallChange('scenario_overtime_hours_weekday_2', e.target.value === '' ? undefined : parseInt(e.target.value))}
+                        fullWidth
+                        InputLabelProps={{ shrink: true }}
+                        helperText="1,154.00 EUR per hour/part per gang (S9 3.3.2). Blank = none."
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        label="Overtime hours by Saturday 1st shift"
+                        type="number"
+                        value={(state.call as any).scenario_overtime_hours_saturday_1 ?? ''}
+                        onChange={(e) => handleCallChange('scenario_overtime_hours_saturday_1', e.target.value === '' ? undefined : parseInt(e.target.value))}
+                        fullWidth
+                        InputLabelProps={{ shrink: true }}
+                        helperText="1,243.00 EUR per hour/part per gang (S9 3.3.4). Blank = none."
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        label="Overtime hours by Saturday 2nd shift"
+                        type="number"
+                        value={(state.call as any).scenario_overtime_hours_saturday_2 ?? ''}
+                        onChange={(e) => handleCallChange('scenario_overtime_hours_saturday_2', e.target.value === '' ? undefined : parseInt(e.target.value))}
+                        fullWidth
+                        InputLabelProps={{ shrink: true }}
+                        helperText="1,639.00 EUR per hour/part per gang (S9 3.3.5). Blank = none."
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        label="Overtime hours by Saturday 3rd shift"
+                        type="number"
+                        value={(state.call as any).scenario_overtime_hours_saturday_3 ?? ''}
+                        onChange={(e) => handleCallChange('scenario_overtime_hours_saturday_3', e.target.value === '' ? undefined : parseInt(e.target.value))}
+                        fullWidth
+                        InputLabelProps={{ shrink: true }}
+                        helperText="2,030.00 EUR per hour/part per gang (S9 3.3.6). Blank = none."
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        label="Overtime hours on Sundays/holidays 1st/2nd"
+                        type="number"
+                        value={(state.call as any).scenario_overtime_hours_sunday_12 ?? ''}
+                        onChange={(e) => handleCallChange('scenario_overtime_hours_sunday_12', e.target.value === '' ? undefined : parseInt(e.target.value))}
+                        fullWidth
+                        InputLabelProps={{ shrink: true }}
+                        helperText="1,639.00 EUR per hour/part per gang (S9 3.3.7). Blank = none."
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        label="Overtime hours on Sundays/holidays 3rd/4th"
+                        type="number"
+                        value={(state.call as any).scenario_overtime_hours_sunday_34 ?? ''}
+                        onChange={(e) => handleCallChange('scenario_overtime_hours_sunday_34', e.target.value === '' ? undefined : parseInt(e.target.value))}
+                        fullWidth
+                        InputLabelProps={{ shrink: true }}
+                        helperText="2,030.00 EUR per hour/part per gang (S9 3.3.8). Blank = none."
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        label="Waiting-time man-hours"
+                        type="number"
+                        value={(state.call as any).scenario_waiting_man_hours ?? ''}
+                        onChange={(e) => handleCallChange('scenario_waiting_man_hours', e.target.value === '' ? undefined : parseInt(e.target.value))}
+                        fullWidth
+                        InputLabelProps={{ shrink: true }}
+                        helperText="Per S9 3.4, waiting time charges per man per hour at the ch. 4.1 staff rate (142.00 EUR). Blank = none."
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        label="Staff hours (incl. commercial staff)"
+                        type="number"
+                        value={(state.call as any).scenario_staff_hours ?? ''}
+                        onChange={(e) => handleCallChange('scenario_staff_hours', e.target.value === '' ? undefined : parseInt(e.target.value))}
+                        fullWidth
+                        InputLabelProps={{ shrink: true }}
+                        helperText="142.00 EUR per hour/part (S9 4.1). Blank = none."
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        label="Container-crane hours (incl. driver)"
+                        type="number"
+                        value={(state.call as any).scenario_crane_hours ?? ''}
+                        onChange={(e) => handleCallChange('scenario_crane_hours', e.target.value === '' ? undefined : parseInt(e.target.value))}
+                        fullWidth
+                        InputLabelProps={{ shrink: true }}
+                        helperText="1,841.00 EUR per hour/part (S9 4.2). Blank = none."
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        label="Van-carrier hours (incl. driver)"
+                        type="number"
+                        value={(state.call as any).scenario_van_carrier_hours ?? ''}
+                        onChange={(e) => handleCallChange('scenario_van_carrier_hours', e.target.value === '' ? undefined : parseInt(e.target.value))}
+                        fullWidth
+                        InputLabelProps={{ shrink: true }}
+                        helperText="699.00 EUR per hour/part (S9 4.3). Blank = none."
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        label="Mafi hours (incl. driver)"
+                        type="number"
+                        value={(state.call as any).scenario_mafi_hours ?? ''}
+                        onChange={(e) => handleCallChange('scenario_mafi_hours', e.target.value === '' ? undefined : parseInt(e.target.value))}
+                        fullWidth
+                        InputLabelProps={{ shrink: true }}
+                        helperText="244.00 EUR per hour/part (S9 4.4). Blank = none."
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        label="Fork-lift hours (up to 5 t)"
+                        type="number"
+                        value={(state.call as any).scenario_forklift_small_hours ?? ''}
+                        onChange={(e) => handleCallChange('scenario_forklift_small_hours', e.target.value === '' ? undefined : parseInt(e.target.value))}
+                        fullWidth
+                        InputLabelProps={{ shrink: true }}
+                        helperText="190.00 EUR per hour/part (S9 4.5.1). Blank = none."
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        label="Fork-lift hours (over 5 t)"
+                        type="number"
+                        value={(state.call as any).scenario_forklift_large_hours ?? ''}
+                        onChange={(e) => handleCallChange('scenario_forklift_large_hours', e.target.value === '' ? undefined : parseInt(e.target.value))}
+                        fullWidth
+                        InputLabelProps={{ shrink: true }}
+                        helperText="309.00 EUR per hour/part (S9 4.5.2). Blank = none."
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        label="Reachstacker hours (incl. driver)"
+                        type="number"
+                        value={(state.call as any).scenario_reachstacker_hours ?? ''}
+                        onChange={(e) => handleCallChange('scenario_reachstacker_hours', e.target.value === '' ? undefined : parseInt(e.target.value))}
+                        fullWidth
+                        InputLabelProps={{ shrink: true }}
+                        helperText="583.00 EUR per hour/part (S9 4.6). Blank = none."
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        label="Security-vehicle hours (incl. driver)"
+                        type="number"
+                        value={(state.call as any).scenario_security_vehicle_hours ?? ''}
+                        onChange={(e) => handleCallChange('scenario_security_vehicle_hours', e.target.value === '' ? undefined : parseInt(e.target.value))}
+                        fullWidth
+                        InputLabelProps={{ shrink: true }}
+                        helperText="190.00 EUR per hour/part (S9 4.7). Blank = none."
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        label="Security-inspector hours"
+                        type="number"
+                        value={(state.call as any).scenario_security_inspector_hours ?? ''}
+                        onChange={(e) => handleCallChange('scenario_security_inspector_hours', e.target.value === '' ? undefined : parseInt(e.target.value))}
+                        fullWidth
+                        InputLabelProps={{ shrink: true }}
+                        helperText="169.00 EUR per hour/part (S9 4.8). Blank = none."
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        label="Mafi-trailer rental days"
+                        type="number"
+                        value={(state.call as any).scenario_mafi_trailer_days ?? ''}
+                        onChange={(e) => handleCallChange('scenario_mafi_trailer_days', e.target.value === '' ? undefined : parseInt(e.target.value))}
+                        fullWidth
+                        InputLabelProps={{ shrink: true }}
+                        helperText="212.00 EUR per day (S9 4.9). Blank = none."
+                      />
+                    </Grid>
+                  </>
+                )}
                 <Grid item xs={12} sm={6}>
                   <TextField
                     label="Reefer Units"
