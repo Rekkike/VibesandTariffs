@@ -138,7 +138,17 @@ describe('comparison-legibility zero-drift pins (spec v0.2.64)', () => {
       // reach-the-berth stage gains the Yilport cargo due (1,928,000 kr of
       // the operator layer's port-dues-family figure): 1,370,979 ->
       // 3,298,979. Every other port's stage cell byte-identical.
-      .toBe('To reach the berth1\u00a0068\u00a0651\u00a0kr3\u00a0828\u00a0688\u00a0kr2\u00a0378\u00a0057\u00a0kr3\u00a0298\u00a0979\u00a0kr3\u00a0628\u00a0324\u00a0kr119\u00a0740\u00a0\u20ac');
+      // v0.4.4 re-baseline (the presentation normalization, in-test
+      // attribution): the three new ports' cargo dues render on the
+      // Cargo dues charge-type line (quayside operations) like
+      // Helsingborg's - placement only, every Grand Total
+      // byte-identical (pinned above). Gävle's reach-berth stage loses
+      // the cargo due's 1,928,000 kr (3,298,979 -> 1,370,979);
+      // Norrköping's loses its cargo dues (369 x 1,600 + 433 x 2,400 =
+      // 590,400 + 1,039,200 = 1,629,600 kr: 3,828,688 -> 2,199,088);
+      // Norvik's loses its cargo dues (331 x 1,600 + 424 x 2,400 =
+      // 529,600 + 1,017,600 = 1,547,200 kr: 3,628,324 -> 2,081,124).
+      .toBe('To reach the berth1\u00a0068\u00a0651\u00a0kr2\u00a0199\u00a0088\u00a0kr2\u00a0378\u00a0057\u00a0kr1\u00a0370\u00a0979\u00a0kr2\u00a0081\u00a0124\u00a0kr119\u00a0740\u00a0\u20ac');
     expect((stageRows[1].textContent ?? '').trim())
       .toBe('At the berth0\u00a0kr0\u00a0kr0\u00a0kr0\u00a0kr0\u00a0kr553\u00a0371\u00a0\u20ac');
     expect((stageRows[2].textContent ?? '').trim())
@@ -150,7 +160,13 @@ describe('comparison-legibility zero-drift pins (spec v0.2.64)', () => {
       // 6,716,000 + ISPS 292,000 = 7,008,000; the cargo due sits on the
       // reach-the-berth stage above per its fee family) and the column
       // re-ranks cheapest-first; every other stage cell byte-identical.
-      .toBe('Quayside operations2\u00a0207\u00a0200\u00a0kr4\u00a0469\u00a0085\u00a0kr6\u00a0372\u00a0000\u00a0kr7\u00a0008\u00a0000\u00a0kr8\u00a0324\u00a0000\u00a0kr1\u00a0531\u00a0800\u00a0\u20ac');
+      // v0.4.4 re-baseline (the presentation normalization, in-test
+      // attribution): the three new ports' cargo dues join this stage
+      // on the Cargo dues line - Norrköping 4,469,085 + 1,629,600 =
+      // 6,098,685; Norvik 8,324,000 + 1,547,200 = 9,871,200; Gävle
+      // 7,008,000 + 1,928,000 = 8,936,000 (its cargo due moves here
+      // from the reach-berth stage); HEL and HAM byte-identical.
+      .toBe('Quayside operations2\u00a0207\u00a0200\u00a0kr6\u00a0098\u00a0685\u00a0kr6\u00a0372\u00a0000\u00a0kr8\u00a0936\u00a0000\u00a0kr9\u00a0871\u00a0200\u00a0kr1\u00a0531\u00a0800\u00a0\u20ac');
   });
 });
 

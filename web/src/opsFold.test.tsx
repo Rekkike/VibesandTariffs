@@ -226,8 +226,20 @@ describe('GOT per-GT OPS fold — the comparison surface (spec v0.2.70)', () => 
     // no HEL value — the surface must show no fold anywhere)
     const row = Array.from(container!.querySelectorAll('tr'))
       .find(tr => (tr.querySelector('.comparison-family-label')?.textContent ?? '').trim() === 'port dues');
-    const helCell = Array.from(row!.querySelectorAll('td'))
-      .find(td => (td.textContent ?? '').includes('published flat rate'))!;
+    // v0.4.4 re-point (the presentation normalization, in-test
+    // attribution): with the three new ports' cargo dues split off the
+    // port-dues family row onto the Cargo dues line, their remaining
+    // per-GT dues satisfy the v0.2.68 published-flat condition, so
+    // more than one cell carries the label (NRK's renders earlier in
+    // the cheapest-first column order). The pin selects HEL's own cell
+    // by its published figure; the contract is unchanged: no fold
+    // anywhere at the blank state, the published label holds.
+    const publishedCells = Array.from(row!.querySelectorAll('td'))
+      .filter(td => (td.textContent ?? '').includes('published flat rate'));
+    expect(publishedCells.length).toBeGreaterThanOrEqual(1);
+    const helCell = publishedCells
+      .find(td => (td.textContent ?? '').includes('6.85 SEK/GT'))!;
+    expect(helCell).toBeDefined();
     expect(helCell.querySelector('.comparison-ops-fold')).toBeNull();
     expect(helCell.textContent).toContain('6.85 SEK/GT — published flat rate, no banding (tariff-2026.pdf p.5)');
     // and no port's cell renders a decomposition at the blank state

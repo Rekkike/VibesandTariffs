@@ -685,15 +685,21 @@ const hbg: Record<string, FunctionalClassInfo> = {
 };
 
 // The Swedish national Sjöfartsverket tables are transcribed identically in
-// both Swedish port files under per-port rule ids (port-silo principle).
-// The classification below applies to BOTH ports' ids via the shared
+// every Swedish port file under per-port rule ids (port-silo principle;
+// spec v0.4.4 presentation normalization: referenced, never duplicated —
+// each silo keeps its own rule copies and citations, and the shared prefix
+// patterns below are the single presentation reference applied to all of
+// them, so the same authority renders identically at every Swedish port).
+// The classification below applies to every Swedish port's ids via the shared
 // prefix patterns: *_vessel_fee_class*_* (fartygsavgift, per call by NT
 // class × CSI class — fairway/waterway access), *_readiness_fee_class*
 // (beredskapsavgift, per call by NT class — readiness/safety capacity),
 // *_pilotage_class*_start / _per_half_hour and *_extra_pilot (pilotage —
 // purchased nautical service), *_ordering_fee_* (beställningsavgift —
 // purchased service), and the per-biller frequency_discount lines
-// (sjofartsverket_frequency_discount, sfv_frequency_discount — a discount
+// (sjofartsverket_frequency_discount, sfv_frequency_discount,
+// gavle_sfv_frequency_discount, norrkoping_sfv_frequency_discount,
+// norvik_sfv_frequency_discount — a discount
 // line on vessel-fee + readiness classes; classified to mirror the fees it
 // adjusts, so the aggregate nets correctly).
 
@@ -701,39 +707,40 @@ export const PORT_FUNCTIONAL_CLASSIFICATION: Record<string, Record<string, Funct
   gothenburg: got,
   hamburg: ham,
   helsingborg: hbg
-};// Classification for the Swedish national rule-id patterns shared by both
-// Swedish ports (Gothenburg sjofartsverket_* and Helsingborg sfv_*).
+};// Classification for the Swedish national rule-id patterns shared by all
+// five Swedish ports (Gothenburg sjofartsverket_*, Helsingborg sfv_*,
+// Gävle gvh_sfv_*, Norrköping pon_sfv_*, Norvik snv_sfv_*).
 export function classifyRule(ruleId: string): FunctionalClassInfo | undefined {
-  // Swedish national patterns (both ports)
-  if (/^(sjofartsverket|sfv)_vessel_fee_/.test(ruleId)) {
+  // Swedish national patterns (every Swedish port)
+  if (/^(sjofartsverket|sfv|gvh_sfv|pon_sfv|snv_sfv)_vessel_fee_/.test(ruleId)) {
     return {
       functional_class: 'waterway_fairway_access',
       basis_note: 'Fartygsavgift — national fairway dues, per call by NT class × environmental class (Sjöfartsverket price list 2026 p.3); per-call by NT class, not per GT',
       source: 'prislista-farleds-lotsavgifter-2026.pdf p.3'
     };
   }
-  if (/^(sjofartsverket|sfv)_readiness_fee_/.test(ruleId)) {
+  if (/^(sjofartsverket|sfv|gvh_sfv|pon_sfv|snv_sfv)_readiness_fee_/.test(ruleId)) {
     return {
       functional_class: 'readiness_safety_capacity',
       basis_note: 'Beredskapsavgift — national readiness fee, per call by NT class (Sjöfartsverket price list 2026 p.4); per-call by NT class, not per GT',
       source: 'prislista-farleds-lotsavgifter-2026.pdf p.4'
     };
   }
-  if (/^(sjofartsverket|sfv)_pilotage_/.test(ruleId)) {
+  if (/^(sjofartsverket|sfv|gvh_sfv|pon_sfv|snv_sfv)_pilotage_/.test(ruleId)) {
     return {
       functional_class: 'purchased_service',
       basis_note: 'Pilotage — purchased nautical service (Sjöfartsverket price list 2026 p.4)',
       source: 'prislista-farleds-lotsavgifter-2026.pdf p.4'
     };
   }
-  if (/^(sjofartsverket|sfv)_godsavgift$/.test(ruleId)) {
+  if (/^(sjofartsverket|sfv|gvh_sfv|pon_sfv|snv_sfv)_godsavgift$/.test(ruleId)) {
     return {
       functional_class: 'waterway_fairway_access',
       basis_note: 'Godsavgift — national cargo-based fairway due, 3.36 kr/t high-value / 1.67 kr/t low-value on derived cargo tonnes (Sjöfartsverket price list 2026 p.5, Föreskrift 2025:6); international basis assumed; transit cargo exempt',
       source: 'prislista-farleds-lotsavgifter-2026.pdf p.5'
     };
   }
-  if (/^(sjofartsverket|sfv)_ordering_fee_/.test(ruleId)) {
+  if (/^(sjofartsverket|sfv|gvh_sfv|pon_sfv|snv_sfv)_ordering_fee_/.test(ruleId)) {
     return {
       functional_class: 'purchased_service',
       basis_note: 'Beställningsavgift — pilotage ordering fee by lead time (Sjöfartsverket price list 2026 p.4)',

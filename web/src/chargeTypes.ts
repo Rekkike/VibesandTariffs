@@ -10,8 +10,10 @@
 // Fairway dues - national per-call fairway dues (Sjofartsverket):
 //   Fartygsavgift - per call by NT class x CSI class (prislista p.3);
 //   Beredskapsavgift - per call by NT class (prislista p.4). Levied at
-//   Gothenburg and Helsingborg (per-port rule ids under the shared
-//   sjofartsverket_* / sfv_* prefixes); the frequency-discount lines
+//   every Swedish port (per-port rule ids under the shared sjofartsverket_* /
+//   sfv_* / gvh_sfv_* / pon_sfv_* / snv_sfv_* prefixes - spec v0.4.4
+//   presentation normalization: the same national block renders on this
+//   line at all five Swedish ports); the frequency-discount lines
 //   adjust these fees and ride the same line. Hamburg levies none.
 //
 // Berth dues - ship's dues for use of the berth/handling facility,
@@ -26,7 +28,13 @@
 //   line prices "goods in containers, on loading platforms, a trailer or
 //   other cargo carrier" at 625.00 SEK per unit - unitized container
 //   calls pay it; the "with the exception of unitized goods" opening
-//   governs the conventional/tonnage rates, not this line). The Swedish
+//   governs the conventional/tonnage rates, not this line). Since v0.4.4
+//   the same cargo-side due renders on this line at every Swedish port
+//   that levies one: Gävle's Yilport cargo due (S2 section 5.1),
+//   Norrköping's cargo dues (S1 p.10), and Norvik's container cargo dues
+//   (S1 3.2.3) join Helsingborg's line (spec v0.4.4 presentation
+//   normalization; placement only - no fee family and no figure change).
+//   The Swedish
 //   Sjofartsverket godsavgift (spec v0.2.61: cargo-based component of
 //   the national farledsavgift, Foreskrift 2025:6) is a *fairway* due by
 //   its funding statute, not a port cargo due - it rides the Fairway
@@ -60,7 +68,7 @@ export const CHARGE_TYPE_LINES: ChargeTypeLine[] = [
     id: 'cargo_dues',
     label: 'Cargo dues',
     description:
-      'Per unit/tonne of cargo handled: Helsingborg Port Dues Cargo (tariff-2026.pdf p.6)'
+      'Per unit/tonne of cargo handled: the Swedish ports\' cargo-side dues (Helsingborg tariff p.6, Gävle Yilport S2 §5.1, Norrköping S1 p.10, Norvik S1 3.2.3)'
   }
 ];
 
@@ -68,14 +76,27 @@ export const CHARGE_TYPE_LINES: ChargeTypeLine[] = [
 // transcribed per port under shared prefixes; frequency discounts adjust
 // these dues and ride the line).
 const FAIRWAY_RULE_PATTERNS: RegExp[] = [
-  /^(sjofartsverket|sfv)_vessel_fee_/,
-  /^(sjofartsverket|sfv)_readiness_fee_/,
-  /^(sjofartsverket|sfv)_godsavgift$/,
+  /^(sjofartsverket|sfv|gvh_sfv|pon_sfv|snv_sfv)_vessel_fee_/,
+  /^(sjofartsverket|sfv|gvh_sfv|pon_sfv|snv_sfv)_readiness_fee_/,
+  /^(sjofartsverket|sfv|gvh_sfv|pon_sfv|snv_sfv)_godsavgift$/,
   /frequency_discount/
 ];
 
 const BERTH_RULE_IDS = new Set(['hhla_tonnage_dues', 'eurogate_berthing_charge']);
-const CARGO_RULE_IDS = new Set(['poh_cargo_due']);
+// Cargo-dues membership (spec v0.4.4: the same cargo-side due renders on
+// the Cargo dues line at every Swedish port). Mapped by rule id, never by
+// fee family — the vessel_fee-family collision rule (v0.2.52) applies to
+// every charge-type line; the members' fee_family stays port_dues as
+// authored (HEL's poh_cargo_due carries port_dues too — the placement is
+// the charge-type mapping, not the family).
+const CARGO_RULE_IDS = new Set([
+  'poh_cargo_due',
+  'gvh_yilport_cargo_due',
+  'pon_cargo_due_20ft',
+  'pon_cargo_due_gt20ft',
+  'snv_pos_cargo_due_le20ft',
+  'snv_pos_cargo_due_gt20ft'
+]);
 
 export function chargeTypeForRule(ruleId: string): ChargeTypeId | null {
   if (BERTH_RULE_IDS.has(ruleId)) return 'berth_dues';
