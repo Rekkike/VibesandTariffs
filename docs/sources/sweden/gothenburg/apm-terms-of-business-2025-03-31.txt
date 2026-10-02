@@ -1,0 +1,324 @@
+ARCHIVE PROVENANCE — docs/sources/sweden/gothenburg/apm-terms-of-business-2025-03-31.txt
+
+Document:    APM Terminals Terms of Business; Version 31st March 2025 (APM Terminals Gothenburg AB)
+Issuer:      APM Terminals Gothenburg AB
+Provenance:  Delivered by the product owner, 2026-10-02. The sandbox fetch environment is refused
+             by the publisher's CDN on every route (the v0.4.5 recorded stop); the document was
+             obtained outside the sandbox from the publisher's tariff page:
+             https://www.apmterminals.com/en/gothenburg/services/terminal-tariff
+Archive form: Verbatim text extraction of the delivered PDF. The binary PDF is not retained by the
+             delivery tooling (the recorded limitation; the prislista precedent). This extraction is
+             the archive of record. Companion to apm-terminals-terminal-tariff-2026-june.txt (the
+             tariff's own section 8 incorporates these Terms).
+Below the line: the extracted text, verbatim as delivered.
+
+--------------------------------------------------------------------------------
+
+APM TERMINALS Lifting Global Trade.
+
+APM Terminals Terms of Business; Version 31st March 2025
+
+Definitions:
+
+Abandoned Goods: has the meaning assigned to it in Clause 3.6;
+
+APM Terminals: APM Terminals Gothenburg AB;
+
+Applicable Laws: all laws, rules or regulations relating to the provision of the Terminal Services or the subject matter of these Terms more generally;
+
+Customer: any person or entity requesting or receiving services from APM Terminals;
+
+Container: any international intermodal container, whether laden or empty, developed for use in liner shipping and manufactured in compliance with all relevant ISO standards:
+
+(a) with the ability for lifting and securing in accordance with ISO standards and consistent with the safety requirements of the International Convention for Safe Containers (CSC) and which can be handled by means of a standard container spreader;
+(b) as paragraph (a) above although which APM Terminals cannot handle as a normal lift with a container spreader but can handle with alternative means; and/or
+(c) as paragraph (a) or (b) above whose Goods exceed the dimensions of a standard container;
+
+Goods: the whole or any part of the cargo of any kind transported or to be transported in a Container or as non-containerized cargo, including any Hazardous Goods and Abandoned Goods;
+
+Hazardous Goods: Goods which are, or which may become, of a dangerous (whether or not listed as dangerous in international codes or manuals), toxic, poisonous, hazardous, explosive, flammable, or otherwise damaging nature (including radioactive material), or which may damage any persons, property or the environment;
+
+Other Terminal User: any supplier, vendor, (sub)contractor, third-party agent and other third parties (excluding Terminal Users) which enter the Terminal, provide services to the Terminal or use the Terminal Services;
+
+Shipper: has the meaning assigned to it in SOLAS;
+
+SOLAS: the International Convention for the Safety of Life at Sea of the International Maritime Organization as supplemented by any SOLAS guidelines and as may be otherwise amended or supplemented from time to time;
+
+SOP: the standard operating procedures developed by APM Terminals in relation to the use and operation of the Terminal as may be amended by APM Terminals from time to time;
+
+Terminal: the terminal facilities at Box 2125, 403 13 Goteborg, Sweden operated by APM Terminals;
+
+Terminal Services: any services provided by APM Terminals to a Terminal User at or related to the Terminal;
+
+Terminal User: any Customer or Other Terminal User or their respective subcontractors, agents or principals receiving the Terminal Services;
+
+Vehicle: any road or rail vehicle entering the Terminal which is operated by or on behalf of a Terminal User;
+
+1
+
+Classification: Public
+
+--- Page 2 ---
+
+APM TERMINALS Lifting Global Trade.
+
+Vessel: a ship fitted for the carriage of Goods (containerized or non-containerized) including all its gear and equipment on board; and
+
+VGM: the total gross mass of a packed Container obtained and verified in accordance with one of the methods set out in SOLAS.
+
+1. SCOPE
+
+1.1 These terms of business (the "Terms") shall apply to the exclusion of any other terms and conditions to any provision of Terminal Services or any access to or use of the Terminal by a Terminal User, unless they are supplemented by or in conflict with mandatory applicable law, port regulations (incl. terminal tariff) or a written contract or rate agreement between APM Terminals and a Terminal User. By requesting the delivery of services, berthing a Vessel or otherwise entering the Terminal, the Terminal User accepts the application of these Terms and enters into an agreement with APM Terminals not only for itself but also as agent for any principal involved, including owners of any Vessel (if chartered), Vehicle, Goods and Containers. APM Terminals and any Terminal User are collectively referred to as the "Parties" and each individually "Party".
+1.2 There shall be no variation to these Terms unless expressly agreed by both Parties in writing. By receiving or using the Terminal Services, or by entering the Terminal, including by berthing any Vessel at the Terminal, the Terminal User is deemed to have read, understood and agreed to these Terms, without amendment.
+1.3 APM Terminals may at any time with a notice period of thirty (30) days terminate the Terminal Services by written notice.
+
+2. PAYMENT AND RATES
+
+2.1 The rates for the provision of the Terminal Services shall be the rates agreed in writing between the Parties or, where no such rates have been agreed, the rates listed on the website of APM Terminals or otherwise made available to the Terminal User from time to time.
+2.2 The rates shall be paid by the Terminal User in accordance with the following payment terms:
+(a) All sums payable to APM Terminals in respect of a Vessel call shall be paid in advance of arrival of the Vessel with a final settlement no later than forty-eight (48) hours after departure of the Vessel without any set off, counter claim or deduction.
+(b) All sums payable to APM Terminals shall be paid no later than twenty (20) days from invoice date without any set off, counter claim or deduction.
+(c) All payments shall refer to the invoice number and amount.
+(d) If a Terminal User fails to make any payment when due, APM Terminals, without prejudice to its other rights may (i) refuse or suspend the performance of its obligations and (ii) charge interest on such overdue amounts at a rate equal to 8 % per month from the due date until date of payment.
+(e) The Parties agree that invoice disputes shall be raised in writing within eight (8) days from the invoice date. Any invoice not disputed as set out above shall be deemed to have been accepted by the Terminal User.
+2.3 In the event of any cost increases including, but not limited to those arising from mandatory labour wage adjustments, new or increased taxes or other governmental charges, in each case related to the Terminal Services provided by APM Terminals, occurring due to circumstances beyond APM Terminals' control (which includes changes in Applicable Laws), APM Terminals may at its discretion, unless strictly prohibited by law or regulation:
+(a) increase the rates charged to the Terminal User; or
+(b) introduce related surcharges.
+2.4 APM Terminals may also increase the rates and surcharges from time to time to adjust for increases in the Swedish Consumer Price Index.
+
+3. PROVISION OF TERMINAL SERVICES TO TERMINAL USERS
+
+3.1 Information Exchange
+
+Each Terminal User shall provide the information requested by APM Terminals within the timeframe requested to allow it to provide the Terminal Services. The Terminal User warrants that all information it delivers to APM Terminals shall be complete and accurate and APM Terminals can rely on any such information in good faith without further investigation. Any failure to provide complete, accurate and timely information shall allow APM Terminals to refuse acceptance of Goods, Containers, Vehicles and/or Vessels or to impose additional rates or surcharges for the provision of the Terminal Services. The Terminal User shall indemnify APM Terminals and hold APM Terminals harmless against any claims, fines,
+
+2
+
+Classification: Public
+
+--- Page 3 ---
+
+APM TERMINALS Lifting Global Trade
+
+penalties, loss, damage, expense or other cost arising as a result of any such failure, including but not limited to any claims from authorities or other third parties.
+
+3.2 Operations at the Terminal
+
+(a) Each Terminal User shall use reasonable care and skill when berthing a Vessel or operating a Vehicle at the Terminal.
+(b) APM Terminals shall perform all Terminal Services using reasonable care and skill in a manner that ensures adequate protection for its employees in compliance with Applicable Laws and shall - to the extent the safety is in APM Terminals' control - seek to ensure the same level of protection for any Terminal User.
+(c) Each Terminal User that owns, charters, operates or controls a Vessel represents that its Vessel and equipment is in safe working order and, if APM Terminals detects unsafe conditions the Terminal User shall as soon as possible in consultation with APM Terminals remedy such conditions. APM Terminals is entitled to suspend Terminal Services in case of any unsafe conditions and request evidence that the unsafe condition was remedied.
+(d) Each Terminal User shall and share procure that its employees, agents and contractors shall, comply with the relevant SOPs made available to them, Applicable Laws and adhere to the HSSE regulations and instructions in force at the Terminal, as prescribed by Applicable Laws and by APM Terminals as well as any ad-hoc safety measures that will be imposed by APM Terminals in case of a safety incident.
+(e) To ensure safe working practices, APM Terminals may inspect any Vessel or Vehicle to determine that all Applicable Laws have been complied with.
+(f) Any Terminal User's masters, crew, drivers and agents shall exercise due care when mooring, departing or occupying a berth or navigating in the vicinity of or at the Terminal.
+(g) The Parties shall strive for a continuous improvement of HSSE performance and ensure that management of HSSE is an integral and visible part of their work planning and execution processes.
+(h) APM Terminals shall under no circumstances be responsible for any failure or discontinuance or interference from time to time in the power supply howsoever arising and APM Terminals shall not be obliged to maintain an auxiliary power supply at the Terminal.
+
+3.3 Condition of Containers
+
+(a) APM Terminals shall only be required to handle Containers and Goods nominated to APM Terminals and ready for operation within the agreed time and export Containers shall be customs cleared when gated in unless approved by APM Terminals to be customs cleared at the premises of the Terminal.
+(b) Each Terminal User warrants and undertakes that each Container which is delivered to APM Terminals shall be secure, in a good state of repair, appropriately certified and suitable for its purpose. APM Terminals reserves the right to refuse acceptance of any Containers or Goods which appear to be damaged or are in its opinion in an unsatisfactory condition or exceed the stated weight or the safe working limit of any handling equipment.
+(c) In respect of all Goods and Containers, the Terminal User warrants and represents that they:
+(i) are properly and sufficiently prepared, packed, stowed, labelled and/or marked, and that the preparation, packing, stowage, labelling and marking are appropriate to any operations or transactions affecting the Goods and the Containers;
+(ii) are not infested, verminous or rotten and not prone to become so while at the Terminal;
+(iii) will not contaminate or cause danger, injury, pollution or damage to any person, the Terminal, any other Goods, Containers, Vehicle, equipment or Vessel or the environment adjacent thereto or generally; and
+(iv) do not contain illegal narcotics or other contraband.
+(d) APM Terminals shall inform the Terminal User of any damage to any Container, its contents or packaging which comes to the attention of APM Terminals and may refuse to load or handle such Containers.
+(e) With respect to the Terminal User's Containers laden with or labelled as containing Hazardous Goods, the Terminal User shall ensure that such shipments are documented, labeled, packed and secured in accordance with current International Maritime Organization (IMO) requirements for international freight appearing in the International Maritime Dangerous Goods Code and Applicable Laws. The Terminal User shall inform APM Terminals of all information required relating to Hazardous Goods at least 48 hours before arrival at the Terminal.
+(f) The Terminal User shall pay any costs and expenses incurred by APM Terminals in or related to the clean-up of any leaking Container or in complying with any Applicable Laws requiring the movement, treatment, removal or destruction of waste material relating to Goods or the treatment of the Terminal as a result of handling such.
+
+3
+
+Classification: Public
+
+--- Page 4 ---
+
+APM TERMINALS Lifting Global Trade.
+
+- (g) If APM Terminals carries out an instruction to open the doors of a Container or to unpack a Container for any purpose, this shall be at the sole risk and account of the relevant Terminal User and APM Terminals shall not be liable for any deterioration of the contents of the Container or contamination of other Goods.
+- (h) APM Terminals shall be entitled to open and/or scan any package or Container at any time and to inspect the contents. If it appears at any time that the Goods cannot safely or properly be carried further, APM Terminals may without notice to the Terminal User take any measures APM Terminals at its absolute discretion considers most appropriate. The Terminal User shall indemnify APM Terminals against any reasonable expense so incurred.
+
+3.4 Verified Gross Mass
+
+- (a) The Terminal User and APM Terminals shall comply with SOLAS and any other Applicable Laws in respect of VGM.
+- (b) It is ultimately the responsibility of the Shipper to provide a VGM for each packed Container.  The Terminal User shall submit a final load list to APM Terminals containing the VGMs of the Containers as soon as possible and in any event no later than 24 hours before the associated Vessel call. Any failure to provide a complete and accurate final load list in a timely manner shall allow APM Terminals to refuse acceptance of Goods, Containers, Vehicles and/or Vessels or to impose additional rates or surcharges for the provision of the Terminal Services.
+- (c) APM Terminals shall not load onto a Vessel any packed Container for which a VGM has not been received or obtained by APM Terminals.
+- (d) APM Terminals shall be under no obligation to verify the VGM received for any given Container. APM Terminals shall not weigh any Container for which a VGM has already been received by APM Terminals without specific prior request by the Terminal User. APM Terminals shall have no liability for the accuracy of any VGM submitted by a Terminal User and their compliance with Applicable Laws.
+- (e) If APM Terminals offers VGM weighing services and APM Terminals obtains a VGM for a Container upon request of the Terminal User, APM Terminals will charge agreed or published rates. If such VGM differs from any VGM supplied by the Terminal User or otherwise received by APM Terminals, the VGM obtained by APM Terminals shall prevail.
+- (f) In relation to VGMs received by APM Terminals from the Terminal User, the Terminal User shall indemnify APM Terminals and hold APM Terminals harmless against any loss, damage, expense or other cost arising as a result of any such VGM being inaccurate or not having been obtained in accordance with SOLAS.
+
+3.5 Stowaways
+
+Each relevant Terminal User will arrange for access control to be performed at the gangway on all Vessels whilst berthed at the Terminal, in order to assist APM Terminals to prevent stowaways or other unauthorised access to Vessels. In the event that stowaways or other unauthorised persons are found on-board any Vessel berthed at the Terminal and whether found whilst at the Terminal or after the Vessel's departure, and such persons gained access to such Vessel whilst berthed at the Terminal, then all reasonable and necessary costs, expenses, fees, fines, penalties and other liabilities incurred shall be for the account of Terminal User.
+
+3.6 Abandoned Goods
+
+The Parties shall consider Goods as "Abandoned Goods" if:
+
+- (a) the Goods are declared abandoned by local authorities;
+- (b) neither the consignee nor the shipper takes delivery of the relevant Goods after written notification by the Terminal User to the consignee and/or the shipper;
+- (c) it is not possible for the Terminal User to notify the consignee due to uncertainty of the consignee's actual contact details; or
+- (d) the person entitled to the Goods has notified the Terminal User or APM Terminals in writing about the person's intention to abandon the Goods.; or
+- (e) the Goods are otherwise considered abandoned in accordance with local applicable laws or regulations.
+
+APM Terminals shall notify the Terminal User of the date on which the Goods shall be considered as Abandoned Goods and APM Terminals shall invoice the Terminal User for any Terminal Services with respect to such Abandoned Goods including but not limited to demurrages and disposal costs as of the date such Goods are considered as Abandoned Goods in accordance with this Clause.
+
+4. COMPLIANCE
+
+4.1 Each Terminal User represents and undertakes that in the performance of these Terms and the underlying contractual relationship between the Parties, it and all of its affiliates, and its and their respective employees, directors, officers, agents or sub-contractors will comply in all material respects with all Applicable Laws including relating to anti-
+
+4
+
+Classification: Public
+
+--- Page 5 ---
+
+**APM TERMINALS** Lifting Global Trade(TM)
+
+corruption, competition law and foreign trade controls (export controls and sanctions laws of the UN, the EU and US or other relevant regulator).
+
+For the purposes of clarity, each Terminal User undertakes not to:
+
+- (a) give, promise or attempt to give or approve the giving of anything of value to any person, for illegal purposes or for improperly obtaining or retaining business.
+- (b) deal, or cause the other Party to deal, with any person or entity in respect of transactions prohibited by foreign trade controls, except with the other Party's prior written consent; or which could damage the other Party's commercial or other reputation interests, even if not in violation of any foreign trade controls.
+
+4.2 Each Terminal User warrants that it has established processes and maintains policies and procedures to prevent violation of Clause 4.1.
+
+4.3 If a Terminal User materially breaches any of its obligations or representations in this Clause, APM Terminals may terminate this contractual relationship with immediate effect without incurring any liability.
+
+**5. LIABILITY**
+
+5.1 **LOSS OR DAMAGE TO GOODS:** APM Terminals shall only be liable for loss of, or damage to, Goods whilst in the custody or control of APM Terminals to the extent caused by the negligence or willful misconduct of APM Terminals and such liability shall be limited to the lesser of:
+
+- (a) the value of the Goods actually lost or damaged, which shall be determined by the reasonable repair cost or replacement cost (with Goods of the same age and in the same condition) of the Goods lost or damaged;
+- (b) the limits of liability upon which the Terminal User could rely in a claim brought against it in accordance with the Carriage Contract or any other terms which the Terminal User may have the benefit of; and
+- (c) 2SDRs per kilo of gross weight of the goods lost or damaged.
+
+The Terminal User shall ensure that all Carriage Contracts incorporate a clause to the effect that APM Terminals will have the benefit of the provisions, including the law and jurisdiction provisions of that Carriage Contract to the extent such provisions benefit the Terminal User. APM Terminals authorises, empowers and directs the Terminal User to act, and the Terminal User hereby agrees to act, as trustee and/or agent for APM Terminals for the limited purpose only of complying with this Clause 5.1. In addition to being able to rely on these Terms, APM Terminals has the right to avail itself of and invoke any limitation or exclusion of liability, immunity, defence, right, remedy and/or law and jurisdiction clause contained in the Carriage Contract as if APM Terminals were the carrier and Terminal User were the merchant referred to in the Carriage Contract.
+
+5.2 **LOSS OR DAMAGE TO CONTAINERS:** APM Terminals shall only be liable for loss of, or damage to, any Container or other Terminal User equipment whilst in the custody or control of APM Terminals to the extent caused by the negligence or willful misconduct of APM Terminals and such liability shall be limited to the lesser of:
+
+- (a) the reasonable repair cost of the Container or other equipment damaged; and
+- (b) the depreciated value of the Container or other equipment lost or damaged, provided that in no circumstances shall the liability exceed:
+  - (i) two thousand nine hundred US Dollars (USD 2,900) per Container in the case of any regular 20' dry Container;
+  - (ii) four thousand six hundred US Dollars (USD 4,600) per Container in the case of any regular dry Container of more than 20' in length;
+  - (iii) twenty-five thousand US Dollars (USD 25,000) per Container in the case of any 20' reefer Container;
+  - (iv) twenty-eight thousand US Dollars (USD 28,000) per Container in the case of any reefer Container of more than 20' in length;
+  - (v) five thousand US Dollars (USD 5,000) per Container in the case of any 20' Container which is not a regular dry or reefer Container;
+  - (vi) nine thousand US Dollars (USD 9,000) per Container in the case of any Container of more than 20' in length which is not a regular dry or reefer Container;
+  - (vii) twelve thousand US Dollars (USD 12,000) per chassis in the case of any chassis;
+  - (viii) fourteen thousand US Dollars (USD 14,000) per genset in the case of any genset; and
+  - (ix) five thousand US Dollars (USD 5,000) per piece of other equipment not outlined above.
+
+The depreciated value of the Container or other equipment shall be calculated on the basis of the respective values in this Clause 5.2 with a straight-line depreciation of five per cent. (5%) per annum from the date of manufacture (as evidenced for Containers in the container safety certificate) until the day before the incident.
+
+5
+
+Classification: Public
+
+--- Page 6 ---
+
+APM TERMINALS Lifting Global Trade(TM)
+
+5.3 LOSS OR DAMAGE TO VESSELS OR VEHICLES: APM Terminals shall only be liable for loss of, or damage to, a Vessel or Vehicle, to the extent caused by the negligence or willful misconduct of APM Terminals and shall be limited to the lesser of:
+
+- (a) the reasonable repair cost of the Vessel or Vehicle damaged;
+- (b) the replacement cost (with a Vessel or Vehicle of the same age and in the same condition) of the Vessel or Vehicle lost or damaged; and
+- (c) twenty million US Dollars (USD 20,000,000) per Vessel and one hundred thousand US Dollars (USD 100,000) per Vehicle.
+
+5.4 LIABILITY CAP: The following maximum aggregate liability shall apply:
+
+For APM Terminals:
+
+- (a) losses and/or damages under Clauses 5.1 and 5.2 which arise out of a single incident or series of connected incidents, regardless whether such losses and/or damages are sustained by more than one person, shall in no circumstances exceed ten million US Dollars (USD 10,000,000); or
+- (b) losses and/or damages under Clauses 5.3 which arise out of a single incident or series of connected incidents, regardless whether such losses and/or damages are sustained by more than one person, shall in no circumstances exceed twenty million US Dollars (USD 20,000,000),
+  (collectively, the "Overall Liability Cap" for APM Terminals).
+
+For the Terminal User:
+
+Losses and/or damages which arise out of a single incident shall in no circumstances exceed twenty million US Dollars (USD 20,000,000) (the "Overall Liability Cap" for the Terminal User).
+
+5.5 Where, in respect of a single incident or series of connected incidents, the losses and/or damages are sustained by more than one person, the relevant Overall Liability Cap shall be applied to all claims brought by each person on a pro-rata basis (i.e. based on the proportion each person's claims bear to the total amount claimed by all such persons).
+
+Liability Exclusions
+
+5.6 In no event shall any Party be liable for any consequential or indirect losses or damages of any kind whatsoever, it being the express intention of each Party that recovery of any such damages is prohibited with respect to claims arising from or related to these Terms. This includes any and all liability resulting from any delayed provision of the Terminal Services if not specifically agreed differently between the Parties.
+
+5.7 Either Party shall be discharged of all liability whatsoever and howsoever arising in respect of any event in case no legal proceedings are commenced and written notice thereof given to such Party within twelve (12) months from the date of the loss, damage, delay or failure to adhere to any timeframe alleged to give rise to a claim.
+
+5.8 No Party shall be entitled to bring any claim howsoever arising (including negligence and willful misconduct) for any amount lower than one thousand five hundred US dollars (USD 1,500).
+
+5.9 Save as set out in this Clause 5, no Party shall be liable for loss of or damage to any Goods, Container, Vehicle and/or Vessel howsoever arising. The defences, exclusions and limits of liability provided for in these Terms shall apply in any claim against the relevant Party regardless of the basis of the claim. Nothing in these Terms shall operate to limit or deprive APM Terminals or any statutory protection, defence, exception or limitation of liability authorised by any Applicable Law and APM Terminals shall have the full benefit of such.
+
+5.10 Nothing in these Terms shall exclude or restrict the liability of the Parties for death or personal injury caused by its negligence or any other act or omission, for which liability may not be excluded or limited under Applicable Laws.
+
+5.11 Each Party shall notify the other Party in writing within thirty (30) days from the date that Party became aware of any matter which gives rise to or may give rise to a claim under these Terms, stating in reasonable detail the nature of the matter and claim, and, so far as practicable, the amount claimed. No amounts of indemnity shall be payable by the indemnifying Party with respect to any claim unless the indemnified Party has given the indemnifying Party notice of such claim in accordance with this Clause.
+
+6. INSURANCE
+
+6.1 Each Terminal User shall, at its own expense, procure and maintain policies of insurance covering
+
+- (a) any liability assumed by it under these Terms; and
+- (b) any requirements by law, including public and third-party liability.
+
+6.2 APM Terminals is under no obligation to maintain insurance for Goods, Containers, Vehicles or Vessels.
+
+6
+
+Classification: Public
+
+--- Page 7 ---
+
+APM TERMINALS Lifting Global Trade.
+
+6.3 Each relevant Terminal User shall maintain or shall cause its Vessels to be maintained in a thoroughly fit and seaworthy condition at all times throughout the duration of any agreement governed by these Terms. Vessels shall be kept continuously in class in accordance with the rules of the relevant classification society. The Terminal User shall maintain the following insurances and shall furnish to APM Terminals' representative certificates or copies of policies (or in the case of P&I cover, a certificate of entry) evidencing such insurance:
+(a) Hull and Machinery insurance, in accordance with ITC hull clauses 1983 or equivalent conditions, in an amount no less than the full market value of the Vessel; and
+(b) P&I cover on standard terms and customary limits with a member of the International Group of P&I Clubs.
+6.4 The Parties shall provide each other at least thirty (30) days' notice prior to cancellation, non-renewal or material change in any insurance policy. Insurance must be maintained without any lapse in coverage during the Term. Failure by either Party to demand certificates or other evidence of full compliance with these insurance requirements, or failure to identify any deficiency or non-compliance with coverage requirements, shall not be construed as a waiver of either Party's obligation to maintain the insurance required by these Terms.
+6.5 No insurances or the limits of such insurances shall be construed in any way as a limit of any Terminal User's liability hereunder.
+
+7. FORCE MAJEURE
+
+7.1 Either Party shall be relieved from liability for non-performance of its obligations under these Terms (other than for payment of Terminal Services provided) if and to the extent such non-performance is caused by or results from Force Majeure for as long as the Force Majeure continues.
+7.2 "Force Majeure" means an event or circumstance beyond the reasonable control of a Party including, but not limited to, any act of God, act of public enemies, war, warlike act, terrorism, cyber-attack, restraint of governments, riot, strike, lockout or other labor or industrial dispute, failure of a utility service, insurrection, civil commotion, civil disobedience, flood, fire, restrictions due to quarantines, sanction, radioactivity, pandemic or epidemic, storm, tempest, typhoon, hurricane or tsunami.
+7.3 The Party affected by the Force Majeure shall use all reasonable efforts to mitigate and overcome the effects of the Force Majeure in order to maintain or resume performance.
+7.4 If an Force Majeure occurs which may affect the performance of part or all of its obligations, the affected Party shall notify the other Party (the non-affected Party), as soon as reasonably practicable, of:
+(a) the occurrence and nature of the Force Majeure;
+(b) its expected duration (so far as can be reasonably assessed);
+(c) the obligations of the affected Party, which cannot be fully performed as a result; and
+(d) the mitigating actions and remedies, which the affected Party proposes to take.
+7.5 The affected Party shall keep the non-affected Party informed of developments, including the performance by it of the mitigating actions and remedies, and the results thereof.
+7.6 If the affected Party's obligations are not performed, substantially not performed or delayed due to Force Majeure for a continuous period exceeding one hundred twenty (120) days, the non-affected Party may terminate the application of these Terms and any agreement between the Parties with immediate effect.
+
+8. LAW AND JURISDICTION
+
+8.1 These Terms, their interpretation and any contractual obligations arising out of or in connection with these Terms are governed by the substantive laws of Sweden.
+8.2 Any dispute, controversy or claim arising out of or in connection with these Terms, or the breach, termination or invalidity thereof, shall be finally settled by arbitration administered by the SCC Arbitration Institute (the "SCC"). The Rules for Expedited Arbitrations shall apply, unless the SCC in its discretion determines, taking into account the complexity of the case, the amount in dispute and other circumstances, that the Arbitration Rules shall apply. In the latter case, the SCC shall also decide whether the Arbitral Tribunal shall be composed of one or three arbitrators. The seat of arbitration shall be Gothenburg and the language to be used in the arbitral proceedings shall be English.
+
+9. GENERAL
+
+9.1 Notwithstanding the public nature of these Terms, any dealings between a Terminal User and APM Terminals in scope of these Terms shall be treated as confidential between such parties and shall not be disclosed to any third party.
+9.2 These Terms, together with any documents referred to in them or incorporating them, comprise the entire agreement between the Parties with respect to the matters dealt with in them and any representations or statements whether made
+
+7
+
+Classification: Public
+
+--- Page 8 ---
+
+**APM TERMINALS** Lifting Global Trade(TM)
+
+orally or written elsewhere are hereby excluded, provided that this Clause shall not exclude or limit any liability or right which any Party may have in respect of pre-contractual statements made or given fraudulently; and (i) hereby excludes, to the fullest extent permitted, all conditions, warranties or other terms implied or expressed by the Terminal User or by law; and (ii) supersedes all previous agreements and arrangements between the Parties with respect to the provision of the matters dealt with in them.
+
+9.3 Should any provision in these Terms be held invalid or unenforceable, the remainder of these Terms and the application of such provision to persons or circumstances other than those to which it is invalid or unenforceable, shall not be affected thereby and each provision of these Terms shall be valid and enforceable to the extent permitted by law. However, if such provision in these Terms is a material part of these Terms, the Parties shall use their best endeavours to agree a valid and enforceable replacement which achieves (so far as possible) materially the same effect as law.
+9.4 Any party for whom APM Terminals is responsible shall have the benefit of the exclusions of liability contained in, and shall have the right to enforce, the provisions of these Terms.
+9.5 The relationship of APM Terminals and the Terminal User under these Terms is that of independent contractors, and neither Party is an employee, agent, partner or in a joint venture with the other. Each Party shall be solely responsible and liable for any employment-related taxes, insurance premiums or other employment benefits related to its respective performance under these Terms.
+9.6 APM Terminals may sub-contract the Terminal Services and APM Terminals shall remain responsible for its sub-contractors and their performance.
+9.7 All Containers and Goods and all documents relating to Containers and Goods shall be subject to a particular and general lien respectively for charges due to APM Terminals in respect of such Containers or Goods from the Terminal User. If any charges are not paid within three (3) calendar months after notice requiring payment has been given to the Terminal User, the Containers or Goods subject to such lien, may be sold and the proceeds applied in or towards satisfaction of the outstanding charges and the costs incurred in such sale. This lien shall be in addition to any security allowed by law.
+9.8 The failure to exercise or delay in exercising a right or remedy provided for in these Terms or by law does not constitute a waiver of the rights or remedies. No single or partial exercise of a right or remedy provided for in these Terms or by law prevents further exercise of the right or remedy or the exercise of another right or remedy.
+9.9 Notwithstanding anything to the contrary in these Terms, APM Terminals may terminate its legal relationship with the Terminal User under these Terms with immediate effect:
+(a) If the Terminal User enters into any form of insolvency or bankruptcy or ceases or threatens to cease to carry on its business, or passes a resolution for winding up, or is unable to pay its debts;
+(b) at any time following the Terminal User's failure to fulfil any of its obligations in these Terms for two (2) consecutive months.
+
+8
+
+Classification: Public
