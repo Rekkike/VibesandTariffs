@@ -97,11 +97,17 @@ fee_rules:
     fee_family: port_dues
     biller: Gävle Hamn AB
     name: Hamnavgift - Containerfartyg
-    description: 'Hamnavgift (port dues) for container vessels calling the Bulkterminal / Containerterminal / Granudden: 2.97 SEK/GT. Miljörabatt: ESI >= 30 points or CSI >= 4 stars gives 10% off the GT-based vessel fee (registration reported in MSW before the call). LNG fuel at the call gives a further 20% off - the model''s input surface carries no LNG-fuel attestation, so the LNG discount is recorded here, never silently applied; where both would apply the conservative default prices the highest single discount (the tariff does not state a stacking rule - extraction reference section 10.1). Winter surcharge: 1 December - 30 April +100% - a date-window condition the engine does not support (a genuinely new rule shape, reported); the limitation notice below documents it and the base rate is priced year-round.'
+    description: 'Hamnavgift (port dues) for container vessels calling the Bulkterminal / Containerterminal / Granudden: 2.97 SEK/GT. Miljörabatt: ESI >= 30 points or CSI >= 4 stars gives 10% off the GT-based vessel fee (registration reported in MSW before the call). LNG fuel at the call gives a further 20% off - the model''s input surface carries no LNG-fuel attestation, so the LNG discount is recorded here, never silently applied; where both would apply the conservative default prices the highest single discount (the tariff does not state a stacking rule - extraction reference section 10.1). Winter surcharge: the istillägg (1 December - 30 April, +100%) is priced as the gated winter variant rule gvh_hamnavgift_container_winter (v0.4.3, spec 4.4.3); this rule prices the base rate at calls outside the window.'
     rate_structure:
       type: per_unit
       unit_type: gt
       unit_rate: 2.97
+    applicable_conditions:
+      date_outside_annual_window:
+        start_month: 12
+        start_day: 1
+        end_month: 4
+        end_day: 30
     source_reference:
       document_name: hamntaxa-2026.pdf
       document_url: docs/sources/sweden/gavle/hamntaxa-2026.pdf
@@ -118,27 +124,37 @@ fee_rules:
         stacking_order: 1
         description: 'Miljörabatt (section 3): vessels with at least 30 ESI points receive 10% off the GT-based vessel fee; registration must be reported in Maritime Single Window before the call. The alternative key - at least 4 CSI STARS (the Clean Shipping Index star rating, a different scale from both Sjöfartsverket''s A-E class and the model''s 1-5 CSI-class input) - is recorded here, never conflated: the model keys the discount on the ESI score only.'
 
-  # --- Winter surcharge limitation notice (the date-window finding) ---
-  - id: gvh_winter_surcharge_notice
+  # --- Hamnavgift istillägg: container terminal vessels, winter variant (v0.4.3) ---
+  - id: gvh_hamnavgift_container_winter
     fee_family: port_dues
     biller: Gävle Hamn AB
-    name: Winter Surcharge 1 Dec - 30 Apr +100% (limitation notice)
-    description: 'The tariff doubles the vessel dues from 1 December to 30 April ("Istillägg 1 december till 30 april +100%"). A date-window condition on the call date is a rule shape the engine does not support - pricing it would require new machinery (a calendar-window condition type), which this pass does not improvise. The model prices the base rate year-round; a call within the window in reality doubles the hamnavgift. This notice documents the limitation; nothing is added to any total.'
+    name: Hamnavgift - Containerfartyg (Istillägg, 1 Dec - 30 Apr)
+    description: 'Winter variant (v0.4.3): the istillägg doubles the container-vessel hamnavgift inside the window - "Istillägg 1 december till 30 april +100 % (enligt ovanstående taxa)" - 2.97 SEK/GT x 2 = 5.94 SEK/GT, gated on the engine-generic annual calendar-window condition (endpoints inclusive; the window crosses New Year). Priced only at calls inside the window; the base rule prices the year-round rate outside it. The miljörabatt applies to the doubled fee on a winter call (audit §3 adjudication with the tariff''s verbatim wording; the same ESI adjustment carried on this variant).'
     rate_structure:
-      type: flat
-      amount: 0
-    service_gap_notice:
-      description: 'Winter surcharge: the tariff''s +100% istillägg applies 1 December - 30 April; the model cannot price a calendar-window condition (a new rule shape, reported as a finding) and prices the base rate year-round. A call inside the window underprices the hamnavgift by 100% - the user must apply the doubling manually for winter calls.'
-      severity: warning
+      type: per_unit
+      unit_type: gt
+      unit_rate: 5.94
+    applicable_conditions:
+      date_within_annual_window:
+        start_month: 12
+        start_day: 1
+        end_month: 4
+        end_day: 30
     source_reference:
       document_name: hamntaxa-2026.pdf
       document_url: docs/sources/sweden/gavle/hamntaxa-2026.pdf
       page: 4
       clause: '2.1 Istillägg 1 december till 30 april +100% (enligt ovanstående taxa)'
       verified_on: '2026-10-02'
-      verified_by: vibe-session-swedish-expansion
+      verified_by: vibe-session-annual-window
       document_issued: '2026-01-01'
-
+    adjustments:
+      - type: discount
+        percentage: 10
+        condition: "esi_score >= 30"
+        stack_method: multiplicative
+        stacking_order: 1
+        description: 'Miljörabatt (section 3): vessels with at least 30 ESI points receive 10% off the GT-based vessel fee as charged - on a winter call the fartygsavgift is the doubled fee (audit §3 adjudication). The CSI-stars alternative key is recorded on the base rule, never conflated.'
   # --- Liggetidsavgift (S1 §2.6, p.5) ---
   - id: gvh_liggetidsavgift
     fee_family: port_dues
@@ -158,6 +174,142 @@ fee_rules:
       verified_by: vibe-session-swedish-expansion
       document_issued: '2026-01-01'
 
+  # --- Hamnavgift: Kaj 1 Kemiterminalen (S1 2.2, p.4) — v0.4.3 base + winter pair
+  - id: gvh_hamnavgift_kemiterminalen
+    fee_family: port_dues
+    biller: Gävle Hamn AB
+    name: Hamnavgift - Kaj 1 Kemiterminalen (Tankfartyg)
+    description: 'Hamnavgift (port dues) for tank vessels calling Kaj 1 Kemiterminalen (S1 2.2): 4.81 SEK/GT 0-15,000 GT; 5.21 SEK/GT 15,001-20,000 GT; 5.96 SEK/GT above 20,000 GT — priced at calls outside the istillägg window (1 December - 30 April; inside the window the winter variant rule prices the doubled rates). Not the container call''s surface: the container call prices 2.1.'
+    rate_structure:
+      type: banded_flat
+      basis: gt
+      bands:
+        - { min: null, max: 15000, rate: 4.81 }
+        - { min: 15000, max: 20000, rate: 5.21 }
+        - { min: 20000, max: null, rate: 5.96 }
+    applicable_conditions:
+      vessel_type: [tanker]
+      date_outside_annual_window:
+        start_month: 12
+        start_day: 1
+        end_month: 4
+        end_day: 30
+    source_reference:
+      document_name: hamntaxa-2026.pdf
+      document_url: docs/sources/sweden/gavle/hamntaxa-2026.pdf
+      page: 4
+      clause: '2.2 Fartyg till Kaj 1 Kemiterminalen - Tankfartyg 0-15 000 GT SEK 4,81/GT; 15 001-20 000 GT SEK 5,21/GT; >20 000 GT SEK 5,96/GT'
+      verified_on: '2026-10-02'
+      verified_by: vibe-session-annual-window
+      document_issued: '2026-01-01'
+  - id: gvh_hamnavgift_kemiterminalen_winter
+    fee_family: port_dues
+    biller: Gävle Hamn AB
+    name: Hamnavgift - Kaj 1 Kemiterminalen (Istillägg, 1 Dec - 30 Apr)
+    description: 'Winter variant (v0.4.3): the istillägg doubles the Kemiterminalen tank-vessel hamnavgift inside the window — "Istillägg 1 december till 30 april +100 % (enligt ovanstående taxa)" — 9.62 / 10.42 / 11.92 SEK/GT by GT band, gated on the engine-generic annual calendar-window condition (endpoints inclusive, wrap-handled).'
+    rate_structure:
+      type: banded_flat
+      basis: gt
+      bands:
+        - { min: null, max: 15000, rate: 9.62 }
+        - { min: 15000, max: 20000, rate: 10.42 }
+        - { min: 20000, max: null, rate: 11.92 }
+    applicable_conditions:
+      vessel_type: [tanker]
+      date_within_annual_window:
+        start_month: 12
+        start_day: 1
+        end_month: 4
+        end_day: 30
+    source_reference:
+      document_name: hamntaxa-2026.pdf
+      document_url: docs/sources/sweden/gavle/hamntaxa-2026.pdf
+      page: 4
+      clause: '2.2 Istillägg 1 december till 30 april +100% (enligt ovanstående taxa)'
+      verified_on: '2026-10-02'
+      verified_by: vibe-session-annual-window
+      document_issued: '2026-01-01'
+  # --- Hamnavgift: Kaj 27 Energiterminalen (S1 2.3, p.4) — v0.4.3 base + winter pair
+  - id: gvh_hamnavgift_energiterminalen
+    fee_family: port_dues
+    biller: Gävle Hamn AB
+    name: Hamnavgift - Kaj 27 Energiterminalen (Tankfartyg)
+    description: 'Hamnavgift (port dues) for tank vessels calling Kaj 27 Energiterminalen (S1 2.3): 4.94 SEK/GT 0-15,000 GT; 5.35 SEK/GT 15,001-20,000 GT; 6.12 SEK/GT above 20,000 GT — priced at calls outside the istillägg window (1 December - 30 April; inside the window the winter variant rule prices the doubled rates). Not the container call''s surface: the container call prices 2.1.'
+    rate_structure:
+      type: banded_flat
+      basis: gt
+      bands:
+        - { min: null, max: 15000, rate: 4.94 }
+        - { min: 15000, max: 20000, rate: 5.35 }
+        - { min: 20000, max: null, rate: 6.12 }
+    applicable_conditions:
+      vessel_type: [tanker]
+      date_outside_annual_window:
+        start_month: 12
+        start_day: 1
+        end_month: 4
+        end_day: 30
+    source_reference:
+      document_name: hamntaxa-2026.pdf
+      document_url: docs/sources/sweden/gavle/hamntaxa-2026.pdf
+      page: 4
+      clause: '2.3 Fartyg till Kaj 27 Energiterminalen - Tankfartyg 0-15 000 GT SEK 4,94/GT; 15 001-20 000 GT SEK 5,35/GT; >20 000 GT SEK 6,12/GT'
+      verified_on: '2026-10-02'
+      verified_by: vibe-session-annual-window
+      document_issued: '2026-01-01'
+  - id: gvh_hamnavgift_energiterminalen_winter
+    fee_family: port_dues
+    biller: Gävle Hamn AB
+    name: Hamnavgift - Kaj 27 Energiterminalen (Istillägg, 1 Dec - 30 Apr)
+    description: 'Winter variant (v0.4.3): the istillägg doubles the Energiterminalen tank-vessel hamnavgift inside the window — "Istillägg 1 december till 30 april +100 % (enligt ovanstående taxa)" — 9.88 / 10.70 / 12.24 SEK/GT by GT band, gated on the engine-generic annual calendar-window condition (endpoints inclusive, wrap-handled).'
+    rate_structure:
+      type: banded_flat
+      basis: gt
+      bands:
+        - { min: null, max: 15000, rate: 9.88 }
+        - { min: 15000, max: 20000, rate: 10.70 }
+        - { min: 20000, max: null, rate: 12.24 }
+    applicable_conditions:
+      vessel_type: [tanker]
+      date_within_annual_window:
+        start_month: 12
+        start_day: 1
+        end_month: 4
+        end_day: 30
+    source_reference:
+      document_name: hamntaxa-2026.pdf
+      document_url: docs/sources/sweden/gavle/hamntaxa-2026.pdf
+      page: 4
+      clause: '2.3 Istillägg 1 december till 30 april +100% (enligt ovanstående taxa)'
+      verified_on: '2026-10-02'
+      verified_by: vibe-session-annual-window
+      document_issued: '2026-01-01'
+  # --- Karskär hamnavgift + istillägg: recorded, not encoded (v0.4.3) ---
+  # The document's 2.5 rate (Karskär, alla fartygstyper 4.26 SEK/GT) carries
+  # the same istillägg line, but the model has no quay/berth selector: an
+  # ungated all-types rule would double-price every call (2.1 prices the
+  # container call's hamnavgift). Recorded with its citation as a notice;
+  # the finding and adjudication are in docs/ANNUAL_WINDOW_CONDITION_AUDIT.md
+  # (a directive-expectation mismatch, reported).
+  - id: gvh_karskar_recorded_notice
+    fee_family: port_dues
+    biller: Gävle Hamn AB
+    name: Karskär Hamnavgift 4.26/GT with Istillägg (recorded, not encoded)
+    description: 'The tariff''s section 2.5 (Fartyg till Karskär - Alla fartygstyper SEK 4,26/GT) carries the same winter surcharge line — "Istillägg 1 december till 30 april +100 % (enligt ovanstående taxa)". The model carries no quay selector: the container call prices section 2.1 (the Containerterminal rate), and an ungated all-vessel-types rule would double-price every call. The rate and its istillägg are recorded here with the citation, never priced; a future quay-selector input is the named surface that would encode it.'
+    rate_structure:
+      type: flat
+      amount: 0
+    service_gap_notice:
+      description: 'Karskär hamnavgift 4.26 SEK/GT (all vessel types) with the istillägg 1 December - 30 April +100%: recorded, not encoded - the model has no quay selector distinguishing Karskär from the Containerterminal, and an ungated all-types rule would double-price the call.'
+      severity: info
+    source_reference:
+      document_name: hamntaxa-2026.pdf
+      document_url: docs/sources/sweden/gavle/hamntaxa-2026.pdf
+      page: 4
+      clause: '2.5 Fartyg till Karskär - Alla fartygstyper SEK 4,26/GT; Istillägg 1 december till 30 april +100% (enligt ovanstående taxa)'
+      verified_on: '2026-10-02'
+      verified_by: vibe-session-annual-window
+      document_issued: '2026-01-01'
   # --- Miljötillägg: waste (S1 §4.1, p.6) ---
   - id: gvh_miljotillagg_container
     fee_family: waste

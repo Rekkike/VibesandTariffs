@@ -144,13 +144,20 @@ describe('Swedish domestic expansion — verbatim rule figures (the extraction t
     expect(feeByRule(result, 'gvh_miljotillagg_container').amount).toBe(0.18 * DEFAULT_VESSEL.gt);
   });
 
-  it('Gävle: the winter-surcharge date-window limitation renders as a visible notice (never silently priced)', () => {
+  // v0.4.3 re-point (the superseded pin, in-test attribution): the v0.4.0
+  // limitation notice asserted the engine could not price the istillägg's
+  // calendar window; the annual calendar-window condition (spec v0.4.3)
+  // closes that gap and the notice is replaced by the gated winter variant
+  // pair. The pin now asserts the priced contract: at a non-winter call
+  // date the base rule prices and the winter variant renders nothing; at a
+  // winter date the doubled rate prices (pinned in the annual-window suite).
+  it('Gävle: the istillägg prices through the annual calendar-window pair (v0.4.3 re-baseline, attribution in-suite) — non-winter date prices the base only', () => {
     const port = loadPort('gavle');
-    const result = calculatePortCallCost(port, defaultInputFor('gavle'));
-    const notice = feesOf(result).find(f => f.fee_rule_id === 'gvh_winter_surcharge_notice');
-    expect(notice).toBeDefined();
-    expect(notice!.amount).toBe(0);
-    expect(flagsOf(notice!)).toContain('service_gap_notice');
+    const summerInput = { ...defaultInputFor('gavle'), call: { ...defaultCall('gavle'), date: '2026-10-02' } };
+    const result = calculatePortCallCost(port, summerInput);
+    expect(feeByRule(result, 'gvh_hamnavgift_container').amount).toBe(2.97 * DEFAULT_VESSEL.gt);
+    expect(feesOf(result).find(f => f.fee_rule_id === 'gvh_hamnavgift_container_winter')).toBeUndefined();
+    expect(feesOf(result).find(f => f.fee_rule_id === 'gvh_winter_surcharge_notice')).toBeUndefined();
   });
 
   it('Norvik: PoS vessel dues 5.17 SEK/GT with the 2,585 minimum; cargo dues 331/424; waste fixed + variable', () => {

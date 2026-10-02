@@ -66,6 +66,55 @@ export function inferEngineTier(builtYear: number | undefined): 'Tier 0' | 'Tier
 }
 
 /**
+ * Annual calendar-window predicate (spec v0.4.3): true when the call's
+ * date falls within the declared month/day window, endpoints inclusive,
+ * applied per calendar year. A window whose start falls after its end
+ * crosses New Year (e.g. 1 December - 30 April) and is true on both sides
+ * of the year boundary. The input is the call's existing required ISO date
+ * field; a missing or unparseable date matches no window, so a rule gated
+ * on the condition renders nothing rather than silently firing. Purely
+ * calendar-generic machinery: the window numbers are data, never a port
+ * identifier.
+ */
+export function isDateWithinAnnualWindow(
+  date: string | undefined,
+  window: { start_month: number; start_day: number; end_month: number; end_day: number }
+): boolean {
+  if (typeof date !== 'string') return false;
+  const match = date.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (!match) return false;
+  const month = parseInt(match[2], 10);
+  const day = parseInt(match[3], 10);
+  const { start_month, start_day, end_month, end_day } = window;
+  const md = month * 100 + day;
+  const start = start_month * 100 + start_day;
+  const end = end_month * 100 + end_day;
+  if (start <= end) {
+    return md >= start && md <= end;
+  }
+  return md >= start || md <= end;
+}
+
+/**
+ * The calendar-window complement (spec v0.4.3): true when the call's date
+ * falls OUTSIDE the declared window. The gated-variant pattern's explicit
+ * complement - the in-window rule and its year-round sibling each carry one
+ * of the two predicates, mirroring the engine's existing paired-condition
+ * variants (e.g. issc_valid true/false). A call carrying no usable date
+ * prices the year-round sibling (the pre-condition behavior, preserved).
+ * The window's own endpoints remain inclusive.
+ */
+export function isDateOutsideAnnualWindow(
+  date: string | undefined,
+  window: { start_month: number; start_day: number; end_month: number; end_day: number }
+): boolean {
+  if (typeof date !== 'string') return true;
+  const match = date.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (!match) return true;
+  return !isDateWithinAnnualWindow(date, window);
+}
+
+/**
  * Evaluates a single fee rule against the input
  */
 export function evaluateFeeRule(
@@ -259,6 +308,27 @@ export function evaluateFeeRule(
       }
     }
     
+    // Annual calendar window (spec v0.4.3): the rule applies only when the
+    // call's date falls inside the declared month/day window (endpoints
+    // inclusive, wrap-handled across New Year). The winter-variant pattern:
+    // the gated rule prices the in-window rate and its unconditioned sibling
+    // prices the year-round base. A missing date matches no window.
+    if (rule.applicable_conditions.date_within_annual_window) {
+      if (!isDateWithinAnnualWindow(call.date, rule.applicable_conditions.date_within_annual_window)) {
+        return null;
+      }
+    }
+
+    // The pair's complement gate: the year-round sibling of a window-gated
+    // winter variant carries the outside predicate so exactly one of the
+    // two prices at any call date. A call without a usable date prices the
+    // year-round rule (the pre-condition behavior, preserved).
+    if (rule.applicable_conditions.date_outside_annual_window) {
+      if (!isDateOutsideAnnualWindow(call.date, rule.applicable_conditions.date_outside_annual_window)) {
+        return null;
+      }
+    }
+
     // Generic conditions: any other key must match the call input exactly
     // (e.g. hpa_berth_usage: true, berth_type: 'quay'). flag_state is
     // deliberately absent from the handled set: no 2026 tariff prices a rule
@@ -267,7 +337,7 @@ export function evaluateFeeRule(
     // must reach the warning branch below and be ignored visibly, never pass
     // through the generic matcher (the v0.2.50 contract text promised a
     // reachable warning; making it reachable is the v0.2.53 repair).
-    const handled = new Set(['arrival_origin', 'min_gt', 'ops_usage', 'esi_score', 'csi_class', 'fuel_percentage', 'nt_class', 'vessel_type', 'ordering_lead_time_band', 'terminal_operator', 'issc_valid']);
+    const handled = new Set(['arrival_origin', 'min_gt', 'ops_usage', 'esi_score', 'csi_class', 'fuel_percentage', 'nt_class', 'vessel_type', 'ordering_lead_time_band', 'terminal_operator', 'issc_valid', 'date_within_annual_window', 'date_outside_annual_window']);
     for (const [key, value] of Object.entries(rule.applicable_conditions)) {
       if (handled.has(key)) continue;
       if (key === 'flag_state') {

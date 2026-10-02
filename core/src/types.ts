@@ -369,6 +369,31 @@ export interface FeeRule {
     csi_class?: string;
     fuel_percentage?: number;
     ops_usage?: boolean;
+    // Annual calendar-window predicate (spec v0.4.3): the call's date
+    // (month/day) falls within the declared window, endpoints inclusive,
+    // applied per calendar year. A window whose start is after its end
+    // crosses New Year (e.g. 1 December - 30 April): the predicate is
+    // true from the start date through 31 December and from 1 January
+    // through the end date. Data-declared and engine-generic; never a
+    // port-id string. The input is the call's existing required ISO date
+    // field; a missing or unparseable date matches no window (the rule
+    // renders nothing, never a silent fallback).
+    date_within_annual_window?: {
+      start_month: number;
+      start_day: number;
+      end_month: number;
+      end_day: number;
+    };
+    // The pair's complement (spec v0.4.3): the year-round sibling of a
+    // window-gated variant carries the outside predicate with the same
+    // window numbers, so exactly one of the two rules prices at any call
+    // date. A call carrying no usable date prices the year-round rule.
+    date_outside_annual_window?: {
+      start_month: number;
+      start_day: number;
+      end_month: number;
+      end_day: number;
+    };
     [key: string]: any;
   };
   // Marks the rule as an estimated parameter (unpublished rate); the flag is
