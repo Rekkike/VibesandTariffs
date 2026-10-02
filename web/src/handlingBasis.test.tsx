@@ -99,9 +99,29 @@ describe('handling-basis annotations (spec v0.4.2, item 2) - a new annotation fa
     expect(handlingBasisAnnotationFor('norrkoping')!.text).toContain('855/1,051/1,249/1,283');
     expect(handlingBasisAnnotationFor('helsingborg')!.text).toContain("Place of rest");
   });
-  it('the GOT case-2 finding is the annotation: basis not stated in the document, APMT the named future source', () => {
-    expect(handlingBasisAnnotationFor('gothenburg')!.text).toContain('not stated in the document');
-    expect(handlingBasisAnnotationFor('gothenburg')!.text).toContain('APMT');
+  it('the GOT basis determination (v0.4.6, archived and verified): single per-unit charge, no modality distinction, scope not stated — the inference labeled as inference', () => {
+    // v0.4.6 re-baseline (the APMT operator-document pass, in-test
+    // attribution): the archives delivered by the product owner verified —
+    // the annotation becomes the evidence-based characterization of
+    // APMT Terminal Tariff 2026 §1.1. A stale "basis not stated in the
+    // document" without the verification status fails; a padded claim of
+    // the bundled reading as published fails the inference labeling.
+    const text = handlingBasisAnnotationFor('gothenburg')!.text;
+    expect(text).toContain('Handling basis: single per-unit charge; no modality distinction and no separately priced legs published; scope of the charge not stated in the document');
+    expect(text).toContain('APMT Terminal Tariff 2026 (June revision, §1.1, per unit 377/535 SEK)');
+    expect(text).toContain('Terms of Business v31 March 2025');
+    expect(text).toContain('labeled as inference pending wording from APMT');
+    expect(text).not.toContain('not archived in-repo');
+    expect(text).not.toMatch(/bundled \(container-through\)/);
+  });
+  it('the GOT toggle participation stays "not published" with the archived-document reason (a wording, never a zero)', () => {
+    const got = containerThroughParts('gothenburg', 'truck', LE_UNITS, GT_UNITS);
+    expect(got.addedAmount).toBeNull();
+    expect(got.note).toContain('Not published');
+    expect(got.note).toContain('archived APMT Terminal Tariff 2026');
+    expect(got.note).toContain('publish no separately priced landside leg');
+    expect(got.note).toContain('Not published is never rendered as a zero');
+    expect(got.note).not.toContain('not archived in-repo');
   });
   it('the annotation family does not extend the cargo-family equivalence annotations (a separate module and class)', async () => {
     ({ container, root } = await renderComparison(defaultCall('gothenburg')));

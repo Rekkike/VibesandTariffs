@@ -122,8 +122,8 @@ describe('comparison-legibility zero-drift pins (spec v0.2.64)', () => {
       // order re-ranks cheapest-first on the moved total.
       '10\u00a0306\u00a0979\u00a0kr52.90 SEK/GT effective \u2014 derived, not a published rate',
       '11\u00a0952\u00a0324\u00a0kr61.34 SEK/GT effective \u2014 derived, not a published rate',
-      // v0.3.2 ritual drift (the only movement): the conversion-only figure moves with the standing rate re-verification — 11.331 as of 2026-09-30 (was 11.275, 2026-09-21); 2,204,910.90 EUR × 11.331 = 24,983,845 kr; ÷ 194,849 GT = 128.22 SEK/GT. The native totals (3,275,851 kr / 2,204,911 € / 8,750,057 kr) and per-GT 16.81 / 44.91 are untouched.
-      '2\u00a0204\u00a0911\u00a0\u20ac\u2248 24\u00a0983\u00a0845\u00a0kr converted \u2014 at 11.331 kr/EUR, 2026-09-30128.22 SEK/GT effective \u2014 derived, not a published rate; converted at the exchange-rate input (at 11.331 kr/EUR, 2026-09-30)'
+      // v0.4.6 ritual drift (the only movement): the conversion-only figure moves with the standing rate re-verification — 11.29 as of 2026-10-02 (was 11.331, 2026-09-30); 2,204,910.90 EUR × 11.29 = 24,893,444 kr; ÷ 194,849 GT = 127.76 SEK/GT. The native totals (3,275,851 kr / 2,204,911 € / 8,750,057 kr) and per-GT 16.81 / 44.91 are untouched.
+      '2\u00a0204\u00a0911\u00a0\u20ac\u2248 24\u00a0893\u00a0444\u00a0kr converted \u2014 at 11.29 kr/EUR, 2026-10-02127.76 SEK/GT effective \u2014 derived, not a published rate; converted at the exchange-rate input (at 11.29 kr/EUR, 2026-10-02)'
     ]);
   });
 
@@ -509,8 +509,8 @@ describe('the derived per-GT metric\u2019s per-GT-OPS disclosure (spec v0.2.64, 
     const totalRow = Array.from(container!.querySelectorAll('.comparison-total-row'))
       .find(r => (r.textContent ?? '').includes('Grand Total'))!;
     const hamCell = Array.from(totalRow.querySelectorAll('.comparison-total-pergt'))
-      // v0.3.2 ritual drift: HAM+OPS converts at 11.331 — 2,213,035.90 EUR × 11.331 ÷ 194,849 = 128.69 SEK/GT (was 128.06 at 11.275).
-      .find(c => (c.textContent ?? '').includes('128.69'))!;
+      // v0.4.6 ritual drift: HAM+OPS converts at 11.29 — 2,213,035.90 EUR × 11.29 ÷ 194,849 = 128.23 SEK/GT (was 128.69 at 11.331).
+      .find(c => (c.textContent ?? '').includes('128.23'))!;
     expect(hamCell.textContent).toContain('includes user-specified OPS');
     expect(hamCell.textContent).not.toContain('per-GT OPS charge uses the same GT basis');
   });

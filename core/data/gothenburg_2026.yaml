@@ -335,8 +335,8 @@ fee_rules:
     applicable_conditions:
       break_bulk_1000kg: 'present'
     source_reference:
-      document_name: "terminal-tariff-2026-june.pdf"
-      document_url: "docs/sources/sweden/gothenburg/apm-terminals/terminal-tariff-2026-june.pdf"
+      document_name: "apm-terminals-terminal-tariff-2026-june.txt"
+      document_url: "docs/sources/sweden/gothenburg/apm-terminals-terminal-tariff-2026-june.txt"
       upstream_url: "https://www.apmterminals.com/en/gothenburg/services/terminal-tariff"
       document_issued: "2025-12-01"
       page: 2
@@ -2396,8 +2396,8 @@ fee_rules:
       description: "Published APMT list rate; shipping lines may hold different contract rates (spec v0.2.4 contract-vs-published caveat)"
       severity: 'info'
     source_reference:
-      document_name: "terminal-tariff-2026-june.pdf"
-      document_url: "docs/sources/sweden/gothenburg/apm-terminals/terminal-tariff-2026-june.pdf"
+      document_name: "apm-terminals-terminal-tariff-2026-june.txt"
+      document_url: "docs/sources/sweden/gothenburg/apm-terminals-terminal-tariff-2026-june.txt"
       upstream_url: "https://www.apmterminals.com/en/gothenburg/services/terminal-tariff"
       document_issued: "2025-12-01"
       page: 2
@@ -2418,8 +2418,8 @@ fee_rules:
       description: "Published APMT list rate; shipping lines may hold different contract rates (spec v0.2.4 contract-vs-published caveat)"
       severity: 'info'
     source_reference:
-      document_name: "terminal-tariff-2026-june.pdf"
-      document_url: "docs/sources/sweden/gothenburg/apm-terminals/terminal-tariff-2026-june.pdf"
+      document_name: "apm-terminals-terminal-tariff-2026-june.txt"
+      document_url: "docs/sources/sweden/gothenburg/apm-terminals-terminal-tariff-2026-june.txt"
       upstream_url: "https://www.apmterminals.com/en/gothenburg/services/terminal-tariff"
       document_issued: "2025-12-01"
       page: 2
@@ -2437,8 +2437,8 @@ fee_rules:
       unit_rate: 54
       unit_type: "1000_kg"
     source_reference:
-      document_name: "terminal-tariff-2026-june.pdf"
-      document_url: "docs/sources/sweden/gothenburg/apm-terminals/terminal-tariff-2026-june.pdf"
+      document_name: "apm-terminals-terminal-tariff-2026-june.txt"
+      document_url: "docs/sources/sweden/gothenburg/apm-terminals-terminal-tariff-2026-june.txt"
       upstream_url: "https://www.apmterminals.com/en/gothenburg/services/terminal-tariff"
       document_issued: "2025-12-01"
       page: 2
@@ -2457,8 +2457,8 @@ fee_rules:
       unit_rate: 80
       unit_type: container_total
     source_reference:
-      document_name: "terminal-tariff-2026-june.pdf"
-      document_url: "docs/sources/sweden/gothenburg/apm-terminals/terminal-tariff-2026-june.pdf"
+      document_name: "apm-terminals-terminal-tariff-2026-june.txt"
+      document_url: "docs/sources/sweden/gothenburg/apm-terminals-terminal-tariff-2026-june.txt"
       upstream_url: "https://www.apmterminals.com/en/gothenburg/services/terminal-tariff"
       document_issued: "2025-12-01"
       page: 3
@@ -2477,8 +2477,8 @@ fee_rules:
       unit_rate: 3111
       unit_type: hatch_cover_count
     source_reference:
-      document_name: "terminal-tariff-2026-june.pdf"
-      document_url: "docs/sources/sweden/gothenburg/apm-terminals/terminal-tariff-2026-june.pdf"
+      document_name: "apm-terminals-terminal-tariff-2026-june.txt"
+      document_url: "docs/sources/sweden/gothenburg/apm-terminals-terminal-tariff-2026-june.txt"
       upstream_url: "https://www.apmterminals.com/en/gothenburg/services/terminal-tariff"
       document_issued: "2025-12-01"
       page: 3
@@ -2497,8 +2497,8 @@ fee_rules:
       unit_rate: 1036
       unit_type: gearbox_count
     source_reference:
-      document_name: "terminal-tariff-2026-june.pdf"
-      document_url: "docs/sources/sweden/gothenburg/apm-terminals/terminal-tariff-2026-june.pdf"
+      document_name: "apm-terminals-terminal-tariff-2026-june.txt"
+      document_url: "docs/sources/sweden/gothenburg/apm-terminals-terminal-tariff-2026-june.txt"
       upstream_url: "https://www.apmterminals.com/en/gothenburg/services/terminal-tariff"
       document_issued: "2025-12-01"
       page: 3
@@ -2533,8 +2533,8 @@ fee_rules:
           max_days: null
           daily_rate: 578
     source_reference:
-      document_name: "terminal-tariff-2026-june.pdf"
-      document_url: "docs/sources/sweden/gothenburg/apm-terminals/terminal-tariff-2026-june.pdf"
+      document_name: "apm-terminals-terminal-tariff-2026-june.txt"
+      document_url: "docs/sources/sweden/gothenburg/apm-terminals-terminal-tariff-2026-june.txt"
       upstream_url: "https://www.apmterminals.com/en/gothenburg/services/terminal-tariff"
       document_issued: "2025-12-01"
       page: 4
@@ -2564,8 +2564,8 @@ fee_rules:
           max_days: null
           daily_rate: 578
     source_reference:
-      document_name: "terminal-tariff-2026-june.pdf"
-      document_url: "docs/sources/sweden/gothenburg/apm-terminals/terminal-tariff-2026-june.pdf"
+      document_name: "apm-terminals-terminal-tariff-2026-june.txt"
+      document_url: "docs/sources/sweden/gothenburg/apm-terminals-terminal-tariff-2026-june.txt"
       upstream_url: "https://www.apmterminals.com/en/gothenburg/services/terminal-tariff"
       document_issued: "2025-12-01"
       page: 4
@@ -2586,8 +2586,8 @@ fee_rules:
       unit_input: oog_units
       unit_type: oog_units
     source_reference:
-      document_name: "terminal-tariff-2026-june.pdf"
-      document_url: "docs/sources/sweden/gothenburg/apm-terminals/terminal-tariff-2026-june.pdf"
+      document_name: "apm-terminals-terminal-tariff-2026-june.txt"
+      document_url: "docs/sources/sweden/gothenburg/apm-terminals-terminal-tariff-2026-june.txt"
       upstream_url: "https://www.apmterminals.com/en/gothenburg/services/terminal-tariff"
       document_issued: "2025-12-01"
       page: 5
@@ -2607,8 +2607,8 @@ fee_rules:
       unit_input: reefer_units
       unit_type: reefer_units
     source_reference:
-      document_name: "terminal-tariff-2026-june.pdf"
-      document_url: "docs/sources/sweden/gothenburg/apm-terminals/terminal-tariff-2026-june.pdf"
+      document_name: "apm-terminals-terminal-tariff-2026-june.txt"
+      document_url: "docs/sources/sweden/gothenburg/apm-terminals-terminal-tariff-2026-june.txt"
       upstream_url: "https://www.apmterminals.com/en/gothenburg/services/terminal-tariff"
       document_issued: "2025-12-01"
       page: 5
@@ -2628,8 +2628,8 @@ fee_rules:
       unit_input: dangerous_goods_units
       unit_type: dangerous_goods_units
     source_reference:
-      document_name: "terminal-tariff-2026-june.pdf"
-      document_url: "docs/sources/sweden/gothenburg/apm-terminals/terminal-tariff-2026-june.pdf"
+      document_name: "apm-terminals-terminal-tariff-2026-june.txt"
+      document_url: "docs/sources/sweden/gothenburg/apm-terminals-terminal-tariff-2026-june.txt"
       upstream_url: "https://www.apmterminals.com/en/gothenburg/services/terminal-tariff"
       document_issued: "2025-12-01"
       page: 5
@@ -2649,8 +2649,8 @@ fee_rules:
       unit_input: overdue_dangerous_units
       unit_type: overdue_dangerous_units
     source_reference:
-      document_name: "terminal-tariff-2026-june.pdf"
-      document_url: "docs/sources/sweden/gothenburg/apm-terminals/terminal-tariff-2026-june.pdf"
+      document_name: "apm-terminals-terminal-tariff-2026-june.txt"
+      document_url: "docs/sources/sweden/gothenburg/apm-terminals-terminal-tariff-2026-june.txt"
       upstream_url: "https://www.apmterminals.com/en/gothenburg/services/terminal-tariff"
       document_issued: "2025-12-01"
       page: 5
@@ -2669,8 +2669,8 @@ fee_rules:
       unit_rate: 538
       unit_type: dangerous_goods
     source_reference:
-      document_name: "terminal-tariff-2026-june.pdf"
-      document_url: "docs/sources/sweden/gothenburg/apm-terminals/terminal-tariff-2026-june.pdf"
+      document_name: "apm-terminals-terminal-tariff-2026-june.txt"
+      document_url: "docs/sources/sweden/gothenburg/apm-terminals-terminal-tariff-2026-june.txt"
       upstream_url: "https://www.apmterminals.com/en/gothenburg/services/terminal-tariff"
       document_issued: "2025-12-01"
       page: 5
@@ -2691,8 +2691,8 @@ fee_rules:
     applicable_conditions:
       idle_berth_hours: 'present'
     source_reference:
-      document_name: "terminal-tariff-2026-june.pdf"
-      document_url: "docs/sources/sweden/gothenburg/apm-terminals/terminal-tariff-2026-june.pdf"
+      document_name: "apm-terminals-terminal-tariff-2026-june.txt"
+      document_url: "docs/sources/sweden/gothenburg/apm-terminals-terminal-tariff-2026-june.txt"
       upstream_url: "https://www.apmterminals.com/en/gothenburg/services/terminal-tariff"
       document_issued: "2025-12-01"
       page: 6

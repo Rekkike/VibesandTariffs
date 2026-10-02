@@ -50,10 +50,11 @@ describe('currency declaration is data (spec v0.2.59)', () => {
     expect(ctx.rows[0]).toEqual({
       from_currency: 'EUR',
       to_currency: 'SEK',
-      // v0.3.2 ritual pin: 11.331 as of 2026-09-30 (previously 11.275,
-      // 2026-09-21) — conversion-only expectations move with the ritual.
-      rate: 11.331,
-      as_of: '2026-09-30',
+      // v0.4.6 ritual pin (in-test attribution): 11.29 as of 2026-10-02
+      // (previously 11.331, 2026-09-30) — conversion-only expectations
+      // move with the ritual.
+      rate: 11.29,
+      as_of: '2026-10-02',
       source: 'ECB euro reference rate (SEK per EUR)'
     });
   });
@@ -156,7 +157,8 @@ describe('comparison scalability controls (spec v0.2.59)', () => {
     // attribution): Gävle's Grand Total moves 1,370,979.35 ->
     // 10,306,979.35, so the ranked order becomes Gothenburg, Norrköping,
     // Helsingborg, Gävle, Norvik, Hamburg (cheapest-first on the converted
-    // basis; HAM's converted 24,983,845 kr ranks last). The single ranking
+    // basis; HAM's converted 24,893,444 kr ranks last — v0.4.6 ritual
+    // re-baseline: 2,204,910.90 EUR x 11.29, was 24,983,845 at 11.331). The single ranking
     // rule is unchanged.
     expect(headerCells).toHaveLength(LOADED_PORTS.length + 1);
     expect(headerCells[1]).toContain('Gothenburg');

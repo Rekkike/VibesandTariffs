@@ -19,12 +19,49 @@ Tariff 2026; Sjöfartsverket price list 2026 (issued 2025-11-01).
 | ID | Document | Biller | Prices? | Repository path |
 |----|----------|--------|---------|-----------------|
 | G1 | Port of Gothenburg, Port Tariff 2026 | Port of Gothenburg | Yes | not archived — upstream: https://www.portofgothenburg.com/globalassets/dokument/port-tariff-2026.pdf |
-| G2 | APM Terminals Gothenburg, Terminal Tariff 2026 (June) | APM Terminals Gothenburg | Yes | not archived — upstream: https://www.apmterminals.com/en/gothenburg/services/terminal-tariff (the publisher’s tariff page serving the Terminal Tariff 2026 PDF; the previously stored assets.ctfassets.net URL served the Gothenburg RoRo Terminal Rate Schedule 2026 and was repointed in the worked-example fix pass, spec v0.2.37) |
+| G2 | APM Terminals Gothenburg, Terminal Tariff 2026 (June revision) | APM Terminals Gothenburg | Yes | `docs/sources/sweden/gothenburg/apm-terminals-terminal-tariff-2026-june.txt` (archived v0.4.6 — the verbatim text extraction, delivered by the product owner 2026-10-02 outside the sandbox from the publisher’s tariff page, https://www.apmterminals.com/en/gothenburg/services/terminal-tariff, after every fetch route was refused at v0.4.5; the binary PDF is not retained by the delivery tooling, the recorded limitation, the prislista precedent) |
+| G2b | APM Terminals Terms of Business, v31 March 2025 | APM Terminals Gothenburg | Terms (no rates) | `docs/sources/sweden/gothenburg/apm-terms-of-business-2025-03-31.txt` (archived v0.4.6, same delivery; the legal wrapper the tariff’s own §8 incorporates) |
 | G3 | Sjöfartsverket, Prislista farleds- och lotsavgifter 2026 | Sjöfartsverket | Yes | `docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt` (archived v0.4.5 — the verbatim text extraction, the fetchable artifact; the binary PDF remains unarchived, the recorded limitation) — upstream URL in the port YAML (https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf); earlier revisions of this reference claimed an in-repo archive path that never existed (fixed in the worked-example fix pass, spec v0.2.37; the never-existed .pdf citation paths repaired to the real .txt path at v0.4.5); the national extraction reference `docs/sources/sweden/national/NATIONAL_EXTRACTION_REFERENCE.md` (v0.4.5) is the national block's authority of record, shared by all five Swedish silos |
 
-G1 and G2 are not archived in the repository; the port file carries their live
-publisher URLs as `upstream_url` per the v0.2.32 source-link contract
-(`document_not_archived` in the converted registry).
+G1 is not archived in the repository; the port file carries its live publisher
+URL as `upstream_url` per the v0.2.32 source-link contract
+(`document_not_archived` in the converted registry). G2 is archived since
+v0.4.6 (the delivered text extraction above); the APMT rules' citations point
+at the archived .txt path, and G2 has left the not-archived list.
+
+## 1a. The APMT operator layer (v0.4.6)
+
+Both documents delivered by the product owner on 2026-10-02 and committed
+directly to main ahead of this pass (bea5787 the Terminal Tariff, 5f09007
+the Terms of Business); the sandbox fetch environment remains refused by the
+publisher's CDN on every route (the v0.4.5 recorded stop; the environment's
+fetch limitation stands — the delivery route is recorded as it happened,
+never rewritten as a fetch). The archives of record:
+
+- `docs/sources/sweden/gothenburg/apm-terminals-terminal-tariff-2026-june.txt`
+  — the Terminal Tariff, valid 01.01.2026 until 31.12.2026 (June revision as
+  delivered), SEK ex-VAT per its §12, five pages, issuer APM Terminals
+  Gothenburg AB. Every encoded APMT figure verified against it at v0.4.6
+  (handling 377/535 per size, break bulk 54/1,000 kg, hatch cover 3,111,
+  gearbox 1,036, ISPS 80, storage ladders export 0-6 free then 133/346/578
+  and import 0-4 free then 133/346/578 per TEU/day, yard surcharges 437/709/
+  382/1,025, gate DG 538, idle berth 500 — all matching; the 2026 handling
+  section publishes the explicit per-size pair, the 2024 doubling convention
+  surviving only in yard storage).
+- `docs/sources/sweden/gothenburg/apm-terms-of-business-2025-03-31.txt`
+  — the Terms of Business v31 March 2025, the legal wrapper the tariff's own
+  §8 incorporates (no rates; terms-only).
+
+The handling-basis determination (v0.4.6, docs/GOT_APMT_OPERATOR_ARCHIVE_
+AUDIT.md §4): the tariff publishes no basis wording — §1 charges goods per
+unit with no scope statement, no modality distinction, and no separately
+priced landside legs (the §2 export/import entries are storage-clock rules,
+not leg prices; the §4.1 538 figure is a DG receipt/delivery surcharge). The
+annotation is the evidence-based characterization: single per-unit charge;
+no modality distinction and no separately priced legs published; scope of the
+charge not stated in the document — the bundled reading is a labeled
+inference pending wording from APMT, never a claim. The container-through
+toggle's GOT participation remains "not published" (a wording, never a zero).
 
 ## 2. Charging structure (billers)
 

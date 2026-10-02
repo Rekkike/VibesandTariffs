@@ -27,7 +27,7 @@ export interface HandlingBasisAnnotation {
 export const HANDLING_BASIS_ANNOTATIONS: Record<string, HandlingBasisAnnotation> = {
   gothenburg: {
     text:
-      'Handling basis: not stated in the document. The APMT terminal handling figures (377/535 SEK per unit) price from source G2 (Terminal Tariff 2026, June), whose document is not archived in-repo - no basis wording is available. APMT\'s own tariff is the named future source for this basis row and the landside legs alike.'
+      'Handling basis: single per-unit charge; no modality distinction and no separately priced legs published; scope of the charge not stated in the document. Verified against the archived APMT Terminal Tariff 2026 (June revision, §1.1, per unit 377/535 SEK) and its Terms of Business v31 March 2025 (the legal wrapper the tariff’s own §8 incorporates): the tariff’s export/import entries are storage-clock calculation rules, not leg prices, and its §4.1 538 SEK figure is a dangerous-goods receipt/delivery surcharge. The bundled reading (one figure covering the lift regardless of modality) is a reasonable inference, labeled as inference pending wording from APMT — the document itself states no scope.'
   },
   hamburg: {
     text:
@@ -176,7 +176,7 @@ export function containerThroughParts(
         addedAmount: null,
         bundled: false,
         note:
-          'Not published: the APMT source document is not archived in-repo, so neither the handling basis nor the landside leg prices are available; APMT\'s own tariff is the named future source. Not published is never rendered as a zero.'
+          'Not published: the archived APMT Terminal Tariff 2026 (June revision) and its Terms of Business publish no separately priced landside leg — the tariff’s export/import entries are storage-clock calculation rules, not leg prices, and its §4.1 538 SEK figure is a dangerous-goods receipt/delivery surcharge — and the handling basis itself is not stated in the document. Not published is never rendered as a zero.'
       };
     default:
       return {

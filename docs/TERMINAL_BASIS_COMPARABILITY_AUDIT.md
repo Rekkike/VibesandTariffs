@@ -183,7 +183,7 @@ documents (APMT for GOT included) enter against it.
 | **Stockholm Norvik (Hutchison)** | Asymmetric | Export: "ISO containers receiving container to stack including single lift to vessel" 2,012 kr — vessel-side, no road leg. Import: "lifted from vessel, received into stack, and loaded to road transport" 2,012 kr — the road leg is bundled on the import side only. Rail separately priced: "Trailer loaded to/from rail stack including Receiving, Lifts plus transfer to train 1575 kr"; "Container loaded to/from rail stack including Receiving, Lifts and transfer to train 1300 kr" | Hutchison Price List 2026 pp.4–6; Norvik extraction reference §4.1 |
 | **Norrköping** | Fully leg-priced | Vessel: "LIFT TO/FROM VESSEL" 20' 855 / 30' 1,051 / 40' 1,249 / 45' 1,283 SEK per unit. Rail: "LIFT TO/FROM TRAIN" 20' 367 / 30' 453 / 40' 526 / 45' 573. Truck: "Lift to/from truck, including a visual inspection of the units outsides and seal" / "GATE HANDLING / INTER-TERMINAL MOVE" 20' 479 / 30' 509 / 40' 546 / 45' 546 | Norrköping Tariff 2026 v2 pp.14–15; extraction reference §§3.5–3.6 |
 | **Helsingborg** | Case 1 — handling with basis wording | "Handling full or empty units to/from vessels to/from 'Place of rest' at the West Harbour. SEK per unit 890.00" — vessel-to-rest-place, no onward leg bundled. The landside legs are separately published: "Delivery/Receiving Train incl. Shunting … to/from 'Place of Rest' to/from Train. SEK per unit 1 110.00"; "Delivery/Receiving Truck … to/from 'Place of Rest' to/from the Truck. SEK per unit 890.00" | Helsingborg Tariff 2026 p.7; extraction reference §3.6 |
-| **Gothenburg (APMT)** | Case 2 — figures without basis wording | The silo prices APMT terminal handling (377 / 535 SEK per unit, `apm_terminals_handling_le20ft` / `apm_terminals_handling_gt20ft`, transcribed in the extraction reference from source G2 "Terminal Tariff 2026 (June)") — but the APMT source document itself is **not archived in-repo** (the source table records the upstream publisher page), so no basis wording is available: the annotation is **"basis not stated in the document"**. APMT's own tariff is the **named future source** for this port's basis row and its landside legs — a recorded finding, not a fetch order | Gothenburg extraction reference §1 source table (G2, "not archived") and the §3 yard-storage transcription |
+| **Gothenburg (APMT)** | Case 2 — figures without basis wording, **archived and verified at v0.4.6** | The APMT source documents are **archived since v0.4.6** (the product-owner delivery 2026-10-02: `apm-terminals-terminal-tariff-2026-june.txt` and `apm-terms-of-business-2025-03-31.txt`; every encoded figure verified against the archive — audit `docs/GOT_APMT_OPERATOR_ARCHIVE_AUDIT.md`). The tariff publishes **no basis wording**: §1 charges goods per unit with no scope statement, no modality distinction, and no separately priced landside legs (the §2 export/import entries are storage-clock calculation rules, not leg prices; the §4.1 538 figure is a dangerous-goods receipt/delivery surcharge). The annotation is the evidence-based characterization: **"single per-unit charge; no modality distinction and no separately priced legs published; scope of the charge not stated in the document"** (§1.1, per unit 377/535 SEK). The bundled reading is recorded as a **labeled inference pending wording from APMT** — never a claim. The container-through toggle's GOT participation remains **"not published"** — a wording, never a zero | Gothenburg extraction reference §1a (the APMT operator layer, v0.4.6); the archived Terminal Tariff §1.1; audit `docs/GOT_APMT_OPERATOR_ARCHIVE_AUDIT.md` §4 |
 
 Report of the case per port: Hamburg — vessel-to-quay only, the 152.00 EUR
 movement separate (ch. 6.1.1). Yilport Gävle — bundled, one rate both
@@ -192,11 +192,14 @@ includes the road leg; rail separate at 1,575 trailer / 1,300 container).
 Norrköping — fully leg-priced (vessel / rail / truck each its own line).
 Helsingborg — case 1: handling **with** basis wording ("to/from vessels
 to/from 'Place of Rest'"), plus separately published truck (890) and train
-(1,110, incl. shunting) legs. Gothenburg — case 2: the APMT handling
-figures price in the silo, but the APMT source document is unarchived, so
-the basis wording is not stated in the available documents; APMT's own
-tariff is the named future source (for the basis wording and the landside
-legs alike).
+(1,110, incl. shunting) legs. Gothenburg — case 2, archived and verified at
+v0.4.6: the APMT handling figures price in the silo from the archived
+tariff, and the archive itself publishes no basis wording — §1 charges goods
+per unit with no scope statement, no modality distinction, and no separately
+priced landside legs; the annotation records exactly that (the honest
+characterization: scope of the charge not stated in the published document),
+with the bundled reading recorded as a labeled inference pending wording
+from APMT; the toggle's GOT participation remains "not published".
 
 Directive deviation, reported: the directive anticipated case 2 or case 3
 for HEL. The archived Helsingborg tariff carries explicit basis wording

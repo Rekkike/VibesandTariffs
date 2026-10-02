@@ -41,8 +41,8 @@ export interface ExchangeRateInfo {
 // the registry and so a missing data block degrades to the documented
 // default rather than an unconverted comparison.
 export const DEFAULT_EXCHANGE_RATE: ExchangeRateInfo = {
-  rate: 11.331,
-  date: '2026-09-30',
+  rate: 11.29,
+  date: '2026-10-02',
   source: 'ECB euro reference rate (SEK per EUR)',
   is_default: true
 };

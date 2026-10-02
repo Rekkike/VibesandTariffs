@@ -143,11 +143,13 @@ describe('Source link integrity (spec v0.2.26)', () => {
     // v0.4.5 citation repair: the prislista is archived in-repo (the
     // verbatim text extraction, the fetchable artifact) and the national
     // citations point at it; the two prislista paths leave the
-    // not-archived marker set. The archive-presence pin: the national
-    // reference exists beside the archive, and a silo's document_url
-    // pointing at a non-existent path fails this suite.
+    // not-archived marker set.
+    // v0.4.6 re-baseline (the APMT operator-document pass, in-test
+    // attribution): the APMT Terminal Tariff is archived (the product-
+    // owner-delivered text extraction) and the 15 APMT citations point at
+    // the archived .txt path — G2 leaves the not-archived list; only the
+    // port-authority G1 document remains.
     const notArchived = [
-      'docs/sources/sweden/gothenburg/apm-terminals/terminal-tariff-2026-june.pdf',
       'docs/sources/sweden/gothenburg/port-authority/port-tariff-2026.pdf',
     ].sort();
     const cited = new Set<string>();
@@ -207,6 +209,45 @@ describe('Source link integrity (spec v0.2.26)', () => {
     }
   });
 
+  it('the APMT GOT operator archives exist and the silo cites the real path (v0.4.6 archive-presence pin)', () => {
+    // The v0.4.5 stop finding closed on the delivered-archive route: both
+    // APMT documents (the Terminal Tariff and the Terms of Business) were
+    // delivered by the product owner outside the sandbox and committed to
+    // main. Red proofs observed failing before trusted: the archive file
+    // renamed (this pin fails), a silo document_url reverted to the
+    // never-existed apm-terminals/ .pdf path (the first test of this suite
+    // plus this pin fail).
+    const tariff = path.join(REPO_ROOT, 'docs/sources/sweden/gothenburg/apm-terminals-terminal-tariff-2026-june.txt');
+    const terms = path.join(REPO_ROOT, 'docs/sources/sweden/gothenburg/apm-terms-of-business-2025-03-31.txt');
+    expect(fs.existsSync(tariff)).toBe(true);
+    expect(fs.statSync(tariff).size).toBeGreaterThan(1000);
+    expect(fs.existsSync(terms)).toBe(true);
+    const tariffText = fs.readFileSync(tariff, 'utf8');
+    // Identity: issuer, validity, structure, and the recorded provenance.
+    expect(tariffText).toContain('APM Terminals Gothenburg');
+    expect(tariffText).toContain('01.01.2026 until 31.12.2026');
+    expect(tariffText).toContain('Valid from 01.01.2026');
+    expect(tariffText).toContain('Delivered by the product owner, 2026-10-02');
+    // The verified figures survive verbatim in the archive.
+    expect(tariffText).toContain('Per Unit | 377');
+    expect(tariffText).toContain('Per Unit | 535');
+    expect(tariffText).toContain('Per Unit | 80');
+    expect(tariffText).toContain('| 3111');
+    expect(tariffText).toContain('| 1036');
+    expect(tariffText).toContain('| 437');
+    expect(tariffText).toContain('| 709');
+    expect(tariffText).toContain('| 382');
+    expect(tariffText).toContain('| 538');
+    // The silo's APMT rules cite the archived path, with no residual
+    // never-existed .pdf citation anywhere in the data.
+    const gotText = fs.readFileSync(path.join(DATA_DIR, 'gothenburg_2026.yaml'), 'utf8');
+    expect(gotText).toContain('document_url: "docs/sources/sweden/gothenburg/apm-terminals-terminal-tariff-2026-june.txt"');
+    expect(gotText).not.toMatch(/document_url:.*apm-terminals\/terminal-tariff-2026-june\.pdf/);
+    // The extraction reference records the operator layer and its archive.
+    const reference = fs.readFileSync(path.join(REPO_ROOT, 'docs/sources/sweden/gothenburg/GOTHENBURG_EXTRACTION_REFERENCE.md'), 'utf8');
+    expect(reference).toContain('apm-terminals-terminal-tariff-2026-june.txt');
+    expect(reference).toContain('apm-terms-of-business-2025-03-31.txt');
+  });
   it('conversion rewrites relative URLs to GitHub blob URLs and flags not-archived sources', () => {
     // Re-run the conversion contract on the registry: the web registry must
     // carry absolute blob URLs and document_not_archived on absent files

@@ -191,8 +191,11 @@ describe('rate-fetch removal (spec v0.4.0 rider — the v0.3.2/v0.3.5 reversal)'
       path.join(__dirname, '..', '..', 'core', 'data', 'exchange_rates.yaml'), 'utf8'
     );
     expect(yamlText.includes('published_pairs:')).toBe(true);
-    expect(yamlText.includes('rate: 11.331')).toBe(true);
-    expect(yamlText.includes('as_of: 2026-09-30')).toBe(true);
+    // v0.4.6 ritual re-baseline (in-test attribution): 11.29 as of
+    // 2026-10-02 (was 11.331, 2026-09-30) — conversion-only figures move
+    // with the standing rate re-verification.
+    expect(yamlText.includes('rate: 11.29')).toBe(true);
+    expect(yamlText.includes('as_of: 2026-10-02')).toBe(true);
     expect(exchangeRates).toHaveLength(1);
     expect(eurSek.pair ?? eurSek.from_currency + '-' + eurSek.to_currency).toBe('EUR-SEK');
   });

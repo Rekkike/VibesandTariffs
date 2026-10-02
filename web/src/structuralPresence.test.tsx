@@ -188,8 +188,16 @@ describe('mobile zero-suppression re-activation (spec v0.2.55 structural pin)', 
     const got = Array.from(container!.querySelectorAll('.comparison-port-card'))
       .find(c => (c.textContent ?? '').includes('Gothenburg'));
     expect(got).toBeDefined();
+    // v0.4.6 re-baseline (in-test attribution): the family cells now carry
+    // the handling-basis note, and the GOT annotation text legitimately
+    // contains the word "storage" ("storage-clock calculation rules") — the
+    // filter targets the family-name element itself, never the note riding
+    // the cell.
     const storageLines = Array.from(got!.querySelectorAll('.comparison-card-family'))
-      .filter(el => (el.textContent ?? '').toLowerCase().includes('storage'));
+      .filter(el => {
+        const name = el.querySelector('.comparison-card-family-name');
+        return (name?.textContent ?? '').toLowerCase().includes('storage');
+      });
     // v0.4.0: any rendered storage family line on the GOT card must be the
     // honest zero (a not-levied family absence), never a chargeable figure.
     for (const el of storageLines) {
