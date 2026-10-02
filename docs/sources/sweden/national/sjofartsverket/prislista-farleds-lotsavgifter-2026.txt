@@ -1,0 +1,116 @@
+Sammanfattning av Sjöfartsverkets farledsavgifter fr.o.m. 2026-01-01
+
+[Text extraction of: Sjöfartsverket, "Prislista farleds- och lotsavgifter 2026"
+(Summary of the Swedish Maritime Administration's fairway and pilotage dues
+effective 2026-01-01). Archived verbatim as fetched; see the extraction
+reference beside this file for provenance, identity verification, SHA-256,
+and the recorded binary-fetch limitation.]
+
+Fartygsavgift miljöklass (kr/anlöp)
+
+Dräktighetsklass  Klassgränser (lägsta nettodr.)
+1                0
+2                1 000
+3                2 000
+4                3 000
+5                6 000
+6                10 000
+7                15 000
+8                30 000
+9                60 000
+10               100 000
+
+Klass 1:   A 735    B 1 660    C 3 315    D/E 3 685
+Klass 2:   A 2 810  B 6 320    C 12 640   D/E 14 045
+Klass 3:   A 5 515  B 12 410   C 24 825   D/E 27 580
+Klass 4:   A 8 795  B 19 790   C 39 575   D/E 43 975
+Klass 5:   A 16 150 B 36 340   C 72 680   D/E 80 755
+Klass 6:   A 23 475 B 52 825   C 105 645  D/E 117 385
+Klass 7:   A 30 060 B 67 640   C 135 275  D/E 150 310
+Klass 8:   A 34 475 B 77 575   C 155 145  D/E 172 385
+Klass 9:   A 40 360 B 90 815   C 181 625  D/E 201 805
+Klass 10:  A 47 685 B 107 295  C 214 590  D/E 238 430
+
+Beredskapsavgift (kr/anlöp)
+
+Klass 1: 1 110
+Klass 2: 4 200
+Klass 3: 8 260
+Klass 4: 13 155
+Klass 5: 24 165
+Klass 6: 35 100
+Klass 7: 44 965
+Klass 8: 51 555
+Klass 9: 60 370
+Klass 10: 71 305
+
+Transitgodsrabatt
+Lastat transitgods är befriat från godsavgift*
+*Ansökan om avgiftsreduktion görs enligt 21§ i Föreskrift om Farledsavgifter
+
+Frekvent trafik
+Fartyg som gör fler anlöp gynnas genom att en lägre andel av fartygs- och
+beredskapsavgiften betalas ju fler anlöp som görs per månad:
+Anlöp 1: 100 %   Anlöp 4: 50 %
+Anlöp 2: 100 %   Anlöp 5: 25 %
+Anlöp 3: 75 %    Anlöp 6 +: 0 %
+
+Nedsättning enligt miljöincitament, CSI-klassning
+• A:   80 %
+• B:   55 %
+• C:   10 %
+• D/E: 0 %
+
+Relaterade föreskrifter:
+Föreskrift 2025:6 om farledsavgift
+
+Gods- och passageraravgift
+• Högvärdigt gods  3,36 kr/ton
+• Lågvärdigt gods  1,67 kr/ton
+• Passageraravgift  2,52 kr/pax
+• Privata fordon     3,36 kr/st
+
+Sammanfattning av Sjöfartsverkets lotsavgifter fr.o.m. 2026-01-01
+
+Lotsavgift för lots i lotsled (kr)
+
+Dräktighetsklass  Startavgift  Rörlig lotsavgift, tas ut per ½ h
+1                 9 670        2 160
+2                 12 485       2 840
+3                 15 290       3 435
+4                 17 300       3 940
+5                 19 305       4 400
+6                 26 105       5 865
+7                 29 730       6 735
+8                 32 540       7 335
+9                 35 755       8 105
+10                45 420       10 255
+
+Övriga lotsavgifter
+Extra lots debiteras 12 620 kr
+
+Lotsrabatter
+• Lotsrabatt utgår med 30 % i Trollhätte kanal och Vänern
+• Lotsrabatt utgår med 10 % i Mälaren
+• Lotsrabatt utgår med 40 % för lotsad tid över 7 timmar
+
+Beställningsavgift*
+Tid innan önskad eller bekräftad tidpunkt   Belopp, kr
+0 – 59 minuter                              9 390
+1 tim – 1 tim 59 min                        7 510
+2 tim – 2 tim 59 min                        5 635
+3 tim – 3 tim 59 min                        3 775
+4 tim – 4 tim 59 min                        1 880
+*Avgift oberoende av dräktighetsklass
+
+Avgift genomfangtslotsning i Öresund, öppensjölotsning & Öresundslotsning
+För avgifter gällande frivillig lotsning, se Sjöfartsverkets föreskrift 2025:5
+
+Reseersättning
+Kostnader för lots och medhjälpare/s resor utgår
+
+Avgiftsreduktion för beställningsavgift vid försening
+Avgiftsreduktion utgår enligt 36 § vid försening
+
+Relaterad föreskrift:
+Föreskrift 2025:5 om tillhandahållande av lots, lotsbeställning tilldelning av lots och lotsavgifter

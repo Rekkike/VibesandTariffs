@@ -16,13 +16,13 @@ to amend at any time; EES level adjusted monthly).
 | ID | Document | Biller | Prices? | Repository path |
 |----|----------|--------|---------|-----------------|
 | S1 | Port of Helsingborg, Tariff 2026 (9 pages, English) | Port of Helsingborg | Yes | `docs/sources/sweden/helsingborg/port-authority/tariff-2026.pdf` |
-| S2 | Sjöfartsverket, Prislista farleds- och lotsavgifter 2026 | Sjöfartsverket | Yes | not archived — upstream: https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf (earlier revisions of this reference claimed an in-repo archive path that never existed; repaired in the carry-over clearance pass, spec v0.2.41, per the Gothenburg v0.2.37 pattern) |
+| S2 | Sjöfartsverket, Prislista farleds- och lotsavgifter 2026 | Sjöfartsverket | Yes | `docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt` (archived v0.4.5 — the verbatim text extraction, the fetchable artifact; the binary PDF remains unarchived, the recorded limitation) — upstream: https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf (earlier revisions of this reference claimed an in-repo archive path that never existed; repaired in the carry-over clearance pass, spec v0.2.41, per the Gothenburg v0.2.37 pattern; the never-existed .pdf citation paths repaired to the real .txt path at v0.4.5; the national extraction reference `docs/sources/sweden/national/NATIONAL_EXTRACTION_REFERENCE.md` (v0.4.5) is the national block's authority of record, shared by all five Swedish silos) |
 | S3 | Sjöfartsverket, Lathund lotsavgifter 2026 | Sjöfartsverket | Yes (pilotage detail) | not archived — upstream: https://www.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/lathund-lotsavgifter-2026.pdf (same false in-repo archive-path claim, repaired spec v0.2.41) |
 | S4 | Ports of Sweden General Conditions 1989 for terminal operations | — | No (terms) | `docs/sources/sweden/helsingborg/port-authority/ports-of-sweden-general-conditions-1989.pdf` |
 | S5 | General Terms and Conditions for the Stevedoring Operations 2011 | — | No (terms) | `docs/sources/sweden/helsingborg/port-authority/stevedoring-terms-2011.pdf` |
 
 S1 is archived in the repository; the port file carries its live public
-download page. S2 and S3 are **not archived** — the earlier claim that they
+download page. S2 is archived at v0.4.5 (the prislista text extraction under the national source tree; see `docs/sources/sweden/national/NATIONAL_EXTRACTION_REFERENCE.md`). S3 remains **not archived** — the earlier claim that they
 were carried in the repository from the Gothenburg build was false (no such
 paths exist; the Gothenburg extraction reference records them as not
 archived with the same upstream URLs). Their live publisher URLs are

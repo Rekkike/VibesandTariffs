@@ -74,8 +74,8 @@ billers:
           max_calls: null
           payable_pct: 0
       source_reference:
-        document_name: prislista-farleds-lotsavgifter-2026.pdf
-        document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+        document_name: prislista-farleds-lotsavgifter-2026.txt
+        document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt
         upstream_url: "https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf"
         page: 4
         clause: Frequency discount
@@ -563,8 +563,8 @@ fee_rules:
       type: flat
       amount: 735
     source_reference:
-      document_name: prislista-farleds-lotsavgifter-2026.pdf
-      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+      document_name: prislista-farleds-lotsavgifter-2026.txt
+      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt
       upstream_url: "https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf"
       verified_on: '2026-10-02'
       verified_by: vibe-session-swedish-expansion
@@ -584,8 +584,8 @@ fee_rules:
       type: flat
       amount: 1660
     source_reference:
-      document_name: prislista-farleds-lotsavgifter-2026.pdf
-      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+      document_name: prislista-farleds-lotsavgifter-2026.txt
+      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt
       upstream_url: "https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf"
       verified_on: '2026-10-02'
       verified_by: vibe-session-swedish-expansion
@@ -605,8 +605,8 @@ fee_rules:
       type: flat
       amount: 3315
     source_reference:
-      document_name: prislista-farleds-lotsavgifter-2026.pdf
-      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+      document_name: prislista-farleds-lotsavgifter-2026.txt
+      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt
       upstream_url: "https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf"
       verified_on: '2026-10-02'
       verified_by: vibe-session-swedish-expansion
@@ -626,8 +626,8 @@ fee_rules:
       type: flat
       amount: 3685
     source_reference:
-      document_name: prislista-farleds-lotsavgifter-2026.pdf
-      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+      document_name: prislista-farleds-lotsavgifter-2026.txt
+      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt
       upstream_url: "https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf"
       verified_on: '2026-10-02'
       verified_by: vibe-session-swedish-expansion
@@ -647,8 +647,8 @@ fee_rules:
       type: flat
       amount: 3685
     source_reference:
-      document_name: prislista-farleds-lotsavgifter-2026.pdf
-      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+      document_name: prislista-farleds-lotsavgifter-2026.txt
+      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt
       upstream_url: "https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf"
       verified_on: '2026-10-02'
       verified_by: vibe-session-swedish-expansion
@@ -668,8 +668,8 @@ fee_rules:
       type: flat
       amount: 2810
     source_reference:
-      document_name: prislista-farleds-lotsavgifter-2026.pdf
-      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+      document_name: prislista-farleds-lotsavgifter-2026.txt
+      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt
       upstream_url: "https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf"
       verified_on: '2026-10-02'
       verified_by: vibe-session-swedish-expansion
@@ -689,8 +689,8 @@ fee_rules:
       type: flat
       amount: 6320
     source_reference:
-      document_name: prislista-farleds-lotsavgifter-2026.pdf
-      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+      document_name: prislista-farleds-lotsavgifter-2026.txt
+      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt
       upstream_url: "https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf"
       verified_on: '2026-10-02'
       verified_by: vibe-session-swedish-expansion
@@ -710,8 +710,8 @@ fee_rules:
       type: flat
       amount: 12640
     source_reference:
-      document_name: prislista-farleds-lotsavgifter-2026.pdf
-      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+      document_name: prislista-farleds-lotsavgifter-2026.txt
+      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt
       upstream_url: "https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf"
       verified_on: '2026-10-02'
       verified_by: vibe-session-swedish-expansion
@@ -731,8 +731,8 @@ fee_rules:
       type: flat
       amount: 14045
     source_reference:
-      document_name: prislista-farleds-lotsavgifter-2026.pdf
-      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+      document_name: prislista-farleds-lotsavgifter-2026.txt
+      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt
       upstream_url: "https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf"
       verified_on: '2026-10-02'
       verified_by: vibe-session-swedish-expansion
@@ -752,8 +752,8 @@ fee_rules:
       type: flat
       amount: 14045
     source_reference:
-      document_name: prislista-farleds-lotsavgifter-2026.pdf
-      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+      document_name: prislista-farleds-lotsavgifter-2026.txt
+      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt
       upstream_url: "https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf"
       verified_on: '2026-10-02'
       verified_by: vibe-session-swedish-expansion
@@ -773,8 +773,8 @@ fee_rules:
       type: flat
       amount: 5515
     source_reference:
-      document_name: prislista-farleds-lotsavgifter-2026.pdf
-      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+      document_name: prislista-farleds-lotsavgifter-2026.txt
+      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt
       upstream_url: "https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf"
       verified_on: '2026-10-02'
       verified_by: vibe-session-swedish-expansion
@@ -794,8 +794,8 @@ fee_rules:
       type: flat
       amount: 12410
     source_reference:
-      document_name: prislista-farleds-lotsavgifter-2026.pdf
-      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+      document_name: prislista-farleds-lotsavgifter-2026.txt
+      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt
       upstream_url: "https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf"
       verified_on: '2026-10-02'
       verified_by: vibe-session-swedish-expansion
@@ -815,8 +815,8 @@ fee_rules:
       type: flat
       amount: 24825
     source_reference:
-      document_name: prislista-farleds-lotsavgifter-2026.pdf
-      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+      document_name: prislista-farleds-lotsavgifter-2026.txt
+      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt
       upstream_url: "https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf"
       verified_on: '2026-10-02'
       verified_by: vibe-session-swedish-expansion
@@ -836,8 +836,8 @@ fee_rules:
       type: flat
       amount: 27580
     source_reference:
-      document_name: prislista-farleds-lotsavgifter-2026.pdf
-      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+      document_name: prislista-farleds-lotsavgifter-2026.txt
+      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt
       upstream_url: "https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf"
       verified_on: '2026-10-02'
       verified_by: vibe-session-swedish-expansion
@@ -857,8 +857,8 @@ fee_rules:
       type: flat
       amount: 27580
     source_reference:
-      document_name: prislista-farleds-lotsavgifter-2026.pdf
-      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+      document_name: prislista-farleds-lotsavgifter-2026.txt
+      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt
       upstream_url: "https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf"
       verified_on: '2026-10-02'
       verified_by: vibe-session-swedish-expansion
@@ -878,8 +878,8 @@ fee_rules:
       type: flat
       amount: 8795
     source_reference:
-      document_name: prislista-farleds-lotsavgifter-2026.pdf
-      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+      document_name: prislista-farleds-lotsavgifter-2026.txt
+      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt
       upstream_url: "https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf"
       verified_on: '2026-10-02'
       verified_by: vibe-session-swedish-expansion
@@ -899,8 +899,8 @@ fee_rules:
       type: flat
       amount: 19790
     source_reference:
-      document_name: prislista-farleds-lotsavgifter-2026.pdf
-      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+      document_name: prislista-farleds-lotsavgifter-2026.txt
+      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt
       upstream_url: "https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf"
       verified_on: '2026-10-02'
       verified_by: vibe-session-swedish-expansion
@@ -920,8 +920,8 @@ fee_rules:
       type: flat
       amount: 39575
     source_reference:
-      document_name: prislista-farleds-lotsavgifter-2026.pdf
-      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+      document_name: prislista-farleds-lotsavgifter-2026.txt
+      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt
       upstream_url: "https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf"
       verified_on: '2026-10-02'
       verified_by: vibe-session-swedish-expansion
@@ -941,8 +941,8 @@ fee_rules:
       type: flat
       amount: 43975
     source_reference:
-      document_name: prislista-farleds-lotsavgifter-2026.pdf
-      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+      document_name: prislista-farleds-lotsavgifter-2026.txt
+      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt
       upstream_url: "https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf"
       verified_on: '2026-10-02'
       verified_by: vibe-session-swedish-expansion
@@ -962,8 +962,8 @@ fee_rules:
       type: flat
       amount: 43975
     source_reference:
-      document_name: prislista-farleds-lotsavgifter-2026.pdf
-      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+      document_name: prislista-farleds-lotsavgifter-2026.txt
+      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt
       upstream_url: "https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf"
       verified_on: '2026-10-02'
       verified_by: vibe-session-swedish-expansion
@@ -983,8 +983,8 @@ fee_rules:
       type: flat
       amount: 16150
     source_reference:
-      document_name: prislista-farleds-lotsavgifter-2026.pdf
-      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+      document_name: prislista-farleds-lotsavgifter-2026.txt
+      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt
       upstream_url: "https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf"
       verified_on: '2026-10-02'
       verified_by: vibe-session-swedish-expansion
@@ -1004,8 +1004,8 @@ fee_rules:
       type: flat
       amount: 36340
     source_reference:
-      document_name: prislista-farleds-lotsavgifter-2026.pdf
-      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+      document_name: prislista-farleds-lotsavgifter-2026.txt
+      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt
       upstream_url: "https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf"
       verified_on: '2026-10-02'
       verified_by: vibe-session-swedish-expansion
@@ -1025,8 +1025,8 @@ fee_rules:
       type: flat
       amount: 72680
     source_reference:
-      document_name: prislista-farleds-lotsavgifter-2026.pdf
-      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+      document_name: prislista-farleds-lotsavgifter-2026.txt
+      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt
       upstream_url: "https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf"
       verified_on: '2026-10-02'
       verified_by: vibe-session-swedish-expansion
@@ -1046,8 +1046,8 @@ fee_rules:
       type: flat
       amount: 80755
     source_reference:
-      document_name: prislista-farleds-lotsavgifter-2026.pdf
-      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+      document_name: prislista-farleds-lotsavgifter-2026.txt
+      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt
       upstream_url: "https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf"
       verified_on: '2026-10-02'
       verified_by: vibe-session-swedish-expansion
@@ -1067,8 +1067,8 @@ fee_rules:
       type: flat
       amount: 80755
     source_reference:
-      document_name: prislista-farleds-lotsavgifter-2026.pdf
-      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+      document_name: prislista-farleds-lotsavgifter-2026.txt
+      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt
       upstream_url: "https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf"
       verified_on: '2026-10-02'
       verified_by: vibe-session-swedish-expansion
@@ -1088,8 +1088,8 @@ fee_rules:
       type: flat
       amount: 23475
     source_reference:
-      document_name: prislista-farleds-lotsavgifter-2026.pdf
-      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+      document_name: prislista-farleds-lotsavgifter-2026.txt
+      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt
       upstream_url: "https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf"
       verified_on: '2026-10-02'
       verified_by: vibe-session-swedish-expansion
@@ -1109,8 +1109,8 @@ fee_rules:
       type: flat
       amount: 52825
     source_reference:
-      document_name: prislista-farleds-lotsavgifter-2026.pdf
-      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+      document_name: prislista-farleds-lotsavgifter-2026.txt
+      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt
       upstream_url: "https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf"
       verified_on: '2026-10-02'
       verified_by: vibe-session-swedish-expansion
@@ -1130,8 +1130,8 @@ fee_rules:
       type: flat
       amount: 105645
     source_reference:
-      document_name: prislista-farleds-lotsavgifter-2026.pdf
-      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+      document_name: prislista-farleds-lotsavgifter-2026.txt
+      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt
       upstream_url: "https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf"
       verified_on: '2026-10-02'
       verified_by: vibe-session-swedish-expansion
@@ -1151,8 +1151,8 @@ fee_rules:
       type: flat
       amount: 117385
     source_reference:
-      document_name: prislista-farleds-lotsavgifter-2026.pdf
-      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+      document_name: prislista-farleds-lotsavgifter-2026.txt
+      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt
       upstream_url: "https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf"
       verified_on: '2026-10-02'
       verified_by: vibe-session-swedish-expansion
@@ -1172,8 +1172,8 @@ fee_rules:
       type: flat
       amount: 117385
     source_reference:
-      document_name: prislista-farleds-lotsavgifter-2026.pdf
-      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+      document_name: prislista-farleds-lotsavgifter-2026.txt
+      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt
       upstream_url: "https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf"
       verified_on: '2026-10-02'
       verified_by: vibe-session-swedish-expansion
@@ -1193,8 +1193,8 @@ fee_rules:
       type: flat
       amount: 30060
     source_reference:
-      document_name: prislista-farleds-lotsavgifter-2026.pdf
-      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+      document_name: prislista-farleds-lotsavgifter-2026.txt
+      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt
       upstream_url: "https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf"
       verified_on: '2026-10-02'
       verified_by: vibe-session-swedish-expansion
@@ -1214,8 +1214,8 @@ fee_rules:
       type: flat
       amount: 67640
     source_reference:
-      document_name: prislista-farleds-lotsavgifter-2026.pdf
-      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+      document_name: prislista-farleds-lotsavgifter-2026.txt
+      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt
       upstream_url: "https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf"
       verified_on: '2026-10-02'
       verified_by: vibe-session-swedish-expansion
@@ -1235,8 +1235,8 @@ fee_rules:
       type: flat
       amount: 135275
     source_reference:
-      document_name: prislista-farleds-lotsavgifter-2026.pdf
-      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+      document_name: prislista-farleds-lotsavgifter-2026.txt
+      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt
       upstream_url: "https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf"
       verified_on: '2026-10-02'
       verified_by: vibe-session-swedish-expansion
@@ -1256,8 +1256,8 @@ fee_rules:
       type: flat
       amount: 150310
     source_reference:
-      document_name: prislista-farleds-lotsavgifter-2026.pdf
-      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+      document_name: prislista-farleds-lotsavgifter-2026.txt
+      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt
       upstream_url: "https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf"
       verified_on: '2026-10-02'
       verified_by: vibe-session-swedish-expansion
@@ -1277,8 +1277,8 @@ fee_rules:
       type: flat
       amount: 150310
     source_reference:
-      document_name: prislista-farleds-lotsavgifter-2026.pdf
-      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+      document_name: prislista-farleds-lotsavgifter-2026.txt
+      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt
       upstream_url: "https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf"
       verified_on: '2026-10-02'
       verified_by: vibe-session-swedish-expansion
@@ -1298,8 +1298,8 @@ fee_rules:
       type: flat
       amount: 34475
     source_reference:
-      document_name: prislista-farleds-lotsavgifter-2026.pdf
-      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+      document_name: prislista-farleds-lotsavgifter-2026.txt
+      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt
       upstream_url: "https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf"
       verified_on: '2026-10-02'
       verified_by: vibe-session-swedish-expansion
@@ -1319,8 +1319,8 @@ fee_rules:
       type: flat
       amount: 77575
     source_reference:
-      document_name: prislista-farleds-lotsavgifter-2026.pdf
-      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+      document_name: prislista-farleds-lotsavgifter-2026.txt
+      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt
       upstream_url: "https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf"
       verified_on: '2026-10-02'
       verified_by: vibe-session-swedish-expansion
@@ -1340,8 +1340,8 @@ fee_rules:
       type: flat
       amount: 155145
     source_reference:
-      document_name: prislista-farleds-lotsavgifter-2026.pdf
-      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+      document_name: prislista-farleds-lotsavgifter-2026.txt
+      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt
       upstream_url: "https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf"
       verified_on: '2026-10-02'
       verified_by: vibe-session-swedish-expansion
@@ -1361,8 +1361,8 @@ fee_rules:
       type: flat
       amount: 172385
     source_reference:
-      document_name: prislista-farleds-lotsavgifter-2026.pdf
-      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+      document_name: prislista-farleds-lotsavgifter-2026.txt
+      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt
       upstream_url: "https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf"
       verified_on: '2026-10-02'
       verified_by: vibe-session-swedish-expansion
@@ -1382,8 +1382,8 @@ fee_rules:
       type: flat
       amount: 172385
     source_reference:
-      document_name: prislista-farleds-lotsavgifter-2026.pdf
-      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+      document_name: prislista-farleds-lotsavgifter-2026.txt
+      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt
       upstream_url: "https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf"
       verified_on: '2026-10-02'
       verified_by: vibe-session-swedish-expansion
@@ -1403,8 +1403,8 @@ fee_rules:
       type: flat
       amount: 40360
     source_reference:
-      document_name: prislista-farleds-lotsavgifter-2026.pdf
-      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+      document_name: prislista-farleds-lotsavgifter-2026.txt
+      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt
       upstream_url: "https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf"
       verified_on: '2026-10-02'
       verified_by: vibe-session-swedish-expansion
@@ -1424,8 +1424,8 @@ fee_rules:
       type: flat
       amount: 90815
     source_reference:
-      document_name: prislista-farleds-lotsavgifter-2026.pdf
-      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+      document_name: prislista-farleds-lotsavgifter-2026.txt
+      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt
       upstream_url: "https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf"
       verified_on: '2026-10-02'
       verified_by: vibe-session-swedish-expansion
@@ -1445,8 +1445,8 @@ fee_rules:
       type: flat
       amount: 181625
     source_reference:
-      document_name: prislista-farleds-lotsavgifter-2026.pdf
-      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+      document_name: prislista-farleds-lotsavgifter-2026.txt
+      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt
       upstream_url: "https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf"
       verified_on: '2026-10-02'
       verified_by: vibe-session-swedish-expansion
@@ -1466,8 +1466,8 @@ fee_rules:
       type: flat
       amount: 201805
     source_reference:
-      document_name: prislista-farleds-lotsavgifter-2026.pdf
-      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+      document_name: prislista-farleds-lotsavgifter-2026.txt
+      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt
       upstream_url: "https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf"
       verified_on: '2026-10-02'
       verified_by: vibe-session-swedish-expansion
@@ -1487,8 +1487,8 @@ fee_rules:
       type: flat
       amount: 201805
     source_reference:
-      document_name: prislista-farleds-lotsavgifter-2026.pdf
-      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+      document_name: prislista-farleds-lotsavgifter-2026.txt
+      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt
       upstream_url: "https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf"
       verified_on: '2026-10-02'
       verified_by: vibe-session-swedish-expansion
@@ -1508,8 +1508,8 @@ fee_rules:
       type: flat
       amount: 47685
     source_reference:
-      document_name: prislista-farleds-lotsavgifter-2026.pdf
-      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+      document_name: prislista-farleds-lotsavgifter-2026.txt
+      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt
       upstream_url: "https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf"
       verified_on: '2026-10-02'
       verified_by: vibe-session-swedish-expansion
@@ -1529,8 +1529,8 @@ fee_rules:
       type: flat
       amount: 107295
     source_reference:
-      document_name: prislista-farleds-lotsavgifter-2026.pdf
-      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+      document_name: prislista-farleds-lotsavgifter-2026.txt
+      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt
       upstream_url: "https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf"
       verified_on: '2026-10-02'
       verified_by: vibe-session-swedish-expansion
@@ -1550,8 +1550,8 @@ fee_rules:
       type: flat
       amount: 214590
     source_reference:
-      document_name: prislista-farleds-lotsavgifter-2026.pdf
-      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+      document_name: prislista-farleds-lotsavgifter-2026.txt
+      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt
       upstream_url: "https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf"
       verified_on: '2026-10-02'
       verified_by: vibe-session-swedish-expansion
@@ -1571,8 +1571,8 @@ fee_rules:
       type: flat
       amount: 238430
     source_reference:
-      document_name: prislista-farleds-lotsavgifter-2026.pdf
-      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+      document_name: prislista-farleds-lotsavgifter-2026.txt
+      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt
       upstream_url: "https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf"
       verified_on: '2026-10-02'
       verified_by: vibe-session-swedish-expansion
@@ -1592,8 +1592,8 @@ fee_rules:
       type: flat
       amount: 238430
     source_reference:
-      document_name: prislista-farleds-lotsavgifter-2026.pdf
-      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+      document_name: prislista-farleds-lotsavgifter-2026.txt
+      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt
       upstream_url: "https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf"
       verified_on: '2026-10-02'
       verified_by: vibe-session-swedish-expansion
@@ -1613,8 +1613,8 @@ fee_rules:
       type: flat
       amount: 1110
     source_reference:
-      document_name: prislista-farleds-lotsavgifter-2026.pdf
-      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+      document_name: prislista-farleds-lotsavgifter-2026.txt
+      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt
       upstream_url: "https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf"
       verified_on: '2026-10-02'
       verified_by: vibe-session-swedish-expansion
@@ -1633,8 +1633,8 @@ fee_rules:
       type: flat
       amount: 4200
     source_reference:
-      document_name: prislista-farleds-lotsavgifter-2026.pdf
-      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+      document_name: prislista-farleds-lotsavgifter-2026.txt
+      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt
       upstream_url: "https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf"
       verified_on: '2026-10-02'
       verified_by: vibe-session-swedish-expansion
@@ -1653,8 +1653,8 @@ fee_rules:
       type: flat
       amount: 8260
     source_reference:
-      document_name: prislista-farleds-lotsavgifter-2026.pdf
-      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+      document_name: prislista-farleds-lotsavgifter-2026.txt
+      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt
       upstream_url: "https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf"
       verified_on: '2026-10-02'
       verified_by: vibe-session-swedish-expansion
@@ -1673,8 +1673,8 @@ fee_rules:
       type: flat
       amount: 13155
     source_reference:
-      document_name: prislista-farleds-lotsavgifter-2026.pdf
-      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+      document_name: prislista-farleds-lotsavgifter-2026.txt
+      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt
       upstream_url: "https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf"
       verified_on: '2026-10-02'
       verified_by: vibe-session-swedish-expansion
@@ -1693,8 +1693,8 @@ fee_rules:
       type: flat
       amount: 24165
     source_reference:
-      document_name: prislista-farleds-lotsavgifter-2026.pdf
-      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+      document_name: prislista-farleds-lotsavgifter-2026.txt
+      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt
       upstream_url: "https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf"
       verified_on: '2026-10-02'
       verified_by: vibe-session-swedish-expansion
@@ -1713,8 +1713,8 @@ fee_rules:
       type: flat
       amount: 35100
     source_reference:
-      document_name: prislista-farleds-lotsavgifter-2026.pdf
-      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+      document_name: prislista-farleds-lotsavgifter-2026.txt
+      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt
       upstream_url: "https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf"
       verified_on: '2026-10-02'
       verified_by: vibe-session-swedish-expansion
@@ -1733,8 +1733,8 @@ fee_rules:
       type: flat
       amount: 44965
     source_reference:
-      document_name: prislista-farleds-lotsavgifter-2026.pdf
-      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+      document_name: prislista-farleds-lotsavgifter-2026.txt
+      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt
       upstream_url: "https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf"
       verified_on: '2026-10-02'
       verified_by: vibe-session-swedish-expansion
@@ -1753,8 +1753,8 @@ fee_rules:
       type: flat
       amount: 51555
     source_reference:
-      document_name: prislista-farleds-lotsavgifter-2026.pdf
-      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+      document_name: prislista-farleds-lotsavgifter-2026.txt
+      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt
       upstream_url: "https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf"
       verified_on: '2026-10-02'
       verified_by: vibe-session-swedish-expansion
@@ -1773,8 +1773,8 @@ fee_rules:
       type: flat
       amount: 60370
     source_reference:
-      document_name: prislista-farleds-lotsavgifter-2026.pdf
-      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+      document_name: prislista-farleds-lotsavgifter-2026.txt
+      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt
       upstream_url: "https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf"
       verified_on: '2026-10-02'
       verified_by: vibe-session-swedish-expansion
@@ -1793,8 +1793,8 @@ fee_rules:
       type: flat
       amount: 71305
     source_reference:
-      document_name: prislista-farleds-lotsavgifter-2026.pdf
-      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+      document_name: prislista-farleds-lotsavgifter-2026.txt
+      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt
       upstream_url: "https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf"
       verified_on: '2026-10-02'
       verified_by: vibe-session-swedish-expansion
@@ -1813,8 +1813,8 @@ fee_rules:
       type: flat
       amount: 9670
     source_reference:
-      document_name: prislista-farleds-lotsavgifter-2026.pdf
-      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+      document_name: prislista-farleds-lotsavgifter-2026.txt
+      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt
       upstream_url: "https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf"
       verified_on: '2026-10-02'
       verified_by: vibe-session-swedish-expansion
@@ -1835,8 +1835,8 @@ fee_rules:
       unit_type: pilotage_half_hour
       unit_rate: 2160
     source_reference:
-      document_name: prislista-farleds-lotsavgifter-2026.pdf
-      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+      document_name: prislista-farleds-lotsavgifter-2026.txt
+      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt
       upstream_url: "https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf"
       verified_on: '2026-10-02'
       verified_by: vibe-session-swedish-expansion
@@ -1864,8 +1864,8 @@ fee_rules:
       type: flat
       amount: 12485
     source_reference:
-      document_name: prislista-farleds-lotsavgifter-2026.pdf
-      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+      document_name: prislista-farleds-lotsavgifter-2026.txt
+      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt
       upstream_url: "https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf"
       verified_on: '2026-10-02'
       verified_by: vibe-session-swedish-expansion
@@ -1886,8 +1886,8 @@ fee_rules:
       unit_type: pilotage_half_hour
       unit_rate: 2840
     source_reference:
-      document_name: prislista-farleds-lotsavgifter-2026.pdf
-      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+      document_name: prislista-farleds-lotsavgifter-2026.txt
+      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt
       upstream_url: "https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf"
       verified_on: '2026-10-02'
       verified_by: vibe-session-swedish-expansion
@@ -1915,8 +1915,8 @@ fee_rules:
       type: flat
       amount: 15290
     source_reference:
-      document_name: prislista-farleds-lotsavgifter-2026.pdf
-      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+      document_name: prislista-farleds-lotsavgifter-2026.txt
+      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt
       upstream_url: "https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf"
       verified_on: '2026-10-02'
       verified_by: vibe-session-swedish-expansion
@@ -1937,8 +1937,8 @@ fee_rules:
       unit_type: pilotage_half_hour
       unit_rate: 3435
     source_reference:
-      document_name: prislista-farleds-lotsavgifter-2026.pdf
-      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+      document_name: prislista-farleds-lotsavgifter-2026.txt
+      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt
       upstream_url: "https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf"
       verified_on: '2026-10-02'
       verified_by: vibe-session-swedish-expansion
@@ -1966,8 +1966,8 @@ fee_rules:
       type: flat
       amount: 17300
     source_reference:
-      document_name: prislista-farleds-lotsavgifter-2026.pdf
-      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+      document_name: prislista-farleds-lotsavgifter-2026.txt
+      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt
       upstream_url: "https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf"
       verified_on: '2026-10-02'
       verified_by: vibe-session-swedish-expansion
@@ -1988,8 +1988,8 @@ fee_rules:
       unit_type: pilotage_half_hour
       unit_rate: 3940
     source_reference:
-      document_name: prislista-farleds-lotsavgifter-2026.pdf
-      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+      document_name: prislista-farleds-lotsavgifter-2026.txt
+      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt
       upstream_url: "https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf"
       verified_on: '2026-10-02'
       verified_by: vibe-session-swedish-expansion
@@ -2017,8 +2017,8 @@ fee_rules:
       type: flat
       amount: 19305
     source_reference:
-      document_name: prislista-farleds-lotsavgifter-2026.pdf
-      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+      document_name: prislista-farleds-lotsavgifter-2026.txt
+      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt
       upstream_url: "https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf"
       verified_on: '2026-10-02'
       verified_by: vibe-session-swedish-expansion
@@ -2039,8 +2039,8 @@ fee_rules:
       unit_type: pilotage_half_hour
       unit_rate: 4400
     source_reference:
-      document_name: prislista-farleds-lotsavgifter-2026.pdf
-      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+      document_name: prislista-farleds-lotsavgifter-2026.txt
+      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt
       upstream_url: "https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf"
       verified_on: '2026-10-02'
       verified_by: vibe-session-swedish-expansion
@@ -2068,8 +2068,8 @@ fee_rules:
       type: flat
       amount: 26105
     source_reference:
-      document_name: prislista-farleds-lotsavgifter-2026.pdf
-      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+      document_name: prislista-farleds-lotsavgifter-2026.txt
+      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt
       upstream_url: "https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf"
       verified_on: '2026-10-02'
       verified_by: vibe-session-swedish-expansion
@@ -2090,8 +2090,8 @@ fee_rules:
       unit_type: pilotage_half_hour
       unit_rate: 5865
     source_reference:
-      document_name: prislista-farleds-lotsavgifter-2026.pdf
-      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+      document_name: prislista-farleds-lotsavgifter-2026.txt
+      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt
       upstream_url: "https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf"
       verified_on: '2026-10-02'
       verified_by: vibe-session-swedish-expansion
@@ -2119,8 +2119,8 @@ fee_rules:
       type: flat
       amount: 29730
     source_reference:
-      document_name: prislista-farleds-lotsavgifter-2026.pdf
-      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+      document_name: prislista-farleds-lotsavgifter-2026.txt
+      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt
       upstream_url: "https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf"
       verified_on: '2026-10-02'
       verified_by: vibe-session-swedish-expansion
@@ -2141,8 +2141,8 @@ fee_rules:
       unit_type: pilotage_half_hour
       unit_rate: 6735
     source_reference:
-      document_name: prislista-farleds-lotsavgifter-2026.pdf
-      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+      document_name: prislista-farleds-lotsavgifter-2026.txt
+      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt
       upstream_url: "https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf"
       verified_on: '2026-10-02'
       verified_by: vibe-session-swedish-expansion
@@ -2170,8 +2170,8 @@ fee_rules:
       type: flat
       amount: 32540
     source_reference:
-      document_name: prislista-farleds-lotsavgifter-2026.pdf
-      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+      document_name: prislista-farleds-lotsavgifter-2026.txt
+      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt
       upstream_url: "https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf"
       verified_on: '2026-10-02'
       verified_by: vibe-session-swedish-expansion
@@ -2192,8 +2192,8 @@ fee_rules:
       unit_type: pilotage_half_hour
       unit_rate: 7335
     source_reference:
-      document_name: prislista-farleds-lotsavgifter-2026.pdf
-      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+      document_name: prislista-farleds-lotsavgifter-2026.txt
+      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt
       upstream_url: "https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf"
       verified_on: '2026-10-02'
       verified_by: vibe-session-swedish-expansion
@@ -2221,8 +2221,8 @@ fee_rules:
       type: flat
       amount: 35755
     source_reference:
-      document_name: prislista-farleds-lotsavgifter-2026.pdf
-      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+      document_name: prislista-farleds-lotsavgifter-2026.txt
+      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt
       upstream_url: "https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf"
       verified_on: '2026-10-02'
       verified_by: vibe-session-swedish-expansion
@@ -2243,8 +2243,8 @@ fee_rules:
       unit_type: pilotage_half_hour
       unit_rate: 8105
     source_reference:
-      document_name: prislista-farleds-lotsavgifter-2026.pdf
-      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+      document_name: prislista-farleds-lotsavgifter-2026.txt
+      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt
       upstream_url: "https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf"
       verified_on: '2026-10-02'
       verified_by: vibe-session-swedish-expansion
@@ -2272,8 +2272,8 @@ fee_rules:
       type: flat
       amount: 45420
     source_reference:
-      document_name: prislista-farleds-lotsavgifter-2026.pdf
-      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+      document_name: prislista-farleds-lotsavgifter-2026.txt
+      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt
       upstream_url: "https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf"
       verified_on: '2026-10-02'
       verified_by: vibe-session-swedish-expansion
@@ -2294,8 +2294,8 @@ fee_rules:
       unit_type: pilotage_half_hour
       unit_rate: 10255
     source_reference:
-      document_name: prislista-farleds-lotsavgifter-2026.pdf
-      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+      document_name: prislista-farleds-lotsavgifter-2026.txt
+      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt
       upstream_url: "https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf"
       verified_on: '2026-10-02'
       verified_by: vibe-session-swedish-expansion
@@ -2323,8 +2323,8 @@ fee_rules:
       type: flat
       amount: 12620
     source_reference:
-      document_name: prislista-farleds-lotsavgifter-2026.pdf
-      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+      document_name: prislista-farleds-lotsavgifter-2026.txt
+      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt
       upstream_url: "https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf"
       verified_on: '2026-10-02'
       verified_by: vibe-session-swedish-expansion
@@ -2345,8 +2345,8 @@ fee_rules:
       type: flat
       amount: 9390
     source_reference:
-      document_name: prislista-farleds-lotsavgifter-2026.pdf
-      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+      document_name: prislista-farleds-lotsavgifter-2026.txt
+      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt
       upstream_url: "https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf"
       verified_on: '2026-10-02'
       verified_by: vibe-session-swedish-expansion
@@ -2367,8 +2367,8 @@ fee_rules:
       type: flat
       amount: 7510
     source_reference:
-      document_name: prislista-farleds-lotsavgifter-2026.pdf
-      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+      document_name: prislista-farleds-lotsavgifter-2026.txt
+      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt
       upstream_url: "https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf"
       verified_on: '2026-10-02'
       verified_by: vibe-session-swedish-expansion
@@ -2389,8 +2389,8 @@ fee_rules:
       type: flat
       amount: 5635
     source_reference:
-      document_name: prislista-farleds-lotsavgifter-2026.pdf
-      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+      document_name: prislista-farleds-lotsavgifter-2026.txt
+      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt
       upstream_url: "https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf"
       verified_on: '2026-10-02'
       verified_by: vibe-session-swedish-expansion
@@ -2411,8 +2411,8 @@ fee_rules:
       type: flat
       amount: 3775
     source_reference:
-      document_name: prislista-farleds-lotsavgifter-2026.pdf
-      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+      document_name: prislista-farleds-lotsavgifter-2026.txt
+      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt
       upstream_url: "https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf"
       verified_on: '2026-10-02'
       verified_by: vibe-session-swedish-expansion
@@ -2433,8 +2433,8 @@ fee_rules:
       type: flat
       amount: 1880
     source_reference:
-      document_name: prislista-farleds-lotsavgifter-2026.pdf
-      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+      document_name: prislista-farleds-lotsavgifter-2026.txt
+      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt
       upstream_url: "https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf"
       verified_on: '2026-10-02'
       verified_by: vibe-session-swedish-expansion
@@ -2477,8 +2477,8 @@ fee_rules:
         low_share_input: cargo_low_value_share
         basis_note: "godsavgift 3.36 kr/t high-value / 1.67 kr/t low-value (2026 price list p.5, Föreskrift 2025:6); international basis assumed (loaded + discharged; domestic = loaded only); transit cargo exempt — not representable in the call model"
     source_reference:
-      document_name: prislista-farleds-lotsavgifter-2026.pdf
-      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf
+      document_name: prislista-farleds-lotsavgifter-2026.txt
+      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt
       upstream_url: "https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf"
       document_issued: '2025-11-01'
       page: 5

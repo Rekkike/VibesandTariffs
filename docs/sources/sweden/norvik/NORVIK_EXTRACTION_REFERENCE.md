@@ -267,6 +267,16 @@ class tables (vessel fee, readiness fee, pilotage), the frequency
 discount, and the godsavgift are the shared national machinery (the
 Gothenburg extraction §4 tables). Norvik's own YAML carries its own
 transcription with its own citations.
+Archived at v0.4.5: the prislista now has an in-repo archive under
+`docs/sources/sweden/national/sjofartsverket/` (the verbatim text
+extraction, the artifact this environment can fetch honestly; the binary
+PDF remains unarchived — the recorded limitation). The shared national
+extraction reference
+`docs/sources/sweden/national/NATIONAL_EXTRACTION_REFERENCE.md` is the
+authority of record for the national block, written once and cited by all
+five Swedish silos; this port's national citations point at the archived
+document's real path.
+
 
 ## 6. Estimated parameters
 

@@ -48,7 +48,10 @@ describe('Godsavgift — the Swedish national cargo-based fairway due (spec v0.2
     expect((helRule.rate_structure as any).value_blend.low_value_rate).toBe(1.67);
     // Each port's citation names the price list and the regulation.
     for (const rule of [gotRule, helRule]) {
-      expect(rule.source_reference!.document_name).toBe('prislista-farleds-lotsavgifter-2026.pdf');
+      // v0.4.5 citation repair: the prislista is archived in-repo as the
+      // verbatim text extraction (the fetchable artifact); the citation
+      // points at the archived document's real path.
+      expect(rule.source_reference!.document_name).toBe('prislista-farleds-lotsavgifter-2026.txt');
       expect(rule.source_reference!.page).toBe(5);
       expect((rule.rate_structure as any).value_blend.basis_note).toContain('Föreskrift 2025:6');
     }

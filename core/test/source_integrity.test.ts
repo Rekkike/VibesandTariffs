@@ -140,11 +140,15 @@ describe('Source link integrity (spec v0.2.26)', () => {
     // file is absent (not zero bytes), and the registry conversion marks it
     // document_not_archived. A cited path that is neither archived nor marked
     // is a failure.
+    // v0.4.5 citation repair: the prislista is archived in-repo (the
+    // verbatim text extraction, the fetchable artifact) and the national
+    // citations point at it; the two prislista paths leave the
+    // not-archived marker set. The archive-presence pin: the national
+    // reference exists beside the archive, and a silo's document_url
+    // pointing at a non-existent path fails this suite.
     const notArchived = [
       'docs/sources/sweden/gothenburg/apm-terminals/terminal-tariff-2026-june.pdf',
       'docs/sources/sweden/gothenburg/port-authority/port-tariff-2026.pdf',
-      'docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.pdf',
-      'docs/sources/sweden/national/sjofartsverket/prislista-farleds--och-lotsavgifter-2026.pdf',
     ].sort();
     const cited = new Set<string>();
     const marked = new Set<string>();
@@ -175,6 +179,31 @@ describe('Source link integrity (spec v0.2.26)', () => {
           expect(sr.upstream_url).toMatch(/^https?:\/\//);
         }
       }
+    }
+  });
+
+  it('the national prislista archive exists with its extraction reference (v0.4.5 archive-presence pin)', () => {
+    // The v0.4.4 audit finding, closed: docs/sources/sweden/national/ now
+    // holds the archived prislista (the verbatim text extraction, the
+    // fetchable artifact) and the national extraction reference written
+    // once and cited by all five Swedish silos. Red proof: the archive file
+    // removed (or renamed) fails the existsSync checks; a silo document_url
+    // pointing at the old never-existed .pdf path fails the first test of
+    // this suite (observed red before the repair).
+    const archive = path.join(REPO_ROOT, 'docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt');
+    expect(fs.existsSync(archive)).toBe(true);
+    expect(fs.statSync(archive).size).toBeGreaterThan(1000);
+    const reference = path.join(REPO_ROOT, 'docs/sources/sweden/national/NATIONAL_EXTRACTION_REFERENCE.md');
+    expect(fs.existsSync(reference)).toBe(true);
+    const referenceText = fs.readFileSync(reference, 'utf8');
+    expect(referenceText).toContain('fa1cfe5a5bf90a6f0b22f30abd3e832f4e01c9dcdc907987e96cf92f720d4699');
+    expect(referenceText).toContain('text extraction');
+    // All five Swedish silos cite the archived path exactly, with no
+    // residual never-existed .pdf citation anywhere in the data.
+    for (const file of ['gavle_2026.yaml', 'gothenburg_2026.yaml', 'helsingborg_2026.yaml', 'norrkoping_2026.yaml', 'norvik_2026.yaml']) {
+      const text = fs.readFileSync(path.join(DATA_DIR, file), 'utf8');
+      expect(text).toContain('document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt');
+      expect(text).not.toMatch(/document_url:.*prislista.*\.pdf"?\s*$/m);
     }
   });
 
