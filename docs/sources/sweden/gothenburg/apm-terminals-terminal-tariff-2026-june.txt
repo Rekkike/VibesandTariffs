@@ -1,0 +1,276 @@
+ARCHIVE PROVENANCE — docs/sources/sweden/gothenburg/apm-terminals-terminal-tariff-2026-june.txt
+
+Document:    Terminal Tariff — APM Terminals Gothenburg AB
+Edition:     Valid from 01.01.2026 until 31.12.2026 (June revision, as delivered)
+Issuer:      APM Terminals Gothenburg AB
+Provenance:  Delivered by the product owner, 2026-10-02. The sandbox fetch environment is refused
+             by the publisher's CDN on every route (the v0.4.5 recorded stop); the document was
+             obtained outside the sandbox from the publisher's tariff page:
+             https://www.apmterminals.com/en/gothenburg/services/terminal-tariff
+Archive form: Verbatim text extraction of the delivered PDF. The binary PDF is not retained by the
+             delivery tooling (the recorded limitation; the prislista-farleds-lotsavgifter-2026
+             precedent). This extraction is the archive of record.
+Below the line: the extracted text, verbatim as delivered.
+
+--------------------------------------------------------------------------------
+
+# Terminal Tariff - APM Terminals Gothenburg
+## Valid from 01.01.2026 until 31.12.2026
+
+All services provided by APM Terminals Gothenburg AB are a subject to APM Terminals terms and conditions stated at APMT website (https://www.apmterminals.com/en/gothenburg/services/terminal-tariff).
+Please read the document carefully.
+
+By ordering a service, you confirm your understanding and acceptance of the terms and conditions stipulated in the Terminal Tariff document and Terms of business.
+
+|  **Table of contents** | 1  |
+| --- | --- |
+|  Terminal Charges on goods | 2  |
+|  Hatch Cover Charge | 2  |
+|  Gearbox Handling | 2  |
+|  ISPS | 2  |
+|  Surcharge Loading & Discharge of units containing dangerous goods | 2  |
+|  Yard Storage | 2  |
+|  Export via gate | 2  |
+|  Export via rail | 2  |
+|  Import & Domestic | 2  |
+|  Container Premiums & Surcharges | 3  |
+|  Surcharge OOG units | 3  |
+|  Surcharge temperature-controlled units | 3  |
+|  Surcharge on units containing dangerous goods | 3  |
+|  Penalty surcharge for overdue containers containing dangerous cargo | 3  |
+|  Gate Operations - Hazardous | 3  |
+|  Surcharge receipt/delivery of dangerous goods cargo - Truck & rail | 3  |
+|  Value Added Services (VAS) & Other Operational Services | 3  |
+|  Container photos | 3  |
+|  VGM-Verified Gross Mass | 3  |
+|  Seal Charges | 3  |
+|  Administrative Charges | 3  |
+|  Additional services | 4  |
+|  Equipment rentals | 4  |
+|  Data Services & API Store | 5  |
+|  Other Services | 5  |
+|  Terms Of Business | 5  |
+|  Payment conditions | 5  |
+|  Determination of Weights and Measurements | 5  |
+|  Invoice dispute process | 5  |
+|  VAT | 5  |
+|  Changes to the Terminal Tariff | 5  |
+|  Invoice Query Contacts | 5  |
+
+Classification: Confidential
+
+APM Terminals Gothenburg
+
+APM TERMINALS
+Lifting Global Trade
+
+--- Page 2 ---
+
+|  1 | Terminal Charges on goods | Charge Basis | SEK  |
+| --- | --- | --- | --- |
+|  1.1 | ISO units x 20 ft | Per Unit | 377  |
+|   |  ISO units > 20 ft | Per Unit | 535  |
+|   |  Break bulk cargo (other cargo) | Per 1000 kilos | 54  |
+|   |  Excluded from charges on goods are empty containers where the container is not the commodity itself |  |   |
+|  1.2 | Hatch Cover Charge | Per Move and Unit | 3111  |
+|  1.3 | Gearbox Handling | Per Move and Unit | 1036  |
+|  1.4 | ISPS charge Security charge covers parts of maintaining the terminal area according to international security standards. | Per Unit | 80  |
+|  1.5 | Surcharge Loading & Discharge of units containing dangerous goods | Per unit | 0  |
+|  2 | Yard Storage (per TEU per day) |  | SEK  |
+
+Yard Storage is calculated per calendar day.
+
+Storage calculation Export &amp; Transhipment units
+
+Export &amp; Transhipment units have the same Port Storage calculation. Calculation of Port Storage time starts on the day export container is gated into the terminal or transhipment discharged. Calculation ends the day before container is loaded on a vessel.
+
+Storage calculation Import units
+
+Calculation of Import Port Storage time starts the day after container discharge and ends when container departs from the terminal via gate or rail.
+
+Storage Calculation Domestic units
+
+Calculation of Port Storage time starts the day container is gated into the terminal and ends the day container is departing.
+
+Temperature controlled units, units containing dangerous goods, and OOG units have the same free Port Storage terms as described above.
+
+Important: Additional yard surcharges apply to this type of units as per Section 3, Yard Surcharges.
+
+Detailed storage calculations can be found on https://www.apmterminals.com/en/gothenburg/services/terminal-tariff.
+
+|  2.1 | Export & Transhipment (ISO unit x 20 ft) |   |
+| --- | --- | --- |
+|   |  From day 0 - 6 | 0  |
+|   |  From day 7 - 9 | 133  |
+|   |  From day 10 - 13 | 346  |
+|   |  More Than 13 days | 578  |
+|   |  ISO unit > 20 ft will be charged double the tariff rate. Important: Additional yard surcharges apply to OOG, reefer & dangerous goods containers as per section 3. |   |
+|  2.1 | Import & Domestic (ISO unit x 20 ft) |   |
+| --- | --- | --- |
+|   |  From day 0 - 4 | 0  |
+|   |  From day 5 - 7 | 133  |
+|   |  From day 8 - 11 | 346  |
+|   |  More Than 11 days | 578  |
+|   |  ISO unit > 20 ft will be charged double the tariff rate. Important: Additional yard surcharges apply to OOG, reefer & dangerous goods containers as per section 3. |   |
+
+Classification: Confidential
+
+APM Terminals Gothenburg
+
+APM TERMINALS
+Lifting Global Trade
+
+--- Page 3 ---
+
+|  3 | Container Premiums & Surcharges |  | SEK  |
+| --- | --- | --- | --- |
+|  3.1 | Yard Surcharges |  |   |
+|   | Surcharge DOG units * | Per Unit and Calendar day | 437  |
+|   | Surcharge temperature-controlled units (incl. handling, monitoring and power supply) * | Per Unit and Calendar day | 709  |
+|   | Surcharge on units containing dangerous goods * | Per Unit and Calendar day | 382  |
+|   | Penalty surcharge for overdue containers containing dangerous cargo | Per Unit and Calendar day | 1025  |
+|   | Rules & regulations according to Port Authority and according to limited time in terminal regulations, https://www.apmterminals.com/en/gottenburg/procedures/dangerous-cargo |  |  |
+|   | * Units containing dangerous goods and/or DOG units are not charged yard surcharges on the day of container loading or discharge. Temperature controlled units are debited yard surcharges from the day of arrival until the day of departure.  |  |  |
+|  4 | Gate Operations - Hazardous |  | SEK  |
+|  4.1 | Surcharge receipt/delivery of dangerous goods cargo - Truck & rail | Per unit | 538  |
+|  5 | Value Added Services (VAS) & Other Operational Services |  | SEK  |
+|  5.1 | Container photos |  |   |
+|   |  OCF container photos | Per Unit | 606  |
+|   |  Other premium container photo ordering | Per Unit | 2691  |
+|  5.2 | VGM-Verified Gross Mass |  |   |
+|   |  Weighing of containers pre-ordered | Per Unit | 606  |
+|   |  Weighing of containers not pre-ordered | Per Unit | 2691  |
+|  5.3 | Seal Charges |  |   |
+|   |  Seal container at the terminal | Per Unit | 606  |
+|   |  Sealing inspection upon request | Per Unit | 2691  |
+|  5.4 | Administrative Charges |  |   |
+|   |  Administration - Weekday between 07hrs until 16hrs |  | Upon request  |
+|   |  Administration - Overtime surcharge Weekday 16:00 – 07:00 |  | Upon request  |
+|   |  Administration - Overtime surcharge Saturday |  | Upon request  |
+|   |  Administration - Overtime surcharge Sunday/Public holiday |  | Upon request  |
+|   |  Minimum charge is 30 minutes and charged per started 30 minutes interval. |  |  |
+
+Classification: Confidential
+
+APM Terminals Gothenburg
+
+APM TERMINALS
+Lifting Global Trade
+
+--- Page 4 ---
+
+5.5
+
+# Additional services
+
+|  Additional gate opening hours |  | Upon request  |
+| --- | --- | --- |
+|  Combined Goods Service - Handling of import customs documents | Per Unit | 1538  |
+|  Completion of TI document | Per Unit | 605  |
+|  Dangerous Cargo Label | Per Label | 203  |
+|  Manual administration |  |   |
+|  Manual changes of bookings included but not limited to: IMO, Quantity, Grade, Change of Vessel or Voyage, Port of Discharge, Change of Modality | Per Item | 100  |
+|  Customs Administration |  |   |
+|  Customs Administration included but not limited to: Incorrect declarations, Declaration prior to unit discharge | Per Unit | 367  |
+|  Segregation of containers | Per Unit | 317  |
+|  Customs, EU Border Control, and ventilation site transport |  |   |
+|  Included in the cost is transport from place of rest to Customs area, EU Border Control, or ventilation site; stacking and transport back to yard at APM Terminals, Gothenburg. Customs/Authority will assign the payable party. | Per Unit | 1569  |
+|  Connection fee delivering of freshwater | Per Connection | 791  |
+|  Delivering of fresh water | Per m3 | 53  |
+|  Invoice Re-handling Fee | Per Invoice | 537  |
+|  Idle Berth Service | Per Hour | 500  |
+|  Conditions: - Charged from the time of berthing until commencement of operations, or from the end of operations until departure. - Applies only when no loading, discharging, or other terminal services are performed. - Rounded up to the nearest full hour. - Subject to berth availability and terminal approval. - This service is fully voluntary and only applied upon explicit customer request. |  |  |
+|  Non-electronic/Non-email PDF invoicing | Per Invoice | 512  |
+
+5.6
+
+# Equipment rentals
+
+|  Container crane | Per Hour | Upon request  |
+| --- | --- | --- |
+|  Straddle carrier | Per Hour | Upon request  |
+|  Reach stacker (Contchamp) | Per Hour | Upon request  |
+|  Mover | Per Hour | Upon request  |
+|  Terminal tractor (Tugmaster) | Per Hour | Upon request  |
+|  Forklift | Per Hour | Upon request  |
+
+Classification: Confidential
+
+APM Terminals Gothenburg
+
+APM TERMINALS
+Lifting Global Trade
+
+--- Page 5 ---
+
+6
+
+# Data Services & API Store
+
+# API Store
+
+APM Terminals innovative, industry-leading APIs enable customers to pull real-time container status data from its Terminal Operating Systems, into their own internal systems, such as a Logistics or Transport Management System (TMS).
+
+Read more on: https://www.apmterminals.com/en/gothernburg/services/api
+
+Read more about API and pricing on our website or reach out to customer care team at service.gothernburg@apmterminals.com
+
+7
+
+# Other Services
+
+Services at www.apmterminals.com/en/gothernburg
+
+On request to the terminal sales team, sales.got@apmterminals.com if not available at the website
+
+8
+
+# Terms Of Business
+
+Terms of business apply to the exclusion of any other terms and conditions to any provision of Terminal Services or any access to or use of the Terminal by a Terminal User unless they are supplemented by or in conflict with mandatory applicable law, port regulations (incl. terminal tariff) or a written contract or rate agreement between APM Terminals and a Terminal User By requesting the delivery of services, berthing a Vessel or otherwise entering the Terminal, the Terminal User accepts the application of these Terms and enters into an agreement with APM Terminals not only for itself but also as agent for any principal involved, including owners of any Vessel (if chartered), Vehicle, Goods and Containers. You find terms of business on https://www.apmterminals.com/en/gothernburg
+
+9
+
+# Payment Conditions
+
+Conditions of Payment Payment terms are 20 days from issue date of invoice, in accordance with Terms of Business.
+Interest on overdue payments will be charged in accordance with the Swedish Interest Act.
+Please quote invoice number when making payment.
+
+10
+
+# Determination of Weights and Measurements
+
+Charges are calculated on the basis of weights and measurements received in accompanying documentation or an average in general use in commerce. For any cargoes weighed and/or measured by the terminal, charges are calculated on the basis of the figures obtained. APM Terminals Gothenburg withholds the right to charge surcharges according to this tariff in case the figures obtained is obviously wrongly given.
+
+11
+
+# Invoice dispute process
+
+All disputes against invoices should be made within 8 days of receipt of the invoice to receivables.got@apmterminals.com. Please check the website for the updated instructions.
+An invoice re-handling request is not considered a dispute.
+
+12
+
+# VAT
+
+VAT is not included in the tariff rates.
+
+13
+
+# Changes to the Terminal Tariff
+
+We reserve the right to make changes to the Terminal Tariff with 30 days of notice.
+
+14
+
+# Invoice Query Contacts
+
+All invoice questions should be sent to receivables.got@apmterminals.com as the first contact point.
+
+Classification: Confidential
+
+APM Terminals Gothenburg
+
+APM TERMINALS
+Lifting Global Trade
