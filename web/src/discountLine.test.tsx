@@ -121,6 +121,11 @@ describe('comparison-legibility zero-drift pins (spec v0.2.64)', () => {
       // order re-ranks cheapest-first on the moved total.
       '10\u00a0306\u00a0979\u00a0kr52.90 SEK/GT effective \u2014 derived, not a published rate',
       '11\u00a0952\u00a0324\u00a0kr61.34 SEK/GT effective \u2014 derived, not a published rate',
+      // v0.5.1 re-baseline (the Bremerhaven expansion, in-test attribution):
+      // the seventh port's column - native 2,199,677.26 EUR, converted
+      // 24,834,356 kr, per-GT 127.45 (2,199,677.26 x 11.29 / 194,849);
+      // ranks between Norvik and Hamburg (cheapest-first).
+      '2\u00a0199\u00a0677\u00a0\u20ac\u2248 24\u00a0834\u00a0356\u00a0kr converted \u2014 at 11.29 kr/EUR, 2026-10-02127.45 SEK/GT effective \u2014 derived, not a published rate; converted at the exchange-rate input (at 11.29 kr/EUR, 2026-10-02)',
       // v0.4.6 ritual drift (the only movement): the conversion-only figure moves with the standing rate re-verification — 11.29 as of 2026-10-02 (was 11.331, 2026-09-30); 2,204,910.90 EUR × 11.29 = 24,893,444 kr; ÷ 194,849 GT = 127.76 SEK/GT. The native totals (3,275,851 kr / 2,204,911 € / 8,750,057 kr) and per-GT 16.81 / 44.91 are untouched.
       '2\u00a0204\u00a0911\u00a0\u20ac\u2248 24\u00a0893\u00a0444\u00a0kr converted \u2014 at 11.29 kr/EUR, 2026-10-02127.76 SEK/GT effective \u2014 derived, not a published rate; converted at the exchange-rate input (at 11.29 kr/EUR, 2026-10-02)'
     ]);
@@ -147,9 +152,18 @@ describe('comparison-legibility zero-drift pins (spec v0.2.64)', () => {
       // 590,400 + 1,039,200 = 1,629,600 kr: 3,828,688 -> 2,199,088);
       // Norvik's loses its cargo dues (331 x 1,600 + 424 x 2,400 =
       // 529,600 + 1,017,600 = 1,547,200 kr: 3,628,324 -> 2,081,124).
-      .toBe('To reach the berth1\u00a0068\u00a0651\u00a0kr2\u00a0199\u00a0088\u00a0kr2\u00a0378\u00a0057\u00a0kr1\u00a0370\u00a0979\u00a0kr2\u00a0081\u00a0124\u00a0kr119\u00a0740\u00a0\u20ac');
+      // v0.5.1 re-baseline (the Bremerhaven expansion, in-test attribution):
+      // the seventh port's reach-berth stage - Raumgebuehr 59,195.13 +
+      // waste 885.84 + Hafenlotsgeld 1,680.49 + GDWS dues 3,459.30 +
+      // fees 4,100.00 + towage 15,000.00 + the social-fund surcharge
+      // 29,780.57 (the social_fund family renders on the reach-berth
+      // stage per the engine's segment derivation) = 114,506.10 EUR.
+      // Ranks between Norvik and Hamburg.
+      .toBe('To reach the berth1\u00a0068\u00a0651\u00a0kr2\u00a0199\u00a0088\u00a0kr2\u00a0378\u00a0057\u00a0kr1\u00a0370\u00a0979\u00a0kr2\u00a0081\u00a0124\u00a0kr114\u00a0506\u00a0\u20ac119\u00a0740\u00a0\u20ac');
     expect((stageRows[1].textContent ?? '').trim())
-      .toBe('At the berth0\u00a0kr0\u00a0kr0\u00a0kr0\u00a0kr0\u00a0kr553\u00a0371\u00a0\u20ac');
+      // v0.5.1: Bremerhaven's at-berth stage - the Eurogate CTB berthing
+      // charge 553,371.16 EUR, between the Swedish zeros and HAM's cell.
+      .toBe('At the berth0\u00a0kr0\u00a0kr0\u00a0kr0\u00a0kr0\u00a0kr553\u00a0371\u00a0\u20ac553\u00a0371\u00a0\u20ac');
     expect((stageRows[2].textContent ?? '').trim())
       // v0.4.1 re-baseline (in-test attribution): Norrköping's quayside
       // stage loses the seeded 328,400 kr storage charge (4,797,485 →
@@ -165,7 +179,11 @@ describe('comparison-legibility zero-drift pins (spec v0.2.64)', () => {
       // 6,098,685; Norvik 8,324,000 + 1,547,200 = 9,871,200; Gävle
       // 7,008,000 + 1,928,000 = 8,936,000 (its cargo due moves here
       // from the reach-berth stage); HEL and HAM byte-identical.
-      .toBe('Quayside operations2\u00a0207\u00a0200\u00a0kr6\u00a0098\u00a0685\u00a0kr6\u00a0372\u00a0000\u00a0kr8\u00a0936\u00a0000\u00a0kr9\u00a0871\u00a0200\u00a0kr1\u00a0531\u00a0800\u00a0\u20ac');
+      // v0.5.1: Bremerhaven's quayside stage - the Eurogate CTB handling
+      // 1,432,000.00 + security 99,800.00 = 1,531,800.00 EUR (the
+      // social-fund surcharge renders on the reach-berth stage per the
+      // engine's segment derivation), between Norvik and HAM.
+      .toBe('Quayside operations2\u00a0207\u00a0200\u00a0kr6\u00a0098\u00a0685\u00a0kr6\u00a0372\u00a0000\u00a0kr8\u00a0936\u00a0000\u00a0kr9\u00a0871\u00a0200\u00a0kr1\u00a0531\u00a0800\u00a0\u20ac1\u00a0531\u00a0800\u00a0\u20ac');
   });
 });
 
@@ -351,7 +369,9 @@ describe('discounts received — the rendering (spec v0.2.64, item 2)', () => {
     expect(discountRow.textContent).toContain('port-tariff-2026.txt');
     // The honest zero still renders for the ports that fired nothing.
     const noDiscount = discountRow.querySelectorAll('.comparison-no-discount');
-    expect(noDiscount.length).toBe(5);
+    // v0.5.1: the firing GOT discount leaves six honest zeros (seven ports
+    // minus the one that fired).
+    expect(noDiscount.length).toBe(6);
   });
 
   it('desktop: the discount sum follows the conversion disclosure machinery (Hamburg native EUR with the converted secondary)', async () => {
@@ -474,7 +494,8 @@ describe('the derived per-GT metric\u2019s per-GT-OPS disclosure (spec v0.2.64, 
     const totalRow = Array.from(container!.querySelectorAll('.comparison-total-row'))
       .find(r => (r.textContent ?? '').includes('Grand Total'))!;
     const perGtCells = totalRow.querySelectorAll('.comparison-total-pergt');
-    expect(perGtCells.length).toBe(6);
+    // v0.5.1: seven loaded ports.
+    expect(perGtCells.length).toBe(7);
     // GOT and HEL (per-GT descriptor enabled + value entered) carry the
     // disclosure; HAM (no per-GT component) carries only the inclusion note.
     const texts = Array.from(perGtCells).map(c => c.textContent ?? '');

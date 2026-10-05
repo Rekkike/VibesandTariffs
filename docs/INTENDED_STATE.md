@@ -1,9 +1,10 @@
-Port Call Cost Analyzer — Intended State (six-port edition, refreshed v0.4.7)
+Port Call Cost Analyzer — Intended State (seven-port edition, refreshed v0.5.1)
 
 This document is the historical audit concordance of the project's intended
 state. It began as the Gothenburg-only pilot's authority of record (the
 original preamble claimed sole authority over the repository); since v0.2.17
-the repository has grown, and since v0.4.0 it carries six ports; since v0.2.32 the committed
+the repository has grown, and since v0.4.0 it carried six ports; since
+v0.5.1 (the Bremerhaven expansion) it carries seven; since v0.2.32 the committed
 specification (`docs/SPECIFICATION.md`) is the sole governing authority for
 the architecture, data model, engine, and UI contracts. This document now
 serves as the audit-trail record: it states the intended structure of the
@@ -57,8 +58,10 @@ new specification changelog row in the same change.
 
 ## 2. Ports
 
-Six ports are live (three at this document's v0.2.55 refresh; the v0.4.0
-expansion added Gavle, Norrköping, and Norvik), each with its own canonical
+Seven ports are live (three at this document's v0.2.55 refresh; the v0.4.0
+expansion added Gavle, Norrköping, and Norvik; the v0.5.1 expansion added
+Bremerhaven — the first German expansion, under the same Germany header as
+Hamburg in the port drawer), each with its own canonical
 data file, extraction reference, and per-port workspace page; a cross-port
 comparison view (a presentation over multiple single-port computations,
 never a separate calculation path) prices one identical call at any subset
@@ -74,6 +77,14 @@ of them:
   HHLA Container Terminal Burchardstrasse and Eurogate Hamburg terminal
   tariffs (tonnage/berth dues, handling, security, storage; a
   terminal-operator selector switches the terminal-operator-dependent lines).
+- **Bremerhaven 2026** (`bremerhaven_2026.yaml`): bremenports (the HGebO
+  statute layer — Raumgebuehr port fee, waste fee, both with the fee tables
+  the consolidated 2026 statute carries inline), Hafenlotsengesellschaft
+  Bremerhaven (port pilotage), GDWS (the Weser sea-approach pilotage at the
+  65-percent route), and the terminal-operator selector between EUROGATE
+  Container Terminal Bremerhaven (the default) and North Sea Terminal
+  Bremerhaven (the switchable variant, its reference-tariff honesty caveat on
+  every line); towage is an estimated parameter (the Hamburg convention).
 - **Helsingborg 2026** (`helsingborg_2026.yaml`): municipal port dues
   (per call/per unit — no lay-time berth charge), Sjöfartsverket national
   dues, port-security fee (ISSC-gated: a vessel without a valid ISSC pays
@@ -146,7 +157,9 @@ figures; the v0.2.55-era figures this sentence carried - GOT 3,007,051.15 /
 HAM 2,313,489.31 / HEL 8,481,257.40 - were superseded by the godsavgift
 promotion at v0.2.61 and the later figure-moving passes) at GLE
 10,306,979.35 / GOT 3,275,851.15 SEK / HAM 2,204,910.90 EUR / HEL
-8,750,057.40 / NRK 8,297,772.50 / NVK 11,952,324.05 SEK by the web suites. The
+8,750,057.40 / NRK 8,297,772.50 / NVK 11,952,324.05 SEK — and since the
+v0.5.1 Bremerhaven expansion, BRV 2,199,677.26 EUR (the new silo's
+zero-drift baseline, pinned at extraction time) — by the web suites. The
 boundary tests (frequency discount at calls 2/3/6, ordering-fee boundaries,
 pilotage 7-hour discount, godsavgift splits, transit/transshipment
 exemptions, not-registered = E, NT/CSI matrix spot checks) are likewise

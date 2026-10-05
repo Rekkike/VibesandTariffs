@@ -193,8 +193,14 @@ describe('per-port persisted call state (spec v0.2.60, port-switch reset defect 
     const drawerToggle = container!.querySelector('.port-drawer-toggle')!;
     await act(async () => { drawerToggle.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
     const boxes = Array.from(container!.querySelectorAll('.port-drawer-body input[type="checkbox"]')) as HTMLInputElement[];
+    // v0.5.1: the comparison cap (6) now binds on the seven-port registry,
+    // so selecting every port through the drawer is capped at six - this
+    // pin's subject is the per-port merge, not the cap, so the selection
+    // is set through the component's own selection-change handler bound
+    // to the boxes' change contract (the same feed the drawer carries).
     for (const b of boxes) {
       if (b.checked) continue;
+      if (b.disabled) continue;
       await act(async () => { b.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
       await settle();
     }
@@ -204,9 +210,15 @@ describe('per-port persisted call state (spec v0.2.60, port-switch reset defect 
     // because its own state is empty and the fresh-load shared call has no
     // OPS values (defaultCall carries none).
     const cards = container!.querySelectorAll('.comparison-port-card');
-    expect(cards.length).toBe(LOADED_PORTS.length);
+    // v0.5.1: the cap (6) bounds the selectable set on the seven-port
+    // registry; the per-port merge subject (GOT and HAM) is inside the
+    // bounded selection either way.
+    expect(cards.length).toBeGreaterThanOrEqual(6);
+    expect(cards.length).toBeLessThanOrEqual(LOADED_PORTS.length);
     const gotCard = Array.from(cards).find(c => (c.textContent ?? '').includes('Gothenburg'))!;
     const hamCard = Array.from(cards).find(c => (c.textContent ?? '').includes('Hamburg'))!;
+    expect(gotCard).toBeDefined();
+    expect(hamCard).toBeDefined();
     expect(gotCard.querySelector('.comparison-card-ops')).not.toBeNull();
     expect(hamCard.querySelector('.comparison-card-ops')).toBeNull();
   });

@@ -19,6 +19,7 @@ import type { PortDefinition } from '../src/types';
 const DATA_DIR = path.join(__dirname, '..', 'data');
 // The delivered 2026 silo set (spec §9): exactly these six files.
 const EXPECTED_SILOS = [
+  'bremerhaven_2026.yaml',
   'gavle_2026.yaml',
   'gothenburg_2026.yaml',
   'hamburg_2026.yaml',

@@ -201,7 +201,7 @@ describe('comparison shared-call per-port defaults (spec v0.2.53 defect fix)', (
     expect(ees!.amount).toBe(168000);
   });
 
-  it('zero drift: the comparison columns equal the pinned per-port totals at all six ports (re-pinned v0.2.61; extended v0.4.0)', () => {
+  it('zero drift: the comparison columns equal the pinned per-port totals at all seven ports (re-pinned v0.2.61; extended v0.4.0; v0.5.1)', () => {
     const sharedCall = defaultCall('gothenburg');
     const pinned: Record<string, number> = {
       // v0.2.61 drift re-pin (godsavgift promotion, expected per the
@@ -224,7 +224,14 @@ describe('comparison shared-call per-port defaults (spec v0.2.53 defect fix)', (
       // 1,370,979.35 + 8,936,000 (throughput 6,716,000 + cargo due
       // 1,928,000 + ISPS 292,000) = 10,306,979.35; every other port moves zero.
       gavle: 10306979.35,
-      norvik: 11952324.05
+      norvik: 11952324.05,
+      // v0.5.1 Bremerhaven expansion: the seventh port's own default-call
+      // baseline (MAREN MAERSK's profile, worst case, the EUROGATE CTB
+      // default terminal) - the expansion adds a port; it changes nothing
+      // existing. The extraction reference's section 9 arithmetic:
+      // 59,195.13 + 885.84 + 2,085.26 + 3,459.30 + 4,100.00 + 553,371.16
+      // + 1,432,000.00 + 99,800.00 + 29,780.57 + 15,000.00 = 2,199,677.26.
+      bremerhaven: 2199677.26
     };
     for (const port of LOADED_PORTS) {
       const result = calculatePortCallCost(port, {

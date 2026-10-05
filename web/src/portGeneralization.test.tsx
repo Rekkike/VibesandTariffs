@@ -154,18 +154,21 @@ describe('comparison scalability controls (spec v0.2.59)', () => {
     // v0.4.0 Swedish domestic expansion: the six-port ranked order at the
     // default rate. v0.4.2 re-baseline (the Yilport terminal layer, in-test
     // attribution): Gävle's Grand Total moves 1,370,979.35 ->
-    // 10,306,979.35, so the ranked order becomes Gothenburg, Norrköping,
-    // Helsingborg, Gävle, Norvik, Hamburg (cheapest-first on the converted
-    // basis; HAM's converted 24,893,444 kr ranks last — v0.4.6 ritual
-    // re-baseline: 2,204,910.90 EUR x 11.29, was 24,983,845 at 11.331). The single ranking
-    // rule is unchanged.
+    // 10,306,979.35. v0.5.1 re-baseline (the Bremerhaven expansion, in-test
+    // attribution): the seventh port's converted total 24,829,786 kr
+    // (2,199,272.49 EUR x 11.29) ranks between Norvik and Hamburg, so the
+    // order becomes Gothenburg, Norrköping, Helsingborg, Gävle, Norvik,
+    // Bremerhaven, Hamburg (cheapest-first on the converted basis; HAM's
+    // converted 24,893,444 kr still ranks last — v0.4.6 ritual figure). The
+    // single ranking rule is unchanged.
     expect(headerCells).toHaveLength(LOADED_PORTS.length + 1);
     expect(headerCells[1]).toContain('Gothenburg');
     expect(headerCells[2]).toContain('Norrköping');
     expect(headerCells[3]).toContain('Helsingborg');
     expect(headerCells[4]).toContain('Gävle');
     expect(headerCells[5]).toContain('Norvik');
-    expect(headerCells[6]).toContain('Hamburg');
+    expect(headerCells[6]).toContain('Bremerhaven');
+    expect(headerCells[7]).toContain('Hamburg');
   });
 
   it('the cheapest/most-expensive markers are consistent with the column order (same single ranking rule)', async () => {
@@ -184,13 +187,15 @@ describe('comparison scalability controls (spec v0.2.59)', () => {
     const cards = Array.from(container!.querySelectorAll('.comparison-port-card'))
       .map(c => c.textContent ?? '');
     expect(cards.length).toBe(LOADED_PORTS.length);
-    // v0.4.2 re-baseline (the Yilport terminal layer): same ranked order as desktop.
+    // v0.4.2 re-baseline (the Yilport terminal layer): same ranked order as
+    // desktop. v0.5.1 re-baseline (the Bremerhaven expansion): same order.
     expect(cards[0]).toContain('Gothenburg');
     expect(cards[1]).toContain('Norrköping');
     expect(cards[2]).toContain('Helsingborg');
     expect(cards[3]).toContain('Gävle');
     expect(cards[4]).toContain('Norvik');
-    expect(cards[5]).toContain('Hamburg');
+    expect(cards[5]).toContain('Bremerhaven');
+    expect(cards[6]).toContain('Hamburg');
   });
 
   it('a subset selection renders only the selected ports - the bounded fresh-load default does not render unselected ports', async () => {
@@ -361,6 +366,21 @@ describe('port-specific reset fields (spec v0.2.60)', () => {
         'ops_electricity_price', 'ops_demand_charge', 'ops_connection_charge',
         'ops_per_gt_charge', 'ets_emissions_tco2', 'ets_allowance_price',
         'transshipment_units', 'storage_days_hazardous'
+      ],
+      // v0.5.1 Bremerhaven expansion: the seventh port's own per-port set -
+      // the German terminal-scoped inputs (the pilotage segment, the
+      // Eurogate/NTB optional-service counts, the storage scenario days)
+      // and the shared per-port block.
+      bremerhaven: [
+        'engine_tier', 'engine_tier_estimated', 'esi_score',
+        'towage_amount', 'pilotage_segment_pct', 'pilotage_hours',
+        'pilotage_extra_pilot', 'pilotage_ordering_lead_time_hours',
+        'lay_up_days',
+        'ops_electricity_price', 'ops_demand_charge', 'ops_connection_charge',
+        'ops_per_gt_charge', 'ets_emissions_tco2', 'ets_allowance_price',
+        'lashing_containers', 'twistlock_containers', 'imo_containers',
+        'layby_hours', 'reefer_extra_days', 'small_call_containers',
+        'storage_days_import', 'storage_days_export'
       ]
     };
     for (const port of LOADED_PORTS) {

@@ -34,6 +34,7 @@ estimate, the storage-day pairs that the port prices, lay time, engine tier.
 | GLE | the national shared set; no port-specific surface beyond the godsavgift planning weights (Karskär awaits a quay selector, recorded) |
 | NRK | `nrk_liner_service`; the national shared set |
 | NVK | the national shared set |
+| BRV | `terminal_operator` (EUROGATE CTB default / NTB variant), `pilotage_segment_pct` (the Weser sea-approach default 65; scales the Lotsabgaben line only - the Aussenweser fees line is definitionally 100 percent, the asymmetry recorded here), `towage_amount` (est.), lashing/twistlock/IMO/lay-by/reefer-days/small-call counts (the Eurogate P&C optional services, blank-defaulted), `storage_days_import`/`storage_days_export` (the ch. 7 scenario surfaces, zero-defaulted), the shared EU-ETS pair |
 
 ## 3. Engine inputs with no UI anywhere (unrecorded asymmetry, recorded here)
 
@@ -83,6 +84,23 @@ directive that orders them.
 - The >20 ft storage doubling refinement (GOT): recorded, pending a per-size
   storage input (v0.4.6).
 - The APMT charge-day exclusion refinement: recorded (v0.4.6).
+- The Raumgebuehr Short Sea subdivision (BRV): the HGebO's European traffic
+  area splits Short Sea (0.0438/0.1210) from Europaverkehr
+  (0.1535/0.2368/0.2763); the shared arrival-origin selector is binary and
+  cannot key it - a European arrival prices the conservative Europaverkehr
+  rate, and the Short Sea figures are recorded in the extraction reference
+  (section 4.1), never silently dropped (v0.5.1).
+- The Raumgebuehr Europaverkehr extension (BRV): the 3b(2) ten-day extension
+  encodes on the overseas side only; the Europe side's GT-band x time-period
+  nesting has no engine rate shape - recorded in the extraction reference
+  (section 4.2), stop-and-report (v0.5.1).
+- The GDWS segment asymmetry (BRV): the Weser Lotsabgaben line scales by
+  `pilotage_segment_pct` (65 percent sea approach); the Aussenweser Lotsgelder
+  line never scales (its leg is definitionally 100 percent) - recorded in the
+  extraction reference (section 5.2), v0.5.1.
+- The Bremerhaven mooring convention: crew-handled per the directive's
+  convention; no archived authority addresses Bremerhaven boatmen (the
+  evidentiary status stated in the extraction reference section 7), v0.5.1.
 
 ## 6. Coherence-check adjudication
 

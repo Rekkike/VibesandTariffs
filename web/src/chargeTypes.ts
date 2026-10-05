@@ -62,7 +62,7 @@ export const CHARGE_TYPE_LINES: ChargeTypeLine[] = [
     id: 'berth_dues',
     label: 'Berth dues',
     description:
-      "Ship's dues for the berth/handling facility, GT x lay time: HHLA tonnage dues (Quay Tariff 1.2/9.1.1) + Eurogate berthing (P&C 2.1.1-2.1.2)"
+      "Ship's dues for the berth/handling facility, GT x lay time: HHLA tonnage dues (Quay Tariff 1.2/9.1.1) + Eurogate berthing (P&C 2.1.1-2.1.2, Hamburg and Bremerhaven CTB) + NTB tonnage dues (reference tariff 1.1)"
   },
   {
     id: 'cargo_dues',
@@ -82,7 +82,10 @@ const FAIRWAY_RULE_PATTERNS: RegExp[] = [
   /frequency_discount/
 ];
 
-const BERTH_RULE_IDS = new Set(['hhla_tonnage_dues', 'eurogate_berthing_charge']);
+// v0.5.1 Bremerhaven expansion: the NTB tonnage dues join the berth-dues
+// membership (the same lay-time ship's-due economic animal — NTB reference
+// tariff 1.1: BRZ x lay time, first 24 h then per started 12 h).
+const BERTH_RULE_IDS = new Set(['hhla_tonnage_dues', 'eurogate_berthing_charge', 'eurogate_ctb_berthing_charge', 'ntb_tonnage_dues']);
 // Cargo-dues membership (spec v0.4.4: the same cargo-side due renders on
 // the Cargo dues line at every Swedish port). Mapped by rule id, never by
 // fee family — the vessel_fee-family collision rule (v0.2.52) applies to

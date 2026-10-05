@@ -1,0 +1,706 @@
+[Text extraction of: Prices and Conditions of EUROGATE Container
+Terminal Bremerhaven GmbH, EUROGATE Container Terminal Hamburg GmbH,
+and EUROGATE Container Terminal Wilhelmshaven GmbH & Co. KG — Effective
+from 1st March 2026. ONE national-class document for all three German
+EUROGATE terminals, archived ONCE under the Germany tree per the
+prislista precedent for national-class documents: the canonical binary
+PDF lives at docs/sources/germany/hamburg/eurogate/prices-and-conditions-2026.pdf
+(already archived at v0.2.49; SHA-256
+166ca82876224d16f81f2b26daf3526ce31991676fb9721ef93690da1e72a2de,
+re-verified byte-identical at the 2026-10-05 re-fetch), and the Hamburg
+silo cites that path. This text extraction is the Bremerhaven silo's
+companion copy: the whole document is extracted verbatim (the
+Bremerhaven-relevant chapters are 1-13; several chapter items are
+terminal-specific and are marked "Only valid for" a named terminal in
+the document text itself — the extraction reference records the
+per-item validity adjudications). Upstream:
+https://www1.eurogate.de/wp-content/uploads/2026/02/eurogate_prices_and_conditions_2026.pdf,
+fetch 2026-10-05. See BREMERHAVEN_EXTRACTION_REFERENCE.md for provenance
+and the encoding adjudications. The document embeds its general
+conditions (ch. 1) — no separate Terms of Business document is cited by
+the tariff (S9 1.1 references the EUROGATE Group Standard Terms and
+Conditions of Business, a contract-only document with no prices,
+recorded not-archived in the Hamburg extraction reference §17.1 —
+the same record stands for Bremerhaven).]
+
+===========================================================================
+Prices and Conditions — EUROGATE Container Terminal Bremerhaven GmbH /
+EUROGATE Container Terminal Hamburg GmbH / EUROGATE Container Terminal
+Wilhelmshaven GmbH & Co. KG — Effective from 1st March 2026
+===========================================================================
+Prices and Conditions
+of
+EUROGATE Container Terminal Bremerhaven GmbH
+EUROGATE Container Terminal Hamburg GmbH
+EUROGATE Container Terminal Wilhelmshaven GmbH & Co. KG
+Effective from: 1st March 2026
+Chapter Page
+1 General provisions 2
+2 Vessel charges 4
+3 Shift surcharges, overtime and waiting times 5
+4 Hire of handling equipment and staff 6
+5 Handling Charges 6
+6 Receiving and delivery of Container 8
+7 Storage of Container and conventional cargo 9
+8 Restowing Container / conventional cargo / height restows 12
+9 Refrigeration and temperature maintenance of Container 12
+10 Container transport or other Container movements 13
+11 Status Change 15
+12 Special services for Container 15
+13 Security charge for waterside handling 19
+14 Loading and discharging ship’s equipment and provisions 19
+15 Customs / Bonded Seaport 19
+
+ 
+Prices and Conditions: Effective from: 1st March 2026
+1  General provisions
+1.1 Provisions for use of facilities
+Along with current statutory regulations, use of facilities shall be governed by the regulations 
+contained in these Prices and Conditions and by the Standard Terms and Conditions of Business 
+of the EUROGATE Group in its latest version.
+1.2 Orders for use of facilities
+Orders must be given for use of facilities; such orders must be made to the Company
+concerned in electronic form.
+1.3 Charges
+1.3.1 Gross weights and dimensions shall be used for calculation. Packaged weights over 10 t must be 
+declared separately.
+1.3.2 The weight shall be rounded up to a full 100 kg.
+1.3.3 Dimensions shall be rounded up to a full 0.1 cbm.
+1.3.4 Minimum charge: not applicable
+1.3.5 The prices specified in this Statement are for Container and packages in seaworthy packaging of 
+a kind customary in the industry and are applicable only if the goods are not subject to special 
+provisions of the GGV-See (ordinance on transport of hazardous substances by seagoing vessels) 
+or other legal provisions.
+1.3.6 For services which are not indicated in this Statement or which require special expenditure, 
+charges must be agreed upon with the Company in advance.
+ (e.g. salvage of containers)
+1.3.7 Charges apply on weekdays Monday to Friday for the First and Second Shift. Work outside these 
+hours is possible on request.
+ Extra charges will be levied for work outside these times.
+1.3.8 All charges are net amounts in terms of the VAT Act. In case that tax-free sales for shipping are 
+claimed this can only be effected by an official certificate of the tax authorities. This certificate 
+has to be presented in advance.
+1.3.9 As a rule, the charges and expenditures shall be collected in arrears; however, the Company 
+shall be entitled to require advance payments.
+For goods in storage passing into other hands, charges up to the date when transfer of 
+ownership takes place shall be paid immediately.
+1.3.10 Invoices shall be payable immediately upon receipt. Incoming payments shall be set off against 
+the oldest accounts receivable. After 7 days, arrears interest may be charged, amounting to 5 % 
+above the discount rate of the European Central Bank
+1.3.11 Creation and dispatch of additional copies of invoices is subject to a fee of € 60.00 per copy of 
+the invoice.
+1.3.12 All services not mentioned in the list of prices and conditions are charged at cost.
+1.3.13 A 1.5% social fund will be charged on all services.                                                             
+The following shall be excluded:
+-storage charges
+-materials for stowing and lashing
+-security charge
+Page 2 of 19
+ 
+Prices and Conditions: Effective from: 1st March 2026
+1.4 Liability for payment
+1.4.1 The liable debtor shall be the client, unless particular exceptions are stated below.
+1.4.2 For the use of the quay by a seagoing vessel, charges shall be made to the ship’s agent.
+1.4.3 Handling charges for goods via quay shall be made to the following:
+a. For outgoing sea traffic, to the issuer of the port record, or in other cases to the earlier client;
+b. For incoming sea traffic, to the recipient of the cargo, or in other cases to the earlier client;
+c. For ship’s equipment and provisions to the ship’s agent.
+1.4.4 If the shipping company assumes payment of cargo handling charges, the client shall remain 
+liable for payment along with the shipping company.
+1.4.5 Storage charges shall be made to the respective client. In the case of import cargo this shall be 
+for the whole storage period, even should the cargo be released later.
+1.4.6 If, in the case of goods in transit (land/land container), the right of disposal changes, the first 
+client shall remain liable for payment of charges.
+1.4.7 Charges for any services not specifically mentioned shall be made to the respective client.
+1.4.8 The acceptance of the order implies that the client has agreed on direct debit in advance.
+1.4.9 Any offset against the Company’s accounts receivable is hereby excluded, unless the
+counterclaim put forward for offset is uncontested or has become res judicata
+1.4.10 The Processing of invoices will be done by electronic mail having attached a PDF-File. In addition 
+the parties may mutually agree to transmit invoice data by UN EDIFACT message INVOIC.
+Page 3 of 19
+ 
+Prices and Conditions: Effective from: 1st March 2026
+2 Vessel charges
+Vessel charges will be calculated for the use of handling facilities by a seagoing vessel in
+accordance with:
+- The gross tonnage (GRT) and lay time of the vessel (berthing charge)
+- The volume of cargo loaded / discharged (quay dues).
+Charges shall be paid by the shipping company or its agent. The provisions of chapter 1,
+Paragraph 1.4 shall not be affected thereby.
+2.1 Berthing charge / tonnage dues
+Every ship berthed at the handling facilities must pay a berthing charge. Berthing charges shall 
+be based on the gross tonnage index* of the vessel concerned and shall amount to the 
+following, multiplied by the gross tonnage index:
+2.1.1 for the first 24 hours of lay days minimum 1,04 €
+2.1.2 for every additional 12 hours or part of this period 0,60 €
+The lay time commences at the time of docking and shall be calculated uninterruptedly until the 
+time of casting off.
+2.1.3 Vessels without proper Tonnage Measurement (barges, lighter etc.) are to be charged per 
+commenced 24 hours: On request
+per running meter of the vessel
+2.1.4 Ships using the Container Terminal as a lay by berth prior start of cargo
+operation or after completion of cargo operation by whatever reason, are
+subject to a charge of:
+Per 24 hrs or 
+part thereof 
+/TEU           
+1,34 €
+Berth dues counts by maximum nominal intake of TEU (twenty foot equivalent unit)
+*) Law of 22 January 1975 on International Convention on Tonnage Measurement of Ships of April 23, 1969
+2.2 Quay dues / weight dues
+Quay dues shall be applied to goods loaded / discharged via the quay:
+a. Vessels engaged in overseas shipping (outgoing and incoming
+traffic) 9,45 €/t
+b. Vessels engaged in European shipping (incoming and
+outgoing traffic) and internal waterway traffic 5,46 €/t
+Quay dues a) – b) are also charged on goods handled
+• from the quay into watercraft, or from watercraft to the quay
+• from the quay for a seagoing vessel, using a floating crane; or from a seagoing vessel to the 
+quay, using a floating crane
+c. For the use of a container crane for re-stowing on board:
+charges as set out in Section 4, plus quay dues of 7,46 €/t
+Page 4 of 19
+ 
+Prices and Conditions: Effective from: 1st March 2026
+3 Shift surcharges, overtime and waiting times
+For work outside weekday 1st and 2nd shift, Monday to Friday
+3.1 Shift surcharges for waterside work
+Per shift / per gang
+3.1.1 Weekdays Monday to Friday, 3rd shift 2.097,00 €
+3.1.2 Saturdays, 1st Shift and 2nd shift 4.956,00 €
+3.1.3 Saturdays, 3rd and 4th shift 6.947,00 €
+3.1.4 Sundays and public holidays, 1st and 2nd shift 4.956,00 €
+3.1.5 Sundays and public holidays, 3rd and 4th shift 6.947,00 €
+3.1.6 On days before high holidays, weekdays, 1st shift 5.566,00 €
+3.1.7 On days before high holidays, Saturdays, 1st shift 5.301,00 €
+3.2 Surcharges for receiving / delivery from / to rail cars
+Per Container
+3.2.1 Weekdays Monday to Friday, 3rd shift 18,30 €
+3.2.2 Saturdays, 2nd to 4th shift,
+Sundays and public holidays, 1st to 4th shift 18,30 €
+3.3 Surcharge for overtime
+Overtime refers to all working hours in excess of a work shift ordered on a weekday as an 
+addition for each hour incurred or part thereof
+per shift / per gang
+3.3.1 by the 1st shift, Mondays to Fridays 700,00 €
+3.3.2 by the 2nd shift, Mondays to Fridays 1.154,00 €
+3.3.3 by the 3rd, Saturdays 1.358,00 €
+3.3.4 by the 1st shift, Saturdays 1.243,00 €
+3.3.5 by the 2nd shift, Saturdays 1.639,00 €
+3.3.6 by the 3rd, Saturdays 2.030,00 €
+3.3.7 On Sundays and public holidays for each hour or part thereof incurred by the 1st and 2nd shift 1.639,00 €
+3.3.8 by the 3rd and 4th shift 2.030,00 €
+3.3.9 on days before high holidays after 12.00 hrs A.M. On request
+3.3.10 The day after high holidays before 06.00 hrs A.M On request
+*Days before public holidays are the days prior to the major national holidays: New Year,
+Easter Sunday, Labor Day, Whit Sunday, Christmas Day. On prior days regular working
+hours end at 12.00h midday; after this, overtime may be ordered on a voluntary basis.
+3.4 Waiting times
+If an ordered shift is cancelled due to rain, storm, other weather conditions, delayed arrival of 
+the vessel, late arrival of Container / cargo, etc. either completely or in part, the time not 
+worked will be charged to the vessel as waiting time, further shift surcharges will be charged 
+separately. Wage agreements as valid from time to time for dock staff working in German ports 
+specify that charges for waiting time shall be calculated by shift:
+3.4.1 per man per hour
+see chapter 4
+3.5 Common Cost Table
+Common Costs (e.g. shift surcharges, waiting time, hatch cover moves, handling of bin racks, 
+restows,) are for the account of the Line operating the Containership and shall not be shared 
+between the Lines which have rights to load cargo on the individual Containership
+Page 5 of 19
+ 
+Prices and Conditions: Effective from: 1st March 2026
+4 Hire of handling equipment and staff
+Hire of staff and equipment with employees of the Container Terminal
+per hour or part thereof
+4.1 Staff (incl. commercial staff) 142,00 €
+4.2 Container crane including driver 1.841,00 €
+4.3 Van carrier including driver 699,00 €
+4.4 Mafi including driver, not including cargo-security measures 244,00 €
+4.5 Fork-lift including driver
+4.5.1 up to 5 tons 190,00 €
+4.5.2 over 5 tons 309,00 €
+4.6 Reachstacker, incl. driver 583,00 €
+ 
+4.7 Security vehicle, including driver 190,00 €
+4.8 Security inspector 169,00 €
+4.9 Mafi Trailer rental fee per day 
+212,00 €
+Changes to the wage agreement will have an immediate effect on the stated rates.
+5 Handling Charges
+Charges for Container 20', 40', 45
+5.1 Loading/discharging from/to main vessel, feeder vessel or barge Per Container
+5.1.1 ISO -Container, empty / full 358,00 €
+5.1.2 Non-ISO Container / OOG, empty / full 716,00 €
+5.1.3 Container handling with chains or special equipment 1.432,00 €
+All prices plus security charge (see Section 13).
+Non-ISO and Out of Gauge (OOG) Container are Containers which do not correspond to any 
+respect ISO-standard or such ISO-standard Container with over height and/or over length 
+and/or over width.
+Out of Gauge (OOG) cargo is restricted to cargo loaded in or on all type of ISO-Standard
+Container not exceeding an:
+- over width of 0,25 meters one side
+- over length of 1,90 meters one side
+- over height of 2,00 meters
+- weight of 40,000 metric tons, including Container tare weight
+If at least one of these dimensions is exceeded, the rates for handling with chains or rates for 
+none containerized Cargo applies depending on nature of cargo / Container.
+Discharging / loading on basis free out / free in.
+Discharging/loading costs and all charges related to handling and storage are exclusively and 
+irrevocably to be paid by the shipping line given by the vessel.
+5.1.4 Handling of cargo with special security - on request
+Page 6 of 19
+ 
+Prices and Conditions: Effective from: 1st March 2026
+5.2 Lashing / unlashing /securing Container on main / feeder vessels
+(Basis: overall volume of Container handled and restowed)
+Per Container
+5.2.1 Lashing / unlashing, using system lashings on board seagoing vessels 47,00 €
+5.2.2 Setting / removing twistlocks on board 24,00 €
+5.2.3 Lashing / unlashing with / of chains or wire On request
+5.2.4 Lashing / unlashing of general / heavy cargoes On request
+5.2.5 Setting / removing bridge fittings per employee and hour or part thereof 142,00 €
+5.3 Surcharge for IMO Container Per Container
+87,00 €
+5.4 Charge for ships with up to 20 Container handled
+Per transaction / per ship
+3.308,00 €
+5.5 Loading / discharging non-containerized goods using Container crane
+Bremerhaven, by agreement with EUROGATE Container Freight Station Bremerhaven GmbH
+5.5.1 up to 60 t, per collo Per ton
+minimum charge per 15 t 103,75 €
+5.5.2 more than 5 times measuring, per collo Per cbm
+minimum charge per 75 cbm 23,50 €
+5.5.3 In case no anti-fall protection has been provided by the line prior vessel arrival, or no anti-fall 
+protection has been ordered by the line, the line shall bear all costs necessary to provide and 
+built a required anti-fall protection (such as loading/discharging, lashing, extra terminal moves, 
+waiting time, but not limited to these items). The operator has the liberty to do everything 
+necessary to provide a safe and adequate anti-fall protection, or to deny the handling of the 
+cargo. This item applies to all EUROGATE Container Terminals.
+5.6 Handling charge for conventional cargo to be received and delivered via the quay
+Bremerhaven, by agreement with EUROGATE Container Freight Station Bremerhaven GmbH
+5.6.1 Uncontainerized cargo up to 60 ton and up to 5 times measuring 87,60 €/ t
+– min. 10 t, per collo
+5.6.2 Uncontainerized cargo more than 5 times measuring 17,60 € / cbm
+– min. 50 cbm, per collo
+5.6.3 Heavy lifts over 60 ton, boats, vehicles, helicopters, excavators, On request
+buses and handling of more than one collo per one lift
+5.7 Loading / discharging hatch coverings / pontoons
+Per hatch covering / pontoon and movement
+358,00 €
+5.8 Discharging / Loading of Bin Racks / Gear Boxes  
+20 ‘ and 40‘ Half Height Container with lashing material 469,00 €
+Page 7 of 19
+ 
+Prices and Conditions: Effective from: 1st March 2026
+6 Receiving and delivery of Container
+Receiving and delivery from/to rail/truck per movement.
+Container will be delivered/received from/to trucks with ISO fitted chassis only
+6.1 Receiving and delivery from / to rail / trucker per movement Per Container
+(Definition see section 5.1.)
+6.1.1 ISO-Container, empty / full 152,00 €
+6.1.2 Non-ISO Container / OOG, empty / full 304,00 €
+6.1.3 Container handling with chains or special equipment 608,00 €
+6.1.4 Empty Container rejected by truck driver at the chassis area due to damage / dirt 152,00 €
+ Per Container
+6.2 Surcharge for IMO Container 86,90 €
+6.3 Surcharge for Container with cargoes of Classes 1.1, On request
+1.2 and 7 will be charged on receiving or delivery.
+(water-and landside)
+6.4 Sealing Container See chapter 12
+6.5 Locking unclosed Container when loading for rail See chapter 12
+6.6 Personal identification (ID) of truck drivers confirming personal details upon 
+reception of order by submission of passport or ID card: once per card
+Provision of permanent driving permission 129,00 €
+6.7 Interchange provision See chapter 12
+6.8 Change of safe keeper/manual cost (incl. 3 positions) Per Container
+142,00 €
+additional position 15,00 € / each
+Only valid for EUROGATE Container Terminal Hamburg GmbH
+Only valid for EUROGATE Container Terminal Wilhelmshaven GmbH & Co. KG
+Page 8 of 19
+ 
+Prices and Conditions: Effective from: 1st March 2026
+7.1.    Export (waterside loading on vessel, excl. barge)
+Storage of full Container per day 20' 40' 45'
+ISO-Standard 5 calendar days free
+day 6- 13 42,00 € 84,00 € 126,00 €
+as from day 14 84,00 € 168,00 € 252,00 €
+Non-ISO-Standard / OOG 3 calendar days free
+day 4 - 11 84,00 € 168,00 € 252,00 €
+as from day 12 168,00 € 336,00 € 672,00 €
+Temperature controlled Container 3 calendar days free
+(Reefer) day 4 - 11 63,00 € 126,00 € 189,00 €
+as from day 12 126,00 € 252,00 € 378,00 €
+Container with hazardous cargo 1 calendar day free
+(except Cl. 1 + 7) day 2 - 9 84,00 € 168,00 € 252,00 €
+ as from day 10 168,00 € 336,00 € 672,00 €
+7.2.    Import (waterside discharging from vessel, excl. barge)
+Storage of full Container per day 20' 40' 45'
+ISO-Standard 3 calendar days free
+day 4 - 8 42,00 € 84,00 € 126,00 €
+day  9 - 13 84,00 € 168,00 € 252,00 €
+day 14 - 18 126,00 € 252,00 € 378,00 €
+as from day 19 168,00 € 336,00 € 504,00 €
+Non-ISO-Standard / OOG 3 calendar days free
+day 4 - 8 84,00 € 168,00 € 252,00 €
+day  9 - 13 168,00 € 336,00 € 504,00 €
+day 14 - 18 252,00 € 504,00 € 756,00 €
+as from day 19 336,00 € 672,00 € 1.008,00 €
+Temperature controlled Container 3 calendar days free
+(Reefer) day 4 - 8 63,00 € 126,00 € 189,00 €
+day  9 - 13 126,00 € 252,00 € 378,00 €
+day 14 - 18 189,00 € 378,00 € 567,00 €
+as from day 19 252,00 € 504,00 € 756,00 €
+ 7 Storage of Container and conventional cargo
+Any other type or size of Container on request
+Page 9 of 19
+ 
+Prices and Conditions: Effective from: 1st March 2026
+Container with hazardous cargo 1 calendar day free
+(except Cl. 1 + 7) day 2 - 6 84,00 € 168,00 € 252,00 €
+day 7 - 11 168,00 € 336,00 € 504,00 €
+day 12 - 16 252,00 € 504,00 € 756,00 €
+as from day 17 336,00 € 672,00 € 1.008,00 €
+7.3.   Transhipment (waterside loading/discharging on vessel)
+Storage of full Container per day 20' 40' 45'
+ISO-Standard 5 calendar days free
+day 6- 13 42,00 € 84,00 € 126,00 €
+as from day 14 84,00 € 168,00 € 252,00 €
+Non-ISO-Standard / OOG 3 calendar days free
+day 4 - 11 84,00 € 168,00 € 252,00 €
+as from day 12 168,00 € 336,00 € 672,00 €
+Temperature controlled Container 3 calendar days free
+(Reefer) day 4 - 11 63,00 € 126,00 € 189,00 €
+as from day 12 126,00 € 252,00 € 378,00 €
+Container with hazardous cargo 1 calendar day free
+(except Cl. 1 + 7) day 2 - 9 84,00 € 168,00 € 252,00 €
+as from day 10 168,00 € 336,00 € 672,00 €
+7.4.    Empty Container (without any cargo backwardness)
+Storage of empty Container no freetime 20' 40' 45'
+ISO-Standard per day 21,00 € 42,00 € 63,00 €
+7.5.    Transit Container (delivery per truck, train, barge)
+Storage of full Container per day no freetime 20' 40' 45'
+day 1 - 5 42,00 € 84,00 € 126,00 €
+day 6 - 10 84,00 € 168,00 € 252,00 €
+day 11 - 15 126,00 € 252,00 € 378,00 €
+as from day 16 168,00 € 336,00 € 504,00 €
+Any other type or size of Container on request
+Any other type or size of Container on request
+Any other type or size of Container on request
+Page 10 of 19
+ 
+Prices and Conditions: Effective from: 1st March 2026
+Non-ISO-Standard / OOG
+day 1 - 5 42,00 € 84,00 € 126,00 €
+day 6 - 10 84,00 € 168,00 € 252,00 €
+day 11 - 15 126,00 € 252,00 € 378,00 €
+as from day 16 168,00 € 336,00 € 504,00 €
+Temperature controlled Container
+(Reefer) day 1 - 5 63,00 € 126,00 € 189,00 €
+day 6 - 10 126,00 € 252,00 € 378,00 €
+day 11 - 15 189,00 € 378,00 € 567,00 €
+as from day 16 252,00 € 504,00 € 756,00 €
+Container with hazardous cargo
+(except Cl. 1 + 7) day 1 - 5 84,00 € 168,00 € 252,00 €
+day 6 - 10 168,00 € 336,00 € 504,00 €
+day 11 - 15 252,00 € 504,00 € 756,00 €
+as from day 16 336,00 € 672,00 € 1.008,00 €
+7.4       Conventional Cargo on request
+7.5       Other regulations
+             retention pond day 1-3
+             retention pond day 4-7
+             retention pond from day 8
+             cleaning of retention pond
+             (Professional cleaning is up to the polluter) as per outlay
+             Rental fee for the time of purification 212,00 € per day
+             Storage conditions as per section hazardous cargo (except IMO-class 1 & 7) and any  charges
+             for Container movements as per chapter 10.
+Any other type or size of Container on request
+424,00 € per day
+2.975,00 € per week or part
+7.5.3   Obligatory storage counts for every calendar day subject to free time given between receiving and
+            delivery (the day of delivery to the terminal is free, whereas the day of redelivery do count as full day).
+7.5.1    Hazardous Cargo of UN class 1 or 7 are not subject to any free time for storage and will be
+             charged in accordance to section hazardous cargo (except IMO-class 1 & 7). Furthermore for
+             such cargos the laws, bylaws and regulations of the port authorities do apply.
+7.5.2    Costs for interims storage of damaged containers with leakage
+212,00 € per day
+Page 11 of 19
+ 
+Prices and Conditions: Effective from: 1st March 2026
+8 Restowing Container / conventional cargo / height restows
+8.1 Restowing Container on board / board to quay Per Container
+(Definition see section 5.1)
+8.1.1 ISO-Container, empty / full 433,00 €
+8.1.2 Non-ISO Container / OOG, empty / full 866,00 €
+8.1.3 Container handling with chains or special equipment 1.732,00 €
+8.1.4 Temperature controlled container (additional costs for cooling, see section 9.1) 550,00 €
+8.1.5 IMO container, additional per container (moves as per paragraph. 8.1.1 - 8.1.4) 138,00 €
+8.2 Restowing of non-containerized general cargoes
+8.2.1 Restowing via quay or on board, charges per lift up to 5 x
+measurement 98,50 € / t
+8.2.2 Restowing via quay or on board, charges per lift up to 5 x
+measurement 20,10 € / cbm
+8.2.3 Restowing is subject to weight dues plus charges
+see paragraph 2.2
+9 Refrigeration and temperature maintenance of Container
+Per Container
+9.1 For the first 24 hours or part thereof including plug on / plug off in the yard 181,50 €
+9.2 For subsequent 24 hours or part thereof 144,50 €
+9.3 Change of temperature recording charts 70,50 €
+9.4 Change of temperature settings 70,50 €
+By agreement with EUROGATE Container Freight Station Bremerhaven GmbH
+Page 12 of 19
+ 
+Prices and Conditions: Effective from: 1st March 2026 
+10 Container transport or other Container movements
+10.1 Moving from / to rail cars / trucks
+Per Container, per movement
+10.1.1 ISO-Container, empty/full 152,00 €
+10.1.2 Non-ISO Container / OOG, empty/full 304,00 €
+10.1.3 Container handling with chains or special equipment 608,00 €
+10.2 Container movements within the terminal
+(Hamburg incl. Dradenau area)
+Per Container, per movement
+10.2.1 ISO-Container, empty/full 152,00 €
+10.2.2 Non-ISO Container / OOG, empty/full 304,00 €
+10.2.3 Container handling with chains or special equipment 608,00 €
+10.3 Inspections / directives by authority
+Only valid for EUROGATE Container Terminal Wilhelmshaven GmbH & Co. KG
+Only valid for EUROGATE Container Terminal Hamburg GmbH
+a per chapter 12.12
+10.4 Charges for certificates
+Per Container
+70,50 €
+10.5 Open stowage of empty Container from block stowage
+Per Container, per movement
+152,00 €
+10.6 Transport to border inspection (veterinary authority, outside terminal)
+Only valid for EUROGATE Container Terminal Wilhelmshaven GmbH & Co. KG
+Per Container
+10.6.1 for Container stored according to customs law including
+truck transport and receiving/delivery via gate
+625,00 €
+10.6.2 IMO additional 160,00 €
+10.6.3 Chassis rent (24 hours free) as of day 2 67,00 €
+10.7 Transport to special area and unpacking On request
+Only valid for EUROGATE Container Terminal Wilhelmshaven GmbH & Co. KG
+10.8 Transport for gassing/de-gassing (fumigation or clearance measurement)
+Only valid for EUROGATE Container Terminal Wilhelmshaven GmbH & Co. KG
+Only valid for EUROGATE Container Terminal Hamburg GmbH
+(including space during dwell time, excl. gassing / de-gassing)
+Additional costs as per chapter 12.2 Per Container
+373,00 €
+Without loading on a vessel additional handlings as per paragraph 6.1 and storage costs as per 
+chapter 7 (transit container)
+Page 13 of 19
+ 
+Prices and Conditions: Effective from: 1st March 2026 
+10.9 Removal of Container prior expiry of customs controlled custody
+Only valid for EUROGATE Container Terminal Wilhelmshaven GmbH & Co. KG
+organized by the Terminal Operator On request
+organized by the cargo owner or its representatives As per 
+chapter
+ 6 and 10
+10.10 CPA Transport, transport to veterinary authority
+Only valid for EUROGATE Container Terminal Hamburg GmbH
+Per Container (only ISO Norm)
+10.10.1 for Container stored according to customs law including truck transport and receiving/delivery 
+via gate
+647,00 €
+Per Container
+10.10.2 Additional for Container loaded with hazardous cargo for all
+IMDG classifications (Cl. 1 + 7on request)
+160,00 €
+Per hour or part thereof
+10.10.3 Waiting time truck at the CPA 42,00 €
+starting with second hour (time counts from truck’s Gate Out until return at Gate)
+10.11 Customs inspection / TMR
+Only valid for EUROGATE Container Terminal Wilhelmshaven GmbH & Co.KG
+Only valid for EUROGATE Container Terminal Bremerhaven GmbH
+Per Container (only ISO Norm)
+248,00 €
+Non-ISO Container, Container handling with chains or special equipment On request
+Transport to and from TMR, incl. documentation
+(only valid with permanent releasement of shipping line)
+10.12 Inter Terminal Transport (ITT)
+Only valid for EUROGATE Container Terminal Bremerhaven GmbH
+Per Container (only ISO Norm)
+Transport to and from transition area 77,00 €
+Non-ISO Container, Container handling with chains or special equipment On request
+10.13 Temporary gate out and gate in
+Only valid for EUROGATE Container Terminal Bremerhaven GmbH
+“Dray Out and Back” – delivery and redelivery of a container for customs clearance, phyto- 
+and veterinary inspection – two container handlings will be charged (152,00 € per handling).
+Page 14 of 19
+ 
+Prices and Conditions: Effective from: 1st March 2026
+11 Status Change
+Basis for the charge of status change are data which are not available at the terminal in time 
+and which refer to the criteria mentioned below.
+If container data at point of physical arrival does not correspond with container data at point 
+of container departure, a status change will be charged.
+In this connection, it should be kept in mind that in order to avoid the status change it is not 
+essential that the right booking data are delivered but that the right booking data are available 
+at the time of Container delivery.
+Vessel Change, Change of Destination or weight class
+Valid for empty and full containers
+Per Container
+11.1 ISO-Container 99,00 €
+11.2 NON-ISO-Container 198,00 €
+11.3 Container handling with chains or special equipment 297,00 €
+12 Special services for Container
+12.1 Interchange Provision Per Container
+70,50 €
+12.2 Sealing /resealing of Container
+12.2.1 At the Gate Per Container
+including EUROGATE bolt seal (HSS) 75,00 €
+12.2.2 In the Yard / in separate zone Per Container
+including EUROGATE bolt seal (HSS) 154,00 €
+staff and security vehicle plus Container movements
+12.3 Labelling / neutralising
+Labelling and neutralising of Container will be undertaken in conformity with regulations only 
+following explicit written order.
+12.3.1 In yard / in a separate zone
+including a maximum of 4 labels, staff and security vehicle
+plus Container movements Per Container
+181,50 €
+12.3.2 Labelling at the Gate, max. 4 labels Per Container
+85,00 €
+12.3.3 Additional labels Per label
+9,75 €
+12.4 Visual documentation Per Container
+Provision of photographs and electronic dispatch, exclusive security vehicle, plus Container 
+movements 169,00 €
+Page 15 of 19
+ 
+Prices and Conditions: Effective from: 1st March 2026
+12.5 Guarding Container
+Per Container and day
+224,00 €
+These rates will be charged on order of service and include transfer to separate areas including 
+a regular guarding by security service. More intensive guarding can be rendered on an 
+individual agreement.
+Following items will be charged:
+1. Explosives (IMDG1), except DG Class 1.3 and 1.4
+2. Radioactive substances and materials (IMDG 7)
+3. Other container as ordered
+12.6 Masking of minor damages
+Per hour or part thereof
+Emergency repairs to Container, masking of small holes, cracks
+including staff, material and documentation plus Container movement and
+protective shelter 159,00 €
+12.7 Cleaning of containers
+Only valid for EUROGATE Container Terminal Wilhelmshaven GmbH & Co. KG
+Only valid for EUROGATE Container Terminal Hamburg GmbH Per hour or part thereof
+Cleaning of outer or inner Container surface
+excl. Container movement 159,00 €
+12.8 Locking of containers Per Container
+12.8.1 Locking of imperfectly secured Container when loading for rail, including
+Container movements, staff and advice of work, provided locking is allowed
+as an emergency security measure as per demand of EVU (railway
+companies) regulations. 189,00 €
+12.8.2 during handling at the Gate,
+plus 2 handlings for closing at the special area 95,00 €
+Only valid for EUROGATE Container Terminal Wilhelmshaven GmbH & Co. KG
+Only valid for EUROGATE Container Terminal Hamburg GmbH
+12.9 Emergency Repair of Gooseneck tunnel
+Only valid for EUROGATE Container Terminal Wilhelmshaven GmbH & Co. KG
+Only valid for EUROGATE Container Terminal Hamburg GmbH
+Pressing on/off Gooseneck tunnel to enable loading of Container on Container chassis, Per Container
+plus Container movements, as per section 10.6 189,00 €
+12.10 Bundling and debundling of flats
+Bremerhaven, by agreement with EUROGATE Container Freight Station Bremerhaven GmbH
+Transport of bundle to separate zone Per flat 
+plus man hours as per section 4.1 153,00 €
+Page 16 of 19
+ 
+Prices and Conditions: Effective from: 1st March 2026
+12.11 Mounting / Demounting of front walls
+Bremerhaven, by agreement with EUROGATE Container Freight Station Bremerhaven GmbH
+Per flat 
+plus container movements 258,00 €
+12.12 Customs Inspection On request
+Only valid for EUROGATE Container Terminal Wilhelmshaven GmbH & Co. KG
+Only valid for EUROGATE Container Terminal Hamburg GmbH
+Staff as per chapter 4
+Container movements as per section 10
+Any packing as per cost
+Checking contamination, as per cost
+CTH - By agreement with SWOP, Seaworthy Packing GmbH, Hamburg
+12.13 Removing of Twistlocks
+Per hour or part thereof
+12.13.1 Mechanical (plus container movements as per section10.6) 142,50 €
+12.13.2 Not mechanical (plus container movements) On request
+12.14 Manual data entry Per Container
+Any manual data input on customer’s request 70,50 €
+12.15 Check of measuring (ordered by customer) Per Container
+Plus container movements as per paragraph 10.6 159,00 €
+12.16 Invoicing Per bill
+Print and dispatch by postal mail 7,30 €
+12.17 Bonded storage 
+Only valid for EUROGATE Container Terminal Hamburg GmbH
+Transfer of cargo into bonded storage (incl. Delivery) Per Container
+including documentation and involvement of staff of maximum one hour 650,00 €
+Additional expenses as per paragraph 4 and 12.19 As per section 
+4
+12.18 Expiry of customs store deadline
+Only valid for EUROGATE Container Terminal Wilhelmshaven GmbH & Co. KG
+Only valid for EUROGATE Container Terminal Hamburg GmbH
+Per Container
+Additional work on documentation close before expiry of deadline for customs storage 
+(Zolllager-Link not supported and B/L, Packing List Commercial Invoice, etc. not presented 10 
+days prior to extension ) 891,00 €
+12.19 Issuing export declaration Per operation
+Only valid for EUROGATE Container Terminal Hamburg GmbH 230,50 €
+12.20 Closing customs process after re-delivery Per operation
+Only valid for EUROGATE Container Terminal Hamburg GmbH 154,50 €
+Page 17 of 19
+ 
+Prices and Conditions: Effective from: 1st March 2026
+12.21 Manual entry or changes of IMO data Per Container
+Only valid for EUROGATE Container Terminal Hamburg GmbH 381,00 €
+12.22 Delivery in wrong stock (Delivery into other shipping line; empty/full)
+Extra moves as per paragraph 10.2
+1 manual effort as per paragraph 10.14
+Additional expenses as per paragraph 12.2.2
+12.23 Supervisor, as per special request of customer Per Container
+ 50,00 €
+12.24 Container inspection by customs order or other official directive Per Container
+Only valid for EUROGATE Container Terminal Hamburg GmbH 383,00 €
+Customs expection “at the door”
+Page 18 of 19
+ 
+Prices and Conditions: Effective from: 1st March 2026
+13 Security charge 
+13.1 Container full / empty Per Container
+24,95 €
+13.2 Non-containerized cargoes handled Per ton
+Bremerhaven, by agreement with EUROGATE Container Freight Station Bremerhaven GmbH 1,30 €
+14 Loading and discharging ship’s equipment and provisions
+Handling of ship’s equipment and provisions will be charged by tonnage. This regulation shall 
+only apply to sections of equipment needed for the voyage of the ship in question. Any 
+equipment for other ships will be treated as normal import or export cargo.
+The shipping line or its representative must ensure that terminal operations are not impeded 
+and that all safety regulations are followed.
+14.1 All-inclusive clearance charge Per delivery
+157,50 €
+14.2 Handling, using on-board crane
+Free of charge
+14.3 Handling, using a Container crane,
+minimum 15 t to max 60 t and measuring up to five times
+According to expenses as per chapter 4
+15 Customs / Bonded Seaport
+Only valid for EUROGATE Container Terminal Wilhelmshaven GmbH & Co. KG
+15.1 EUROGATE Container Terminal Wilhelmshaven GmbH & Co. KG is a bonded seaport 
+and is subject to the customs code and the respective regulations.
+15.2 The regulations of the customs code define the duties of a warehouse keeper (time 
+limits and inventory management) which have to be obeyed imperatively.
+15.3 In case the procedure-responsible person does not take care for an in-time removal 
+or the “Customs Clearance for free movement” (exceeding of time limit), the 
+movement of the Container will be liable to costs.
+15.4 “Dray Out and Back” – delivery and redelivery of a container for customs clearance, 
+phyto- and veterinary inspection – two container handlings will be charged (152,00 € 
+per handling).
+Page 19 of 19

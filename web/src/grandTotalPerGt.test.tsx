@@ -79,7 +79,8 @@ describe('Grand Total derived per-GT — desktop comparison (spec v0.2.58)', () 
       .find(r => (r.textContent ?? '').includes('Grand Total'))!;
     expect(totalRow).toBeDefined();
     const perGtCells = totalRow.querySelectorAll('.comparison-total-pergt');
-    expect(perGtCells.length).toBe(6);
+    // v0.5.1: seven loaded ports, seven per-GT cells.
+    expect(perGtCells.length).toBe(7);
     for (const cell of Array.from(perGtCells)) {
       expect(cell.textContent).toContain('SEK/GT effective — derived, not a published rate');
     }
@@ -111,14 +112,23 @@ describe('Grand Total derived per-GT — desktop comparison (spec v0.2.58)', () 
     ({ container, root } = await renderComparison(false, defaultCall('gothenburg')));
     const totalRow = Array.from(container!.querySelectorAll('.comparison-total-row'))
       .find(r => (r.textContent ?? '').includes('Grand Total'))!;
+    // v0.5.1: two German ports now convert (Bremerhaven 127.45 SEK/GT
+    // beside HAM), so the HAM cell is found by its own figure, not by the
+    // disclosure text alone.
     const hamCell = Array.from(totalRow.querySelectorAll('.comparison-total-pergt'))
-      .find(c => (c.textContent ?? '').includes('converted at the exchange-rate input'))!;
+      .find(c => (c.textContent ?? '').includes('127.76 SEK/GT'))!;
     expect(hamCell).toBeDefined();
     // v0.3.2 ritual re-baseline: 2,204,910.90 × 11.331 ÷ 194,849 =
     // v0.4.6 ritual re-baseline: 2,204,910.90 × 11.29 ÷ 194,849 =
     // 127.76 SEK/GT (was 128.22 at 11.331; the Eurogate terminal layer; §17.5).
     expect(hamCell.textContent).toContain('127.76 SEK/GT');
     expect(hamCell.textContent).toContain('11.29 kr/EUR');
+    // The Bremerhaven per-GT renders with the same converted disclosure:
+    // 2,199,272.49 × 11.29 ÷ 194,849 = 127.45 SEK/GT (v0.5.1 baseline).
+    const brvCell = Array.from(totalRow.querySelectorAll('.comparison-total-pergt'))
+      .find(c => (c.textContent ?? '').includes('127.45 SEK/GT'))!;
+    expect(brvCell).toBeDefined();
+    expect(brvCell.textContent).toContain('11.29 kr/EUR');
   });
 
   it('the figure changes when GT changes (a different vessel re-derives it)', async () => {
@@ -189,7 +199,8 @@ describe('Grand Total derived per-GT — OPS honesty (spec v0.2.58)', () => {
     const totalRow = Array.from(container!.querySelectorAll('.comparison-total-row'))
       .find(r => (r.textContent ?? '').includes('Grand Total'))!;
     const perGtCells = totalRow.querySelectorAll('.comparison-total-pergt');
-    expect(perGtCells.length).toBe(6);
+    // v0.5.1: seven loaded ports, seven per-GT cells.
+    expect(perGtCells.length).toBe(7);
     for (const cell of Array.from(perGtCells)) {
       expect(cell.textContent).toContain('includes user-specified OPS');
       expect(cell.textContent).toContain('derived, not a published rate');

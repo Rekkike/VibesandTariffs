@@ -703,11 +703,181 @@ const hbg: Record<string, FunctionalClassInfo> = {
 // line on vessel-fee + readiness classes; classified to mirror the fees it
 // adjusts, so the aggregate nets correctly).
 
+// Bremerhaven 2026 (v0.5.1; sources: the consolidated 2026 HGebO statute
+// with inline fee tables - Raumgebuehr 6, waste 10, Hafenlotsgeld 12; GDWS
+// Lotstarifverordnung Anlagen 1/2 Weser columns; EUROGATE P&C 2026 (the
+// national-class document shared with Hamburg); NTB Reference tariff
+// 01.08.2026).
+const brv: Record<string, FunctionalClassInfo> = {
+  brv_raumgebuehr_overseas_liner: {
+    functional_class: 'berth_terminal_infrastructure',
+    basis_note: 'Raumgebuehr - port dues for the vessel\'s five-day transshipment period (HGebO 6, Ueberseeverkehr liner rate)',
+    source: 'hgebo-consolidated-2026.txt 6'
+  },
+  brv_raumgebuehr_europe_liner: {
+    functional_class: 'berth_terminal_infrastructure',
+    basis_note: 'Raumgebuehr - port dues for the vessel\'s five-day transshipment period (HGebO 6, Europaverkehr liner rates, GT-banded)',
+    source: 'hgebo-consolidated-2026.txt 6'
+  },
+  brv_raumgebuehr_extension_overseas: {
+    functional_class: 'berth_terminal_infrastructure',
+    basis_note: 'Raumgebuehr extension - 50 percent of the rate per further commenced ten-day period beyond five days (HGebO 3b(2))',
+    source: 'hgebo-consolidated-2026.txt 3b(2)'
+  },
+  brv_abfallentsorgung: {
+    functional_class: 'waste_environmental',
+    basis_note: 'MARPOL Annex V waste-disposal fee from raumgebuehrpflichtige vessels, five-day period, GT-banded (HGebO 10(1))',
+    source: 'hgebo-consolidated-2026.txt 10(1)'
+  },
+  brv_hafenlotsgeld_ab13k: {
+    functional_class: 'purchased_service',
+    basis_note: 'Hafenlotsgeld - the Bremerhaven port pilots\' Beratungsgeld from 13,000 BRZ, no lock use (HGebO 12(7).2)',
+    source: 'hgebo-consolidated-2026.txt 12(7).2'
+  },
+  brv_hafenlotsgeld_unter13k: {
+    functional_class: 'purchased_service',
+    basis_note: 'Hafenlotsgeld - the Bremerhaven port pilots\' Beratungsgeld under 13,000 BRZ, no lock use (HGebO 12(7).1)',
+    source: 'hgebo-consolidated-2026.txt 12(7).1'
+  },
+  gdws_pilotage_dues_weser: {
+    functional_class: 'purchased_service',
+    basis_note: 'Federal pilotage dues for the Weser sea approach (GDWS Lotstarif Anlage 1 Teil I, Weser column; 65 percent route)',
+    source: 'pilot-tariff-2026.pdf Anlage 1 Teil I (Weser)'
+  },
+  gdws_pilot_fees_aussenweser: {
+    functional_class: 'purchased_service',
+    basis_note: 'Pilot fees for the Aussenweser sea approach (GDWS Lotstarif Anlage 2 Teil I, Aussenweser column)',
+    source: 'pilot-tariff-2026.pdf Anlage 2 Teil I (Aussenweser)'
+  },
+  eurogate_ctb_berthing_charge: {
+    functional_class: 'berth_terminal_infrastructure',
+    basis_note: 'Berthing charge for the vessel\'s use of the handling facilities, GT x lay time (EUROGATE P&C 2.1.1-2.1.2)',
+    source: 'prices-and-conditions-2026.txt 2.1.1-2.1.2'
+  },
+  eurogate_ctb_container_handling: {
+    functional_class: 'cargo_throughput_levy',
+    basis_note: 'Waterside container handling per lift (EUROGATE P&C 5.1.1)',
+    source: 'prices-and-conditions-2026.txt 5.1.1'
+  },
+  eurogate_ctb_security_charge: {
+    functional_class: 'cargo_throughput_levy',
+    basis_note: 'Security charge per container handled - a throughput levy; the funded function is ISPS security (EUROGATE P&C 13.1)',
+    source: 'prices-and-conditions-2026.txt 13.1'
+  },
+  eurogate_ctb_lashing: {
+    functional_class: 'cargo_throughput_levy',
+    basis_note: 'Lashing/unlashing per container handled and restowed (EUROGATE P&C 5.2.1)',
+    source: 'prices-and-conditions-2026.txt 5.2.1'
+  },
+  eurogate_ctb_twistlocks: {
+    functional_class: 'cargo_throughput_levy',
+    basis_note: 'Twistlock setting/removal per container (EUROGATE P&C 5.2.2)',
+    source: 'prices-and-conditions-2026.txt 5.2.2'
+  },
+  eurogate_ctb_imo_surcharge: {
+    functional_class: 'cargo_throughput_levy',
+    basis_note: 'IMO dangerous-goods surcharge per container (EUROGATE P&C 5.3)',
+    source: 'prices-and-conditions-2026.txt 5.3'
+  },
+  eurogate_ctb_small_call_minimum: {
+    functional_class: 'cargo_throughput_levy',
+    basis_note: 'Small-call minimum bill for ships with up to 20 containers handled (EUROGATE P&C 5.4)',
+    source: 'prices-and-conditions-2026.txt 5.4'
+  },
+  eurogate_ctb_layby_charge: {
+    functional_class: 'berth_terminal_infrastructure',
+    basis_note: 'Lay-by berth use per TEU per 24 h (EUROGATE P&C 2.1.4)',
+    source: 'prices-and-conditions-2026.txt 2.1.4'
+  },
+  eurogate_ctb_reefer_first_24h: {
+    functional_class: 'cargo_throughput_levy',
+    basis_note: 'Reefer temperature maintenance, first 24 h per reefer container (EUROGATE P&C 9.1)',
+    source: 'prices-and-conditions-2026.txt 9.1'
+  },
+  eurogate_ctb_reefer_subsequent_24h: {
+    functional_class: 'cargo_throughput_levy',
+    basis_note: 'Reefer temperature maintenance, subsequent 24 h per reefer container per day (EUROGATE P&C 9.2)',
+    source: 'prices-and-conditions-2026.txt 9.2'
+  },
+  eurogate_ctb_storage_import_20ft: {
+    functional_class: 'cargo_throughput_levy',
+    basis_note: 'Import storage per container per day beyond free time (EUROGATE P&C 7.2)',
+    source: 'prices-and-conditions-2026.txt 7.2'
+  },
+  eurogate_ctb_storage_import_40ft: {
+    functional_class: 'cargo_throughput_levy',
+    basis_note: 'Import storage per container per day beyond free time (EUROGATE P&C 7.2)',
+    source: 'prices-and-conditions-2026.txt 7.2'
+  },
+  eurogate_ctb_storage_export_20ft: {
+    functional_class: 'cargo_throughput_levy',
+    basis_note: 'Export storage per container per day beyond free time (EUROGATE P&C 7.1)',
+    source: 'prices-and-conditions-2026.txt 7.1'
+  },
+  eurogate_ctb_storage_export_40ft: {
+    functional_class: 'cargo_throughput_levy',
+    basis_note: 'Export storage per container per day beyond free time (EUROGATE P&C 7.1)',
+    source: 'prices-and-conditions-2026.txt 7.1'
+  },
+  ntb_tonnage_dues: {
+    functional_class: 'berth_terminal_infrastructure',
+    basis_note: 'Tonnage dues for the vessel\'s use of the handling facilities, BRZ x port stay (NTB reference tariff 1.1; reference-tariff caveat)',
+    source: 'ntb-reference-tariff-en-2026-08-01.txt 1.1'
+  },
+  ntb_container_handling: {
+    functional_class: 'cargo_throughput_levy',
+    basis_note: 'Container handling per lift (NTB reference tariff 2.1.1; reference-tariff caveat)',
+    source: 'ntb-reference-tariff-en-2026-08-01.txt 2.1.1'
+  },
+  ntb_security_charge: {
+    functional_class: 'cargo_throughput_levy',
+    basis_note: 'Security charge per container loaded/discharged (NTB reference tariff ch. 10; reference-tariff caveat)',
+    source: 'ntb-reference-tariff-en-2026-08-01.txt ch. 10'
+  },
+  ntb_lashing: {
+    functional_class: 'cargo_throughput_levy',
+    basis_note: 'Lashing/unlashing per container (NTB reference tariff 2.3.1; reference-tariff caveat)',
+    source: 'ntb-reference-tariff-en-2026-08-01.txt 2.3.1'
+  },
+  ntb_twistlocks: {
+    functional_class: 'cargo_throughput_levy',
+    basis_note: 'Twistlock attaching/removal per container (NTB reference tariff 2.3.2; reference-tariff caveat)',
+    source: 'ntb-reference-tariff-en-2026-08-01.txt 2.3.2'
+  },
+  ntb_reefer_first_24h: {
+    functional_class: 'cargo_throughput_levy',
+    basis_note: 'Reefer service, first 24 h per reefer container (NTB reference tariff 7.1.1; reference-tariff caveat)',
+    source: 'ntb-reference-tariff-en-2026-08-01.txt 7.1.1'
+  },
+  ntb_reefer_subsequent_24h: {
+    functional_class: 'cargo_throughput_levy',
+    basis_note: 'Reefer service, subsequent 24 h per reefer container (NTB reference tariff 7.1.2; reference-tariff caveat)',
+    source: 'ntb-reference-tariff-en-2026-08-01.txt 7.1.2'
+  },
+  bremerhaven_towage_estimate: {
+    functional_class: 'purchased_service',
+    basis_note: 'Towage per call - estimated, no published tariff (the Hamburg convention\'s market-range default)',
+    source: 'BREMERHAVEN_EXTRACTION_REFERENCE.md section 7'
+  },
+  eurogate_ctb_social_fund_surcharge: {
+    functional_class: 'berth_terminal_infrastructure',
+    basis_note: 'The EUROGATE CTB social fund - a percentage uplift on the terminal\'s non-excluded fees (P&C 1.3.13)',
+    source: 'prices-and-conditions-2026.txt 1.3.13'
+  },
+  ntb_social_fund_surcharge: {
+    functional_class: 'berth_terminal_infrastructure',
+    basis_note: 'The NTB social fund - a percentage uplift on the terminal\'s non-excluded fees (reference tariff general regulations; reference-tariff caveat)',
+    source: 'ntb-reference-tariff-en-2026-08-01.txt general regulations'
+  }
+};
+
 export const PORT_FUNCTIONAL_CLASSIFICATION: Record<string, Record<string, FunctionalClassInfo>> = {
   gothenburg: got,
   hamburg: ham,
-  helsingborg: hbg
-};// Classification for the Swedish national rule-id patterns shared by all
+  helsingborg: hbg,
+  bremerhaven: brv
+};
+// Classification for the Swedish national rule-id patterns shared by all
 // five Swedish ports (Gothenburg sjofartsverket_*, Helsingborg sfv_*,
 // Gävle gvh_sfv_*, Norrköping pon_sfv_*, Norvik snv_sfv_*).
 export function classifyRule(ruleId: string): FunctionalClassInfo | undefined {

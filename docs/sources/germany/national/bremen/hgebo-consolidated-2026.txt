@@ -1,0 +1,1668 @@
+[Text extraction of: Bremische Hafengebuhrenordnung (HGebO) vom 15. Marz 2006
+(Brem.GBl. 2006, S. 135, 157, 363), consolidated edition in force from
+01.01.2026 (Inkrafttreten 01.01.2026; last amended by Artikel 1 der
+Verordnung vom 26.11.2025, Brem.GBl. S. 1305, ber. S. 1372: SS 3b, 6a, 7,
+8, 9 und 12 geandert sowie SS 6 und 10 neu gefasst). Fetched 2026-10-05
+from the Transparenzportal Bremen consolidated statute page
+(https://www.transparenz.bremen.de/metainformationen/bremische-hafengebuehrenordnung-hgebo-vom-15-maerz-2006-306284),
+the official Bremen statute publication the bremenports Hafengebuehren
+page links as the current Hafengebuehrenordnung. Archived verbatim as
+fetched (HTML body rendered to text; navigation chrome of the portal
+page precedes the statute text and is retained as fetched). The binary
+PDF rendering of the same consolidated edition is archived beside this
+file (hgebo-consolidated-2026.pdf, the portal's own 00_html_to_pdf
+rendering, fetched 2026-10-05). See BREMERHAVEN_EXTRACTION_REFERENCE.md
+in docs/sources/germany/bremerhaven/ for provenance, identity
+verification, and the encoding adjudications. This is the legal basis
+document (the statute-as-authority pattern) and carries the fee tables
+inline: the bremenports fee annex (Gebuehrentabelle) resolves to this
+same ordinance — no separate annex document exists (the probe finding,
+recorded in the extraction reference).]
+
+===========================================================================
+Bremische Hafengebuehrenordnung (HGebO) vom 15. Maerz 2006 — konsolidierte
+Fassung, Gueltigkeit ab 01.01.2026 (Transparenzportal Bremen)
+===========================================================================
+Bremische Hafengebührenordnung (HGebO) vom 15. März 2006 - Transparenzportal Bremen
+Zur Hauptnavigation
+Zum Inhalt
+Zur Fußzeile
+Transparenzportal Bremen
+Gebärdensprache
+Leichte Sprache
+Suche:
+-->
+Zur Navigation
+Zum Inhalt
+Zur Fußzeile
+zurück
+Navigation
+Navigation
+Sie sind hier:
+Vorschriften
+Bremische Hafengebührenordnung (HGebO) vom 15. März 2006
+Inhaltsübersicht
+Nichtamtliches Inhaltsverzeichnis
+Titel
+Bremische Hafengebührenordnung (HGebO) vom 15. März 2006
+01.04.2006
+Inhaltsverzeichnis
+01.01.2021
+Abschnitt 1 - Allgemeines
+01.04.2006
+§ 1 - Geltungsbereich
+01.04.2006
+§ 2 - Begriffsbestimmungen
+01.05.2025
+§ 3 - Berechnungsmaßstäbe
+01.01.2025
+§ 3a - Gebührenschuldner
+01.01.2018
+§ 3b - Gebührenermäßigungen
+01.01.2026
+§ 4 - Erhebung und Fälligkeit der Hafenabgaben
+01.05.2025
+§ 5 - Meldepflicht
+01.05.2025
+Abschnitt 2 - Gebühren und Nebengebühren
+01.04.2006
+§ 6 - Raumgebühr
+01.01.2026
+§ 6a - Offshore
+01.01.2026
+§ 7 - Liegegeld
+01.01.2026
+§ 8 - Binnenschiffsgebühr
+01.01.2026
+§ 9 - Nutzungsgebühr
+01.01.2026
+§ 10 - Abfallentsorgung
+01.01.2026
+§ 11 - Befreiungen
+01.01.2024
+Abschnitt 3 - Hafenlotsgeld
+01.01.2009
+§ 12 - Hafenlotsgeld
+01.01.2026
+Abschnitt 4 - Sonstige Bestimmungen
+01.01.2009
+§ 13 - Steuerliche Bestimmung
+01.01.2009
+§ 14 - Verarbeitung von personenbezogenen Daten
+23.10.2021
+§ 15 - Ordnungswidrigkeiten
+01.01.2011
+Anlage 1 - Meldepflichtige Daten
+01.01.2011
+Anlage 2 - Kostenübernahme für die Standardentsorgung
+01.01.2021
+Bremische Hafengebührenordnung (HGebO)
+Drucken
+Senden
+zur Inhaltsübersicht
+Veröffentlichungsdatum:
+30.03.2006
+Inkrafttreten
+01.01.2026
+Zuletzt geändert durch:
+§§ 3b, 6a, 7, 8, 9 und 12 geändert sowie §§ 6 und 10 neu gefasst durch Verordnung vom 26.11.2025 (Brem.GBl. S. 1305, ber. S. 1372)
+Fundstelle
+Brem.GBl. 2006, S. 135, 157, 363
+Gliederungsnummer:
+9511-d-1
+Zitiervorschlag:
+"Bremische Hafengebührenordnung (HGebO) vom 15. März 2006 (Brem.GBl. 2006, S. 135, 157, 363), zuletzt §§ 3b, 6a, 7, 8, 9 und 12 geändert sowie §§ 6 und 10 neu gefasst durch Verordnung vom 26. November 2025 (Brem.GBl. S. 1305, ber. S. 1372)"
+Einzelansicht
+x
+Drucken
+juris-Abkürzung:
+HGebO
+Dokumenttyp:
+Gesetze und Rechtsverordnungen
+Dokumenttyp:
+Gliederungs-Nr::
+9511-d-1
+Amtliche Abkürzung:
+HGebO
+Ausfertigungsdatum:
+15.03.2006
+Gültig ab:
+01.04.2006
+Dokumenttyp:
+Gebührenordnung
+Quelle:
+Fundstelle:
+Brem.GBl. 2006, 135, 157, 363
+Gliederungs-Nr:
+9511-d-1
+Bremische Hafengebührenordnung (HGebO)
+Vom 15. März 2006
+*
+Zum 02.10.2026 aktuellste verfügbare Fassung der Gesamtausgabe
+Stand:
+letzte berücksichtigte Änderung:  §§ 3b, 6a, 7, 8, 9 und 12 geändert sowie §§ 6 und 10 neu gefasst durch Verordnung vom 26.11.2025 (Brem.GBl. S. 1305, ber. S. 1372)
+Fußnoten
+*
+Verkündet als Artikel 1 der Verordnung zur Änderung der Bremischen Hafengebührenordnung vom 15. März 2006 (Brem.GBl. S. 135)
+Inhaltsübersicht
+Abschnitt 1 Allgemeines
+§ 1
+Geltungsbereich
+§ 2
+Begriffsbestimmungen
+§ 3
+Berechnungsmaßstäbe
+§ 3a
+Gebührenschuldner
+§ 3b
+Gebührenermäßigungen
+§ 4
+Erhebung und Fälligkeit der Hafenabgaben
+§ 5
+Meldepflicht
+Abschnitt 2 Gebühren und Nebengebühren
+§ 6
+Raumgebühr
+§ 6a
+Offshore
+§ 7
+Liegegeld
+§ 8
+Binnenschiffsgebühr
+§ 9
+Nutzungsgebühr
+§ 10
+Abfallentsorgung
+§ 11
+Befreiungen
+Abschnitt 3 Hafenlotsgeld
+§ 12
+Hafenlotsgeld
+Abschnitt 4 Sonstige Bestimmungen
+§ 13
+Steuerliche Bestimmung
+§ 14
+Verarbeitung von personenbezogenen Daten
+§ 15
+Ordnungswidrigkeiten
+Anlage 1
+Meldepflichtige Daten
+Anlage 2
+Kostenübernahme für die Standardentsorgung
+Abschnitt 1
+Allgemeines
+§ 1
+Geltungsbereich
+(1) Für die Benutzung des Hafengebietes im Land Bremen werden nach dieser Verordnung Hafenabgaben erhoben.
+(2) Das abgabenpflichtige Gebiet umfasst das Hafengebiet nach der Anlage zu
+§ 1 der Bremischen Hafengebietsverordnung
+.
+(3) Zum Hafengebiet gehört:
+1.
+Hafengruppe Bremen-Stadt (Bremen)
+2.
+Hafengruppe Bremerhaven (Bremerhaven).
+§ 2
+Begriffsbestimmungen
+In dieser Verordnung sind:
+1.
+Hafenabgaben
+Gebühren, Nebengebühren und Hafenlotsgeld.
+2.
+bremenports
+Die von der Senatorin für Wirtschaft, Häfen und Transformation gemäß
+§ 17 des Bremischen Hafenbetriebsgesetzes
+mit der Festsetzung und Einziehung beliehene bremenports GmbH & Co.KG. Die Beleihung gilt in Bezug auf die Hafenlotsgelder Bremerhaven nur für die Versetzpauschale gemäß
+§ 12 Absatz 10 Nummer 3
+.
+2a.
+Hafenlotsengesellschaft Bremerhaven
+Die für die Festsetzung und Einziehung der Hafenlotsgelder Bremerhaven zuständige Hafenlotsengesellschaft Bremerhaven. Die Befugnis gilt nicht für die Versetzpauschale gemäß
+§ 12 Absatz 10 Nummer 3
+.
+3.
+Häfen
+Die Hafenbecken und Hafeneinfahrten, Vorhäfen und Schleusenkammern.
+4.
+Anlagen
+Die Schiffsumschlagsstellen und Schiffsliegestellen, sowie Landungs- und Betriebsanlagen. Anlagen am Strom sind Anlagen nach Satz 1 an der Weser einschließlich der Kleinen Weser und Geeste.
+5.
+Seegrenze
+Die Seegrenze richtet sich nach § 1 der Dritten Durchführungsverordnung zum Flaggenrechtsgesetz.
+6.
+Fahrzeuge
+See- und Binnenschiffe, Hafenfahrzeuge, Sportfahrzeuge, schwimmende Geräte und sonstige Schwimmkörper, die gewöhnlich zur Fortbewegung bestimmt sind. Als Fahrzeuge gelten auch Wasserflugzeuge und nicht wasserverdrängende Fahrzeuge.
+7.
+Fahrzeuge im Seeverkehr
+Fahrzeuge, die die deutsche Seegrenze passiert haben oder passieren werden.
+8.
+Fahrzeuge im Binnenverkehr
+Fahrzeuge, deren Abgangs- und Bestimmungshafen binnenwärts der deutschen Seegrenze liegen.
+9.
+Hafenfahrzeuge
+Fahrzeuge, die zur gewerblichen oder dienstlichen Verwendung vorwiegend im Hafengebiet bestimmt sind und als solche durch das Hansestadt Bremische Hafenamt zugelassen sind.
+10.
+Open-Top-Fahrzeuge
+Nach den Begriffsbestimmungen der Resolution MSC.234(82) der Internationalen Seeschifffahrtsorganisation IMO sind das Fahrzeuge, die ausschließlich Container befördern und wie ein offenes „U“ konstruiert sind. Sie weisen einen Doppelboden auf und haben hoch gezogene Seitenwände ohne ein abschließendes Deck. Die offene Containerstellfläche muss mindestens 66,7 Prozent der gesamten Lukenfläche betragen.
+11.
+Traditionsschiffe
+Museumsschiffe und ähnliche Wasserfahrzeuge einschließlich deren Nachbauten, deren Betrieb ausschließlich ideellen Zwecken dient, und die zur maritimen Traditionspflege, für soziale oder vergleichbare Zwecke bestimmt sind.
+12.
+Sportfahrzeuge
+Wasserfahrzeuge, die für Sport- und Erholungszwecke verwendet werden, einschließlich der Fahrzeuge, die zu Ausbildungszwecken für die Sportschifffahrt gewerblich betrieben werden.
+13.
+Fahrgastschiffe
+Fahrzeuge, die der Beförderung von Personen gegen Entgelt dienen.
+13a.
+gewerblich genutzte Fahrzeuge und schwimmende Anlagen
+Fahrzeuge und schwimmende Anlagen, die dauerhaft für eine wirtschaftliche Tätigkeit unter eigener Verantwortung und auf eigene Rechnung zur Gewinnerzielung genutzt werden.
+13b.
+Kreuzfahrtschiffe
+Fahrzeuge, die mehrtägige Seereisen für Personen durchführen und dabei mehrere Häfen zu touristischen Reisezwecken anlaufen.
+14.
+Installationsschiffe
+Spezialschiffe oder Plattformen, die zur Errichtung von Offshore-Windkraftanlagen eingesetzt werden.
+15.
+Besondere Fahrzeuge
+Pontons im Zulieferverkehr für die Offshore-Industrie, Bargen, Schwimmkräne, Schleppverbände und Installationsschiffe, die über keine Aufjackvorrichtung verfügen.
+16.
+Sonstige Fahrzeuge
+Erkundungs- und Sicherungsschiffe, Schlepper, Schiffe für den Material- und Personentransport, Versorgungs- und Reparaturschiffe für Wartungsarbeiten.
+16a.
+Schwimmdocks
+Schwimmdocks sind stählerne, hohlwandige Schwimmkörper, welche dazu dienen, Schiffe trockenzulegen, damit Arbeiten am Unterwasserschiff durchgeführt werden können.
+16b.
+Kaskos
+Kaskos sind fertige, schwimmfähige Rümpfe ohne enthaltene Technik.
+16c.
+Sektionen
+Sektionen sind schwimmfähige Teile eines Schiffes, welche mit Hilfe von Schleppern manövriert werden. Typischerweise einzelne Abschnitte eines Schiffsneubaus oder einer Schiffsverlängerung, zum Beispiel der Vorsteven, ein Teil des Bodens oder eine komplette Mittschiffssektion.
+16d.
+Pontons
+Pontons verfügen über keinen eigenen Antrieb und haben im Gegensatz zu Schiffen ohne eigenen Antrieb in der Regel keine strömungsgünstige Form. Pontons werden mit Hilfe von See- oder Hafenschleppern manövriert.
+16e.
+Schleppverbände
+Schleppverbände sind Fahrzeuge mit Maschinenantrieb, die im Verband Schwimmdocks, Kaskos, Sektionen und Pontons schleppen. Ein Schlepp bezeichnet die Übernahme des Antriebs eines Fahrzeuges durch ein anderes. Das geschleppte Fahrzeug wird dabei gezogen, geschoben oder längsseits genommen.
+17.
+Werft- und Reparaturschiffe
+Fahrzeuge, die zur Durchführung von Reparaturen durch Werften oder Reparaturbetriebe in den Bremischen Häfen liegen. Dies umfasst auch Schiffsneubauten, die zur Erstausrüstung außerhalb einer Werftanlage in den Bremischen Häfen liegen.
+18.
+Auflieger
+Gewerblich genutzte Fahrzeuge, die zu ihrer gewerblichen Zweckbestimmung vorübergehend nicht eingesetzt werden können.
+19.
+Fahrzeugführer
+Jeder Führer eines Fahrzeuges oder jeder sonst für die Sicherheit des Fahrzeuges Verantwortliche.
+20.
+Reeder
+Eigentümer eines See- oder Binnenschiffes oder eine Person, die vom Eigentümer die Verantwortung für den Betrieb des Schiffes übernommen und durch die Übernahme der Verantwortung zugestimmt hat, alle dem Eigentümer auferlegten Pflichten und Verantwortlichkeiten zu übernehmen.
+21.
+Zeit-Charterer
+Derjenige, der von einem Reeder ein See- oder Binnenschiff als Ganzes für einen bestimmten Zeitraum gemietet hat und die Anlaufhäfen des Schiffes bestimmt.
+22.
+Beauftragter
+Derjenige, der im Auftrag des Fahrzeugführers, Reeders oder Zeit-Charterers Aufgaben bei der Abfertigung eines See- oder Binnenschiffes im Hafen wahrnimmt, insbesondere im Verhältnis zu Schleppern, Lotsen, Festmachern und Hafenbehörden.
+23.
+Bruttoraumzahl (BRZ)
+Der Raumgehalt eines Fahrzeuges. Das nach dem Internationalen Schiffsvermessungs-Übereinkommen von 1969 („London-Übereinkommen“) ermittelte Vermessungsergebnis (nachfolgend: „ITC '69“).
+24.
+Umschlag
+Das Be- und Entladen von Fahrzeugen sowie Frachtcontainern einschließlich des Transportes zu ladender und gelöschter Güter auf den Kajen, in den Kajeschuppen, auf Freiflächen und sonstigen Lagerplätzen. Als Umschlag gilt auch das Ein- und Ausschiffen von Fahrgästen.
+25.
+Schwimmende Anlagen
+Schwimmende Einrichtungen, die gewöhnlich nicht zur Fortbewegung bestimmt sind, insbesondere Docks und Anlegebrücken. Sie gelten im Falle der Überführung als Fahrzeuge.
+26.
+Fahrtgebiete
+1.
+Binnenverkehr.
+2.
+Short-Sea Verkehr
+Verkehre im Nord-/Ostseegebiet.
+3.
+Europaverkehr
+Verkehre mit Europa, einschließlich Island und den sonstigen Mittelmeeranrainerstaaten.
+4.
+Überseeverkehr
+Alle übrigen Verkehre.
+27.
+Linienverkehr
+Regelmäßige Verkehre, die nach einem veröffentlichen Fahrplan in einem abgegrenzten Fahrtgebiet betrieben und nachgewiesen werden.
+28.
+Trampverkehr
+Fahrzeuge, die nicht unter Linien- oder Spezialverkehr fallen.
+29.
+Spezialverkehr
+Fahrzeuge im Linienverkehr mit nur einem Ladungsgut.
+30.
+Schüttgut
+Ein beliebiger fester Stoff (also weder eine Flüssigkeit noch ein Gas), der aus einer Mischung von Teilchen, Granulat oder sonstigen größeren Stoffbestandteilen von üblicherweise einheitlicher Zusammensetzung besteht und der unmittelbar ohne Verwendung von zusätzlichen Behältern in die Laderäume eines Schiffes geladen wird.
+31.
+Lotsungen
+An- und Ablegen sowie Verholungen von Fahrzeugen.
+32.
+Nebentätigkeiten (der Hafenlotsen)
+Funkbeschickung, Kompensieren, Docken, Stapellauf und Ankern.
+33.
+ESI
+Der Environmental Ship Index (ESI) dient als Bemessungsgrundlage für die Bewertung der Schadstoffemissionen von Schiffen, wobei der Wert Null als Untergrenze der Einhaltung der Bestimmungen der jeweils geltenden IMO-Regelungen entspricht und der Wert Einhundert als Obergrenze erreicht werden kann, wenn keine der im ESI berücksichtigten Emissionen auftreten.
+33a.
+ESI-SOx-Wert
+Der Environmental Ship Index-SOx-Wert (ESI-SOx-Wert) ist eine Komponente des ESI. Der ESI-SOx-Wert stellt dar, inwieweit ein Schiff die geltenden IMO-Regelungen bezüglich der Schwefelgehalte von Schiffstreibstoff unterschreitet. Bei einem Wert von Null werden die gesetzlichen Anforderungen erreicht, wird kein SOx emittiert, können 100 Punkte erreicht werden.
+34.
+LNG (Liquidfied Natural Gas)
+Verflüssigtes Erdgas, welches als Kraftstoff zum Antrieb von Verbrennungsmotoren genutzt wird.
+§ 3
+Berechnungsmaßstäbe
+(1) Der Berechnungsmaßstab ist bei:
+1.
+Fahrzeugen im Seeverkehr die BRZ und bei Open-Top-Fahrzeugen die verminderte BRZ, wenn diese durch Vorlage des ITC 69 nachgewiesen wurde;
+2.
+sonstigen nicht vermessenen Fahrzeugen zu ermitteln;
+3.
+Sportfahrzeugen und Traditionsschiffen die Länge in Metern über alles;
+4.
+gewerblich genutzten Fahrzeugen und schwimmenden Anlagen die Quadratmeterzahl, die sich aus dem Produkt aus Länge über alles und Breite über alles ergibt;
+5.
+Hafenfahrzeugen sowie Bargen und Leichter im Binnenverkehr die Tonne Tragfähigkeit;
+6.
+Fahrgastschiffen die Anzahl der zugelassenen Passagiere.
+(2) Die Berechnungsgrundlage des Fahrzeuges ist das gemeldete Fahrtgebiet.
+(3) Bei Gebühren, die zusätzlich nach Zeitabschnitten berechnet werden, ist für angefangene Zeitabschnitte die volle Gebühr zu entrichten.
+(4) Werden bei den Raumgebühren mehrere Gebührentatbestände gleichzeitig erfüllt, gilt der höhere Gebührensatz.
+§ 3a
+Gebührenschuldner
+(1) Zur Zahlung der Hafenabgaben ist derjenige verpflichtet,
+1.
+dem die Benutzung des Hafengebietes im Lande Bremen individuell zurechenbar ist oder der diese veranlasst hat,
+2.
+der die Gebührenschuld eines anderen durch eine gegenüber der Behörde abgegebenen oder ihr mitgeteilten Erklärung übernommen hat
+oder
+3.
+der für die Gebührenschuld eines anderen kraft Gesetzes haftet.
+(2) Gebührenschuldner nach Absatz 1 sind insbesondere:
+1.
+der Reeder,
+2.
+der Charterer und
+3.
+der Eigner.
+(3) Mehrere Gebührenschuldner haften als Gesamtschuldner.
+§ 3b
+Gebührenermäßigungen
+(1) Fahrzeuge im Überseeverkehr, die nach Verlassen der bremischen Häfen dieselben innerhalb von sieben Tagen aus europäischen Häfen kommend erneut anlaufen, erhalten für ihren zweiten Anlauf einen Rabatt von 75 Prozent auf die zu zahlende Raumgebühr, wenn es sich um denselben Gebührenschuldner handelt.
+(2) Raumgebührenpflichtige Fahrzeuge, die das bremische Hafengebiet länger als fünf Tage benutzen, zahlen für jeden weiteren angefangenen Zeitraum von zehn Tagen 50 Prozent des jeweiligen Gebührensatzes.
+(3) Reeder oder Charterer, deren Fahrzeuge nach dem Tarif Linienverkehr/Spezialverkehr im Überseeverkehr oder nach dem Tarif Autocarrier im Überseeverkehr abgerechnet werden, erhalten folgenden Frequenzrabatt auf die zu zahlende Raumgebühr für das Kalenderjahr:
+150. bis 249. Anlauf
+15 Prozent
+ab 250. Anlauf
+20 Prozent.
+Der Frequenzrabatt wird zum Jahresende gewährt. Sofern ein Frequenzrabatt gewährt wird, wird kein Mehrverkehrsrabatt nach Absatz 5 Nummer 1 gewährt.
+(4) Reeder oder Charterer, deren Kreuzfahrtschiffe die bremischen Häfen anlaufen, erhalten für ihren ersten Anlauf sowie alle Stop-over-Anläufe einen Willkommens-Rabatt von 50 Prozent auf die zu zahlende Raumgebühr. Folgende Frequenzrabatte auf die zu zahlende Raumgebühr werden für das Kalenderjahr gewährt:
+3. bis 10. Anlauf
+25 Prozent
+11. bis 20. Anlauf
+30 Prozent
+21. bis 30. Anlauf
+40 Prozent
+ab 31. Anlauf
+50 Prozent.
+Ab dem 21. Anlauf wird der Frequenzrabatt auf alle Anläufe gewährt mit Ausnahme der Anläufe, bei denen bereits der Willkommens-Rabatt gewährt wurde.
+(5) Mit Ausnahme für Fahrzeuge, die für die Offshore-Industrie aktiv sind, kann bremenports auf Antrag eine Ermäßigung der Raumgebühr gewähren. Der Antrag ist bis zum 31. März eines Jahres für das vorherige Kalenderjahr bei bremenports schriftlich oder elektronisch einzureichen. Ein Rabatt wird unter folgenden Voraussetzungen gewährt:
+1.
+Mehrverkehrs-Rabatt
+Der Reeder oder Charterer hat Mehrverkehr nachzuweisen. Mehrverkehr eines Reeders oder Charterers ist die Entstehung von Mehreinnahmen bei der Raumgebühr durch
+a)
+Einsatz größerer Schiffe,
+b)
+Einrichtung neuer Verkehre oder
+c)
+Steigerung der Anläufe
+im Vergleich des abgelaufenen Kalenderjahres zum Vorjahr. Diese Überprüfung nimmt bremenports vor. Die Ermäßigung beträgt maximal 50 Prozent auf die zu zahlende Raumgebühr für den ermittelten Mehrverkehr. Sofern ein Frequenzrabatt nach den Absätzen 3 oder 3a gewährt wird, wird kein Mehrverkehrsrabatt gewährt.
+2.
+ESI (Environmental Ship Index)-Rabatt
+Insgesamt 25 Schiffe mit dem besten ESI-Wert ≥ 45 Punkten erhalten pro Quartal einen Rabatt von 15 Prozent pro Anlauf, jedoch maximal 4 500 Euro. Der Rabatt wird zum Jahresende gewährt. Antragsberechtigt ist der Gebührenschuldner. Die Überprüfung nimmt bremenports vor. Sofern ein LNG-Rabatt nach Nummer 3 gewährt wird, wird kein ESI-Rabatt gewährt.
+2a.
+ESI (Environmental Ship Index)-Noise-Rabatt
+Fahrzeuge, die über einen Lärm-Mess-Report verfügen, der in der ESI-Datenbank eingetragen ist, erhalten dafür zusätzlich 20 ESI-Punkte.
+3.
+LNG-Rabatt
+Fahrzeuge, die ausschließlich von LNG oder Methanol angetrieben werden und ohne Einsatz eines eingebauten Scrubbers (Grundlage hierfür ist der Eintrag auf der ESI-Website) einen ESI-SOx-Wert größer 33 erreichen, erhalten einen Rabatt von 20 Prozent pro Anlauf, jedoch maximal 6 000 Euro. Der Rabatt wird zum Jahresende gewährt. Antragsberechtigt ist der Gebührenschuldner. Die Überprüfung nimmt bremenports vor. Sofern ein ESI-Rabatt nach Nummer 2 gewährt wird, wird kein LNG-Rabatt gewährt.
+(6) Binnenschiffe, die nach
+§ 8
+abgerechnet werden, erhalten folgende Rabatte:
+1.
+Mehrverkehrs-Rabatt
+Gebührenschuldner, die Mehrverkehr durch die Steigerung der abgerechneten Liegetage im Hafen im Vergleich des abgelaufenen Kalenderjahres zum Vorjahr nachweisen, können einen Antrag auf Mehrverkehrs-Rabatt stellen. Der Antrag ist bis zum 31. März eines Jahres für das vorherige Kalenderjahr bei bremenports schriftlich oder elektronisch einzureichen. Die Ermäßigung beträgt maximal 50 Prozent auf die zu zahlende Binnenschiffsgebühr für den ermittelten Mehrverkehr. Die Überprüfung nimmt bremenports vor.
+2.
+Umweltrabatt
+Fahrzeuge im Binnenverkehr erhalten pro Anlauf einen Rabatt von 10 Prozent auf die Binnenschiffsgebühr, wenn
+a)
+die von der Zentralkommission für die Rheinschifffahrt (ZKR) festgelegten Emissionsgrenzwerte der Stufe II, (ZKR-Protokoll 19, Resolution der Zentralkommission für die Rheinschifffahrt vom 11. Mai 2000) eingehalten werden und in Bezug auf den NOx Wert um mindestens 65 Prozent unterschritten werden oder
+b)
+die Stufe V nach der Verordnung (EU) 2016/1628 des Europäischen Parlaments und des Rates vom 14. September 2016 über die Anforderungen in Bezug auf die Emissionsgrenzwerte für gasförmige Schadstoffe und luftverunreinigende Partikel und die Typgenehmigung für Verbrennungsmotoren für nicht für den Straßenverkehr bestimmte mobile Maschinen und Geräte, zur Änderung der Verordnungen (EU) Nr. 1024/2012 und (EU) Nr. 167/2013 und zur Änderung und Aufhebung der Richtlinie 97/68/EG (ABl. L 252 vom 16.9.2016, S. 53, L 231 vom 6.9.2019, S. 29), die zuletzt durch die Verordnung (EU) 2022/992 (ABl. L 169 vom 27.6.2022, S. 43) geändert worden ist, in Verbindung mit der Binnenschiffsuntersuchungsordnung vom 21. September 2018 (BGBl. I S. 1398, 2032), die zuletzt durch Artikel 4 der Verordnung vom 23. Juli 2024 (BGBl. 2024 I Nr. 253) geändert worden ist, eingehalten wird.
+Zugrunde gelegt wird hierbei jeweils der Antriebsmotor des jeweiligen Fahrzeugs mit der niedrigsten Kategorie. Der Nachweis erfolgt durch die Vorlage eines eindeutigen, nachvollziehbaren und gültigen Zertifikats oder Zeugnisses in deutscher oder englischer Übersetzung bei der Gebührenstelle von bremenports. Der Tag der Einreichung des Nachweises gilt dabei als Antragsdatum und der Rabatt wird maximal für die Dauer eines Jahres gewährt. Danach ist ein neuer Nachweis bei der Gebührenstelle vorzulegen.
+(7) Fahrzeuge, die die Voraussetzungen nach
+§ 8 Absatz 5 Satz 1 des Bremischen Schiffsabfall-Entsorgungsgesetzes
+erfüllen, erhalten einen Rabatt von 2 Prozent auf die Gebühr nach
+§ 10
+Absatz 1 und 2. Hierfür ist bis zum 31. März eines Jahres für das vorherige Kalenderjahr ein schriftlicher Antrag bei bremenports einzureichen. Die Einreichung kann auch auf dem elektronischen Weg erfolgen.
+§ 4
+Erhebung und Fälligkeit der Hafenabgaben
+(1) Die Hafenabgaben werden durch bremenports erhoben. Abweichend von Satz 1 werden die Hafenlotsgelder Bremerhaven mit Ausnahme der Versetzpauschale gemäß
+§ 12 Absatz 10 Nummer 3
+durch die Hafenlotsengesellschaft Bremerhaven erhoben.
+(2) Die Hafenabgaben werden durch bremenports und die Hafenlotsengesellschaft Bremerhaven festgesetzt und sind innerhalb eines Monats nach Bekanntgabe fällig. Säumniszuschläge werden nach
+§ 23 Absatz 1 des Bremischen Gebühren- und Beitragsgesetz
+berechnet und erhoben. Die
+§§ 18
+und
+19 des Bremischen Hafenbetriebsgesetzes
+gelten unmittelbar.
+(3) Die Zahlung der Hafenabgaben können bremenports und die Hafenlotsengesellschaft Bremerhaven vor Auslaufen des Fahrzeugs verlangen.
+§ 5
+Meldepflicht
+(1) Die für die Berechnung und Festsetzung der Hafenabgaben erforderlichen Daten sind der Hafenbehörde im Rahmen der Meldepflicht nach § 6 Bremische Hafenordnung zu übermitteln.
+(2) Fahrzeuge im Seeverkehr müssen zusätzlich den gültigen ITC '69 bei bremenports und der Hafenlotsengesellschaft Bremerhaven vorlegen. Dieses Dokument ist immer beim ersten Anlaufen des Fahrzeuges im Kalenderjahr und bei Änderungen sowie auf Verlangen von bremenports und der Hafenlotsengesellschaft Bremerhaven einzureichen. Die Einreichung kann auch in elektronischer Form erfolgen.
+(3) Sofern der ITC’69 nicht vorgelegt wird oder die für die Berechnung der Hafengebühren sowie der Nebenentgelte notwendigen Angaben nach Absatz 1 nicht, nicht vollständig oder fehlerhaft gemeldet werden und dies zu einem zusätzlichen Verwaltungsaufwand für die Ermittlung der Daten oder Berechnung der Hafengebühren oder Nebenentgelte bei bremenports oder der Hafenlotsengesellschaft Bremerhaven führt, dann werden die dadurch entstehenden Kosten nach dem jeweils gültigen Stundensatz berechnet und dem Gebührenschuldner auferlegt.
+(4) Nach
+§ 9 Absatz 3 und 4 des Bremischen Hafenbetriebsgesetzes
+und den
+§§ 55a
+,
+56
+,
+57
+und
+58 der Bremischen Hafenordnung
+darf die Hafenbehörde statistische Daten über den Umschlag der See- und Binnenschifffahrt erheben. Diese Daten bilden die Basis für die Geschäftsstatistiken der Senatorin für Wirtschaft, Häfen und Transformation und sind für die Hafenentwicklung und -Verwaltung erforderlich. Die zu liefernden Daten sind in
+Anlage 1
+aufgeführt.
+(5) Verantwortlich für die Meldungen nach Absatz 1, 2 und 4 ist der Fahrzeugführer, Reeder, Zeit-Charterer und deren Beauftragter. Die nach Absatz 4 zu liefernden Daten sind innerhalb von 14 Tagen nach Auslaufen des Fahrzeugs auch vom Betreiber einer Umschlagsanlage an bremenports zu melden.
+Abschnitt 2
+Gebühren und Nebengebühren
+§ 6
+Raumgebühr
+Folgende Raumgebühr wird für einen Zeitraum von fünf Tagen von Fahrzeugen im Seeverkehr erhoben, die im Hafen zu Erwerbszwecken umschlagen:
+Gebührentatbestand
+Gebührensatz in Euro pro BRZ
+Short Sea Verkehr
+Fahrzeuge bis 10 000 BRZ
+0,0438
+Fahrzeuge über 10 000 BRZ
+0,1210
+Europaverkehr
+Trampverkehr
+Fahrzeuge bis 7 000 BRZ
+0,1593
+Fahrzeuge über 7 000 BRZ
+0,3338
+Linienverkehr/Spezialverkehr
+Fahrzeuge bis 14 000 BRZ
+0,1535
+Fahrzeuge bis 21 000 BRZ
+0,2368
+Fahrzeuge über 21 000 BRZ
+0,2763
+Tankfahrzeuge
+Fahrzeuge bis 700 BRZ
+0,2117
+Fahrzeuge über 700 BRZ
+0,3582
+Autocarrier
+Fahrzeuge bis 30 000 BRZ
+0,0500
+Fahrzeuge über 30 000 BRZ
+0,0567
+Ro-Ro Fahrzeuge
+Fahrzeuge bis 20 000 BRZ
+0,0584
+Fahrzeuge über 20 000 BRZ
+0,0657
+Fahrzeuge mit Schüttgut
+0,1834
+Überseeverkehr
+Trampverkehr
+0,5877
+Linienverkehr/Spezialverkehr
+0,3038
+Tankfahrzeuge
+0,6543
+Autocarrier
+0,1316
+Ro-Ro Fahrzeuge
+0,1438
+Fahrzeuge mit Schüttgut
+0,3976
+Sonstige Verkehre
+Kreuzfahrtschiffe
+0,3181
+§ 6a
+Offshore
+(1) Fahrzeuge der Offshore-Industrie zahlen für jeden Anlauf der Häfen, wenn sie Lade- und Löscharbeiten durchführen, folgende Gebühren:
+Gebührentatbestand
+Zeitraum
+Bemessungsgrundlage
+Gebührensatz in Euro pro BRZ
+Installationsschiffe
+für maximal 2 Tage pro angefangenen Tag
+0,6959
+Besondere Fahrzeuge
+für maximal 5 Tage pro angefangenen Tag
+0,0535
+Sonstige Fahrzeuge und Einheiten
+für maximal 5 Tage pro angefangenen Tag
+bis 1 000 BRZ
+über 1 000 BRZ
+2,0648
+0,0535
+Nach Ablauf des Berechnungszeitraums wird Liegegeld nach
+§ 7
+berechnet.
+(2) Fahrzeuge der Offshore-Industrie zahlen für jeden Hafenanlauf, wenn sie in und zwischen den Hafengruppen Bremen-Stadt und Bremerhaven verkehren und Lade- und Löscharbeiten durchführen, folgende Gebühren:
+Gebührentatbestand
+Gebührensatz in Euro pro BRZ
+Installationsschiffe, besondere Fahrzeuge, sonstige Fahrzeuge und Einheiten
+0,0411
+§ 7
+Liegegeld
+(1) Von gewerblich genutzten Fahrzeugen im Seeverkehr, die nicht umschlagen, ist Liegegeld zu entrichten. Fahrzeuge der Offshore-Industrie zahlen Liegegeld, soweit sie nicht nach
+§ 6a
+gebührenpflichtig sind.
+Gebührentatbestand
+Bemessungsgrundlage
+Gebührensatz in Euro
+Fahrzeuge im Seeverkehr und Fahrzeuge, die in der Offshore-Industrie aktiv sind
+bis zu 7 Tagen und pro BRZ pro 7 Tage jedoch mindestens 67,00 Euro
+0,0702
+ab dem 8. Tag und pro BRZ pro 7 Tage jedoch mindestens 67,00 Euro
+0,0774
+ab dem 15. Tag und pro BRZ pro 7 Tage jedoch mindestens 67,00 Euro
+0,0926
+ab dem 22. Tag und pro BRZ pro 7 Tage jedoch mindestens 67,00 Euro
+0,1110
+(2) Werft- und Reparaturschiffe zahlen 50 Prozent des Liegegeldes nach Absatz 1.
+(3) Sportfahrzeuge und Traditionsschiffe zahlen pro angefangenen Tag und pro Meter Länge über alles 1,3493 Euro Liegegeld.
+§ 8
+Binnenschiffsgebühr
+(1) Fahrzeuge im Binnenverkehr zahlen pro angefangenen Tag eine Binnenschiffspauschale in Höhe von 19,28 Euro inklusive der Landstromnutzung.
+(2) Auf Antrag kann eine Jahrespauschale pro Fahrzeug in Höhe von 3 005 Euro für das jeweils aktuell laufende Kalenderjahr gewährt werden. Entscheidend für die Berechnung ist der Zeitpunkt des Antragseingangs bei bremenports. Eine rückwirkende Gewährung ist nicht möglich.
+§ 9
+Nutzungsgebühr
+Die Nutzungsgebühr ist zu entrichten von:
+1.
+Fahrtgastschiffen, die nicht raumgebührenpflichtig sind und im Hafengebiet Anlagen nutzen. Im Raum Bremen-Nord gelten vier Anlagen als eine Einheit. Die Jahresgebühr beträgt 4,68 Euro je zugelassenen Passagier.
+2.
+Sonstige Nutzer der Anlagen und Wasserflächen
+Bemessungsgrundlage
+Gebührensatz in Euro
+Hafenfahrzeuge sowie Bargen und Leichter im Binnenverkehr
+Jahrespauschalgebühr
+Je Hafenfahrzeug bis 200 t Tragfähigkeit
+117,38
+zuzüglich für je angefangene weitere 100 t Tragfähigkeit
+58,70
+Seeschiffsassistenzschlepper
+Jahrespauschalgebühr
+697,72
+Lotsenversetzboote
+Jahrespauschalgebühr
+697,72
+Bunkerboote
+Jahrespauschalgebühr
+596,97
+Gewerblich genutzte Fahrzeuge und schwimmende Anlagen
+Je m
+2
+und Monat
+mindestens 93,46 Euro
+0,79
+§ 10
+Abfallentsorgung
+(1) Für die Entsorgung der Schiffsabfälle, die der Anlage V des Internationalen Übereinkommens von 1973 zur Verhütung der Meeresverschmutzung durch Schiffe und Protokoll von 1978 zu diesem Übereinkommen (MARPOL-Übereinkommen) (BGBl. 1982 Teil II S. 2) in der jeweils geltenden Fassung unterliegen, werden von raumgebührpflichtigen Fahrzeugen für einen Zeitraum von jeweils fünf Tagen nachstehende Gebührensätze erhoben:
+Gebührentatbestand
+Gebührensatz in Euro
+Kreuzfahrtschiffe
+pro BRZ
+0,1158
+alle anderen Fahrzeuge im Seeverkehr
+bis 1 500 BRZ
+127,18
+ab 1 501 BRZ bis 2 500 BRZ
+169,60
+ab 2 501 BRZ bis 3 500 BRZ
+237,17
+ab 3 501 BRZ bis 6 000 BRZ
+423,62
+ab 6 001 BRZ bis 10 000 BRZ
+494,18
+ab 10 001 BRZ bis 30 000 BRZ
+535,12
+ab 30 001 BRZ bis 45 000 BRZ
+608,07
+ab 45 001 BRZ
+885,84
+(2) Für Kreuzfahrtschiffe, die Liegegeld zu entrichten haben, werden 100 Prozent der Gebühr nach Absatz 1 für jeweils bis zu sieben Tagen pro sieben Tage Liegezeit fällig. Für alle anderen Fahrzeuge im Seeverkehr, die Liegegeld zu entrichten haben, werden 50 Prozent der Gebühr nach Absatz 1 für jeweils bis zu sieben Tagen pro sieben Tage Liegezeit fällig. Fahrzeuge, die bereits die Gebühr nach Absatz 1 entrichten, zahlen erst nach Ablauf des Berechnungszeitraums des Absatzes 1 die Gebühr nach diesem Absatz.
+(3) Fahrzeugen, die die Gebühr nach Absatz 1 oder 2 entrichten, werden Behältnisse für die getrennte Abfallentsorgung entsprechend der Schiffsabfallanmeldung gemäß
+§ 6 des Bremischen Schiffsabfall-Entsorgungsgesetzes
+zur Verfügung gestellt. Es gelten folgende Freimengen:
+Kreuzfahrtschiffe
+Kategorie
+nach MARPOL Anlage V
+Abfallbeschreibung
+Freimengen
+A
+Kunststoff
+bis zur maximalen schiffsspezifischen Lagerkapazität
+B
+Lebensmittelabfälle
+bis zur maximalen schiffsspezifischen Lagerkapazität
+C
+Haushaltsabfälle (Papier, Glas und Metall)
+Jeweils bis zur maximalen schiffsspezifischen Lagerkapazität
+D
+Speiseöle
+1 000 l
+F
+Vermischte Betriebsabfälle, nicht gefährlich
+480 l
+F
+Restmüll
+5 cbm
+F
+Betriebsabfälle - Putzlappen
+800 l
+Andere Fahrzeuge im Seeverkehr bis 3 500 BRZ
+Kategorie
+nach MARPOL Anlage V
+Abfallbeschreibung
+Freimengen
+A
+Kunststoff
+bis zur maximalen schiffsspezifischen Lagerkapazität
+B
+Lebensmittelabfälle
+bis zur maximalen schiffsspezifischen Lagerkapazität
+C
+Haushaltsabfälle (Papier, Glas und Restmüll)
+bis zur maximalen schiffsspezifischen Lagerkapazität
+F
+Betriebsabfälle - Putzlappen
+120 l
+Andere Fahrzeuge im Seeverkehr über 3 501 BRZ
+Kategorie
+nach MARPOL Anlage V
+Abfallbeschreibung
+Freimengen
+A
+Kunststoff
+bis zur maximalen schiffsspezifischen Lagerkapazität
+B
+Lebensmittelabfälle
+bis zur maximalen schiffsspezifischen Lagerkapazität
+C
+Haushaltsabfälle (Papier, Glas und Restmüll)
+bis zur maximalen schiffsspezifischen Lagerkapazität
+F
+Vermischte Betriebsabfälle, nicht gefährlich
+480 l
+F
+Betriebsabfälle - Putzlappen
+240 l
+Auf Anforderung können zusätzliche Abfälle entsorgt werden, pro Fraktion bis zur Höhe der geltenden Freimenge. Für jede dieser Entsorgungen wird eine Gebühr in Höhe von 50 Prozent der Gebühr nach Absatz 1 erhoben.
+(4) Für die Entsorgung gefährlicher Abfälle können Sammelbehälter über die Schiffsabfallanmeldung gemäß
+§ 6 des Bremischen Schiffsabfall-Entsorgungsgesetzes
+oder den Beauftragten kostenlos beim Entsorgungsunternehmen angefordert werden. Es gelten folgende Freimengen:
+Kreuzfahrtschiffe
+Kategorie
+nach MARPOL Anlage V
+Abfallbeschreibung
+Freimengen
+C
+Kleinbatterien
+(keine Lithiumbatterien)
+60 l
+E
+Asche aus Verbrennungsanlagen
+240 l
+F
+Lithiumbatterien
+60 l
+F
+Spraydosen
+60 l
+F
+Verpackungen mit schädlichen Anhaftungen
+5 cbm
+I
+Lampen (Elektro- und Elektronikgerätegesetz Gruppe 3)
+60 l
+I
+Kleingeräte bis 50 cm Kantenlänge
+(Elektro- und Elektronikgerätegesetz Gruppe 5)
+Geräte dürfen keine Batterien enthalten
+240 l
+Andere Fahrzeuge im Seeverkehr
+Kategorie
+nach MARPOL Anlage V
+Abfallbeschreibung
+Freimengen
+C
+Kleinbatterien
+(keine Lithiumbatterien)
+30 l
+E
+Asche aus Verbrennungsanlagen
+120 l
+F
+Lithiumbatterien
+30 l
+F
+Spraydosen
+30 l
+F
+Verpackungen mit schädlichen Anhaftungen
+800 l
+I
+Lampen (Elektro- und Elektronikgerätegesetz Gruppe 3)
+30 l
+I
+Kleingeräte bis 50 cm Kantenlänge
+(Elektro- und Elektronikgerätegesetz Gruppe 5)
+Geräte dürfen keine Batterien enthalten
+240 l
+(5) Die nachfolgend aufgeführten Abfälle werden bis zu der in der Tabelle angegebenen Menge kostenlos entsorgt, wenn die Fahrzeugbesatzung diese als Gebinde oder Gegenstand neben dem Sammelbehälter abstellt:
+Kreuzfahrtschiffe
+Kategorie
+nach MARPOL Anlage V
+Abfallbeschreibung
+Gebindegröße
+C
+Arzneimittel
+(keine Betäubungsmittel)
+30 l
+F
+Ladungsträger
+(Paletten, unverpackt)
+Stück
+F
+Großbatterien
+Stück
+I
+Kühlgeräte (Elektro- und Elektronikgerätegesetz Gruppe 1)
+Stück
+I
+Bildschirme (Elektro- und Elektronikgerätegesetz Gruppe 2)
+Stück
+I
+Elektrogroßgeräte
+über 50 cm Kantenlänge
+(Elektro- und Elektronikgerätegesetz Gruppe 4)
+Stück
+andere Fahrzeuge im Seeverkehr
+Kategorie
+nach MARPOL Anlage V
+Abfallbeschreibung
+Gebindegröße
+C
+Kleinbatterien
+(keine Lithiumbatterien)
+30 l
+C
+Arzneimittel
+(keine Betäubungsmittel)
+30 l
+D
+Speiseöle
+30 l
+F
+Ladungsträger
+(Paletten, unverpackt)
+3 Stück
+F
+Großbatterien
+Stück
+I
+Lampen (Elektro- und Elektronikgerätegesetz Gruppe 3)
+30 l
+I
+Kühlgeräte (Elektro- und Elektronikgerätegesetz Gruppe 1)
+Stück
+I
+Bildschirme (Elektro- und Elektronikgerätegesetz Gruppe 2)
+Stück
+I
+Elektrogroßgeräte
+über 50 cm Kantenlänge
+(Elektro- und Elektronikgerätegesetz Gruppe 4)
+Stück
+(6) Zusätzlich zu den in den Absätzen 4 und 5 genannten Freimengen können auf Anforderung weitere gefährliche Abfälle entsorgt werden. Die jeweilige Entsorgungsmenge ist dabei auf die geltende Freimenge begrenzt. Für jede dieser Entsorgungen wird eine Gebühr in Höhe von 50 Prozent der Gebühr nach Absatz 1 erhoben.
+(7) Fahrzeuge, deren Besatzung die Sammelbehälter nicht bestimmungsgemäß nach der jeweiligen Abfallkategorie verwendet, müssen für den erhöhten Entsorgungsaufwand eine zusätzliche Gebühr für jeden falsch befüllten Behälter wie folgt entrichten:
+Gebührentatbestand
+Gebührensatz in Euro
+nicht gefährlicher Abfall
+gefährlicher Abfall
+Kreuzfahrtschiffe
+442,92
+885,84
+andere Fahrzeug im Seeverkehr
+bis 1 500 BRZ
+63,59
+127,18
+ab 1 501 BRZ bis 2 500 BRZ
+84,80
+169,60
+ab 2 501 BRZ bis 3 500 BRZ
+118,59
+237,17
+ab 3 501 BRZ bis 6 000 BRZ
+211,81
+423,62
+ab 6 001 BRZ bis 10 000 BRZ
+247,09
+494,18
+ab 10 001 BRZ bis 30 000 BRZ
+267,56
+535,12
+ab 30 001 BRZ bis 45 000 BRZ
+304,04
+608,07
+ab 45 001 BRZ
+442,92
+885,84
+(8) Für die Entsorgung ölhaltiger Schiffsbetriebsabfälle, die der Anlage I des MARPOL-Übereinkommens unterliegen, insbesondere Ölschlämme aus der Schwerölaufbereitung und Bilgenöle, wird bei jedem Hafenanlauf folgende Gebühr erhoben:
+Bemessungsgrundlage
+Gebührensatz in Euro
+Autocarrier und Ro-Ro-Fahrzeuge pro BRZ
+mindestens 32,50 Euro, höchstens 600,00 Euro
+0,0090
+Andere Fahrzeuge im Seeverkehr pro BRZ
+mindestens 63,00 Euro, höchstens 1 200,00 Euro
+0,0180
+(9) Fahrzeuge im Seeverkehr, die eine Gebühr nach Absatz 8 entrichten, erwerben einen Anspruch auf Kostenübernahme für die Standardentsorgung gemäß
+Anlage 2
+, sofern die Entsorgung durch eine Hafenauffangeinrichtung erfolgt, die im Abfallbewirtschaftungsplan für die öffentlichen Häfen der Freien Hansestadt Bremen bekannt gemacht wurde.
+(10) Für die Entsorgung der in Artikel 7 Absatz 3 des Übereinkommens über die Sammlung, Abgabe und Annahme von Abfällen in der Rhein- und Binnenschifffahrt als Hausmüll bezeichneten Abfälle von Fahrgastschiffen im Binnenverkehr, die über Schlafplätze für Fahrgäste verfügen, wird je Hafenanlauf eine Gebühr von 4,53 Euro je zugelassenem Passagier erhoben. Das Entsorgungsunternehmen liefert Sammelbehälter für die getrennte Entsorgung von Lebensmittelabfällen, Kunststoff, Papier und Pappe, Glas, Metall sowie Restmüll an den Liegeplatz des Fahrgastschiffs.
+§ 11
+Befreiungen
+(1) Von der Entrichtung der Gebühren nach
+§ 6
+und
+§ 6a
+sind befreit:
+1.
+Fahrzeuge, die zwischen den bremischen Hafengebieten und den deutschen Nordseebädern verkehren;
+2.
+Fahrzeuge und Fischereifahrzeuge der Küsten- und Hochseefischerei im Sinne der Kauffahrteischifffahrt, die ausschließlich Fisch und daraus hergestellte Erzeugnisse in Bremerhaven löschen oder laden. Ausgenommen ist die Freizeit- und Nebenerwerbsfischerei.
+3.
+Neubauten und Reparaturschiffe in Werftregie.
+(2) Von der Entrichtung der Gebühren nach
+§§ 7
+und
+9
+sind befreit:
+1.
+Fahrzeuge im Eigentum des Landes Bremen, einer bremischen Gemeinde oder der Bundesrepublik Deutschland, soweit sie nicht zum Erwerb durch die Seeschifffahrt bestimmt sind;
+2.
+Fahrzeuge mit ausschließlich Fisch und daraus hergestellten Erzeugnissen in Bremerhaven;
+3.
+Sportfahrzeuge an Anlagen von Sportvereinen;
+4.
+Sportfahrzeuge als Teilnehmer an wassersportlichen Veranstaltungen, für die Dauer der Veranstaltung, jedoch maximal 7 Tage nach Vorlage einer Bescheinigung.
+5.
+Sportfahrzeuge, die überwiegend der sportlichen Ausbildung dienen und deren Eigner schriftlich nachweisen kann, dass das Fahrzeug mindestens für 90 Fahrten im laufenden Jahr als Ausbildungsfahrzeug eingesetzt worden ist. Die Ausbildungsfahrten müssen ausschließlich der Erlangung eines Sportbootführerscheins nach der Verordnung über die Eignung und Befähigung zum Führen von Sportbooten auf den See- und Binnenschifffahrtsstraßen dienen. Ausgenommen ist die gewerbliche Ausbildung.
+(3) Von der Entrichtung einer Gebühr nach
+§§ 6
+bis
+9
+sind befreit:
+1.
+Traditionsschiffe, die an Veranstaltungen für Traditionsschiffe teilnehmen, für die Dauer der Veranstaltung, jedoch maximal 7 Tage nach Vorlage einer Bescheinigung.
+2.
+Fahrzeuge, die das bremische Hafengebiet als Nothafen nutzen.
+(4) Von der Entrichtung der Gebühr nach
+§ 10
+Absatz 1, 2 und 8 sind Fahrzeuge befreit, die über eine Ausnahme nach
+§ 9 Absatz 1 des Bremisches Schiffsabfall-Entsorgungsgesetzes
+verfügen.
+(5) Von der Entrichtung der Gebühr nach
+§ 10
+Absatz 8 sind Fahrzeuge befreit, die die Voraussetzung nach
+§ 8 Absatz 4 des Bremisches Schiffsabfall-Entsorgungsgesetzes
+erfüllen.
+Abschnitt 3
+Hafenlotsgeld
+§ 12
+Hafenlotsgeld
+(1) Für die Leistungen der Lotsen ist Hafenlotsgeld zu entrichten. Das Hafenlotsgeld gliedert sich in:
+1.
+Beratungsgeld;
+2.
+Wartegeld;
+3.
+Auslagen.
+(2) In Bremen wird der Lotsdienst durch die Seelotsen der Lotsenbrüderschaft Weser I wahrgenommen. Die Bestimmungen des Gesetzes über das Seelotswesen sind auf das Hafenlotsgeld entsprechend anzuwenden. Im Beratungsgeld sind die anteiligen Kosten der Landradarzentrale enthalten.
+(3) In Bremerhaven wird der Lotsdienst durch die Hafenlotsen der Hafenlotsengesellschaft Bremerhaven wahrgenommen.
+(4) Beratungsgeld in Bremen:
+An-/Ablegetarif
+Verholtarif
+Industriehafen
+Tidehäfen
+Verholgruppe I
+Verholgruppe II
+Verholgruppe III
+Ohne Berührung der Weser
+Auf der Weser ohne Industriehafen
+Unter Benutzung der Schleuse Oslebshausen
+BRZ
+Betrag in Euro
+Betrag in Euro
+Betrag in Euro
+Betrag in Euro
+Betrag in Euro
+bis 300
+83,20
+47,64
+147,55
+187,27
+271,24
+301 - 500
+94,47
+54,10
+159,03
+197,90
+282,68
+501 - 750
+102,05
+58,44
+169,62
+210,27
+293,30
+751 - 1 000
+109,59
+62,76
+182,88
+219,98
+304,79
+1 001 - 1 250
+119,06
+68,18
+191,70
+232,34
+316,28
+1 251 - 1 500
+128,53
+73,60
+204,98
+243,85
+327,76
+1 501 - 1 750
+139,90
+80,12
+215,58
+253,53
+338,36
+1 751 - 2 000
+147,44
+84,44
+226,16
+265,92
+349,84
+2 001 - 2 250
+154,99
+88,76
+238,52
+275,63
+359,56
+2 251 - 2 500
+162,53
+93,07
+248,24
+288,89
+372,81
+2 501 - 2 750
+177,67
+101,75
+260,62
+298,62
+381,66
+2 751 - 3 000
+189,01
+108,23
+271,24
+310,97
+394,92
+3 001 - 3 250
+198,48
+113,66
+282,68
+321,58
+405,49
+3 251 - 3 500
+207,89
+119,04
+293,30
+332,19
+417,00
+3 501 - 3 750
+221,11
+126,62
+304,79
+345,44
+429,37
+3 751 - 4 000
+232,48
+133,13
+316,28
+355,13
+438,18
+4 001 - 4 250
+241,95
+138,55
+327,76
+367,53
+451,43
+4 251 - 4 500
+253,24
+145,02
+338,36
+377,24
+461,16
+4 501 - 4 750
+266,50
+152,62
+349,84
+389,60
+473,53
+4 751 - 5 000
+275,97
+158,04
+359,56
+400,23
+484,13
+5 001 - 5 500
+289,20
+165,61
+381,66
+422,29
+507,10
+5 501 - 6 000
+302,42
+173,18
+405,49
+444,38
+528,30
+6 001 - 6 500
+317,57
+181,86
+429,37
+466,47
+551,26
+6 501 - 7 000
+328,84
+188,31
+451,43
+489,43
+573,37
+7 001 - 7 500
+344,03
+197,00
+473,53
+513,28
+595,44
+7 501 - 8 000
+357,20
+204,54
+495,60
+535,36
+619,32
+8 001 - 8 500
+370,44
+212,13
+517,71
+556,57
+640,50
+8 501 - 9 000
+381,80
+218,64
+540,68
+579,56
+663,47
+9 001 - 9 500
+398,79
+228,36
+562,77
+602,52
+686,44
+9 501 - 10 000
+410,15
+234,88
+583,95
+624,60
+708,56
+10 001 - 10 500
+421,46
+241,35
+607,80
+645,80
+730,61
+10 501 - 11 000
+438,50
+251,11
+630,78
+668,79
+752,71
+11 001 - 11 500
+451,75
+258,70
+651,98
+691,74
+775,68
+11 501 - 12 000
+463,06
+265,17
+674,08
+714,72
+798,64
+12 001 - 12 500
+478,21
+273,85
+696,18
+735,91
+819,84
+12 501 - 13 000
+491,41
+281,40
+719,13
+758,02
+842,79
+13 001 - 13 500
+502,77
+287,91
+742,11
+780,08
+863,99
+13 501 - 14 000
+517,89
+296,57
+763,29
+803,05
+887,00
+14 001 - 14 500
+531,10
+304,15
+785,38
+826,05
+909,07
+14 501 - 15 000
+542,44
+310,63
+808,37
+847,22
+932,04
+15 001 - 15 500
+557,56
+319,29
+832,20
+871,10
+955,03
+15 501 - 16 000
+572,72
+327,97
+854,31
+892,28
+977,10
+16 001 - 16 500
+584,04
+334,45
+876,36
+916,14
+998,30
+16 501 - 17 000
+597,27
+342,03
+899,36
+938,22
+1022,13
+17 001 - 17 500
+610,50
+349,60
+920,57
+960,30
+1044,24
+17 501 - 18 000
+625,61
+358,26
+943,52
+983,27
+1067,21
+18 001 - 18 500
+636,98
+364,76
+965,61
+1005,37
+1088,41
+18 501 - 19 000
+652,10
+373,43
+987,69
+1026,58
+1111,38
+19 001 - 19 500
+663,38
+379,88
+1010,68
+1049,52
+1133,48
+19 501 - 20 000
+678,55
+388,57
+1033,64
+1072,51
+1156,44
+20 001 - 21 000
+699,35
+400,48
+1076,93
+1116,68
+1200,63
+21 001 - 22 000
+716,36
+410,22
+1122,85
+1160,85
+1245,67
+22 001 - 23 000
+740,92
+424,29
+1167,06
+1205,89
+1289,85
+23 001 - 24 000
+757,93
+434,03
+1212,09
+1250,94
+1335,77
+24 001 - 25 000
+776,81
+444,84
+1257,15
+1295,14
+1379,95
+25 001 - 26 000
+799,51
+457,84
+1302,19
+1341,07
+1425,01
+26 001 - 27 000
+818,41
+468,66
+1346,38
+1386,15
+1469,19
+27 001 - 28 000
+837,28
+479,47
+1391,44
+1431,18
+1515,13
+28 001 - 29 000
+859,98
+492,47
+1436,49
+1475,36
+1558,42
+29 001 - 30 000
+878,90
+503,30
+1480,65
+1520,40
+1604,38
+30 001 - 31 000
+899,65
+515,19
+1524,84
+1565,61
+1649,40
+31 001 - 32 000
+920,49
+527,12
+1570,79
+1608,77
+1692,69
+32 001 - 33 000
+939,33
+537,92
+1614,06
+1654,71
+1739,50
+33 001 - 34 000
+960,14
+549,83
+1660,88
+1697,98
+1782,82
+34 001 - 35 000
+980,94
+561,74
+1705,07
+1744,82
+1828,73
+35 001 - 36 000
+999,81
+572,55
+1750,13
+1788,99
+1872,92
+36 001 - 37 000
+1020,65
+584,47
+1794,28
+1834,04
+1917,96
+37 001 - 38 000
+1041,41
+596,37
+1838,47
+1878,23
+1963,03
+38 001 - 39 000
+1058,42
+606,11
+1885,27
+1923,28
+2007,20
+39 001 - 40 000
+1079,23
+618,02
+1928,57
+1968,32
+2052,26
+40 001 - 42 000
+1109,47
+635,34
+2019,58
+2056,68
+2140,60
+42 001 - 44 000
+1141,60
+653,74
+2108,80
+2146,79
+2231,60
+44 001 - 46 000
+1177,50
+674,29
+2197,14
+2236,90
+2319,94
+46 001 - 48 000
+1207,76
+691,63
+2287,24
+2327,90
+2410,96
+48 001 - 50 000
+1243,65
+712,18
+2375,59
+2416,22
+2500,18
+50 001 - 60 000
+1411,89
+808,53
+2825,28
+2864,15
+2947,19
+60 001 - 70 000
+1578,20
+903,76
+3273,19
+3312,04
+3395,09
+Für jede weitere angefangene 10 000 BRZ erhöht sich das Lotsgeld für den Industriehafen um 170,13 Euro im An-/Ablegetarif, für die Tidehäfen um 97,44 Euro im An-/Ablegetarif und um 451,43 Euro im Verholtarif.
+(5) Bei Lotsungen ist für Fahrzeuge, die gleichzeitig mehrere Lotsen annehmen, bei der Annahme von:
+1.
+zwei Lotsen das 1 1/2 - fache;
+2.
+drei Lotsen das 2 - fache;
+3.
+vier Lotsen das 2 1/2 - fache;
+4.
+fünf Lotsen das 3 - fache;
+5.
+sechs Lotsen das 3 1/2 - fache;
+des Beratungsgeldes nach Absatz 4 zu entrichten.
+(6) Werden Lotsungen mehrerer Fahrzeuge von einem Lotsen geleitet, so ist für das vorausfahrende mit dem Lotsen besetzte Fahrzeug das volle Beratungsgeld, für jedes nachfahrende Fahrzeug 25 % des Beratungsgeldes zu entrichten.
+(7) Beratungsgeld in Bremerhaven:
+1.
+Fahrzeuge unter 13 000 BRZ ohne Schleusenbenutzung zahlen einen Grundbetrag von 41,80 Euro und einen Zuschlag für je angefangene 100 BRZ von 1,27 Euro.
+2.
+Fahrzeuge ab 13 000 BRZ ohne Schleusenbenutzung zahlen einen Grundbetrag von 211,69 Euro und einen Zuschlag für je angefangene 100 BRZ über 13 000 BRZ von 1,03 Euro.
+3.
+Fahrzeuge unter 13 000 BRZ mit Schleusenbenutzung zahlen einen Grundbetrag von 45,89 Euro und einen Zuschlag für je angefangene 100 BRZ von 1,98 Euro.
+4.
+Fahrzeuge ab 13 000 BRZ mit Schleusenbenutzung zahlen einen Grundbetrag von 318,54 Euro und einen Zuschlag für je angefangene 100 BRZ über 13 000 BRZ von 1,43 Euro.
+5.
+Für Schleppverbände mit Pontons, Schwimmdocks, Kaskos und Sektionen wird eine Lotsgeldpauschale von 495 Euro erhoben.
+6.
+Werden Fahrzeuge und Schleppverbände verholt, entsprechen das Ablege- und Anlegemanöver zwei gebührenpflichtigen Einsätzen nach den Nummern 1 bis 5. Dies gilt nicht für Fahrzeuge, die mit zwei Lotsen besetzt sind, es sei denn, die Doppelbesetzung erfolgt nach § 8 der Törnordnung der Hafenlotsen Bremerhaven.
+7.
+Es besteht auch ohne Annahme eines Lotsen die Verpflichtung, Hafenlotsgeld zu entrichten für Fahrzeuge im Seeverkehr über 500 BRZ. Das von diesen Fahrzeugen zu zahlende Beratungsgeld ermäßigt sich um 25% des nach den Nummern 1 bis 4 zu zahlenden Beratungsgeldes.
+8.
+Ohne Annahme eines Lotsen sind in Bremerhaven von der Entrichtung des Beratungsgeldes befreit:
+a)
+Seeschiffsassistenzschlepper, Schwimmkräne und Fischereifahrzeuge bis 1 000 BRZ;
+b)
+Fahrgastschiffe im Verkehr mit den deutschen Nordseebädern;
+c)
+Fahrzeuge, die im Eigentum des Landes Bremens, einer bremischen Gemeinde oder der Bundesrepublik Deutschland stehen, soweit sie nicht zum Erwerb durch die Seeschifffahrt bestimmt sind;
+d)
+Fahrzeuge, die im Bereich zusammenhängender Werftpieranlagen verholt werden.
+(8)  Zusätzliches Beratungsgeld für Bremen und Bremerhaven:
+1.
+Ein zusätzliches Beratungsgeld in Höhe der jeweils geltenden Sätze nach Anlage 2 Abschnitt B Teil IV Nummer 2 der Lotstarifverordnung wird für anfallende Nebentätigkeiten erhoben. Für Fahrzeuge mit einer BRZ ab 40 000 werden für jede weiteren angefangenen 10 000 BRZ 78 Euro fällig.
+2.
+Für Maschinenstandproben und Zugproben eines Fahrzeuges gelten die Sätze nach Nummer 1.
+3.
+Wird ein Fahrzeug ohne Einsatz der Maschine gelotst, wird ein Zuschlag in Höhe von 100 Prozent des Beratungsgeldes nach Absatz 7 berechnet.
+4.
+Wenn in Bremerhaven ein Fahrzeug auf Wunsch der Schiffsleitung mit dem Strom angelegt wird oder während einer Lotsung aus besonderen Gründen aufgestoppt und in Warteposition gehalten werden muss, wird ein zusätzliches Beratungsgeld nach Nummer 1 fällig.
+(9) Auslagen für den vergeblichen Weg werden in Höhe der jeweils geltenden Sätze nach Anlage 2 Abschnitt B Teil IV Nummer 4 der Lotstarifverordnung erhoben.
+(9a) Das Wartegeld für jede angefangene Stunde wird in Höhe der jeweils geltenden Sätze nach Anlage 2 Abschnitt B Teil IV Nummer 3 der Lotstarifverordnung erhoben. Ein Wartegeld wird fällig, wenn
+1.
+der Hafenlotse zum vereinbarten Zeitpunkt an Bord gekommen ist, sich der Antritt oder die Fortsetzung der Fahrt aus revierbedingten Gründen aber um mehr als 3 Stunden verzögert;
+2.
+der Hafenlotse zum vereinbarten Zeitpunkt an Bord gekommen ist, sich der Antritt oder die Fortsetzung der Fahrt aus anderen als revierbedingten Gründen um mehr als eine halbe Stunde verzögert;
+3.
+der angeforderte Hafenlotse nicht an Bord genommen oder wieder entlassen wird, ohne seine Tätigkeit ausgeführt zu haben und er abwesend von der Einsatzstation war. Die Auslage für den vergeblichen Weg wird zusätzlich gezahlt;
+4.
+während einer Lotsung eine Wartezeit anfällt, ohne dass der Hafenlotse diese zu vertreten hat, nach Ablauf einer Stunde;
+5.
+der Hafenlotse nach Beendigung seiner Lotstätigkeit auf Wunsch der Schiffsführung an Bord bleibt oder nicht ausgeholt werden kann bis zu seiner Rückkehr zur Einsatzstation;
+6.
+für Wartezeiten vor Beginn des Einschleusens in die Schleuse Oslebshausen wird nach Ablauf einer Wartezeit von einer Stunde das volle Wartegeld berechnet.
+Die Regelung nach Nummer 2 gilt auch für den Fall, dass ein Hafenlotse angefordert wird, obgleich das Fahrzeug zu dem Anforderungszeitpunkt seine Fahrt aus tidebedingten Gründen noch nicht antreten kann. In den Fällen von Nummer 4 und 6 ist für Wartezeiten in der Schleusenkammer ein Wartegeld nicht zu entrichten.
+(10) Auslagen:
+1.
+In Bremen werden Fahrtkosten nach der Tarifordnung für die Seelotsreviere erhoben.
+2.
+In Bremerhaven werden Fahrtkosten in Zusammenhang mit der Lotsung eines Fahrzeuges in Höhe von 25 Euro berechnet.
+3.
+In Bremerhaven wird eine zweckgebundene Versetzpauschale im Zusammenhang mit der Lotsung eines Fahrzeuges in Höhe von 300 Euro berechnet.
+(11) Bei Lotsungen für Fahrzeuge, die gleichzeitig mehrere Lotsen annehmen müssen, ist das Beratungsgeld nach Absatz 7 Nummer 1 bis 5, das zusätzliche Beratungsgeld nach Absatz 8, die Auslagen für den vergeblichen Weg nach Absatz 9, das Wartegeld nach Absatz 9a sowie die Fahrtkosten nach Absatz 10 Nummer 2 entsprechend der Anzahl der Lotsen zu entrichten.
+Abschnitt 4
+Sonstige Bestimmungen
+§ 13
+Steuerliche Bestimmung
+Sämtliche Gebühren dieser Verordnung sind im Sinne des Umsatzsteuergesetzes Nettobeträge. Falls Leistungen der Umsatzsteuer unterliegen, ist die nach dem jeweils geltenden Umsatzsteuergesetz zu erhebende Umsatzsteuer neben den Gebühren dieser Verordnung zu zahlen.
+§ 14
+Verarbeitung von personenbezogenen Daten
+Die Daten nach
+§ 5
+dürfen im Rahmen eines automatisierten Verfahrens im erforderlichen Umfang zur Gebührenerhebung und -einziehung verarbeitet werden. Nach Rechnungsabwicklung ist die Nutzung der Daten nur noch für Zwecke der Rechnungsprüfung oder in anonymisierter Form gestattet. Im Übrigen ist die Verarbeitung einzuschränken. Nach Abschluss des Rechnungsvorgangs sind die Daten nach zehn Jahren zu löschen.
+§ 15
+Ordnungswidrigkeiten
+(1) Ordnungswidrig im Sinne von
+§ 21 Abs. 2 des Bremischen Hafenbetriebsgesetzes
+handelt, wer seiner Meldepflicht nach
+§ 5
+nicht nachkommt.
+(2) Für die Verfolgung und Ahndung ist die Hafenbehörde gemäß
+§ 21 Abs. 6 des Bremischen Hafenbetriebsgesetzes
+zuständig.
+Anlage 1
+zu
+§ 5 Absatz 4
+Meldepflichtige Daten
+Angabe zu
+Erläuterung
+Fahrzeugname
+Datum
+Umschlagsart
+laden/löschen
+Warenart
+gemäß Konnossement, Tallyunterlagen
+Anzahl
+nur bei Fahrgästen und folgenden Warenarten:
+Fahrzeuge, Maschinen, Konstruktionsteile, Traktoren/Landmaschinen, Container (getrennt nach Stückzahl, 20 oder 40 Fuß, beladen oder leer
+Gesamtgewicht
+Güterart
+Massengut, Stückgut
+Anlage 2
+(zu
+§ 10 Absatz 9
+)
+Kostenübernahme für die Standardentsorgung
+Der Standardentsorgungsfall beinhaltet die An- und Abfahrt des Entsorgungsfahrzeuges, eine Höchstdauer für die Übergabe der Abfälle und die Entsorgung festgelegter Höchstmengen an ölhaltigen Rückständen aus dem Schiffsmaschinenbetrieb.
+Für diese Schiffsabfälle werden die angefallenen Entsorgungskosten gegen Nachweis in Höhe eines Grundbetrages von 500 Euro für An- und Abfahrt des Entsorgungsfahrzeuges und zwei Stunden Pumpzeit zuzüglich einem mengenabhängigen Betrag von 45 Euro je m
+3
+bis zu folgenden Beträgen erstattet:
+BRZ
+Max. Entsorgungsmenge
+Max. Erstattungsbetrag
+in Euro
+bis 3 500
+6 m
+3
+770,00
+3 501 bis 6 000
+10 m
+3
+950,00
+6 001 bis 10 000
+15 m
+3
+1 175,00
+10 001 bis 30 000
+22 m
+3
+1 490,00
+30 001 bis 50 000
+30 m
+3
+1 850,00
+ab 50 001
+50 m
+3
+2 750,00
+Schiffe mit Anlagen zur Ölschlammaufbereitung, die keine pumpfähigen Ölabfälle abgeben, erhalten bei Abgabe nicht-pumpfähiger ölhaltiger Rückstände die angefallenen Entsorgungskosten gegen Nachweis bis zu einem Grundbetrag von insgesamt 220 Euro für An- und Abfahrt des Entsorgungsfahrzeuges und für die Übergabe der Abfälle (jeweils in Fässern) zuzüglich einem mengenabhängigen Betrag von 1,80 Euro je Liter bis zu den maximalen Erstattungsbeträgen nach Satz 2 erstattet.
+Fehler melden: Information nicht aktuell/korrekt
+Sind die Informationen nicht aktuell oder korrekt, haben Sie hier die Möglichkeit, dem zuständigen Bearbeiter eine Nachricht zu senden.
+Hinweis: * = Ihr Mitteilungstext ist notwendig, damit dieses Formular abgeschickt werden kann, alle anderen Angaben sind freiwillig. Sollten Sie eine Kopie der Formulardaten oder eine Antwort auf Ihre Nachricht wünschen, ist die Angabe Ihrer E-Mail-Adresse zusätzlich erforderlich.
+Betreff
+Vorname
+Nachname
+Ihre E-Mail-Adresse
+Mitteilung
+*
+Ich möchte diese Nachricht in Kopie erhalten.
+Datenschutz
+Wenn Sie uns eine Nachricht über das Fehlerformular senden, so erheben, speichern und verarbeiten wir Ihre Daten nur, soweit dies für die Abwicklung Ihrer Anfragen und für die Korrespondenz mit Ihnen erforderlich ist.
+Rechtsgrundlage der Verarbeitung ist Art. 6 Abs. 1 lit. f DSGVO. Ihre Daten werden nur zur Beantwortung Ihrer Anfrage verarbeitet und gelöscht, sobald diese nicht mehr erforderlich sind und keine gesetzlichen Aufbewahrungspflichten entgegenstehen.
+Wenn Sie der Verarbeitung Ihrer per Fehlerformular übermittelten Daten widersprechen möchten, wenden Sie sich bitte an die im Impressum genannte E-Mail-Adresse.
+Weitere Fassungen
+Frühere Fassungen
+Änderungshistorie
+Weitere Informationen
+PDF
+Vorschrift herunterladen
+Inhaltsübersicht
+Nichtamtliches Inhaltsverzeichnis
+Titel
+Bremische Hafengebührenordnung (HGebO) vom 15. März 2006
+01.04.2006
+Inhaltsverzeichnis
+01.01.2021
+Abschnitt 1 - Allgemeines
+01.04.2006
+§ 1 - Geltungsbereich
+01.04.2006
+§ 2 - Begriffsbestimmungen
+01.05.2025
+§ 3 - Berechnungsmaßstäbe
+01.01.2025
+§ 3a - Gebührenschuldner
+01.01.2018
+§ 3b - Gebührenermäßigungen
+01.01.2026
+§ 4 - Erhebung und Fälligkeit der Hafenabgaben
+01.05.2025
+§ 5 - Meldepflicht
+01.05.2025
+Abschnitt 2 - Gebühren und Nebengebühren
+01.04.2006
+§ 6 - Raumgebühr
+01.01.2026
+§ 6a - Offshore
+01.01.2026
+§ 7 - Liegegeld
+01.01.2026
+§ 8 - Binnenschiffsgebühr
+01.01.2026
+§ 9 - Nutzungsgebühr
+01.01.2026
+§ 10 - Abfallentsorgung
+01.01.2026
+§ 11 - Befreiungen
+01.01.2024
+Abschnitt 3 - Hafenlotsgeld
+01.01.2009
+§ 12 - Hafenlotsgeld
+01.01.2026
+Abschnitt 4 - Sonstige Bestimmungen
+01.01.2009
+§ 13 - Steuerliche Bestimmung
+01.01.2009
+§ 14 - Verarbeitung von personenbezogenen Daten
+23.10.2021
+§ 15 - Ordnungswidrigkeiten
+01.01.2011
+Anlage 1 - Meldepflichtige Daten
+01.01.2011
+Anlage 2 - Kostenübernahme für die Standardentsorgung
+01.01.2021
+Feedback
+Ihr Kommentar
+Ich wünsche eine Antwort
+Bitte geben Sie bei Antwortwunsch Ihre E-Mail Adresse an, die wir nur erheben und speichern, soweit dies für die Abwicklung Ihrer Anfragen und für die Korrespondenz mit Ihnen erforderlich ist.
+Bitte füllen Sie dieses Feld nicht aus, es dient nur der Abwehr von automatischen Programmen.
+Nachricht
+Vielen Dank für Ihre Nachricht
+Vorschriften ·         iStock.com/BrianAJackson
+Navigation:
+Dokumente
+Vorschriften
+Daten
+Hilfe / Infos
+Kontakt
+Sofern nicht
+anders angegeben
+, stehen die Inhalte dieser Seite unter der Lizenz
+Startseite
+Hilfe / Infos
+Nutzungsbedingungen
+Barrierefreiheit
+Datenschutzerklärung
+Impressum
+Inhaltsübersicht

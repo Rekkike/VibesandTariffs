@@ -63,6 +63,45 @@ const settle = async (ms = 650) => {
   await act(async () => { await new Promise(r => setTimeout(r, ms)); });
 };
 
+// v0.5.1: the fresh-load comparison selection is the first four registry
+// ports, and Bremerhaven's alphabetical position pushes Helsingborg out
+// of that bounded default - the isolation pins that need HEL's card
+// select it into the comparison through the drawer first (the honest
+// path; the cap of 6 binds on the seven-port registry, so selecting HEL
+// at cap first unchecks a port outside the pin's subject).
+const selectPortIntoComparison = async (container: HTMLElement, portName: string) => {
+  const toggle = container.querySelector('.port-drawer-toggle');
+  expect(toggle).toBeDefined();
+  await act(async () => { toggle!.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+  const box = Array.from(container.querySelectorAll('.port-drawer-body input[type="checkbox"]'))
+    .find(i => (i.getAttribute('aria-label') ?? '').toLowerCase().includes(portName.toLowerCase())) as HTMLInputElement;
+  expect(box).toBeDefined();
+  if (box!.checked) return;
+  if (box!.disabled) {
+    // At cap: uncheck a port outside this pin's subject (never the
+    // subject ports Gothenburg/Hamburg, never Bremerhaven whose figure
+    // is irrelevant to the GOT/HEL isolation), then check the target.
+    const sacrificial = Array.from(container.querySelectorAll('.port-drawer-body input[type="checkbox"]'))
+      .find((i): i is HTMLInputElement =>
+        (i as HTMLInputElement).checked &&
+        !(i.getAttribute('aria-label') ?? '').toLowerCase().includes(portName.toLowerCase()) &&
+        !(i.getAttribute('aria-label') ?? '').toLowerCase().includes('gothenburg') &&
+        !(i.getAttribute('aria-label') ?? '').toLowerCase().includes('hamburg') &&
+        !(i.getAttribute('aria-label') ?? '').toLowerCase().includes('bremerhaven')
+      );
+    expect(sacrificial).toBeDefined();
+    await act(async () => { sacrificial!.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    await settle();
+  }
+  await act(async () => { box!.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+  await settle();
+  // Close the drawer again: the drawer's own clickTab helper opens it, and
+  // its toggle click would close an already-open panel (leaving the
+  // navigation row unfindable).
+  const toggleNow = container.querySelector('.port-drawer-toggle');
+  await act(async () => { toggleNow!.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+};
+
 jest.setTimeout(60000);
 
 describe('card-surface OPS isolation (spec v0.2.62)', () => {
@@ -125,6 +164,9 @@ describe('card-surface OPS isolation (spec v0.2.62)', () => {
   it('GOT-entered OPS prices never price HEL\'s card (every per-port field, no kWh entered)', async () => {
     await renderApp(true);
     await enterFields(GOT_FIELDS);
+    // v0.5.1: HEL is outside the fresh-load bounded default at the
+    // seven-port registry; select it into the comparison first.
+    await selectPortIntoComparison(container!, 'Helsingborg');
     await clickTab(container!, 'Compare Ports');
     await settle();
     // GOT prices its own OPS: 2.5×0 + 10000 + 0.1×194849 = 29 485 kr (no
@@ -141,6 +183,9 @@ describe('card-surface OPS isolation (spec v0.2.62)', () => {
     await clickTab(container!, 'Helsingborg');
     await settle();
     await enterFields(HEL_FIELDS);
+    // v0.5.1: HEL is outside the fresh-load bounded default at the
+    // seven-port registry; select it into the comparison first.
+    await selectPortIntoComparison(container!, 'Helsingborg');
     await clickTab(container!, 'Compare Ports');
     await settle();
     // HEL prices its own OPS: 20000+5000+0.2×194849 = 63 969.80 →
@@ -156,6 +201,9 @@ describe('card-surface OPS isolation (spec v0.2.62)', () => {
     await clickTab(container!, 'Helsingborg');
     await settle();
     await enterFields(HEL_FIELDS);
+    // v0.5.1: HEL is outside the fresh-load bounded default at the
+    // seven-port registry; select it into the comparison first.
+    await selectPortIntoComparison(container!, 'Helsingborg');
     await clickTab(container!, 'Compare Ports');
     await settle();
     expect(cardOpsAmount('Gothenburg')).toContain('29\u00A0485');
@@ -168,6 +216,9 @@ describe('card-surface OPS isolation (spec v0.2.62)', () => {
   it('the desktop comparison table holds the same isolation (the OPS row reads each column\'s own result)', async () => {
     await renderApp(false);
     await enterFields(GOT_FIELDS);
+    // v0.5.1: HEL is outside the fresh-load bounded default at the
+    // seven-port registry; select it into the comparison first.
+    await selectPortIntoComparison(container!, 'Helsingborg');
     await clickTab(container!, 'Compare Ports');
     await settle();
     // v0.4.0: the fresh-load comparison selection is the first four
@@ -179,8 +230,11 @@ describe('card-surface OPS isolation (spec v0.2.62)', () => {
     const drawerToggle = container!.querySelector('.port-drawer-toggle')!;
     await act(async () => { drawerToggle.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
     const boxes = Array.from(container!.querySelectorAll('.port-drawer-body input[type="checkbox"]')) as HTMLInputElement[];
+    // v0.5.1: the cap (6) binds on the seven-port registry - the isolation
+    // subject (GOT vs the rest) holds inside the bounded set; the row's
+    // cell count follows the selected set.
     for (const b of boxes) {
-      if (b.checked) continue;
+      if (b.checked || b.disabled) continue;
       await act(async () => { b.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
       await settle();
     }
@@ -188,14 +242,16 @@ describe('card-surface OPS isolation (spec v0.2.62)', () => {
     const opsRow = container!.querySelector('.comparison-ops-row');
     expect(opsRow).not.toBeNull();
     const cells = Array.from(opsRow!.querySelectorAll('td'));
-    expect(cells.length).toBe(LOADED_PORTS.length + 1);
+    const selectedCount = Array.from(boxes).filter(b => b.checked).length;
+    expect(cells.length).toBe(selectedCount + 1);
+    expect(selectedCount).toBe(6); // the cap: 6 of the 7 ports selected
     // GOT's cell prices its own entry; every other port's cell renders the
     // em dash — no absence wording, and never GOT's figure.
     const cellTexts = cells.map(c => c.textContent ?? '');
     expect(cellTexts.filter(t => t.includes('29\u00A0485')).length).toBe(1);
     // Every non-GOT priced cell renders the em dash (the label cell may
     // also carry one; the pin counts at least the non-pricing ports).
-    expect(cellTexts.filter(t => t.includes('—')).length).toBeGreaterThanOrEqual(LOADED_PORTS.length - 1);
+    expect(cellTexts.filter(t => t.includes('—')).length).toBeGreaterThanOrEqual(6 - 1);
     expect(opsRow!.textContent).not.toContain('not levied at this port');
   });
 
@@ -204,6 +260,9 @@ describe('card-surface OPS isolation (spec v0.2.62)', () => {
     await clickTab(container!, 'Helsingborg');
     await settle();
     await enterFields([['OPS electricity price', '3.75'], ['Estimated OPS consumption', '1200']]);
+    // v0.5.1: HEL is outside the fresh-load bounded default at the
+    // seven-port registry; select it into the comparison first.
+    await selectPortIntoComparison(container!, 'Helsingborg');
     await clickTab(container!, 'Compare Ports');
     await settle();
     // HEL prices 3.75 × 1200 = 4 500 kr; GOT has no price of its own, so

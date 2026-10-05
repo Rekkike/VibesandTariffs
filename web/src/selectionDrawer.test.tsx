@@ -10,11 +10,16 @@
 // feed into the selection change handler, the honest counter, and the
 // comparison cap (6 - the 140 px floor arithmetic, audit §0.4).
 //
-// The cap's red proof requires a synthetic seventh port: with six ports
-// loaded the cap (6) is never reachable in the DOM - the fixture port is
-// test-only machinery built from an existing silo's shape (never a silo
-// or data change), registered inside the test's isolation and never
-// committed to the registry.
+// v0.5.1 Bremerhaven expansion: the cap now BINDS on the real port set -
+// seven loaded ports against the cap of 6 (the 140 px floor arithmetic
+// re-checked at seven: 7 x 140 = 980 px plus the bounded label column
+// exceeds the supported band, so the cap stays 6 - the audit's own
+// degradation arithmetic, restated in the spec's comparison-view
+// contract). The former synthetic seventh-port fixture is retired: the
+// real Bremerhaven silo is the seventh port its premise awaited, so the
+// cap pins run against the real registry. The handler-level proof keeps
+// its forced-change form (the DOM gate still swallows clicks on the
+// disabled control).
 //
 // The handler-level cap pin forces the change event on a disabled-input
 // mutation: the DOM gate swallows clicks on a disabled control, so the
@@ -38,10 +43,13 @@ const LOADED_PORTS: PortDefinition[] = ((portsRegistry as any).ports ?? []).filt
   (p: any) => p && p.fee_rules && Array.isArray(p.fee_rules)
 );
 
-// The synthetic seventh port (test-only, never a silo): cloned from an
-// existing silo's real shape with its identity fields re-pointed, so the
-// drawer's grouping and cap arithmetic run against seven registry rows
-// without touching any data file.
+// The synthetic new-country port (test-only, never a silo): cloned from
+// an existing silo's real shape with its identity fields re-pointed. At
+// v0.5.1 the real registry carries seven ports (the cap pins run against
+// the real registry), so this fixture's remaining role is the grouping
+// proof's new-country case - a country no real silo carries (Denmark),
+// demonstrating that a new country's group appears the day its port
+// exists without touching any data file.
 const buildSeventhPort = (): PortDefinition => {
   const base = yaml.load(
     fs.readFileSync(
@@ -129,18 +137,21 @@ describe('port drawer (spec v0.5.0) - structure and grouping', () => {
     const headers = Array.from(
       container.querySelectorAll('.port-drawer-country-header')
     ).map(h => (h.textContent ?? '').trim());
-    // The six-port reality: five Swedish silos plus Hamburg - grouping is
-    // data-derived from metadata.country, never enumerated in code.
-    expect(headers).toEqual(['Sweden', 'Germany']);
+    // The seven-port reality (v0.5.1): five Swedish silos plus the two
+    // German ports - grouping is data-derived from metadata.country,
+    // never enumerated in code; the registry's alphabetical order puts
+    // Bremerhaven first, so Germany is the first group.
+    expect(headers).toEqual(['Germany', 'Sweden']);
     const groups = groupPortsByCountry(LOADED_PORTS);
-    expect(groups.map(g => g.country)).toEqual(['Sweden', 'Germany']);
+    expect(groups.map(g => g.country)).toEqual(['Germany', 'Sweden']);
     expect(groups.find(g => g.country === 'Sweden')!.ports).toHaveLength(5);
-    expect(groups.find(g => g.country === 'Germany')!.ports).toHaveLength(1);
+    expect(groups.find(g => g.country === 'Germany')!.ports).toHaveLength(2);
     // No code-side country enumeration: the grouping helper reads the
     // field exactly as carried (a new country appears the day its port
-    // exists - pinned by the fixture grouping below).
-    const withSeventh = groupPortsByCountry([...LOADED_PORTS, buildSeventhPort()]);
-    expect(withSeventh.map(g => g.country)).toEqual(['Sweden', 'Germany', 'Denmark']);
+    // exists - pinned by the fixture grouping below; the synthetic
+    // fixture's country is Denmark, a country no real silo carries).
+    const withEighth = groupPortsByCountry([...LOADED_PORTS, buildSeventhPort()]);
+    expect(withEighth.map(g => g.country)).toEqual(['Germany', 'Sweden', 'Denmark']);
     act(() => { root.unmount(); });
     container.remove();
   });
@@ -260,7 +271,7 @@ describe('port drawer (spec v0.5.0) - the comparison selection feed', () => {
           ports={LOADED_PORTS}
           page={{ kind: 'comparison' }}
           onNavigate={() => {}}
-          selectedPortIds={LOADED_PORTS.map(p => p.metadata.id)}
+          selectedPortIds={LOADED_PORTS.slice(0, COMPARISON_SELECTION_CAP).map(p => p.metadata.id)}
           onSelectionChange={() => {}}
         />
       );
@@ -311,39 +322,46 @@ describe('port drawer (spec v0.5.0) - the comparison cap (6, the 140 px floor ar
     act(() => { toggle.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
   };
 
-  it('with six ports loaded the cap is unreachable in the DOM (the honest-red seam: the sixth-port pin alone can never fail a cap defect)', () => {
-    // The audit's own arithmetic: six loaded ports, all checkable, none
-    // disabled - the cap never binds on the delivered port set. This pin
-    // records why the seventh-port fixture is required for the cap's red
-    // proof (a six-port-only cap suite is unfalsifiable).
+  it('with seven real ports loaded the cap binds in the DOM (v0.5.1: the Bremerhaven expansion makes the cap live - the sixth-port pin the v0.5.0 suite could never falsify now has its real red seam)', () => {
+    // The audit's own arithmetic re-checked at seven: 7 x 140 = 980 px plus
+    // the bounded label column exceeds the supported 1024-1200 px band, so
+    // the cap stays 6 and now BINDS on the real port set. With six of the
+    // seven selected, the seventh unchecked checkbox renders disabled -
+    // the cap defect class the v0.5.0 suite needed a fixture for is now
+    // reachable on the real registry.
     const container = document.createElement('div');
     document.body.appendChild(container);
     const root = createRoot(container);
-    const selected = LOADED_PORTS.slice(0, 5).map(p => p.metadata.id);
+    const selected = LOADED_PORTS.slice(0, 6).map(p => p.metadata.id);
     renderDrawer(container, root, LOADED_PORTS, selected, () => {});
     const boxes = Array.from(
       container.querySelectorAll('.port-drawer-body input[type="checkbox"]')
     ) as HTMLInputElement[];
-    expect(boxes).toHaveLength(6);
-    // All six checkable, none disabled
-    expect(boxes.every(b => !b.disabled)).toBe(true);
+    expect(boxes).toHaveLength(7);
+    const unchecked = boxes.filter(b => !b.checked);
+    expect(unchecked).toHaveLength(1);
+    expect(unchecked[0].disabled).toBe(true);
+    const checkedBoxes = boxes.filter(b => b.checked);
+    expect(checkedBoxes).toHaveLength(6);
+    expect(checkedBoxes.every(b => !b.disabled)).toBe(true);
     act(() => { root.unmount(); });
     container.remove();
   });
 
-  it('at cap the next unchecked checkbox renders disabled with the cap message - never a silent drop (the seventh-port fixture)', () => {
-    const seventh = buildSeventhPort();
-    const sevenPorts = [...LOADED_PORTS, seventh];
+  it('at cap the next unchecked checkbox renders disabled with the cap message - never a silent drop (the real seven-port registry, the v0.5.1 re-shape)', () => {
+    // v0.5.1: the Bremerhaven silo IS the seventh port - the cap binds on
+    // the real registry. Six of the seven real ports selected, the one
+    // unchecked port renders disabled with the cap message.
     const container = document.createElement('div');
     document.body.appendChild(container);
     const root = createRoot(container);
-    const selected = LOADED_PORTS.map(p => p.metadata.id); // 6 = the cap
-    renderDrawer(container, root, sevenPorts, selected, () => {});
-    const seventhBox = Array.from(
+    const selected = LOADED_PORTS.slice(0, 6).map(p => p.metadata.id); // 6 = the cap
+    renderDrawer(container, root, LOADED_PORTS, selected, () => {});
+    const uncheckedBox = Array.from(
       container.querySelectorAll('.port-drawer-body input[type="checkbox"]')
-    ).find(i => (i.getAttribute('aria-label') ?? '').includes('Synthetic Seventh Port')) as HTMLInputElement;
-    expect(seventhBox).toBeDefined();
-    expect(seventhBox.disabled).toBe(true);
+    ).find(i => !(i as HTMLInputElement).checked) as HTMLInputElement;
+    expect(uncheckedBox).toBeDefined();
+    expect(uncheckedBox.disabled).toBe(true);
     // The disclosure names the cap and the remedy
     const message = container.querySelector('.port-drawer-cap-message') as HTMLElement;
     expect(message).not.toBeNull();
@@ -359,32 +377,36 @@ describe('port drawer (spec v0.5.0) - the comparison cap (6, the 140 px floor ar
     container.remove();
   });
 
-  it('the handler-level cap pin: a forced change event at cap is a no-op; below cap the handler honors the check (the disabled-input mutation swallows clicks - the DOM gate never dispatches)', () => {
-    const seventh = buildSeventhPort();
-    const sevenPorts = [...LOADED_PORTS, seventh];
+  it('the handler-level cap pin: a forced change event at cap is a no-op; below cap the handler honors the check (the disabled-input mutation swallows clicks - the DOM gate never dispatches; the v0.5.1 real-registry re-shape)', () => {
+    // v0.5.1: the cap pins run against the real seven-port registry - the
+    // unchecked seventh real port is the disabled control. The forced-
+    // change form is unchanged (the DOM gate still swallows the click).
     const container = document.createElement('div');
     document.body.appendChild(container);
     const root = createRoot(container);
     // At cap: the disabled control's change event is forced (the mutation
     // the DOM gate prevents); the handler must ignore it.
-    const selected = LOADED_PORTS.map(p => p.metadata.id);
+    const selected = LOADED_PORTS.slice(0, 6).map(p => p.metadata.id);
     const setSelection = (next: string[]) => { selected.splice(0, selected.length, ...next); };
-    renderDrawer(container, root, sevenPorts, selected, setSelection);
-    const seventhBox = Array.from(
+    renderDrawer(container, root, LOADED_PORTS, selected, setSelection);
+    const disabledBox = Array.from(
       container.querySelectorAll('.port-drawer-body input[type="checkbox"]')
-    ).find(i => (i.getAttribute('aria-label') ?? '').includes('Synthetic Seventh Port')) as HTMLInputElement;
-    expect(seventhBox.disabled).toBe(true);
+    ).find(i => !(i as HTMLInputElement).checked) as HTMLInputElement;
+    expect(disabledBox).toBeDefined();
+    expect(disabledBox.disabled).toBe(true);
     // Force the click the disabled gate swallows in a real browser: the
     // handler must ignore the check (the cap holds at the handler level)
-    act(() => { forceCheckboxClick(seventhBox); });
+    const disabledPortId = LOADED_PORTS.map(p => p.metadata.id).find(id => !selected.includes(id))!;
+    act(() => { forceCheckboxClick(disabledBox); });
     expect(selected).toHaveLength(6); // no-op: the cap holds at the handler
+    expect(selected).not.toContain(disabledPortId);
     // Unchecking works at cap (the remedy the message names)
     const gotBox = Array.from(
       container.querySelectorAll('.port-drawer-body input[type="checkbox"]')
     ).find(i => (i.getAttribute('aria-label') ?? '').includes('Gothenburg')) as HTMLInputElement;
     act(() => { forceCheckboxClick(gotBox); });
     expect(selected).toHaveLength(5);
-    // Below cap the handler honors the check (re-render: the seventh row
+    // Below cap the handler honors the check (re-render: the disabled row
     // re-enables). The re-render passes the new selection through the
     // same props - the drawer is open, so the panel must still be in the
     // DOM (the toggle is not re-clicked; the open state is the drawer's
@@ -392,7 +414,7 @@ describe('port drawer (spec v0.5.0) - the comparison cap (6, the 140 px floor ar
     act(() => {
       root.render(
         <PortDrawer
-          ports={sevenPorts}
+          ports={LOADED_PORTS}
           page={{ kind: 'comparison' }}
           onNavigate={() => {}}
           selectedPortIds={selected}
@@ -400,14 +422,21 @@ describe('port drawer (spec v0.5.0) - the comparison cap (6, the 140 px floor ar
         />
       );
     });
-    const seventhBox2 = Array.from(
+    // Below cap every unchecked row re-enables (the cap no longer binds);
+    // the proof checks the originally disabled port's own row - the one
+    // the handler ignored at cap - and asserts the handler now honors it.
+    const reEnabledBox = Array.from(
       container.querySelectorAll('.port-drawer-body input[type="checkbox"]')
-    ).find(i => (i.getAttribute('aria-label') ?? '').includes('Synthetic Seventh Port')) as HTMLInputElement;
-    expect(seventhBox2).toBeDefined();
-    expect(seventhBox2.disabled).toBe(false);
-    act(() => { forceCheckboxClick(seventhBox2); });
+    ).find(i =>
+      (i.getAttribute('aria-label') ?? '').includes(
+        LOADED_PORTS.find(p => p.metadata.id === disabledPortId)!.metadata.name
+      )
+    ) as HTMLInputElement;
+    expect(reEnabledBox).toBeDefined();
+    expect(reEnabledBox.disabled).toBe(false);
+    act(() => { forceCheckboxClick(reEnabledBox); });
     expect(selected).toHaveLength(6);
-    expect(selected).toContain('test_synthetic_seventh_port');
+    expect(selected).toContain(disabledPortId);
     act(() => { root.unmount(); });
     container.remove();
   });

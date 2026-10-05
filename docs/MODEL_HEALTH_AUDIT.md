@@ -400,3 +400,45 @@ over-fitting). The minor trigger does not fire. v0.4.6 → v0.4.7.
      `vibe/worked-example-fix-64f7e7`,
      `vibe/worked-example-verification-64f7e7`) verified merged with zero
      unmerged unique work and deleted at v0.4.7 (branches die at delivery).
+   - **14. Bremerhaven expansion findings (appended at v0.5.1; the queue's
+     items above stand verbatim - these are the new pass's findings):**
+     - **14a. The Hafenlotsgeld transcription-integrity finding (closed
+       in-pass):** the first encoding of the HGebO 12(7).1-2 port-pilotage
+       rates carried the pre-2026 figures (33.71/1.03 and 170.72/0.83) read
+       from a search-result snippet of an older consolidated edition - a
+       secondary-source transcription against the standing rule. The
+       archive's own consolidated 2026 text corrects them (41.80 + 1.27
+       per commenced 100 BRZ under 13,000; 211.69 + 1.03 over 13,000);
+       the encoded figures, the extraction reference, and the silo's
+       pinned baselines all carry the corrected values, and the
+       bremerhaven suite pins them.
+     - **14b. The two-part authority collapses into the statute (the
+       annex-probe finding):** the bremenports fee-annex probe found no
+       separate Gebuehrentabelle - the consolidated 2026 HGebO carries the
+       fee tables inline, so the statute is simultaneously the legal basis
+       and the fee table; the port-fee figures are archived from the
+       ordinance itself and the encoding proceeded (the directive's own
+       alternative branch). No delivery-route block occurred.
+     - **14c. The cap binds (the selection-surface consequence):** the
+       seventh port makes the comparison cap of 6 live on the real registry
+       (7 x 140 = 980 px plus the bounded label column exceeds the
+       supported 1024-1200 px band, so the cap stays 6 - the v0.5.0
+       arithmetic re-checked at seven); the fresh-load bounded default
+       (first four registry ports) now selects bremerhaven/gavle/gothenburg/
+       hamburg, pushing Helsingborg out of the fresh-load selection - the
+       affected web pins re-pointed through the drawer's own selection
+       path, never by weakening an assertion.
+     - **14d. The known input-granularity asymmetries at Bremerhaven**
+       (recorded in the input-coverage matrix): the Raumgebuehr Short Sea
+       subdivision (the binary arrival-origin selector cannot key it; the
+       conservative Europaverkehr rate prices European arrivals), the
+       Europaverkehr-side 3b(2) extension (no engine rate shape for the
+       GT-band x time-period nesting - stop-and-report), the GDWS segment
+       asymmetry (the Weser dues scale by the segment input, the
+       Aussenweser fees never do), and the mooring convention's
+       evidentiary status (crew-handled per the directive; no archived
+       authority addresses Bremerhaven boatmen).
+     - **14e. MSC Gate Bremerhaven recorded as a third-terminal variant
+       candidate** (its published document references the EUROGATE CTB
+       tariff plus an administration surcharge); a future variant, never
+       an open gap in the delivered surface.

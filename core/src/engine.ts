@@ -259,7 +259,12 @@ export function evaluateFeeRule(
       const required = Array.isArray(rule.applicable_conditions.terminal_operator)
         ? rule.applicable_conditions.terminal_operator
         : [rule.applicable_conditions.terminal_operator];
-      const known = ['HHLA', 'Eurogate'];
+      // v0.5.1 Bremerhaven expansion: the known-operator list gains NTB
+      // (the Bremerhaven variant; the fallback default stays Eurogate —
+      // both German terminal-scoped ports default to their EUROGATE
+      // operator). The fallback flag text names the German models, not
+      // Hamburg alone.
+      const known = ['HHLA', 'Eurogate', 'NTB'];
       const entered = call.terminal_operator;
       const op = entered && known.includes(entered) ? entered : 'Eurogate';
       if (!required.includes(op)) {
@@ -269,8 +274,8 @@ export function evaluateFeeRule(
         qualityFlags.push({
           type: 'fallback_value',
           description: entered
-            ? `Terminal operator "${entered}" not recognized; defaulted to Eurogate (the default and reference operator for the Hamburg model — spec v0.2.66 terminal promotion)`
-            : 'Terminal operator not selected; defaulted to Eurogate (the default and reference operator for the Hamburg model — spec v0.2.66 terminal promotion)',
+            ? `Terminal operator "${entered}" not recognized; defaulted to Eurogate (the default and reference operator for the German terminal-scoped models — spec v0.2.66/v0.5.1)`
+            : 'Terminal operator not selected; defaulted to Eurogate (the default and reference operator for the German terminal-scoped models — spec v0.2.66/v0.5.1)',
           severity: 'info'
         });
       }

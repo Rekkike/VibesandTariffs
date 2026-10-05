@@ -1,0 +1,1544 @@
+# Bremerhaven 2026 port file - Port Call Cost Analyzer
+# Extraction authority: docs/sources/germany/bremerhaven/BREMERHAVEN_EXTRACTION_REFERENCE.md
+# All amounts in EUR. Billers: bremenports (HGebO), Hafenlotsengesellschaft
+# Bremerhaven (HGebO 12), GDWS (federal pilotage, Weser), EUROGATE CTB
+# (default terminal), North Sea Terminal Bremerhaven (the switchable variant,
+# reference-tariff flagged), towage operators (estimated).
+# Terminal scope (the Hamburg v0.2.49 mechanism): a Bremerhaven call is priced
+# against a named terminal operator. EUROGATE CTB items apply only to Eurogate
+# calls (the default); NTB items only to NTB calls (the variant, every line
+# carrying the reference-tariff honesty caveat). Port-wide charges (Raumgebuehr,
+# waste, Hafenlotsgeld, GDWS pilotage, towage) are operator-neutral.
+metadata:
+  id: bremerhaven
+  name: Port of Bremerhaven
+  country: Germany
+  currency: EUR
+  validity_start: "2026-01-01"
+  validity_end: "2026-12-31"
+  description: "Bremerhaven port call costs: the Bremische Hafengebuehrenordnung (Raumgebuehr, waste fee, Hafenlotsgeld; the consolidated 2026 statute carries the fee tables inline), GDWS pilotage (the Weser sea approach), the EUROGATE CTB terminal layer (default) or the NTB reference tariff (variant). Towage is an estimated parameter (no published tariff)."
+billers:
+  - id: bremenports
+    name: bremenports GmbH & Co. KG
+    description: "The beleihene port-management entity (HGebO 2(2), per 17 Bremisches Hafenbetriebsgesetz): Raumgebuehr (port fee) and the Abfallentsorgungsgebuehr (waste fee)"
+    currency: EUR
+  - id: hafenlotsen_bremerhaven
+    name: Hafenlotsengesellschaft Bremerhaven
+    description: "The zustaendige entity for the Bremerhaven port pilots (HGebO 2(4), 12): the Hafenlotsgeld (Beratungsgeld)"
+    currency: EUR
+  - id: gdws
+    name: GDWS (Federal) via pilot station
+    description: "Federal pilotage dues and pilot fees for the Weser sea approach (Lotstarifverordnung, Anlagen 1 and 2)"
+    currency: EUR
+  - id: eurogate_ctb
+    name: EUROGATE Container Terminal Bremerhaven
+    description: "EUROGATE CTB - the national-class Prices and Conditions (effective 01.03.2026): berthing charge, waterside handling, security, the 1.5% social fund, the gated optional services and storage schedules"
+    currency: EUR
+    surcharge:
+      id: eurogate_ctb_social_fund_surcharge
+      name: Social Fund Surcharge
+      fee_family: social_fund
+      percentage: 1.5
+      exclude_families:
+        - storage
+        - security
+      source_reference:
+        document_name: "prices-and-conditions-2026.txt"
+        document_url: "docs/sources/germany/bremerhaven/eurogate/prices-and-conditions-2026.txt"
+        document_issued: "2026-01-01"
+        page: 2
+        clause: "1.3.13"
+        verified_on: "2026-10-05"
+        verified_by: "vibe-session-bremerhaven-expansion"
+  - id: ntb
+    name: North Sea Terminal Bremerhaven GmbH & Co.
+    description: "NTB - the switchable terminal variant; its published Reference tariff (valid 01.08.2026) is a reference scale, not the binding contract tariff: every NTB line carries the reference-tariff honesty caveat, never presented as verified contract rates"
+    currency: EUR
+    surcharge:
+      id: ntb_social_fund_surcharge
+      name: Social Fund Surcharge
+      fee_family: social_fund
+      percentage: 1.5
+      exclude_families:
+        - storage
+        - security
+      source_reference:
+        document_name: "ntb-reference-tariff-en-2026-08-01.txt"
+        document_url: "docs/sources/germany/bremerhaven/ntb/ntb-reference-tariff-en-2026-08-01.txt"
+        document_issued: "2026-08-01"
+        page: "General regulations"
+        clause: "1,5 % social fund (with the exception of demurrage charges and security surcharge)"
+        verified_on: "2026-10-05"
+        verified_by: "vibe-session-bremerhaven-expansion"
+fee_rules:
+  # ==========================================================================
+  # HGebO layer - bremenports (the statute-as-authority; fee tables inline)
+  # ==========================================================================
+  - id: brv_raumgebuehr_overseas_liner
+    fee_family: port_dues
+    biller: bremenports GmbH & Co. KG
+    name: Raumgebuehr (Port Fee, Overseas Liner)
+    description: "The HGebO 6 port fee for a five-day period from seagoing vessels transshipping cargo (BRZ basis): the Ueberseeverkehr Linienverkehr/Spezialverkehr rate 0.3038 EUR/BRZ (the 26.11.2025 amendment's consolidated 2026 table). Gated on the arrival-origin dimension: an arrival from outside Europe prices this line (the default call's Asia-Europe liner leg)."
+    rate_structure:
+      type: per_unit
+      unit_type: gt
+      unit_rate: 0.3038
+    applicable_conditions:
+      arrival_origin: outside-europe
+    source_reference:
+      document_name: "hgebo-consolidated-2026.txt"
+      document_url: "docs/sources/germany/national/bremen/hgebo-consolidated-2026.txt"
+      document_issued: "2026-01-01"
+      page: "HGebO 6 (Raumgebuehr table)"
+      clause: "6; traffic-area definitions 2(26)"
+      verified_on: "2026-10-05"
+      verified_by: "vibe-session-bremerhaven-expansion"
+  - id: brv_raumgebuehr_europe_liner
+    fee_family: port_dues
+    biller: bremenports GmbH & Co. KG
+    name: Raumgebuehr (Port Fee, Europe Liner)
+    description: "The HGebO 6 port fee, Europaverkehr Linienverkehr/Spezialverkehr rates (GT-banded): 0.1535 EUR/BRZ up to 14,000 BRZ, 0.2368 from 14,000 to 21,000, 0.2763 above 21,000 (the consolidated 2026 table). Gated on the arrival-origin dimension: a European arrival prices this line at the conservative Europaverkehr rates (the Short Sea subdivision 0.0438/0.1210 is recorded in the input-coverage matrix - the binary origin selector cannot key it; never silently dropped)."
+    rate_structure:
+      type: banded_flat
+      basis: gt
+      bands:
+        - min: null
+          max: 14000
+          rate: 0.1535
+        - min: 14000
+          max: 21000
+          rate: 0.2368
+        - min: 21000
+          max: null
+          rate: 0.2763
+    applicable_conditions:
+      arrival_origin: europe
+    source_reference:
+      document_name: "hgebo-consolidated-2026.txt"
+      document_url: "docs/sources/germany/national/bremen/hgebo-consolidated-2026.txt"
+      document_issued: "2026-01-01"
+      page: "HGebO 6 (Raumgebuehr table)"
+      clause: "6; traffic-area definitions 2(26)"
+      verified_on: "2026-10-05"
+      verified_by: "vibe-session-bremerhaven-expansion"
+  - id: brv_raumgebuehr_extension_overseas
+    fee_family: port_dues
+    biller: bremenports GmbH & Co. KG
+    name: Raumgebuehr Extension (beyond five days)
+    description: "HGebO 3b(2): vessels using the port longer than five days pay, for each further commenced ten-day period, 50 percent of the respective fee rate - 50% of the overseas liner rate = 0.1519 EUR/BRZ per commenced 10-day period (240 h) beyond the five-day (120 h) period. Gated on port time beyond 120 h (falls back to lay time). The Europaverkehr-side extension is recorded in the extraction reference (the GT-band x time-period nesting has no engine rate shape - stop-and-report, never improvised)."
+    rate_structure:
+      type: per_commenced_period
+      basis: gt
+      hours_input: port_time_hours
+      fallback_hours: lay_time_hours
+      free_hours: 120
+      period_hours: 240
+      tiers:
+        - up_to_excess_hours: null
+          rate_per_period_per_basis: 0.1519
+    applicable_conditions:
+      arrival_origin: outside-europe
+    source_reference:
+      document_name: "hgebo-consolidated-2026.txt"
+      document_url: "docs/sources/germany/national/bremen/hgebo-consolidated-2026.txt"
+      document_issued: "2026-01-01"
+      page: "HGebO 3b(2)"
+      clause: "3b(2)"
+      verified_on: "2026-10-05"
+      verified_by: "vibe-session-bremerhaven-expansion"
+  - id: brv_abfallentsorgung
+    fee_family: waste
+    biller: bremenports GmbH & Co. KG
+    name: Abfallentsorgungsgebuehr (Waste Fee)
+    description: "HGebO 10(1): the MARPOL Annex V waste-disposal fee from raumgebuehrpflichtige vessels for a five-day period, GT-banded flat amounts (non-cruise bands): 127.18 up to 1,500 GT rising to 885.84 above 45,000 GT. The free quantities (10(3)) and the on-request excess disposal (50% of the fee per disposal) are the contractor's operational surface - recorded, not encoded."
+    rate_structure:
+      type: banded_flat
+      basis: gt
+      bands:
+        - min: null
+          max: 1500
+          amount: 127.18
+        - min: 1500
+          max: 2500
+          amount: 169.60
+        - min: 2500
+          max: 3000
+          amount: 237.17
+        - min: 3000
+          max: 6000
+          amount: 423.62
+        - min: 6000
+          max: 10000
+          amount: 494.18
+        - min: 10000
+          max: 30000
+          amount: 535.12
+        - min: 30000
+          max: 45000
+          amount: 608.07
+        - min: 45000
+          max: null
+          amount: 885.84
+    source_reference:
+      document_name: "hgebo-consolidated-2026.txt"
+      document_url: "docs/sources/germany/national/bremen/hgebo-consolidated-2026.txt"
+      document_issued: "2026-01-01"
+      page: "HGebO 10(1) (waste-fee table)"
+      clause: "10(1)"
+      verified_on: "2026-10-05"
+      verified_by: "vibe-session-bremerhaven-expansion"
+  # ==========================================================================
+  # HGebO layer - Hafenlotsengesellschaft Bremerhaven (port pilotage)
+  # ==========================================================================
+  - id: brv_hafenlotsgeld_ab13k
+    fee_family: pilotage
+    biller: Hafenlotsengesellschaft Bremerhaven
+    name: Hafenlotsgeld (Port Pilotage, from 13,000 BRZ)
+    description: "HGebO 12(7).2: the port pilots' Beratungsgeld in Bremerhaven without lock use (the container terminals sit on the Aussenweser stromkaje - no lock transit): base 211.69 EUR plus 1.03 EUR per commenced 100 BRZ over 13,000 (the consolidated 2026 statute's own figures). One Beratungsgeld per call (the call's port-pilot assignment; the shifting-counts-two rule 12(7).6 is a within-port movement case). Owed by seagoing vessels over 500 BRZ even without accepting a pilot (12(7).7, then reduced 25%); the modeled call accepts pilots and pays the full fee."
+    rate_structure:
+      type: banded_flat
+      basis: gt
+      bands:
+        - min: 12999
+          max: null
+          amount: 211.69
+      linear_extension:
+        from_basis: 13000
+        per_basis_units: 100
+        amount: 1.03
+    source_reference:
+      document_name: "hgebo-consolidated-2026.txt"
+      document_url: "docs/sources/germany/national/bremen/hgebo-consolidated-2026.txt"
+      document_issued: "2026-01-01"
+      page: "HGebO 12(7).2"
+      clause: "12(7).2"
+      verified_on: "2026-10-05"
+      verified_by: "vibe-session-bremerhaven-expansion"
+  - id: brv_hafenlotsgeld_unter13k
+    fee_family: pilotage
+    biller: Hafenlotsengesellschaft Bremerhaven
+    name: Hafenlotsgeld (Port Pilotage, under 13,000 BRZ)
+    description: "HGebO 12(7).1: the port pilots' Beratungsgeld in Bremerhaven without lock use for vessels under 13,000 BRZ: base 41.80 EUR plus 1.27 EUR per commenced 100 BRZ (the consolidated 2026 statute's own figures). The band bound carries the unter-13,000 gate (the ab-13,000 sibling's complement; exactly 13,000 BRZ prices the ab-13k rule - ab, lower-inclusive)."
+    rate_structure:
+      type: banded_flat
+      basis: gt
+      bands:
+        - min: null
+          max: 12999
+          amount: 41.80
+      linear_extension:
+        from_basis: 0
+        per_basis_units: 100
+        amount: 1.27
+    source_reference:
+      document_name: "hgebo-consolidated-2026.txt"
+      document_url: "docs/sources/germany/national/bremen/hgebo-consolidated-2026.txt"
+      document_issued: "2026-01-01"
+      page: "HGebO 12(7).1"
+      clause: "12(7).1"
+      verified_on: "2026-10-05"
+      verified_by: "vibe-session-bremerhaven-expansion"
+  # ==========================================================================
+  # GDWS federal pilotage - the Weser sea approach (shared national authority)
+  # ==========================================================================
+  - id: gdws_pilotage_dues_weser
+    fee_family: pilotage
+    biller: GDWS (Federal) via pilot station
+    name: Pilotage Dues (Lotsabgaben, Weser)
+    description: "GDWS pilotage dues for the Weser sea approach to Bremerhaven (Anlage 1, Abschnitt B Teil I, Weser column/Spalte 2). GT-banded flat amounts; above 52,000 GT the cap of 5,322 EUR applies. The sea approach (outer pilot station - Hoheweg anchorages - Bremerhaven) is Anlage 1 Abschnitt A 1.2 legs f+g: 35 percent + 30 percent = 65 percent of the column; the segment percentage scales the table figure (a full Bremen transit enters 100)."
+    rate_structure:
+      type: banded_flat
+      basis: gt
+      bands:
+        - min: 0
+          max: 300
+          amount: 78
+        - min: 300
+          max: 400
+          amount: 102
+        - min: 400
+          max: 500
+          amount: 125
+        - min: 500
+          max: 600
+          amount: 150
+        - min: 600
+          max: 700
+          amount: 175
+        - min: 700
+          max: 800
+          amount: 188
+        - min: 800
+          max: 900
+          amount: 201
+        - min: 900
+          max: 1000
+          amount: 214
+        - min: 1000
+          max: 1100
+          amount: 228
+        - min: 1100
+          max: 1200
+          amount: 242
+        - min: 1200
+          max: 1300
+          amount: 258
+        - min: 1300
+          max: 1400
+          amount: 274
+        - min: 1400
+          max: 1500
+          amount: 295
+        - min: 1500
+          max: 1600
+          amount: 314
+        - min: 1600
+          max: 1700
+          amount: 333
+        - min: 1700
+          max: 1800
+          amount: 352
+        - min: 1800
+          max: 1900
+          amount: 371
+        - min: 1900
+          max: 2000
+          amount: 386
+        - min: 2000
+          max: 2100
+          amount: 400
+        - min: 2100
+          max: 2200
+          amount: 414
+        - min: 2200
+          max: 2300
+          amount: 425
+        - min: 2300
+          max: 2400
+          amount: 437
+        - min: 2400
+          max: 2500
+          amount: 447
+        - min: 2500
+          max: 2600
+          amount: 459
+        - min: 2600
+          max: 2700
+          amount: 469
+        - min: 2700
+          max: 2800
+          amount: 483
+        - min: 2800
+          max: 2900
+          amount: 495
+        - min: 2900
+          max: 3000
+          amount: 510
+        - min: 3000
+          max: 3200
+          amount: 529
+        - min: 3200
+          max: 3400
+          amount: 551
+        - min: 3400
+          max: 3600
+          amount: 574
+        - min: 3600
+          max: 3800
+          amount: 598
+        - min: 3800
+          max: 4000
+          amount: 622
+        - min: 4000
+          max: 4200
+          amount: 646
+        - min: 4200
+          max: 4400
+          amount: 672
+        - min: 4400
+          max: 4600
+          amount: 693
+        - min: 4600
+          max: 4800
+          amount: 717
+        - min: 4800
+          max: 5000
+          amount: 748
+        - min: 5000
+          max: 5500
+          amount: 1
+        - min: 5500
+          max: 6000
+          amount: 1
+        - min: 6000
+          max: 6500
+          amount: 1
+        - min: 6500
+          max: 7000
+          amount: 1
+        - min: 7000
+          max: 7500
+          amount: 1063
+        - min: 7500
+          max: 8000
+          amount: 1127
+        - min: 8000
+          max: 8500
+          amount: 1187
+        - min: 8500
+          max: 9000
+          amount: 1244
+        - min: 9000
+          max: 9500
+          amount: 1296
+        - min: 9500
+          max: 10000
+          amount: 1350
+        - min: 10000
+          max: 10500
+          amount: 1400
+        - min: 10500
+          max: 11000
+          amount: 1451
+        - min: 11000
+          max: 11500
+          amount: 1499
+        - min: 11500
+          max: 12000
+          amount: 1548
+        - min: 12000
+          max: 12500
+          amount: 1599
+        - min: 12500
+          max: 13000
+          amount: 1652
+        - min: 13000
+          max: 13500
+          amount: 1708
+        - min: 13500
+          max: 14000
+          amount: 1761
+        - min: 14000
+          max: 14500
+          amount: 1815
+        - min: 14500
+          max: 15000
+          amount: 1864
+        - min: 15000
+          max: 15500
+          amount: 1916
+        - min: 15500
+          max: 16000
+          amount: 1969
+        - min: 16000
+          max: 16500
+          amount: 2023
+        - min: 16500
+          max: 17000
+          amount: 2076
+        - min: 17000
+          max: 17500
+          amount: 2131
+        - min: 17500
+          max: 18000
+          amount: 2182
+        - min: 18000
+          max: 18500
+          amount: 2235
+        - min: 18500
+          max: 19000
+          amount: 2286
+        - min: 19000
+          max: 19500
+          amount: 2333
+        - min: 19500
+          max: 20000
+          amount: 2376
+        - min: 20000
+          max: 20500
+          amount: 2418
+        - min: 20500
+          max: 21000
+          amount: 2460
+        - min: 21000
+          max: 21500
+          amount: 2504
+        - min: 21500
+          max: 22000
+          amount: 2544
+        - min: 22000
+          max: 22500
+          amount: 2590
+        - min: 22500
+          max: 23000
+          amount: 2635
+        - min: 23000
+          max: 23500
+          amount: 2678
+        - min: 23500
+          max: 24000
+          amount: 2723
+        - min: 24000
+          max: 24500
+          amount: 2769
+        - min: 24500
+          max: 25000
+          amount: 2813
+        - min: 25000
+          max: 25500
+          amount: 2858
+        - min: 25500
+          max: 26000
+          amount: 2904
+        - min: 26000
+          max: 26500
+          amount: 2951
+        - min: 26500
+          max: 27000
+          amount: 2995
+        - min: 27000
+          max: 27500
+          amount: 3041
+        - min: 27500
+          max: 28000
+          amount: 3087
+        - min: 28000
+          max: 28500
+          amount: 3131
+        - min: 28500
+          max: 29000
+          amount: 3176
+        - min: 29000
+          max: 29500
+          amount: 3225
+        - min: 29500
+          max: 30000
+          amount: 3274
+        - min: 30000
+          max: 31000
+          amount: 3330
+        - min: 31000
+          max: 32000
+          amount: 3396
+        - min: 32000
+          max: 33000
+          amount: 3481
+        - min: 33000
+          max: 34000
+          amount: 3577
+        - min: 34000
+          max: 35000
+          amount: 3685
+        - min: 35000
+          max: 36000
+          amount: 3813
+        - min: 36000
+          max: 37000
+          amount: 3942
+        - min: 37000
+          max: 38000
+          amount: 4085
+        - min: 38000
+          max: 39000
+          amount: 4244
+        - min: 39000
+          max: 40000
+          amount: 4404
+        - min: 40000
+          max: 42000
+          amount: 4565
+        - min: 42000
+          max: 44000
+          amount: 4714
+        - min: 44000
+          max: 46000
+          amount: 4863
+        - min: 46000
+          max: 48000
+          amount: 4994
+        - min: 48000
+          max: 50000
+          amount: 5107
+        - min: 50000
+          max: 52000
+          amount: 5199
+        - min: 52000
+          max: null
+          amount: 5322
+    scale_by:
+      input_field: pilotage_segment_pct
+      default_value: 65
+      unit: percent
+    source_reference:
+      document_name: "pilot-tariff-2026.pdf"
+      document_url: "docs/sources/germany/national/gdws/pilot-tariff-2026.pdf"
+      document_issued: "2026-01-01"
+      page: "Anlage 1, Abschnitt B Teil I (Weser column); route legs Anlage 1 Abschnitt A 1.2"
+      clause: "Lotstarif; Weser dues cap 5,322 above 52,000 GT; sea approach 65% (legs f 35% + g 30%)"
+      verified_on: "2026-10-05"
+      verified_by: "vibe-session-bremerhaven-expansion"
+  - id: gdws_pilot_fees_aussenweser
+    fee_family: pilotage
+    biller: GDWS (Federal) via pilot station
+    name: Pilot Fees (Lotsgelder, Aussenweser)
+    description: "GDWS pilot fees for the Aussenweser sea approach (Anlage 2, Abschnitt B Teil I, Aussenweser column/Spalte 3). GT-banded flat amounts; above 40,000 GT: +45 EUR per commenced 2,000 GT, capped at 4,100 EUR (the cap row shared across all columns). The Aussenweser leg 1.3a (Bremerhaven - outer pilot station) is definitionally 100 percent of the column, so no segment scaling applies to this line (the asymmetry recorded in the input-coverage matrix)."
+    rate_structure:
+      type: banded_flat
+      basis: gt
+      bands:
+        - min: 0
+          max: 300
+          amount: 237
+        - min: 300
+          max: 400
+          amount: 250
+        - min: 400
+          max: 500
+          amount: 264
+        - min: 500
+          max: 600
+          amount: 278
+        - min: 600
+          max: 700
+          amount: 290
+        - min: 700
+          max: 800
+          amount: 303
+        - min: 800
+          max: 900
+          amount: 315
+        - min: 900
+          max: 1000
+          amount: 328
+        - min: 1000
+          max: 1100
+          amount: 339
+        - min: 1100
+          max: 1200
+          amount: 352
+        - min: 1200
+          max: 1300
+          amount: 365
+        - min: 1300
+          max: 1400
+          amount: 376
+        - min: 1400
+          max: 1500
+          amount: 388
+        - min: 1500
+          max: 1600
+          amount: 400
+        - min: 1600
+          max: 1700
+          amount: 412
+        - min: 1700
+          max: 1800
+          amount: 423
+        - min: 1800
+          max: 1900
+          amount: 436
+        - min: 1900
+          max: 2000
+          amount: 446
+        - min: 2000
+          max: 2100
+          amount: 459
+        - min: 2100
+          max: 2200
+          amount: 471
+        - min: 2200
+          max: 2300
+          amount: 483
+        - min: 2300
+          max: 2400
+          amount: 495
+        - min: 2400
+          max: 2500
+          amount: 507
+        - min: 2500
+          max: 2600
+          amount: 519
+        - min: 2600
+          max: 2700
+          amount: 531
+        - min: 2700
+          max: 2800
+          amount: 543
+        - min: 2800
+          max: 2900
+          amount: 554
+        - min: 2900
+          max: 3000
+          amount: 567
+        - min: 3000
+          max: 3200
+          amount: 581
+        - min: 3200
+          max: 3400
+          amount: 595
+        - min: 3400
+          max: 3600
+          amount: 610
+        - min: 3600
+          max: 3800
+          amount: 624
+        - min: 3800
+          max: 4000
+          amount: 639
+        - min: 4000
+          max: 4200
+          amount: 656
+        - min: 4200
+          max: 4400
+          amount: 673
+        - min: 4400
+          max: 4600
+          amount: 689
+        - min: 4600
+          max: 4800
+          amount: 705
+        - min: 4800
+          max: 5000
+          amount: 722
+        - min: 5000
+          max: 5500
+          amount: 739
+        - min: 5500
+          max: 6000
+          amount: 755
+        - min: 6000
+          max: 6500
+          amount: 770
+        - min: 6500
+          max: 7000
+          amount: 783
+        - min: 7000
+          max: 7500
+          amount: 798
+        - min: 7500
+          max: 8000
+          amount: 813
+        - min: 8000
+          max: 8500
+          amount: 828
+        - min: 8500
+          max: 9000
+          amount: 842
+        - min: 9000
+          max: 9500
+          amount: 856
+        - min: 9500
+          max: 10000
+          amount: 871
+        - min: 10000
+          max: 10500
+          amount: 885
+        - min: 10500
+          max: 11000
+          amount: 900
+        - min: 11000
+          max: 11500
+          amount: 915
+        - min: 11500
+          max: 12000
+          amount: 930
+        - min: 12000
+          max: 12500
+          amount: 944
+        - min: 12500
+          max: 13000
+          amount: 959
+        - min: 13000
+          max: 13500
+          amount: 974
+        - min: 13500
+          max: 14000
+          amount: 988
+        - min: 14000
+          max: 14500
+          amount: 1002
+        - min: 14500
+          max: 15000
+          amount: 1015
+        - min: 15000
+          max: 15500
+          amount: 1029
+        - min: 15500
+          max: 16000
+          amount: 1042
+        - min: 16000
+          max: 16500
+          amount: 1056
+        - min: 16500
+          max: 17000
+          amount: 1070
+        - min: 17000
+          max: 17500
+          amount: 1082
+        - min: 17500
+          max: 18000
+          amount: 1095
+        - min: 18000
+          max: 18500
+          amount: 1108
+        - min: 18500
+          max: 19000
+          amount: 1119
+        - min: 19000
+          max: 19500
+          amount: 1131
+        - min: 19500
+          max: 20000
+          amount: 1143
+        - min: 20000
+          max: 20500
+          amount: 1155
+        - min: 20500
+          max: 21000
+          amount: 1168
+        - min: 21000
+          max: 21500
+          amount: 1181
+        - min: 21500
+          max: 22000
+          amount: 1194
+        - min: 22000
+          max: 22500
+          amount: 1206
+        - min: 22500
+          max: 23000
+          amount: 1219
+        - min: 23000
+          max: 23500
+          amount: 1232
+        - min: 23500
+          max: 24000
+          amount: 1246
+        - min: 24000
+          max: 24500
+          amount: 1259
+        - min: 24500
+          max: 25000
+          amount: 1273
+        - min: 25000
+          max: 25500
+          amount: 1288
+        - min: 25500
+          max: 26000
+          amount: 1303
+        - min: 26000
+          max: 26500
+          amount: 1320
+        - min: 26500
+          max: 27000
+          amount: 1337
+        - min: 27000
+          max: 27500
+          amount: 1355
+        - min: 27500
+          max: 28000
+          amount: 1375
+        - min: 28000
+          max: 28500
+          amount: 1394
+        - min: 28500
+          max: 29000
+          amount: 1414
+        - min: 29000
+          max: 29500
+          amount: 1434
+        - min: 29500
+          max: 30000
+          amount: 1454
+        - min: 30000
+          max: 31000
+          amount: 1474
+        - min: 31000
+          max: 32000
+          amount: 1495
+        - min: 32000
+          max: 33000
+          amount: 1515
+        - min: 33000
+          max: 34000
+          amount: 1535
+        - min: 34000
+          max: 35000
+          amount: 1556
+        - min: 35000
+          max: 36000
+          amount: 1577
+        - min: 36000
+          max: 37000
+          amount: 1598
+        - min: 37000
+          max: 38000
+          amount: 1620
+        - min: 38000
+          max: 39000
+          amount: 1641
+        - min: 39000
+          max: 40000
+          amount: 1663
+        - min: 40000
+          max: null
+          amount: 1663
+      linear_extension:
+        from_basis: 40000
+        per_basis_units: 2000
+        amount: 45
+    maximum: 4100
+    source_reference:
+      document_name: "pilot-tariff-2026.pdf"
+      document_url: "docs/sources/germany/national/gdws/pilot-tariff-2026.pdf"
+      document_issued: "2026-01-01"
+      page: "Anlage 2, Abschnitt B Teil I (Aussenweser column); route Anlage 2 Abschnitt A 1.3a"
+      clause: "Lotsgeld; +45 per commenced 2,000 GT over 40,000, capped 4,100; Aussenweser leg 100%"
+      verified_on: "2026-10-05"
+      verified_by: "vibe-session-bremerhaven-expansion"
+  # ==========================================================================
+  # EUROGATE CTB terminal layer (the default operator; national-class P&C)
+  # ==========================================================================
+  - id: eurogate_ctb_berthing_charge
+    fee_family: vessel_fee
+    biller: EUROGATE Container Terminal Bremerhaven
+    name: Berthing Charge / Tonnage Dues
+    description: "EUROGATE CTB berthing charge (ch. 2): every ship berthed at the handling facilities pays a berthing charge based on GT and lay time - 1.04 EUR/GT for the first 24 h of lay days, then 0.60 EUR/GT per commenced 12 h or part. Lay time runs docking to casting off, calculated uninterruptedly (2.1.1-2.1.2; the national-class rates are identical to the Hamburg terminal's). Ship's dues are billed separately from handling (ch. 5)."
+    rate_structure:
+      type: tiered_per_period
+      basis: gt
+      hours_input: lay_time_hours
+      initial_tier:
+        hours: 24
+        rate_per_basis: 1.04
+      subsequent_tier:
+        period_hours: 12
+        rate_per_basis: 0.60
+    applicable_conditions:
+      terminal_operator: Eurogate
+    source_reference:
+      document_name: "prices-and-conditions-2026.txt"
+      document_url: "docs/sources/germany/bremerhaven/eurogate/prices-and-conditions-2026.txt"
+      document_issued: "2026-01-01"
+      page: 4
+      clause: "2.1.1-2.1.2"
+      verified_on: "2026-10-05"
+      verified_by: "vibe-session-bremerhaven-expansion"
+  - id: eurogate_ctb_container_handling
+    fee_family: terminal_handling
+    biller: EUROGATE Container Terminal Bremerhaven
+    name: Container Handling (waterside lift)
+    description: "EUROGATE CTB waterside handling: loading/discharging ISO containers (full or empty) from/to main vessel, feeder or barge, 358.00 EUR per container lift (5.1.1). A move is one container lifted once. Published rate - no estimated-parameter flag. Does not bundle berth time; vessel charges are a separate chapter. The 358.00 covers the vessel-to-quay lift ONLY - ch. 6 receiving and delivery from/to rail/truck is a separate 152.00 EUR per movement (6.1.1) never included in this figure (the Hamburg extraction's basis finding, verified against the same national-class document)."
+    rate_structure:
+      type: per_unit
+      unit_type: move
+      unit_rate: 358.00
+    applicable_conditions:
+      terminal_operator: Eurogate
+    source_reference:
+      document_name: "prices-and-conditions-2026.txt"
+      document_url: "docs/sources/germany/bremerhaven/eurogate/prices-and-conditions-2026.txt"
+      document_issued: "2026-01-01"
+      page: 6
+      clause: "5.1.1"
+      verified_on: "2026-10-05"
+      verified_by: "vibe-session-bremerhaven-expansion"
+  - id: eurogate_ctb_security_charge
+    fee_family: security
+    biller: EUROGATE Container Terminal Bremerhaven
+    name: Security Charge
+    description: "EUROGATE CTB security charge: 24.95 EUR per container, full or empty (13.1). Handling prices are plus security charge (ch. 5 note); the security charge is excluded from the social fund (1.3.13)."
+    rate_structure:
+      type: per_unit
+      unit_type: container_total
+      unit_rate: 24.95
+    applicable_conditions:
+      terminal_operator: Eurogate
+    source_reference:
+      document_name: "prices-and-conditions-2026.txt"
+      document_url: "docs/sources/germany/bremerhaven/eurogate/prices-and-conditions-2026.txt"
+      document_issued: "2026-01-01"
+      page: 19
+      clause: "13.1"
+      verified_on: "2026-10-05"
+      verified_by: "vibe-session-bremerhaven-expansion"
+  - id: eurogate_ctb_lashing
+    fee_family: cargo_fee
+    biller: EUROGATE Container Terminal Bremerhaven
+    name: Lashing / Unlashing (system lashings)
+    description: "EUROGATE CTB lashing/unlashing using system lashings on board seagoing vessels, 47.00 EUR per container (5.2.1; basis: overall volume of containers handled and restowed). Ordered service - fires only when a lashing container count is entered; blank charges zero, never a seeded count."
+    rate_structure:
+      type: per_unit
+      unit_type: lashing_containers
+      unit_rate: 47.00
+    applicable_conditions:
+      terminal_operator: Eurogate
+    source_reference:
+      document_name: "prices-and-conditions-2026.txt"
+      document_url: "docs/sources/germany/bremerhaven/eurogate/prices-and-conditions-2026.txt"
+      document_issued: "2026-01-01"
+      page: 7
+      clause: "5.2.1"
+      verified_on: "2026-10-05"
+      verified_by: "vibe-session-bremerhaven-expansion"
+  - id: eurogate_ctb_twistlocks
+    fee_family: cargo_fee
+    biller: EUROGATE Container Terminal Bremerhaven
+    name: Setting / Removing Twistlocks
+    description: "EUROGATE CTB setting/removing twistlocks on board, 24.00 EUR per container (5.2.2). Ordered service - blank charges zero."
+    rate_structure:
+      type: per_unit
+      unit_type: twistlock_containers
+      unit_rate: 24.00
+    applicable_conditions:
+      terminal_operator: Eurogate
+    source_reference:
+      document_name: "prices-and-conditions-2026.txt"
+      document_url: "docs/sources/germany/bremerhaven/eurogate/prices-and-conditions-2026.txt"
+      document_issued: "2026-01-01"
+      page: 7
+      clause: "5.2.2"
+      verified_on: "2026-10-05"
+      verified_by: "vibe-session-bremerhaven-expansion"
+  - id: eurogate_ctb_imo_surcharge
+    fee_family: cargo_fee
+    biller: EUROGATE Container Terminal Bremerhaven
+    name: IMO Container Surcharge
+    description: "EUROGATE CTB surcharge for IMO (dangerous-goods) containers, 87.00 EUR per container (5.3). Fires only for IMO units; the default call carries none."
+    rate_structure:
+      type: per_unit
+      unit_type: imo_containers
+      unit_rate: 87.00
+    applicable_conditions:
+      terminal_operator: Eurogate
+    source_reference:
+      document_name: "prices-and-conditions-2026.txt"
+      document_url: "docs/sources/germany/bremerhaven/eurogate/prices-and-conditions-2026.txt"
+      document_issued: "2026-01-01"
+      page: 7
+      clause: "5.3"
+      verified_on: "2026-10-05"
+      verified_by: "vibe-session-bremerhaven-expansion"
+  - id: eurogate_ctb_small_call_minimum
+    fee_family: terminal_handling
+    biller: EUROGATE Container Terminal Bremerhaven
+    name: Small-Call Minimum (up to 20 containers)
+    description: "EUROGATE CTB charge for ships with up to 20 containers handled: 3,308.00 EUR per transaction per ship (5.4). A minimum bill for small calls - can never fire for the 4,000-move default; the gate is the call's attested handled-container count (blank = not a small call, charges nothing)."
+    rate_structure:
+      type: banded_flat
+      basis: small_call_containers
+      bands:
+        - min: null
+          max: 20
+          amount: 3308.00
+        - min: 20
+          max: null
+          amount: 0.00
+    applicable_conditions:
+      terminal_operator: Eurogate
+      small_call_containers: present
+    source_reference:
+      document_name: "prices-and-conditions-2026.txt"
+      document_url: "docs/sources/germany/bremerhaven/eurogate/prices-and-conditions-2026.txt"
+      document_issued: "2026-01-01"
+      page: 7
+      clause: "5.4"
+      verified_on: "2026-10-05"
+      verified_by: "vibe-session-bremerhaven-expansion"
+  - id: eurogate_ctb_layby_charge
+    fee_family: vessel_fee
+    biller: EUROGATE Container Terminal Bremerhaven
+    name: Lay-By Berth Charge
+    description: "EUROGATE CTB lay-by berth charge: ships using the terminal as a lay-by berth prior to start or after completion of cargo operations, 1.34 EUR per TEU per 24 h or part thereof; berth dues count by maximum nominal TEU intake (2.1.4). Fires only when lay-by hours are entered; the default is a working cargo call."
+    rate_structure:
+      type: per_commenced_period
+      basis: teu
+      hours_input: layby_hours
+      free_hours: 0
+      period_hours: 24
+      tiers:
+        - up_to_excess_hours: null
+          rate_per_period_per_basis: 1.34
+    applicable_conditions:
+      terminal_operator: Eurogate
+      layby_hours: present
+    source_reference:
+      document_name: "prices-and-conditions-2026.txt"
+      document_url: "docs/sources/germany/bremerhaven/eurogate/prices-and-conditions-2026.txt"
+      document_issued: "2026-01-01"
+      page: 4
+      clause: "2.1.4"
+      verified_on: "2026-10-05"
+      verified_by: "vibe-session-bremerhaven-expansion"
+  - id: eurogate_ctb_reefer_first_24h
+    fee_family: cargo_fee
+    biller: EUROGATE Container Terminal Bremerhaven
+    name: Reefer Temperature Maintenance - First 24 h
+    description: "EUROGATE CTB refrigeration and temperature maintenance: first 24 hours or part thereof including plug on / plug off in the yard, 181.50 EUR per reefer container (9.1). Fires only with reefer units; the default call carries none."
+    rate_structure:
+      type: per_unit
+      unit_type: reefer
+      unit_rate: 181.50
+    applicable_conditions:
+      terminal_operator: Eurogate
+    source_reference:
+      document_name: "prices-and-conditions-2026.txt"
+      document_url: "docs/sources/germany/bremerhaven/eurogate/prices-and-conditions-2026.txt"
+      document_issued: "2026-01-01"
+      page: 12
+      clause: "9.1"
+      verified_on: "2026-10-05"
+      verified_by: "vibe-session-bremerhaven-expansion"
+  - id: eurogate_ctb_reefer_subsequent_24h
+    fee_family: cargo_fee
+    biller: EUROGATE Container Terminal Bremerhaven
+    name: Reefer Temperature Maintenance - Subsequent 24 h
+    description: "EUROGATE CTB refrigeration and temperature maintenance: each subsequent 24 hours or part thereof, 144.50 EUR per reefer container per day (9.2). Fires only with reefer units and reefer days beyond the first 24 h; blank charges zero."
+    rate_structure:
+      type: per_commenced_day
+      daily_rate: 144.50
+      basis: reefer_extra_days
+      unit_input: reefer_units
+      unit_type: reefer_units
+    applicable_conditions:
+      terminal_operator: Eurogate
+      reefer_extra_days: present
+    source_reference:
+      document_name: "prices-and-conditions-2026.txt"
+      document_url: "docs/sources/germany/bremerhaven/eurogate/prices-and-conditions-2026.txt"
+      document_issued: "2026-01-01"
+      page: 12
+      clause: "9.2"
+      verified_on: "2026-10-05"
+      verified_by: "vibe-session-bremerhaven-expansion"
+  - id: eurogate_ctb_storage_import_20ft
+    fee_family: storage
+    biller: EUROGATE Container Terminal Bremerhaven
+    name: Storage Import 20ft (scenario)
+    description: "EUROGATE CTB import storage (7.2): ISO 20' full containers, 3 calendar days free, then 42.00 EUR/container/day for days 4-8, 84.00 for days 9-13, 126.00 for days 14-18, 168.00 as from day 19. Counting per 7.5.3 (the day of delivery to the terminal is free; the day of redelivery counts as a full day). Scenario surface - fires only when storage days are entered; blank renders no line. Storage stays excluded from the social-fund base (1.3.13)."
+    rate_structure:
+      type: progressive_daily
+      days_input: storage_days_import
+      container_count_input: containers_discharged_le20ft
+      free_days: 3
+      bands:
+        - min_days: 1
+          max_days: 5
+          rate_per_container_per_day: 42.00
+        - min_days: 6
+          max_days: 10
+          rate_per_container_per_day: 84.00
+        - min_days: 11
+          max_days: 15
+          rate_per_container_per_day: 126.00
+        - min_days: 16
+          max_days: null
+          rate_per_container_per_day: 168.00
+    applicable_conditions:
+      terminal_operator: Eurogate
+    scenario_adjusted:
+      description: "scenario-derived figure - the storage-day count is the user's scenario input over the pinned 7.2 schedule; never tariff-transcribed usage"
+      severity: info
+    source_reference:
+      document_name: "prices-and-conditions-2026.txt"
+      document_url: "docs/sources/germany/bremerhaven/eurogate/prices-and-conditions-2026.txt"
+      document_issued: "2026-01-01"
+      page: 9
+      clause: "7.2"
+      verified_on: "2026-10-05"
+      verified_by: "vibe-session-bremerhaven-expansion"
+  - id: eurogate_ctb_storage_import_40ft
+    fee_family: storage
+    biller: EUROGATE Container Terminal Bremerhaven
+    name: Storage Import 40ft (scenario)
+    description: "EUROGATE CTB import storage (7.2): ISO 40' full containers, 3 calendar days free, then 84.00 EUR/container/day for days 4-8, 168.00 for days 9-13, 252.00 for days 14-18, 336.00 as from day 19. Scenario surface - blank renders no line."
+    rate_structure:
+      type: progressive_daily
+      days_input: storage_days_import
+      container_count_input: containers_discharged_gt20ft
+      free_days: 3
+      bands:
+        - min_days: 1
+          max_days: 5
+          rate_per_container_per_day: 84.00
+        - min_days: 6
+          max_days: 10
+          rate_per_container_per_day: 168.00
+        - min_days: 11
+          max_days: 15
+          rate_per_container_per_day: 252.00
+        - min_days: 16
+          max_days: null
+          rate_per_container_per_day: 336.00
+    applicable_conditions:
+      terminal_operator: Eurogate
+    scenario_adjusted:
+      description: "scenario-derived figure - the storage-day count is the user's scenario input over the pinned 7.2 schedule; never tariff-transcribed usage"
+      severity: info
+    source_reference:
+      document_name: "prices-and-conditions-2026.txt"
+      document_url: "docs/sources/germany/bremerhaven/eurogate/prices-and-conditions-2026.txt"
+      document_issued: "2026-01-01"
+      page: 9
+      clause: "7.2"
+      verified_on: "2026-10-05"
+      verified_by: "vibe-session-bremerhaven-expansion"
+  - id: eurogate_ctb_storage_export_20ft
+    fee_family: storage
+    biller: EUROGATE Container Terminal Bremerhaven
+    name: Storage Export 20ft (scenario)
+    description: "EUROGATE CTB export storage (7.1): ISO 20' full containers, 5 calendar days free, then 42.00 EUR/container/day for days 6-13, 84.00 as from day 14. Counting per 7.5.3. Scenario surface - blank renders no line."
+    rate_structure:
+      type: progressive_daily
+      days_input: storage_days_export
+      container_count_input: containers_loaded_le20ft
+      free_days: 5
+      bands:
+        - min_days: 1
+          max_days: 8
+          rate_per_container_per_day: 42.00
+        - min_days: 9
+          max_days: null
+          rate_per_container_per_day: 84.00
+    applicable_conditions:
+      terminal_operator: Eurogate
+    scenario_adjusted:
+      description: "scenario-derived figure - the storage-day count is the user's scenario input over the pinned 7.1 schedule; never tariff-transcribed usage"
+      severity: info
+    source_reference:
+      document_name: "prices-and-conditions-2026.txt"
+      document_url: "docs/sources/germany/bremerhaven/eurogate/prices-and-conditions-2026.txt"
+      document_issued: "2026-01-01"
+      page: 8
+      clause: "7.1"
+      verified_on: "2026-10-05"
+      verified_by: "vibe-session-bremerhaven-expansion"
+  - id: eurogate_ctb_storage_export_40ft
+    fee_family: storage
+    biller: EUROGATE Container Terminal Bremerhaven
+    name: Storage Export 40ft (scenario)
+    description: "EUROGATE CTB export storage (7.1): ISO 40' full containers, 5 calendar days free, then 84.00 EUR/container/day for days 6-13, 168.00 as from day 14. Scenario surface - blank renders no line."
+    rate_structure:
+      type: progressive_daily
+      days_input: storage_days_export
+      container_count_input: containers_loaded_gt20ft
+      free_days: 5
+      bands:
+        - min_days: 1
+          max_days: 8
+          rate_per_container_per_day: 84.00
+        - min_days: 9
+          max_days: null
+          rate_per_container_per_day: 168.00
+    applicable_conditions:
+      terminal_operator: Eurogate
+    scenario_adjusted:
+      description: "scenario-derived figure - the storage-day count is the user's scenario input over the pinned 7.1 schedule; never tariff-transcribed usage"
+      severity: info
+    source_reference:
+      document_name: "prices-and-conditions-2026.txt"
+      document_url: "docs/sources/germany/bremerhaven/eurogate/prices-and-conditions-2026.txt"
+      document_issued: "2026-01-01"
+      page: 8
+      clause: "7.1"
+      verified_on: "2026-10-05"
+      verified_by: "vibe-session-bremerhaven-expansion"
+  # ==========================================================================
+  # NTB terminal layer (the switchable variant; reference tariff, honesty-flagged)
+  # ==========================================================================
+  - id: ntb_tonnage_dues
+    fee_family: vessel_fee
+    biller: North Sea Terminal Bremerhaven GmbH & Co.
+    name: Tonnage Dues (NTB)
+    description: "NTB tonnage dues (reference tariff 1.1): the fee arises for every vessel call, calculated on the vessel's gross tonnage and the port stay - 0.50 EUR/BRZ for the first 24 hours of the call, then 0.50 x 0.5 = 0.25 EUR/BRZ per started 12 hours thereafter. Reference-tariff honesty caveat: the Referenztarif is a published reference scale subject to the AGBO terms; contract rates may differ - never presented as verified contract rates."
+    rate_structure:
+      type: tiered_per_period
+      basis: gt
+      hours_input: lay_time_hours
+      initial_tier:
+        hours: 24
+        rate_per_basis: 0.50
+      subsequent_tier:
+        period_hours: 12
+        rate_per_basis: 0.25
+    applicable_conditions:
+      terminal_operator: NTB
+    contract_vs_published:
+      description: "NTB reference tariff (Referenztarif, valid 01.08.2026): the published reference scale of charges, subject to the currently valid AGBO terms - contract rates may differ from the reference scale (the reference-tariff honesty flag)"
+      severity: warning
+    source_reference:
+      document_name: "ntb-reference-tariff-en-2026-08-01.txt"
+      document_url: "docs/sources/germany/bremerhaven/ntb/ntb-reference-tariff-en-2026-08-01.txt"
+      document_issued: "2026-08-01"
+      page: 1
+      clause: "1.1"
+      verified_on: "2026-10-05"
+      verified_by: "vibe-session-bremerhaven-expansion"
+  - id: ntb_container_handling
+    fee_family: terminal_handling
+    biller: North Sea Terminal Bremerhaven GmbH & Co.
+    name: Container Handling (NTB)
+    description: "NTB handling (reference tariff 2.1.1): discharge/loading from/to deepsea vessel, feeder vessel and barges - ISO container (empty/full) 339.00 EUR per container. All prices plus the security charge (ch. 10). Reference-tariff honesty caveat as above."
+    rate_structure:
+      type: per_unit
+      unit_type: move
+      unit_rate: 339.00
+    applicable_conditions:
+      terminal_operator: NTB
+    contract_vs_published:
+      description: "NTB reference tariff (Referenztarif, valid 01.08.2026): the published reference scale of charges, subject to the currently valid AGBO terms - contract rates may differ from the reference scale (the reference-tariff honesty flag)"
+      severity: warning
+    source_reference:
+      document_name: "ntb-reference-tariff-en-2026-08-01.txt"
+      document_url: "docs/sources/germany/bremerhaven/ntb/ntb-reference-tariff-en-2026-08-01.txt"
+      document_issued: "2026-08-01"
+      page: 2
+      clause: "2.1.1"
+      verified_on: "2026-10-05"
+      verified_by: "vibe-session-bremerhaven-expansion"
+  - id: ntb_security_charge
+    fee_family: security
+    biller: North Sea Terminal Bremerhaven GmbH & Co.
+    name: Security Charge (NTB)
+    description: "NTB security charge (reference tariff ch. 10): applicable for all full/empty containers loaded/discharged, 22.20 EUR per container. Excluded from the social fund (the general-regulations exclusion). Reference-tariff honesty caveat as above."
+    rate_structure:
+      type: per_unit
+      unit_type: container_total
+      unit_rate: 22.20
+    applicable_conditions:
+      terminal_operator: NTB
+    contract_vs_published:
+      description: "NTB reference tariff (Referenztarif, valid 01.08.2026): the published reference scale of charges, subject to the currently valid AGBO terms - contract rates may differ from the reference scale (the reference-tariff honesty flag)"
+      severity: warning
+    source_reference:
+      document_name: "ntb-reference-tariff-en-2026-08-01.txt"
+      document_url: "docs/sources/germany/bremerhaven/ntb/ntb-reference-tariff-en-2026-08-01.txt"
+      document_issued: "2026-08-01"
+      page: 12
+      clause: "ch. 10"
+      verified_on: "2026-10-05"
+      verified_by: "vibe-session-bremerhaven-expansion"
+  - id: ntb_lashing
+    fee_family: cargo_fee
+    biller: North Sea Terminal Bremerhaven GmbH & Co.
+    name: Lashing / Unlashing (NTB)
+    description: "NTB lashing/unlashing on board of vessels (reference tariff 2.3.1): 42.60 EUR per container. Ordered service - fires only when a lashing container count is entered; blank charges zero. Reference-tariff honesty caveat as above."
+    rate_structure:
+      type: per_unit
+      unit_type: lashing_containers
+      unit_rate: 42.60
+    applicable_conditions:
+      terminal_operator: NTB
+    contract_vs_published:
+      description: "NTB reference tariff (Referenztarif, valid 01.08.2026): the published reference scale of charges, subject to the currently valid AGBO terms - contract rates may differ from the reference scale (the reference-tariff honesty flag)"
+      severity: warning
+    source_reference:
+      document_name: "ntb-reference-tariff-en-2026-08-01.txt"
+      document_url: "docs/sources/germany/bremerhaven/ntb/ntb-reference-tariff-en-2026-08-01.txt"
+      document_issued: "2026-08-01"
+      page: 3
+      clause: "2.3.1"
+      verified_on: "2026-10-05"
+      verified_by: "vibe-session-bremerhaven-expansion"
+  - id: ntb_twistlocks
+    fee_family: cargo_fee
+    biller: North Sea Terminal Bremerhaven GmbH & Co.
+    name: Twistlocks (NTB)
+    description: "NTB attaching/removal of twistlocks (reference tariff 2.3.2): 21.60 EUR per container. Ordered service - blank charges zero. Reference-tariff honesty caveat as above."
+    rate_structure:
+      type: per_unit
+      unit_type: twistlock_containers
+      unit_rate: 21.60
+    applicable_conditions:
+      terminal_operator: NTB
+    contract_vs_published:
+      description: "NTB reference tariff (Referenztarif, valid 01.08.2026): the published reference scale of charges, subject to the currently valid AGBO terms - contract rates may differ from the reference scale (the reference-tariff honesty flag)"
+      severity: warning
+    source_reference:
+      document_name: "ntb-reference-tariff-en-2026-08-01.txt"
+      document_url: "docs/sources/germany/bremerhaven/ntb/ntb-reference-tariff-en-2026-08-01.txt"
+      document_issued: "2026-08-01"
+      page: 3
+      clause: "2.3.2"
+      verified_on: "2026-10-05"
+      verified_by: "vibe-session-bremerhaven-expansion"
+  - id: ntb_reefer_first_24h
+    fee_family: cargo_fee
+    biller: North Sea Terminal Bremerhaven GmbH & Co.
+    name: Reefer Service - First 24 h (NTB)
+    description: "NTB refrigeration at terminal, on/off, electricity (reference tariff 7.1.1): 167.00 EUR per container including connect and disconnect, for 24 hours or part thereof. Fires only with reefer units; the default call carries none. Reference-tariff honesty caveat as above."
+    rate_structure:
+      type: per_unit
+      unit_type: reefer
+      unit_rate: 167.00
+    applicable_conditions:
+      terminal_operator: NTB
+    contract_vs_published:
+      description: "NTB reference tariff (Referenztarif, valid 01.08.2026): the published reference scale of charges, subject to the currently valid AGBO terms - contract rates may differ from the reference scale (the reference-tariff honesty flag)"
+      severity: warning
+    source_reference:
+      document_name: "ntb-reference-tariff-en-2026-08-01.txt"
+      document_url: "docs/sources/germany/bremerhaven/ntb/ntb-reference-tariff-en-2026-08-01.txt"
+      document_issued: "2026-08-01"
+      page: 8
+      clause: "7.1.1"
+      verified_on: "2026-10-05"
+      verified_by: "vibe-session-bremerhaven-expansion"
+  - id: ntb_reefer_subsequent_24h
+    fee_family: cargo_fee
+    biller: North Sea Terminal Bremerhaven GmbH & Co.
+    name: Reefer Service - Subsequent 24 h (NTB)
+    description: "NTB refrigeration for each subsequent 24 hours or part thereof (reference tariff 7.1.2): 132.00 EUR per container. Fires only with reefer units and reefer days beyond the first 24 h; blank charges zero. Reference-tariff honesty caveat as above."
+    rate_structure:
+      type: per_commenced_day
+      daily_rate: 132.00
+      basis: reefer_extra_days
+      unit_input: reefer_units
+      unit_type: reefer_units
+    applicable_conditions:
+      terminal_operator: NTB
+      reefer_extra_days: present
+    contract_vs_published:
+      description: "NTB reference tariff (Referenztarif, valid 01.08.2026): the published reference scale of charges, subject to the currently valid AGBO terms - contract rates may differ from the reference scale (the reference-tariff honesty flag)"
+      severity: warning
+    source_reference:
+      document_name: "ntb-reference-tariff-en-2026-08-01.txt"
+      document_url: "docs/sources/germany/bremerhaven/ntb/ntb-reference-tariff-en-2026-08-01.txt"
+      document_issued: "2026-08-01"
+      page: 8
+      clause: "7.1.2"
+      verified_on: "2026-10-05"
+      verified_by: "vibe-session-bremerhaven-expansion"
+  # ==========================================================================
+  # Estimated Parameters - Towage (no published tariff; the Hamburg convention)
+  # ==========================================================================
+  - id: bremerhaven_towage_estimate
+    fee_family: towage
+    biller: Towage operators (estimated)
+    name: Towage (estimated)
+    description: "Towage per call. No published tariff (the German deep-sea tug market). Default 15,000 EUR per call (3 tugs x ~5,000 EUR/tug market range, the Hamburg convention - the Weser approach is 32 nm from open sea; the default stays at the market-range figure rather than inventing a port-specific one). User-editable. Operator-neutral: applies at any Bremerhaven terminal."
+    rate_structure:
+      type: flat
+      amount: 15000
+      amount_input: towage_amount
+    estimated_parameter:
+      description: "estimated; no published tariff; default 3 tugs x ~5,000 EUR/tug market range (the Hamburg convention)"
+      severity: info
+    source_reference:
+      document_name: "BREMERHAVEN_EXTRACTION_REFERENCE.md"
+      document_url: "docs/sources/germany/bremerhaven/BREMERHAVEN_EXTRACTION_REFERENCE.md"
+      document_issued: "2026-10-05"
+      page: "section 7"
+      clause: "the Hamburg towage convention applied"
+      verified_on: "2026-10-05"
+      verified_by: "vibe-session-bremerhaven-expansion"
+  # ==========================================================================
+  # EU REGULATORY BLOCK (spec v0.2.69) - transcribed per the silo principle
+  # ==========================================================================
+  - id: bremerhaven_eu_ets_allowances
+    fee_family: regulatory
+    biller: EU (European Union) - shipping company's administering authority
+    name: EU ETS Allowances (user-specified basis)
+    description: "EU ETS surrender obligation for this call's in-scope emissions (Directive (EU) 2023/959 amending Directive 2003/87/EC, Articles 3ga-3gb): cargo and passenger ships of or above 5,000 GT, regardless of flag. Scope: 100 percent of in-port emissions plus the voyage fraction - 50 percent of extra-EU leg emissions, 100 percent of intra-EU (the shared arrival-origin selector carries the leg). The entered emissions figure is the user's own in-scope tonnage for this call - no published per-call figure exists. Blank inputs render nothing (the blank-means-nothing contract)."
+    rate_structure:
+      type: flat
+      amount: 0
+      ets_product:
+        emissions_input: ets_emissions_tco2
+        price_input: ets_allowance_price
+        phase_in_fraction: 1.0
+        phase_in_pct: 100
+        basis_note: "ETS surrender for 2026-reported emissions at 100 percent (Directive 2003/87/EC Art. 3gb(1), inserted by Directive (EU) 2023/959); leg scope per the shared arrival-origin selector (extra-EU leg: 50 percent of voyage emissions + 100 percent in-port; intra-EU: 100 percent); allowances are surrendered in EUR (the EU-market instrument's own currency)"
+    applicable_conditions:
+      min_gt: 5000
+    estimated_parameter:
+      description: "derived from user-specified inputs - the emissions basis and the EUA price are the user's own (no published per-call emissions figure or allowance price exists; THETIS-MRV annual figures orient the entry, never default it)"
+      severity: info
+    source_reference:
+      document_name: "faq-maritime-ets.html.md (official Commission FAQ; Directive (EU) 2023/959 the instrument)"
+      document_url: "docs/sources/eu/ets/faq-maritime-ets.html.md"
+      upstream_url: "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32023L0959"
+      document_issued: "2023-05-10"
+      page: "Timing & scope"
+      clause: "Directive 2003/87/EC Art. 3ga-3gb as inserted by Directive (EU) 2023/959; surrender fractions 40/70/100 percent of 2024/2025/2026-reported emissions"
+      verified_on: "2026-10-05"
+      verified_by: "vibe-session-bremerhaven-expansion"
+  - id: bremerhaven_fueleu_notice
+    fee_family: regulatory
+    biller: EU (European Union) - FuelEU compliance balance
+    name: FuelEU Maritime - annual compliance balance (notice, no per-call charge)
+    description: "FuelEU Maritime (Regulation (EU) 2023/1805, Art. 4) applies to this vessel at this port (commercial ship above 5,000 GT): the yearly average GHG intensity of the energy used on board is limited against the 2020 reference value 91.16 gCO2e/MJ, reduced 2 percent for 2025-2029 (limit 89.34 gCO2e/MJ); in-scope energy is 100 percent intra-EU voyages and at berth, 50 percent on extra-EU legs. The compliance balance is assessed ANNUALLY per ship; a per-call FuelEU charge cannot be computed honestly - no per-call figure is rendered; this line is a notice only and adds nothing to any total."
+    rate_structure:
+      type: flat
+      amount: 0
+    regulatory_notice:
+      description: "FuelEU Maritime applies to this vessel at this port (commercial ship above 5,000 GT, Regulation (EU) 2023/1805 Art. 2/4): the yearly average GHG intensity of the energy used on board is limited against the 2020 reference value 91.16 gCO2e/MJ minus 2 percent for 2025-2029 (limit 89.34 gCO2e/MJ), well-to-wake; a compliance deficit is penalised at 2,400 EUR per tonne VLSFO-equivalent energy (Art. 23, Annex IV B). The compliance balance is ANNUAL per ship with pooling, banking, and borrowing across ships and years (Arts. 20-21) - a per-call FuelEU charge cannot be computed honestly, so no per-call figure is rendered; this notice adds nothing to any total."
+      severity: info
+    applicable_conditions:
+      min_gt: 5000
+    source_reference:
+      document_name: "fueleu-maritime.html.md + fueleu-qa.html.md (official Commission pages; Regulation (EU) 2023/1805 the instrument)"
+      document_url: "docs/sources/eu/fueleu/fueleu-maritime.html.md"
+      upstream_url: "https://eur-lex.europa.eu/eli/reg/2023/1805/oj/eng"
+      document_issued: "2023-09-13"
+      page: "Key facts"
+      clause: "Regulation (EU) 2023/1805 Art. 4 (91.16 reference, 2 percent 2025-2029), Arts. 20-21 (banking/borrowing/pooling), Art. 23 + Annex IV B (2,400 EUR/t VLSFO-eq penalty)"
+      verified_on: "2026-10-05"
+      verified_by: "vibe-session-bremerhaven-expansion"
+# Per-port default-call data (spec v0.2.59): the port-specific input-form
+# defaults, data-authored in the port's own file. Configuration only -
+# list-price defaults, never rates.
+default_call:
+  terminal_operator: Eurogate
+  pilotage_segment_pct: 65
+  towage_amount: 15000
+# OPS speculative component descriptor (spec v0.2.57, data-authored v0.2.59):
+# presence, currency, unit - configuration only, no rates. Bremerhaven publishes
+# no OPS-specific figure (the least-defined public posture, the Norrkoping
+# pattern): all four components render.
+ops_speculative:
+  electricity: { enabled: true, currency: EUR, unit: EUR/kWh }
+  demand: { enabled: true, currency: EUR, unit: EUR/call }
+  connection: { enabled: true, currency: EUR, unit: EUR/call }
+  per_gt: { enabled: true, currency: EUR, unit: EUR/GT }
+# Per-port input profile (spec v0.2.59): the input sections the workspace
+# renders for this port. UI configuration, never rates. The operator list is
+# the user-facing select; the gating values live in the fee rules'
+# terminal_operator applicable_conditions.
+input_profile:
+  reset_fields:
+    - engine_tier
+    - engine_tier_estimated
+    - esi_score
+    - towage_amount
+    - pilotage_segment_pct
+    - pilotage_hours
+    - pilotage_extra_pilot
+    - pilotage_ordering_lead_time_hours
+    - lay_up_days
+    - ops_electricity_price
+    - ops_demand_charge
+    - ops_connection_charge
+    - ops_per_gt_charge
+    - ets_emissions_tco2
+    - ets_allowance_price
+    - lashing_containers
+    - twistlock_containers
+    - imo_containers
+    - layby_hours
+    - reefer_extra_days
+    - small_call_containers
+    - storage_days_import
+    - storage_days_export
+  fields:
+    - build_year
+  sections:
+    - id: bremerhaven_call_parameters
+      heading: Bremerhaven Call Parameters
+      operators:
+        - value: Eurogate
+          label: EUROGATE Container Terminal Bremerhaven (default - reference operator)
+        - value: NTB
+          label: North Sea Terminal Bremerhaven (switchable terminal variant - reference tariff)
+    - id: eu_regulatory
+      heading: EU Regulatory (ETS allowances - user-specified basis)

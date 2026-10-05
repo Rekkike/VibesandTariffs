@@ -1,0 +1,465 @@
+[Text extraction of: North Sea Terminal Bremerhaven GmbH & Co.,
+"Reference tariff", valid from 01.08.2026 (NTB-Reference-Tariff-EN-01.08.2026).
+Archived verbatim from the fetched binary PDF; the binary PDF is retained
+beside this file (ntb-reference-tariff-en-2026-08-01.pdf, upstream
+https://www.ntb.eu/wp-content/uploads/ntb/NTB-Reference-Tariff-EN-01.08.2026-1.pdf,
+fetch 2026-10-05; SHA-256 b4f544f0b163aaa95ec4dd116e81bd02aaa67d592973b9f6c7f1dfa1c2babeab).
+HONESTY FLAG (recorded in the archive header per the extraction
+adjudication): this is a REFERENCE tariff ("Referenztarif") — a published
+reference scale of charges, not the binding contract tariff; NTB's general
+regulations state services are subject to the currently valid AGBO terms
+and that contract rates may differ from the reference scale. The encoded
+rates are the published reference rates and are rendered with the
+reference-tariff honesty flag, never presented as verified contract
+rates. See BREMERHAVEN_EXTRACTION_REFERENCE.md for provenance and the
+encoding adjudications.]
+
+===========================================================================
+North Sea Terminal Bremerhaven GmbH & Co. — Reference tariff
+Valid from 01.08.2026 (English edition, 12 pages)
+===========================================================================
+ 
+I 
+ 
+ 
+North Sea Terminal Bremerhaven GmbH & Co. 
+Reference tariff 
+Valid from 01.08.2026 
+General regulations   
+All rates as per this reference scale of charges are based on the present legal provisions 
+for the performance of the respective services. If new or amended legal provisions 
+com e into force after introduction of this reference scale of charges that put  NTB in 
+position to perform such services in a way that requir es increased expenditure or 
+additional measures , NTB shall be entitled to increase the respective rate or 
+implement a charge covering the increased expenditures or additional mea sures to an 
+appropriate extent.  
+ 
+Sale of small material is possible – see item 11 . Sale of small material . 
+  
+Any service performed by NTB will be subject to the currently valid terms, rules and 
+regulations of the "Allgemeine Geschäftsbedingungen und Betriebsordnung (AGBO)" 
+of NTB, unless otherwise agreed in writing.     
+ 
+All handling charges of the reference tariff will be charged per movement, except 
+where otherwise specified.   
+Minimum charge: EUR 55,00 unless otherwise agreed in writing.  
+ 
+1,5 % social fund will be charged for all services performed  (with the exception of 
+demurrage charges and security surcharge).  
+ 
+All invoices are payable immediately without deduction. In case of default NTB will 
+charge default  interest based on the base interest rate of BGB ( §247 Bürgerliches  
+Gesetzbuch /German Civil Code) plus 5 %.  
+ 
+Please quote invoice number and customer account number when making payments.  
+ 
+Cargo handling such as unpacking  and  reloading  will be handled by external service 
+providers . A surcharge of 20 % will be added to the  corresponding invoice  as 
+administrative fee . 
+The above mentioned specifications refer to the usual services of container handling.  
+Container means any standard or special 20 ',40' or 45' container with ISO fittings 
+including flatracks  which can be handled by means of the normal use of container 
+spreaders.  For the handling of conventional cargo other tariff rates are valid. Please 
+ask in particular cases.  
+All fees are net amounts in compliance with the Value Added Tax (VAT) . 
+
+North Sea Terminal Bremerhaven GmbH & Co.  
+Referen ce t arif f valid from 01.0 8.202 6 
+II 
+Index 
+ 
+General regulations  ................................ ................................ ................................ .. I 
+Index  ................................ ................................ ................................ .....................  II 
+1. Vessel charges  ................................ ................................ ................................ ....  1 
+2. Handling charges  ................................ ................................ ..............................  2 
+3. Lease of personnel and equipment  ................................ ................................ ....  4 
+4. Demurrages  ................................ ................................ ................................ ......  5 
+5. Shift differentials/Overtimes  ................................ ................................ ............  6 
+6. Recei pt and delivery of container  ................................ ................................ ......  7 
+7. Reefer Service  ................................ ................................ ................................ ...  8 
+8. Yard/Terminal moves  ................................ ................................ .......................  8 
+9. Special services  ................................ ................................ ................................ . 9 
+10.   Security Charge  ................................ ................................ ................................  11 
+11.   Sale of small material  ................................ ................................ .......................  12 
+North Sea Terminal Bremerhaven GmbH & Co.  
+Referen ce t ari ff valid from 01.0 8.202 6 
+Page 1 of 12 
+ 
+1. Vessel charges  
+For the use of NTB`s handling facilities tonnage dues and quay dues will be charged 
+per vessel call.   
+The calculation of tonnage dues is based on the gross tonnage  (BRZ)  of the vessel and 
+the time of the port stay . The fees shall be paid by the shipping company or its agency.  
+1.1.  Tonnage dues  
+The  tonnage dues arise for every vessel call and are calculated on  the b asis of the gross 
+tonnage (BRZ) of the ship concerned and is multiplied by the gross  tonnage : 
+  
+First 24 hours  of vessel call      BRZ x 0,50 EUR   
+thereafter for each started 12 hours     BRZ x 0,50 EUR x 0,5  
+1.2.  Quay dues  
+Quay dues are to be paid by the ship  during the course of handling for loading and 
+discharging of cargo:  
+Overseas vessels        10,10  EUR/1.000 kg 
+ 
+Vessels involved in traffic with European ports (German coastal traffic inbound and 
+outbound) and within inland waterway transport (barges) inbound and  
+outbound         5,90 EUR/1.000 k g 
+ 
+Quay Dues are also billed for cargo handled : 
+ 
+• from quay to barge/vessel or  
+• from quay to barge/vessel via floating crane  
+• from barge/vessel to quay or  
+• from barge/vessel to quay via fl oating crane  
+ 
+1.3.  Lay-by tariff       upon request  
+      
+ 
+  
+North Sea Terminal Bremerhaven GmbH & Co.  
+Referen ce t arif f valid from 01.0 8.202 6 
+Page  2 of 12 
+ 
+2. Handling charges  
+2.1.  Discharge/Loading from/t o Deepsea vessel /Feeder vessel  
+and Barges  
+ 
+2.1.1.  ISO -Container ( empty /full )    339,00 EUR/Container  
+2.1.2.  Non -ISO Container       see explanation * 
+2.1.3.  Handling with chains       1.1 50,00 EUR /Container  
+2.1.4.  Bundles of flats / flat racks in bundles    339,00 EUR/ Flat**  
+2.1.5.  Restows board -land -board     619,00  EUR/ Container  
+ 
+All prices  plus  Security Charge  (10. Security Charge ). 
+ 
+Non -ISO Container and Out of Gauge (OOG) Container are Container which are not 
+in any respect ISO  standard  or such ISO -standard Container with over height and/or 
+over length and/or over width.  
+ 
+*Handling of OOG -Container – ISO equipment with no overlength (OL), overheight 
+(OH) less than 200 cm, and/or overwidth (OW) less than 30 cm at either side: plus 
+100 % on rates mentioned above.  
+ 
+Handling of OOG -Container – ISO equipment with no overlength (OL), overheight 
+(OH) more than 200 cm, and/or overwidth  (OW) more than 30 cm at either side, or 
+Non-ISO Container: plus 200 % on rates mentioned above.  
+ 
+** The billing of bundled flats is based on the available data. This means that if a 
+bundle is uploaded in the system as 4 single flats, 4 moves will be charged 
+accordingly . Only i f the shipping company announces the bundle  correctly 
+(regarding the numerical combination) in advance , one move will be charged .  
+2.2.  Discharge/Loading of vessel equipment  
+2.2.1.  Hatchcover moves        416,40 EUR/ Double  
+Move  
+2.2.2.  Discharge/ Loading of  Gear Box Racks    420,10  EUR/ Move  
+2.2.3.  Handling of  Breakbulk      upon request  
+2.2.4.  Discharge/Loading of vessel provison    upon request  
+North Sea Terminal Bremerhaven GmbH & Co.  
+Referen ce t ari ff valid from 01.0 8.202 6 
+Page 3 of 12 
+ 
+2.3.  Securing containers on board of Deepsea vessel/Feeder vessel  
+2.3.1.  Lashing/unlashing on board of vessels     42,60 EUR/Container  
+2.3.2.  Attaching/removal of  Twistlocks     21,6 0 EUR/Container  
+2.3.3.  Lash ing /unlashing manua lly (wire , etc.)   Upon request  
+2.3.4.  Lashing/ unlashing of  Breakbulk  from  Mafitrailer  
+(transport  saf ety)      200,0 0 EUR/ Package  
+2.3.5.  Attaching/ removal of  Bridge Fittings    109,0 0 EUR/  
+Hour/ Worker  
+2.4.  Overdimensioned cargo  
+Charge for using resources for overdimensioned cargo which are received by 
+adjacent port areas:  
+ 
+2.4.1.  Per lift by documentation via dbh system (organized by customer)  
+        695,00 EUR/Lift  
+ 
+2.4.2.  Per lift by documentation via dbh system (organized by NTB)  
+        957,0 0 EUR/ Lift  
+ 
+2.4.3.  Masts         3.570 ,00  EUR/Mast  
+2.4.4.  Components  18,5 m – 21,5 m     5.970 ,00  EUR/  
+Component  
+2.4.5.  Components > 21,5 m      7.970 ,00  EUR/  
+Component  
+2.4.6.  Alu minium p lates       5.970,00  EUR/Plate  
+2.4.7.  Overlength  > 13,5 m  up to wind force  5   3.970,00 EUR/  
+Component  
+ 
+ 
+ 
+ 
+ 
+North Sea Terminal Bremerhaven GmbH & Co.  
+Referen ce t ari ff valid from 01.0 8.202 6 
+Page 4 of 12 
+ 
+3. Lease of personnel and equipment   
+Lease of personnel and equipment for the container handling at North Sea Terminal 
+Bremerhaven:  
+ 
+3.1.  Labour charges        115,50EUR/ Hour / 
+                                                                                              Worker  
+3.2.  Forklift up to 10 to  (incl. driver)     265,90  EUR/H our  
+3.3.  Forklift over 10 to  (incl. driver)     upon request  
+3.4.  Van Carrier  (incl. driver)      445,00 EUR/ Hour  
+3.5.  Container crane  (incl. driver)     1.150,00 EUR/ Hour 
+3.6.  Truck /MAFI  truck  (incl. driver)     210,00 EUR/ Hour  
+3.7.  MAFI -Occupancy  (60 to)      185,80 EUR/ Calendar D ay  
+3.8.  MAFI -Occupancy  (100 to)      241,80 EUR/ Calendar D ay 
+3.9.  Safety car  (incl. driver)      157,9 0 EUR/ Hour 
+3.10.  Port Facility Security Officer (PFSO)    149,4 0 EUR/ Hour 
+3.11.  Service vehicle/emergency gear  (incl. driver)   307,10  EUR/ Hour /worker   
+3.12.  Cleaning of dangerous cargo tub *   upon request  
+3.13.  Lashing cage        37,00 EUR/ Hour  
+ 
+*Disposal costs upon request with regard to  the costs of a licensed waste disposal firm.   
+ 
+The calculation is based on the time requirement. NTB will charge minimal costs of 
+1/2 hour. Afterwards t he default time interv al is 1/4 hour.
+North Sea Terminal Bremerhaven GmbH & Co.  
+Referen ce t ari ff valid from 01.0 8.202 6 
+Page 5 of 12 
+ 
+     20‘        40‘       45‘ 
+ 
+46,70 EUR  93,40  EUR 140,10  EUR 
+ 
+ 
+46,70  EUR  93,40  EUR 140,10 EUR 
+ 
+ 
+46,70  EUR  93,40  EUR 140,10 EUR 
+ 
+     20‘        40‘       45‘  
+ 
+20,30  EUR 40,60  EUR 60,90  EUR 
+ 
+ 
+     20‘       40‘       45‘  
+ 
+46,70  EUR  93,40  EUR 140,10 EUR 
+ 
+      20‘       40‘       45‘  
+ 
+189,40  EUR 378,80  EUR 568,20  EUR 
+ 
+78,30  EUR 156,60  EUR 234,90  EUR  
+ 
+ 
+ 
+ 
+4. Demurrages  
+4.1.  Full container  
+4.1.1.  Import -Container        
+Free storage : 2 calender d ays  
+4.1.2.  Export -Container       
+Free storage:  4 calender days  
+4.1.3.  Transhipment -Container       
+Free storage : 4 calender days  
+4.2.  Empty container  
+Empty container  (no free storage)     
+4.3.  Land -Land container   
+Land -Land -Container  (no free storage)     
+4.4.  Dangerous/ hazardous goods  
+4.4.1.  IMO Cargo hazard class 1+ 7    
+4.4.2.  IMO Cargo hazard class ex cept class 1+7   
+4.4.3.  Temporary storage of leakage containers in a drain pan plus demurrages   
+        210,00  EUR 
+plus demurrages and c ontainer  move  
+No free storage for dangerous/hazardous goods!   
+General regulations for storage   
+All prices under item 4 are per calendar  day and container.  
+Full containers will be charged with the double tariff rate after 5 liable 
+storage days.  
+Full non -iso containers will be charged with the double tariff rate.  
+No free storage.  
+ 
+North Sea Terminal Bremerhaven GmbH & Co.  
+Referen ce t arif f valid from 01.0 8.202 6 
+Page  6 of 12 
+ 
+4.5.  Mobile weather roof (weather protection)  
+Mobile weather roof       178,00 EUR  
+5. Shift differentials/Overtimes  
+5.1.  Shift differentials    
+5.1.1.   Weekdays mondays - fridays 3rd shift      3.920 ,00  EUR Gang/ Shift  
+5.1.2.   Saturdays 1st + 2nd shift      4.380 ,00  EUR Gang / Shift  
+5.1.3.   Saturdays 3rd + 4th shift      6.190 ,00 EUR Gang /Shift  
+5.1.4.   Pre -holidays 1st shift      4.820,00  EUR Gang/ Shift  
+5.1.5.   Sundays and holidays 1st + 2nd shift    4.820,00  EUR Gang/ Shif t 
+5.1.6.   Sundays and holidays 3rd + 4th shift    6.550 0,00 EUR Gang /Shift  
+5.2.  Shift differentials for dispatch rail  
+5.2.1.   Weekdays mondays - fridays 3rd shift    17,80 EUR/ Container  
+5.2.2.   Saturdays 2nd and 3rd shift     17,80 EUR/ Container  
+5.2.3.   Sundays and holidays 1st - 4th shift    17,80 EUR/ Container  
+5.3.  Overtimes    
+Overtime is all working time over and above a normal shift (per subsequent hour) . 
+ 
+5.3.1.  Weekdays mondays - fridays 1st shift    652,00  EUR Gang/ Hour  
+5.3.2.  Weekdays mondays - fridays 2nd shift    1.080,00  EUR Gang/Hour  
+5.3.3.  Weekdays mondays - fridays 3rd shift    1.210 ,00  EUR Gang/ Hour  
+5.3.4.  Saturdays 1st shift       1.160,00 EUR Gang/Hour  
+5.3.5.  Saturdays 2nd shift       1.450,00  EUR Gang/Hour  
+5.3.6.  Saturdays 3rd + 4th shift      1.870,00  EUR Gang/Hour  
+5.3.7.  Sundays and holidays 1st and 2nd shift    1.870,00  EUR Gang/Hour  
+5.3.8.  Sundays and holidays 3rd and 4th shift    1.870,00  EUR Gang/Hour  
+5.3.9.  On pre -holidays after 12.00 p.m.     upon request
+North Sea Terminal Bremerhaven GmbH & Co.  
+Referen ce t ari ff valid from 01.0 8.202 6 
+Page 7 of 12 
+ 
+5.4.  Waiting time  
+If an ordered shift is cancelled due to rain, storm, other weather conditions, delayed 
+arrival of the vessel, late arrival of Container/cargo, etc. either completely or in part, 
+the time not worked will be charged to the vessel as waiting time.  
+ 
+NTB will charge the lease of equipment (see item 3.). In addition w age agreements as 
+valid from time to time for dock staff working in German ports specify that charges 
+for waiting time shall be calculated by shift:  
+ 
+Waiting time           115,50 EUR/ Hour /Worker    
+6. Recei pt and delivery of c ontainer  
+6.1.  Container receipt and container delivery  
+6.1.1.  ISO -Container (full /empty )    145,00 EUR/ Container  
+6.1.2.  Non -ISO Container       see explanation * 
+6.1.3.  Container receipt and delivery l andside (house -house -container)  
+           145,00 EUR/ Container  
+6.1.4.  Receiving of tarpaulin trailer     619,00  EUR/ Hour  
+(Minimum : 0,5 hours ) 
+ 
+Non -ISO Container and Out of Gauge (OOG) Container are Container which  are  not 
+in any respect ISO standard or such ISO -standard Container with over height and/or 
+over length and/or over width.  
+ 
+*Handling of OOG -Container – ISO equipment with no overlength (OL), overheight 
+(OH) less than 200 cm, and/or overwidth (OW) less than 30 cm at either side: plus 
+100 % on rates mentioned above.  
+ 
+Handling of OOG -Container – ISO equipment with no overlength (OL), overheight 
+(OH) more than 200 cm, and/or overwidth  (OW) more than 30 cm at either side, or 
+NON -ISO Container: plus 200 % on rates mentioned above.  
+ 
+In case of handling with chains: plus 300 % on rates mentioned above.
+North Sea Terminal Bremerhaven GmbH & Co.  
+Referen ce t ari ff valid from 01.0 8.202 6 
+Page 8 of 12 
+ 
+6.2.  Recei pt and delivery of   IMO -Container  
+6.2.1.  Hazardous cargo surcharge (without IMO -classes 1+7)  
+        86,10 EUR/Container  
+6.2.2.  Hazardous cargo surcharge (IMO  classes 1+7)  
+        182,20  EUR/Container  
+6.3.  Personal identification and Interchange  
+6.3.1.  Issuing of interchange      70,00 EUR/Container  
+7. Reefer Service  
+7.1.  Refrigeration and temperature maintenance of Container  
+7.1.1.  Refrigeration at Terminal (on/ off,  electricity)   167,00 EUR/ Container  
+(incl. connect - and disconnect of the reefer                   for 24 hour s or part thereof  
+7.1.2.  For each subsequent 24 hours or part thereof   132,00 EUR/ Container  
+                                                                                            for 24 hours or part thereof  
+7.1.3.  Changing of reefer discs      70,00 EUR/Container  
+7.1.4.  Change of setting of reefer units     70,00 EUR/Container  
+8. Yard/ Terminal moves  
+8.1.1.  Terminal transport/ move *    145,00 EUR/ Move  
+ 
+* Since 1st of January 2019 ITT -Moves are  solely charged to the box operator.  
+ 
+8.1.2.  Positioning  of container  upon request    145,00 EUR/ Move  
+8.1.3.  Van carrier move for  customs  X-Ray  inspection ( onside )  
+         235,70 EUR /Container  
+8.1.4.  Terminal move due to an instruction or status change and incorrect/  
+missing data respectively      145,00EUR/ Move  
+8.1.5.  Transport to/ from Packing Center (CFS)   145,00 EUR/ Move  
+8.1.6.  Stowing of empty containers out of the blockstow  145,00 EUR/ Move
+North Sea Terminal Bremerhaven GmbH & Co.  
+Referen ce t ari ff valid from 01.0 8.202 6 
+Page 9 of 12 
+ 
+9. Special serv ices  
+9.1.  Labe lling/Removal  
+9.1.1.  Label ling /Removal  at the gate     55,70 EUR/ Container  
+Label  material has to be provided by the customer  
+9.1.2.  Labelling/Removal at the yard     148,00 EUR/Container  
+incl. max. 4 Label, labour and safety car, p lus Container move  
+9.1.3.  Label material has to be provided by the customer  
+9.1.4.  Mater ial for labe lling       8,00 EUR/ Label  
+(If customer does not provide it )  
+9.1.5.  Van Carrier -Move       145,00 EUR/ Move  
+9.1.6.  Safety car        158,00 EUR/ Hour/  
+  (Minim um: 0,5 hours )     Worker  
+9.2.  Sealing  
+9.2.1.  High security seal       70,00 EUR/ Container  
+9.2.2.  Sale of seal        5,40 EUR/ Seal  
+9.2.3.  Van Carrier        145,00 EUR/ Move  
+9.2.4.  Safety car        158,00 EUR/ Hour 
+(Minimum : 0,5 hours )     Worker  
+9.2.5.  Securing of doors by fork seal  for railcontainer   90,00 EUR/ Container  
+9.3.  Closing  door s bars of containers  (full and empty containers)  
+9.3.1.  Locking  of door s (landside – rail dispatch)   58,10 EUR/ Container  
+plus transtainer move  
+9.3.2.  Locking of doors ( waterside – under crane )  58,10 EUR/Container  
+9.3.3.  Van Carrier -Move       145,00 EUR/ Move  
+9.4.  Weighing of  Containers (VGM/ SOLAS)   
+9.4.1.  Van Carrier -Move       145,00 EUR/ Move * 
+9.4.2.  Weighing of Containers      100,00  EUR/ Process  
+ 
+*2 VC Moves necessary – ISO Containers only – Service dependent on available 
+capacity – Confirmation of Terminal required  in advance . 
+North Sea Terminal Bremerhaven GmbH & Co.  
+Referen ce t ari ff valid from 01.0 8.202 6 
+Page 10 of 12 
+ 
+9.5.  Services on  Flats  
+9.5.1.  Put up flats        400,00  EUR/Flat  
+9.5.2.  Check -up flats       98,50 EUR/Flat  
+9.6.  Opti cal Documentation  
+9.6.1.  Foto documentation in the Yard (incl. Safety car)   
+plus container move        132,80 EUR /Container  
+9.6.2.  Foto documentation under the crane (OCR)   25,00 EUR/Container  
+9.7.  Surveillance of Containers * 
+Surveillance of Containers       199,00 EUR/ Container / 
+Calendar day  
+ 
+* Fee is charged for Containers IMDG 1 (except 1.3 and 1.4) and IMDG 7 as well as 
+on request.  
+   
+9.8.  Manu al Data Entry   
+Entry of Orders/Data that have not been received by EDI and required manual data 
+entry          66,60 EUR/ Container  
+9.9.  Repair of Containers (repair of tunnel /twistlock removal )  
+9.9.1.  Van Carrier -Move       145,00 EUR/Move * 
+9.9.2.  Repair  of Containers      97,90 EUR/Process  
+ 
+*2 VC Moves necessary – ISO Containers only – Service dependent on available 
+capacity – Confirmation of Terminal required  in advance . 
+  
+North Sea Terminal Bremerhaven GmbH & Co.  
+Referen ce t arif f valid from 01.0 8.202 6 
+Page  11 of 12 
+ 
+ 
+10. Security Charge  
+Security charge  applicable for all full/empty containers loaded/discharged.  
+ 
+Security charge        22,20 EUR/ Container  
+North Sea Terminal Bremerhaven GmbH & Co.  
+Referen ce t ari ff valid from 01.0 8.202 6 
+Page 12 of 12 
+ 
+11. Sale of small material  
+Customer can buy small material for securing,  fixing or anchoring the goods if 
+required.  
+ 
+Incidental        40,00 EUR / Piece  
+11.2.  Lashing strap       8,00 EUR/Meter  
+11.3.  Ratchet        33,00 EUR/ Piece  
+11.4.  Pickaxes        14,00 EUR/Piece  
+11.5.  Edge protector       8,00 EUR/ Piece  
+11.6.  Heavy -duty tape       54,00 EUR/Piece  
+11.7.  Padlocks        14,00 EUR/Piece  
+11.8.  Squared timber       14,00 EUR/Meter  
+11.9.  Wooden board       8,00 EUR/Meter   
+ 
+ 
+ 
+ 
