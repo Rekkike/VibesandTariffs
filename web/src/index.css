@@ -868,12 +868,108 @@ body {
   margin-bottom: var(--space-6);
 }
 
-.comparison-port-selection {
+/* Port drawer (spec v0.5.0 selection-surface redesign): the collapsed
+   "Ports" control and its country-grouped panel replace the horizontal
+   tab list. Tokens only (the v0.2.51 discipline). */
+.port-drawer {
+  padding: 0;
+}
+
+.port-drawer-toggle {
   display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-primary);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.port-drawer-toggle:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: -2px;
+}
+
+.port-drawer-summary {
+  color: var(--text-secondary);
+  font-weight: 400;
+  font-size: var(--font-caption);
+}
+
+.port-drawer-chevron {
+  margin-left: auto;
+  color: var(--text-secondary);
+}
+
+.port-drawer-body {
+  padding: var(--space-3) var(--space-4) var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.port-drawer-country {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.port-drawer-country-header {
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.port-drawer-row {
+  display: flex;
+  align-items: center;
   gap: var(--space-3);
   flex-wrap: wrap;
-  margin: var(--space-2) 0 var(--space-4);
 }
+
+.port-drawer-nav,
+.port-drawer-row.port-drawer-row-only-nav {
+  flex: 1 1 auto;
+  text-align: left;
+  padding: var(--space-2) var(--space-3);
+  background: none;
+  border: none;
+  border-radius: var(--space-1);
+  color: var(--text-primary);
+  font: inherit;
+  cursor: pointer;
+}
+
+.port-drawer-nav:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 1px;
+}
+
+.port-drawer-row-active {
+  background: var(--accent-tint);
+  color: var(--accent);
+}
+
+.port-drawer-compare {
+  margin-right: 0;
+}
+
+.port-drawer-count,
+.port-drawer-cap-message {
+  color: var(--text-secondary);
+  font-size: var(--font-caption);
+  margin: 0;
+}
+
+.port-drawer-cap-message {
+  color: var(--warning);
+}
+
 
 .comparison-basis {
   color: var(--text-secondary);

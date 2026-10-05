@@ -40,7 +40,6 @@ import {
 } from './handlingBasis';
 import type { HinterlandMode } from './handlingBasis';
 import { buildDiscountLine } from './discountLine';
-import { ComparisonPortSelection } from './comparisonPortSelection';
 
 interface ComparisonViewProps {
   ports: PortDefinition[];
@@ -52,7 +51,6 @@ interface ComparisonViewProps {
   // existing pin over the view holds unmodified.
   perPortCallOverrides?: Record<string, Record<string, unknown>>;
   selectedPortIds: string[];
-  onSelectionChange: (portIds: string[]) => void;
   activeVessel: string;
   // Profile-assumption fields (spec v0.2.48): the strip states the seeded
   // assumptions once per the honesty contracts.
@@ -68,7 +66,6 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
   call,
   perPortCallOverrides,
   selectedPortIds,
-  onSelectionChange,
   activeVessel,
   assumedCallFields = []
 }) => {
@@ -151,7 +148,11 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
         </Typography>
       </Paper>
 
-      <ComparisonPortSelection ports={ports} selectedPortIds={selectedPortIds} onSelectionChange={onSelectionChange} selectedCount={selectedPorts.length} />
+      {selectedPorts.length === 0 && (
+        <Paper className="comparison-section" elevation={2}>
+          <Typography color="error">Select at least one port to compare.</Typography>
+        </Paper>
+      )}
 
       {selectedPorts.length > 0 && (
         <Paper className="comparison-section" elevation={2}>

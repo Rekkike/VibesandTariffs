@@ -80,7 +80,6 @@ const renderComparison = async (
         vessel={vessel}
         call={call}
         selectedPortIds={selectedPortIds}
-        onSelectionChange={() => {}}
         activeVessel="TEST"
       />
     );
@@ -273,7 +272,6 @@ describe('comparison shared-call per-port defaults (spec v0.2.53 defect fix)', (
             vessel={DEFAULT_VESSEL}
             call={defaultCall('gothenburg')}
             selectedPortIds={LOADED_PORTS.map(p => p.metadata.id)}
-            onSelectionChange={() => {}}
             activeVessel="TEST"
           />
         );

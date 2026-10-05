@@ -169,7 +169,6 @@ describe('comparison view responsive rendering paths', () => {
           vessel={vessel}
           call={call}
           selectedPortIds={LOADED_PORTS.map(p => p.metadata.id)}
-          onSelectionChange={() => {}}
           activeVessel="Custom vessel — 12,000 GT"
         />
       );
@@ -333,7 +332,6 @@ describe('comparison view: condensed derivation in both layouts (spec v0.2.42)',
           vessel={vessel}
           call={call}
           selectedPortIds={LOADED_PORTS.map(p => p.metadata.id)}
-          onSelectionChange={() => {}}
           activeVessel="Custom vessel — 12,000 GT"
         />
       );
@@ -471,7 +469,6 @@ describe('comparison-table fit contract (spec v0.2.43)', () => {
           vessel={vessel}
           call={call}
           selectedPortIds={LOADED_PORTS.map(p => p.metadata.id)}
-          onSelectionChange={() => {}}
           activeVessel="Custom vessel — 12,000 GT"
         />
       );
@@ -494,7 +491,6 @@ describe('comparison-table fit contract (spec v0.2.43)', () => {
           vessel={vessel}
           call={call}
           selectedPortIds={LOADED_PORTS.map(p => p.metadata.id)}
-          onSelectionChange={() => {}}
           activeVessel="Custom vessel — 12,000 GT"
         />
       );

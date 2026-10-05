@@ -299,7 +299,6 @@ describe('call-context strip and header (spec v0.2.47)', () => {
           vessel={vessel}
           call={call}
           selectedPortIds={LOADED_PORTS.map(p => p.metadata.id)}
-          onSelectionChange={() => {}}
           activeVessel="HELGAFELL (IMO 9306017)"
         />
       );
@@ -326,7 +325,6 @@ describe('call-context strip and header (spec v0.2.47)', () => {
           vessel={DEFAULT_VESSEL}
           call={defaultCall('gothenburg')}
           selectedPortIds={LOADED_PORTS.map(p => p.metadata.id)}
-          onSelectionChange={() => {}}
           activeVessel="Custom vessel — 55,000 GT"
         />
       );

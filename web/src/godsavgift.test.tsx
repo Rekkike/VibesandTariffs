@@ -114,7 +114,6 @@ describe('godsavgift comparison rendering (spec v0.2.61)', () => {
           vessel={DEFAULT_VESSEL}
           call={call}
           selectedPortIds={LOADED_PORTS.map(p => p.metadata.id)}
-          onSelectionChange={() => {}}
           activeVessel="TEST"
         />
       );

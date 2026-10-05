@@ -40,7 +40,6 @@ const renderComparison = async (call: CallInput) => {
         vessel={DEFAULT_VESSEL}
         call={call}
         selectedPortIds={LOADED_PORTS.map(p => p.metadata.id)}
-        onSelectionChange={() => {}}
         activeVessel="TEST"
       />
     );
@@ -121,7 +120,6 @@ describe('published-vs-derived per-GT labeling (spec v0.2.68, item 3)', () => {
           vessel={DEFAULT_VESSEL}
           call={defaultCall('helsingborg') as CallInput}
           selectedPortIds={LOADED_PORTS.map(p => p.metadata.id)}
-          onSelectionChange={() => {}}
           activeVessel="TEST"
         />
       );

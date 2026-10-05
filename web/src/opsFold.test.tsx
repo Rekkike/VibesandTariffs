@@ -118,7 +118,6 @@ describe('GOT per-GT OPS fold — the comparison surface (spec v0.2.70)', () => 
           vessel={DEFAULT_VESSEL}
           call={call}
           selectedPortIds={LOADED_PORTS.map(p => p.metadata.id)}
-          onSelectionChange={() => {}}
           activeVessel="TEST"
         />
       );
@@ -295,11 +294,18 @@ describe('GOT per-GT OPS fold — the workspace surface (spec v0.2.70)', () => {
     const escaped = forId.replace(/([^a-zA-Z0-9_-])/g, '\\$1');
     return c.querySelector(`[id="${escaped}"]`) as HTMLInputElement | null;
   };
+  // v0.5.0 re-pointing (spec selection-surface redesign): the horizontal
+  // tab list is replaced by the country-grouped drawer; navigation opens
+  // the drawer and clicks its row button (docs/SELECTION_SURFACE_AUDIT.md
+  // item 0.5). Same navigation behavior, same ports.
   const clickTab = async (c: HTMLElement, tabText: string) => {
-    const tab = Array.from(c.querySelectorAll('.port-nav button'))
+    const toggle = c.querySelector('.port-drawer-toggle');
+    expect(toggle).toBeDefined();
+    await act(async () => { toggle!.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    const row = Array.from(c.querySelectorAll('.port-drawer-body button'))
       .find(b => (b.textContent ?? '').toLowerCase().includes(tabText.toLowerCase()));
-    expect(tab).toBeDefined();
-    await act(async () => { tab!.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    expect(row).toBeDefined();
+    await act(async () => { row!.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
     await act(async () => { await new Promise(r => setTimeout(r, 650)); });
   };
   const renderApp = async () => {

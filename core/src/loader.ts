@@ -715,7 +715,7 @@ export function validatePort(port: PortDefinition): PortValidationResult {
       });
     }
     
-    if (!port.metadata.country) {
+    if (!port.metadata.country || !port.metadata.country.trim()) {
       errors.push({
         message: 'Port metadata missing country',
         severity: 'error',

@@ -46,7 +46,6 @@ const renderMobileComparison = async (call: CallInput) => {
         vessel={DEFAULT_VESSEL}
         call={call}
         selectedPortIds={LOADED_PORTS.map(p => p.metadata.id)}
-        onSelectionChange={() => {}}
         activeVessel="TEST"
       />
     );

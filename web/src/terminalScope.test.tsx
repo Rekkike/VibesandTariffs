@@ -166,7 +166,6 @@ describe('comparison context strip states the priced operator (spec v0.2.49)', (
           vessel={DEFAULT_VESSEL}
           call={{ ...defaultCall('hamburg') } as CallInput}
           selectedPortIds={LOADED_PORTS.map(p => p.metadata.id)}
-          onSelectionChange={() => {}}
           activeVessel="MAREN MAERSK (IMO 9632129)"
         />
       );
@@ -189,7 +188,6 @@ describe('comparison context strip states the priced operator (spec v0.2.49)', (
           vessel={DEFAULT_VESSEL}
           call={{ ...defaultCall('hamburg'), terminal_operator: 'HHLA' } as CallInput}
           selectedPortIds={LOADED_PORTS.map(p => p.metadata.id)}
-          onSelectionChange={() => {}}
           activeVessel="MAREN MAERSK (IMO 9632129)"
         />
       );

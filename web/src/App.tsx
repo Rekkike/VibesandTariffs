@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, Paper, Tab, Tabs, ThemeProvider, Typography } from '@mui/material';
+import { Box, Paper, ThemeProvider, Typography } from '@mui/material';
 import type { CallInput, VesselInput } from '@port-cost/core';
 import {
   DEFAULT_VESSEL,
@@ -11,15 +11,16 @@ import {
 import { useAppTheme, muiThemeFor } from './appTheme';
 import { APP_VERSION } from './version';
 import { LOADED_PORTS } from './portRegistry';
-import { portLabel } from './portLabel';
 import { PortWorkspace } from './portWorkspace';
 import { ComparisonView } from './comparisonView';
+import { PortDrawer } from './portDrawer';
 
 // Public surface (spec v0.2.60 decomposition): the views and the test seam
 // are re-exported so every existing import from './App' is unchanged.
 export { __setMobileQueryForTests } from './appTheme';
 export { PortWorkspace } from './portWorkspace';
 export { ComparisonView } from './comparisonView';
+export { PortDrawer, groupPortsByCountry, COMPARISON_SELECTION_CAP, COMPARISON_CAP_MESSAGE } from './portDrawer';
 
 // Navigation pages per spec v0.2.17 section 4.3.1 (spec v0.2.60
 // decomposition): extracted from App.tsx verbatim.
@@ -170,9 +171,7 @@ const App: React.FC = () => {
       ? LOADED_PORTS.find(p => p.metadata.id === page.portId) ?? activePort
       : undefined;
 
-  const tabIndex = page.kind === 'comparison' ? LOADED_PORTS.length : LOADED_PORTS.findIndex(
-    p => p.metadata.id === page.portId
-  );
+
 
   return (
     <ThemeProvider theme={muiThemeFor(themeMode)}>
@@ -212,27 +211,17 @@ const App: React.FC = () => {
         </Box>
       </Paper>
 
-      {/* Persistent port selector: one tab per loaded port, plus the
-          comparison screen */}
-      <Paper className="port-nav" elevation={2}>
-        <Tabs
-          value={tabIndex === -1 ? 0 : tabIndex}
-          onChange={(_, newValue: number) => {
-            if (newValue === LOADED_PORTS.length) {
-              setPage({ kind: 'comparison' });
-            } else {
-              setPage({ kind: 'port', portId: LOADED_PORTS[newValue].metadata.id });
-            }
-          }}
-          variant="scrollable"
-          scrollButtons="auto"
-        >
-          {LOADED_PORTS.map(port => (
-            <Tab key={port.metadata.id} label={portLabel(port)} />
-          ))}
-          <Tab label="Compare Ports" />
-        </Tabs>
-      </Paper>
+      {/* Persistent port selector (spec v0.5.0 selection-surface
+          redesign): the horizontal tab list is replaced by the
+          country-grouped collapsible drawer - one "Ports" control,
+          navigation and the compare checkboxes carried inside it. */}
+      <PortDrawer
+        ports={LOADED_PORTS}
+        page={page}
+        onNavigate={setPage}
+        selectedPortIds={comparisonSelection}
+        onSelectionChange={setComparisonSelection}
+      />
 
       {page.kind === 'comparison' ? (
         <ComparisonView
@@ -241,7 +230,6 @@ const App: React.FC = () => {
           call={sharedCall as unknown as CallInput}
           perPortCallOverrides={perPortCallFields}
           selectedPortIds={comparisonSelection}
-          onSelectionChange={setComparisonSelection}
           activeVessel={activeVesselLabel}
           assumedCallFields={assumedCallFields}
         />

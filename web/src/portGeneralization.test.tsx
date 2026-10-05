@@ -128,7 +128,6 @@ describe('comparison scalability controls (spec v0.2.59)', () => {
           vessel={DEFAULT_VESSEL}
           call={defaultCall('gothenburg')}
           selectedPortIds={selectedPortIds}
-          onSelectionChange={() => {}}
           activeVessel="TEST"
         />
       );

@@ -315,7 +315,6 @@ describe('comparison context strip: seeded profile with honest flags (spec v0.2.
           vessel={{ ...DEFAULT_VESSEL }}
           call={call}
           selectedPortIds={['gothenburg', 'hamburg']}
-          onSelectionChange={() => {}}
           activeVessel="MAREN MAERSK (IMO 9632129)"
           assumedCallFields={[...PROFILE_SEEDED_CALL_FIELDS]}
         />
@@ -344,7 +343,6 @@ describe('comparison context strip: seeded profile with honest flags (spec v0.2.
           vessel={{ ...DEFAULT_VESSEL }}
           call={call}
           selectedPortIds={['gothenburg', 'hamburg']}
-          onSelectionChange={() => {}}
           activeVessel="MAREN MAERSK (IMO 9632129)"
           assumedCallFields={[]}
         />

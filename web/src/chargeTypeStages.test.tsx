@@ -112,7 +112,6 @@ const renderComparison = async (
         vessel={vessel}
         call={call}
         selectedPortIds={selectedPortIds}
-        onSelectionChange={() => {}}
         activeVessel="TEST"
       />
     );

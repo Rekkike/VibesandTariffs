@@ -41,12 +41,21 @@ const findFieldByLabel = (container: HTMLElement, label: string): HTMLInputEleme
   return container.querySelector(`[id="${escaped}"]`) as HTMLInputElement | null;
 };
 
+// v0.5.0 re-pointing (spec selection-surface redesign): the horizontal
+// tab list is replaced by the country-grouped drawer (docs/
+// SELECTION_SURFACE_AUDIT.md item 0.5); navigation opens the drawer and
+// clicks its row button. Same navigation behavior, same ports.
 const clickTab = async (container: HTMLElement, tabText: string) => {
-  const tab = Array.from(container.querySelectorAll('.port-nav button'))
-    .find(b => (b.textContent ?? '').toLowerCase().includes(tabText.toLowerCase()));
-  expect(tab).toBeDefined();
+  const toggle = container.querySelector('.port-drawer-toggle');
+  expect(toggle).toBeDefined();
   await act(async () => {
-    tab!.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    toggle!.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+  });
+  const row = Array.from(container.querySelectorAll('.port-drawer-body button'))
+    .find(b => (b.textContent ?? '').toLowerCase().includes(tabText.toLowerCase()));
+  expect(row).toBeDefined();
+  await act(async () => {
+    row!.dispatchEvent(new MouseEvent('click', { bubbles: true }));
   });
 };
 
@@ -165,7 +174,11 @@ describe('card-surface OPS isolation (spec v0.2.62)', () => {
     // registry ports (spec v0.2.59 bounded default); this pin's subject is
     // the all-ports isolation, so every port is selected first (the
     // checkbox list is the explicit subset control).
-    const boxes = Array.from(container!.querySelectorAll('.comparison-port-selection input[type="checkbox"]')) as HTMLInputElement[];
+    // v0.5.0 re-pointing: the compare checkboxes live in the port drawer
+    // (the same selection store and comparison feed; the surface moved).
+    const drawerToggle = container!.querySelector('.port-drawer-toggle')!;
+    await act(async () => { drawerToggle.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    const boxes = Array.from(container!.querySelectorAll('.port-drawer-body input[type="checkbox"]')) as HTMLInputElement[];
     for (const b of boxes) {
       if (b.checked) continue;
       await act(async () => { b.dispatchEvent(new MouseEvent('click', { bubbles: true })); });

@@ -83,6 +83,43 @@ describe('accessibility floor (WCAG 2.2 AA, v0.2.25–v0.2.32 surfaces)', () => 
     const conversion = fs.readFileSync(path.join(__dirname, 'conversion.ts'), 'utf8');
     expect(conversion).toMatch(/at \$\{rate\.rate\} kr\/EUR, \$\{rate\.date\}/);
   });
+  // v0.5.0 selection-surface redesign (docs/SELECTION_SURFACE_AUDIT.md
+  // item 0.3): the drawer keeps the standing disclosure pattern - a native
+  // button toggle (keyboard operable by construction), aria-expanded and
+  // aria-controls bound to the panel it opens, no click-only divs. The
+  // drawer module is in the appSource union; its aria contract is asserted
+  // here per the disclosureCard conventions above.
+  it('the port drawer toggle is a native button carrying aria-expanded and aria-controls bound to its panel (v0.5.0)', () => {
+    const drawerSource = fs.readFileSync(path.join(__dirname, 'portDrawer.tsx'), 'utf8');
+    const idx = drawerSource.search(/aria-expanded=\{open\}\s*aria-controls=\{panelId\}/);
+    expect(idx).toBeGreaterThan(-1);
+    const surrounding = drawerSource.slice(Math.max(0, idx - 500), idx);
+    expect(surrounding).toMatch(/<button\s+type="button"\s+className="port-drawer-toggle"/);
+    // The panel the toggle references carries the id the control names
+    expect(drawerSource).toMatch(/id=\{panelId\}\s+className="port-drawer-body"/);
+    // The panel id is the literal the toggle names
+    expect(drawerSource).toMatch(/const panelId = 'port-drawer-panel'/);
+  });
+  it('the drawer closes on Escape and on navigation, and its open state is component-local (never global)', () => {
+    const drawerSource = fs.readFileSync(path.join(__dirname, 'portDrawer.tsx'), 'utf8');
+    expect(drawerSource).toMatch(/if \(e\.key === 'Escape' && open\)/);
+    expect(drawerSource).toMatch(/setOpen\(false\);\s*onNavigate\(target\)/);
+    expect(drawerSource).toMatch(/const \[open, setOpen\] = useState\(false\)/);
+    const moduleLevel = /let\s+drawerOpen/.test(drawerSource);
+    expect(moduleLevel).toBe(false);
+  });
+  it('the drawer rows are native buttons and the compare checkboxes carry programmatic labels (no click-only divs)', () => {
+    const drawerSource = fs.readFileSync(path.join(__dirname, 'portDrawer.tsx'), 'utf8');
+    expect(drawerSource).toMatch(/className=\{`port-drawer-nav\$\{/);
+    expect(drawerSource).toMatch(/'aria-label': `Compare \$\{portLabel\(port\)\}`/);
+    // The disabled-by-cap checkbox discloses its reason (title), never a
+    // silent disable
+    expect(drawerSource).toMatch(/title=\{disabledByCap \? COMPARISON_CAP_MESSAGE : undefined\}/);
+  });
+  it('the drawer keeps the global focus-visible policy (focus ring on every drawer control)', () => {
+    expect(cssSource).toMatch(/\.port-drawer-toggle:focus-visible/);
+    expect(cssSource).toMatch(/\.port-drawer-nav:focus-visible/);
+  });
 });
 
 // Mobile-DOM accessibility (spec v0.2.39 responsive contract): a responsive

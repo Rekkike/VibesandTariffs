@@ -211,7 +211,6 @@ describe('comparison context strip states the arrival origin honestly (spec v0.2
           vessel={DEFAULT_VESSEL}
           call={{ ...defaultCall('gothenburg') } as CallInput}
           selectedPortIds={LOADED_PORTS.map(p => p.metadata.id)}
-          onSelectionChange={() => {}}
           activeVessel="MAREN MAERSK (IMO 9632129)"
         />
       );
@@ -235,7 +234,6 @@ describe('comparison context strip states the arrival origin honestly (spec v0.2
           vessel={DEFAULT_VESSEL}
           call={{ ...defaultCall('gothenburg'), arrival_origin: 'europe' } as CallInput}
           selectedPortIds={LOADED_PORTS.map(p => p.metadata.id)}
-          onSelectionChange={() => {}}
           activeVessel="MAREN MAERSK (IMO 9632129)"
         />
       );

@@ -20,7 +20,7 @@ const MODULES = [
   'portWorkspace.tsx',
   'comparisonModel.ts',
   'comparisonCells.tsx',
-  'comparisonPortSelection.tsx',
+  'portDrawer.tsx',
   'comparisonView.tsx'
 ];
 

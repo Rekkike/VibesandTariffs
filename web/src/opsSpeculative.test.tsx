@@ -243,7 +243,6 @@ describe('OPS speculative inputs — web surfaces (spec v0.2.57)', () => {
           vessel={DEFAULT_VESSEL}
           call={call}
           selectedPortIds={LOADED_PORTS.map(p => p.metadata.id)}
-          onSelectionChange={() => {}}
           activeVessel="TEST"
         />
       );
@@ -309,7 +308,6 @@ describe('OPS speculative inputs — web surfaces (spec v0.2.57)', () => {
           vessel={DEFAULT_VESSEL}
           call={defaultCall('gothenburg')}
           selectedPortIds={LOADED_PORTS.map(p => p.metadata.id)}
-          onSelectionChange={() => {}}
           activeVessel="TEST"
         />
       );
