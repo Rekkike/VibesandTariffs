@@ -204,7 +204,10 @@ describe('discounts received — the model (spec v0.2.64, item 2)', () => {
     expect(line.components.length).toBe(1);
     expect(line.components[0].label).toContain('Frequency discount');
     expect(line.components[0].amount).toBe(102139.60);
-    expect(line.components[0].citation).toContain('port-tariff-2026.pdf');
+    // v0.4.7 re-baseline (the model health audit pass, in-test attribution):
+    // G1 archived - the citation renders the archived .txt filename, never
+    // the never-existed repository .pdf path.
+    expect(line.components[0].citation).toContain('port-tariff-2026.txt');
     // Arithmetic: gross = net + discounts = 3,173,711.55 + 102,139.60
     // = 3,275,851.15; percentage = 102,139.60 / 3,275,851.15 = 3.1180...%
     expect(line.grossCharges).toBe(3275851.15);
@@ -346,7 +349,7 @@ describe('discounts received — the rendering (spec v0.2.64, item 2)', () => {
     expect(discountRow.textContent).toContain('102\u00a0140');
     expect(discountRow.textContent).toContain('3.12% of gross (pre-discount) charges');
     expect(discountRow.textContent).toContain('Frequency discount');
-    expect(discountRow.textContent).toContain('port-tariff-2026.pdf');
+    expect(discountRow.textContent).toContain('port-tariff-2026.txt');
     // The honest zero still renders for the ports that fired nothing.
     const noDiscount = discountRow.querySelectorAll('.comparison-no-discount');
     expect(noDiscount.length).toBe(5);

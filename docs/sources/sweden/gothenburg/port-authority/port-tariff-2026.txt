@@ -1,0 +1,648 @@
+ARCHIVE PROVENANCE — docs/sources/sweden/gothenburg/port-authority/port-tariff-2026.txt
+Document:    Port Tariff 2026 (VERSION 1)
+Issuer:      Göteborgs Hamn AB / Port of Gothenburg
+Edition:     VERSION 1 - Effective from January 1, 2026 and valid until
+             further notice (the document's own cover statement).
+Currency:    SEK ("The prices quoted below are in SEK and apply to complete
+             calls" — the terms §2).
+Provenance:  Fetched 2026-10-02 from the publisher's own document URL:
+             https://www.portofgothenburg.com/globalassets/dokument/port-tariff-2026.pdf
+             The host serves plain clients (the v0.4.5 research's
+             observation); the primary route succeeded; no fallback needed.
+Archive form: Verbatim text extraction of the fetched PDF, as served by the
+             sandbox fetch tooling. The binary PDF is not retrievable by this
+             environment (the prislista-farleds-lotsavgifter-2026 precedent);
+             additionally the tooling's extraction carries a body-size limit
+             and truncates at page 21 of 37 (observed on three fetches, an
+             identical cut each time). The archived text below is the
+             verbatim extraction as fetched, pages 1-21 — never a fabricated
+             archive. The full document remains at the upstream URL; a
+             future environment with binary-fetch capability may replace
+             this extraction and re-verify.
+Coverage note: every G1-cited encoded rule cites pages 9-13 (the container
+             vessel section 2.2 and its waste, fresh-water, lay-up and OPS
+             schedules) — all inside the archived range. The truncated pages
+             (the cruise remainder, break bulk, inland waterways, yachts,
+             archipelago traffic, harbour vessels, other vessels, external
+             quays and passing vessels) contain no container-call authority
+             beyond the cited pages.
+Below the line: the extracted text, verbatim as fetched.
+
+--------------------------------------------------------------------------------
+
+PORT TARIFF 2026
+PORT OF GOTHENBURG
+
+PORT OF GOTHENBURG
+PORT TARIFF 2026
+VERSION 1 - Effective from January 1, 2026 and valid until further notice.
+
+Read the digital version of Port Tariff 2026
+Scan the QR code to take part
+of the content of our digital publication.
+
+The primary source of information is:
+Port Control
+Vhf: Channel 12
+Telephone: +4631-368 75 15
+Email: portcontrol@portgot.se
+
+PORT TARIFF 2026
+PORT OF GOTHENBURG
+
+Table of contents
+1. Summary of detailed terms and conditions ........................................................................................... 3
+2. PORT DUES .......................................................................................................................................... 5
+2.1 TANKERS ....................................................................................................................................... 5
+2.2 CONTAINER VESSELS ................................................................................................................... 9
+2.3 RORO VESSELS ............................................................................................................................ 12
+2.4 CAR CARRIERS ............................................................................................................................. 15
+2.5 ROPAX- & PASSENGER VESSELS ................................................................................................ 17
+2.6 CRUISE VESSLES ........................................................................................................................ 20
+2.7 BREAK BULK (LOLO VESSELS) ................................................................................................... 23
+2.8 INLAND WATERWAYS .................................................................................................................. 25
+2.9 YACHTS ....................................................................................................................................... 26
+2.10 ARCHIPELAGO TRAFFIC ........................................................................................................... 29
+2.11 HARBOUR VESSELS ................................................................................................................. 30
+2.12 OTHER VESSELS ......................................................................................................................... 31
+2.13 VESSELS AT EXTERNAL QUAYS AND PASSING VESSELS ........................................................ 36
+
+PORT TARIFF 2026
+PORT OF GOTHENBURG
+
+1. Summary of detailed terms and conditions
+PORT DUES AND INVOICING
+§1 The dues are based on GT (Gross Tonnage) as ascertained in accordance with the International Convention of Tonnage Measurement of Ships 1969, unless otherwise stated in the Tariff. When a vessel calls at the Port of Gothenburg for the first time, or if the vessel has been rebuilt since its last call, a valid revised tonnage certificate in accordance with the 1969 measurement regulations must be produced by the shipping company or its agent.
+§2 The prices quoted below are in SEK and apply to complete calls, i.e. for arrival and departure to and from the port area.
+§3 The minimum amount invoiced per vessel and per call is 500 SEK. The total amount invoiced is rounded off to the nearest whole SEK. The amount invoiced must reach the Port Authority (funds cleared) no later than 30 days after the date of the invoice. If payment does not reach the Port Authority by the due date, interest on overdue payments will be charged at the rate specified on the invoice.
+§4 Request for payment in advance can be made. The Port Authority reserves the right to demand a bank guarantee.
+§5 Should the Swedish government decree that special regulations are to apply to fees for certain types of vessels, such regulations will be observed.
+§6 The Port Authority will not charge for waste as facilities for receiving ship-generated waste will be provided, or by an operator other than the Port Authority.
+§7 No extra port fee is debited if a vessel leaves its quayside mooring in the Gothenburg general port area* but remains with the Gothenburg VTS area**. Not valid for vessels which have completed cargo operation and anchor, "for orders", within the Gothenburg VTS area.
+*With "the General Port Area of Gothenburg" is meant the geographical area that constitutes the scope of application of the Port By-Laws in accordance with the General Port Regulations for the Port of Gothenburg. You can download the General Port Regulations for the Port of Gothenburg on our website, www.portofgothenburg.com
+**The "VTS Area" means the same as defined in the General Port Regulations for the Port of Gothenburg.
+§8 VAT Certificate. In 2018 new regulations were introduced in Sweden's VAT legislation regarding provisions to ships. In order to invoice port dues without VAT, it is necessary to have a certificate confirming that the relevant conditions for VAT exemption have been met for any vessel calling in at the Port of Gothenburg. If the conditions have not been met or if no certificate is provided at the time of debiting, 25 per cent VAT will be added.
+Completed certificates are sent to customerinvoices@portgot.se. You can find the certificate form below. The certificates cover the ship's annual activities and we will therefore annually ask you to re-certify that the conditions for VAT exemption are still met.
+ENVIRONMENTAL DISCOUNTS
+§9 The environmental discount is granted on condition of registration as per the regulations for ESI (www.environmentalshipindex.org) or CSI (www.cleanshippingindex.com). If there are any queries regarding the environmental discount, please contact miljo@portgot.se.
+
+PORT TARIFF 2026
+PORT OF GOTHENBURG
+
+DISCOUNT ON WASTE DUES
+§10 For ships in short sea shipping***, a discount on the waste fee is provided in the form of a lower dues, SEK/GT for vessel generated solid waste. For ships actively working to reduce their waste volume and are able to provide a certificate confirming compliance with the requirements specified in Commission Implementing Regulation (EU) 2022/91, an additional discount of 0.05 SEK/GT is granted from the regular waste fee.
+***Short sea shipping includes all vessels with a European port as their latest port of call.
+EXTRA CHARGE FOR DISCHARGING SLUDGE AND WASTE
+§11 A surcharge will be levied for any additional costs incurred by the Port Authority, or its contractors as a result of the port regulations not being followed. The terms and conditions for waste discharge and information on where and how waste is to be discharged can be found in the "General Port Regulations for the Port of Gothenburg", under the section marked "Waste". Discharging that has been ordered and not cancelled will be invoiced.
+EXCEPTION REGARDING SLUDGE AND WASTE DUES
+§12 Vessels that have been granted exemption from the compulsory discharge of ship-generated waste in Swedish ports by the Transport Agency do not pay any sludge or waste dues in the Port of Gothenburg.
+DEFINITION OF TYPE OF VESSEL
+§13 The Port Authority reserves the right to define the type of vessel.
+DEFINITION OF TYPE OF TRAFFIC
+§14 The Gothenburg Port Authority retains the right to define the type of traffic, such as the terms "shipping route" and "service".
+DIFFERENCE IN INTERPRETATION
+§15 In the event of a difference in interpretation of the Port Tariff, the most recently published Swedish version applies. Disputes concerning the Port Tariff shall be settled at the Gothenburg District Court.
+REVISION OF PORT TARIFF
+§16 The Port Authority reserves the right to revise the Port Tariff at any time during the year.
+TERMS ACCORDING TO THE PORT SERVICES REGULATION
+§17 Below is a clarification of the fees applied according to this document and how they are categorized in accordance with Regulation (EU) 2017/352 establishing a framework for the provision of port services and common rules for financial transparency in ports (Port Services Regulation).
+Terms according to the Port Tariff
+Type of dues according to the port services regulation
+Port infrastructure charge
+Port infrastructure charge
+Dues for ship-generated waste
+Port charge
+Dues for fresh water
+Port infrastructure charge
+Port dues for Cargo (rinsing water)
+Port charge
+Lay-up dues
+Port infrastructure charge
+Dues for connecting to OPS energy port
+Port charge
+Dues for connecting to the mains (electricity)
+Port charge
+Security patrol and ISPS due
+Port infrastructure charge
+
+PORT TARIFF 2026
+PORT OF GOTHENBURG
+
+2. PORT DUES
+2.1 TANKERS
+PORT INFRASTRUCTURE DUES
+The dues for tankers is tailored to the specific infrastructure requirements and operational needs of these vessels. Additionally, consideration is given to the cargo capacity of the ships and other market conditions.
+Dues are calculated based on GT bands, and for the vessel's total GT.
+PORT INFRASTRUCTURE DUES
+0 – 2 300 GT
+3,12 SEK/GT
+2 301 – 3 300 GT
+3,79 SEK/GT
+3 301 – 15 000 GT
+4,18 SEK/GT
+> 15 001 GT
+5,89 SEK/GT
+
+REBATE FOR VESSELS WITH AN INTEGRATED PIPE TUNNEL ON DECK
+Port dues for vessels with an integrated pipe tunnel on deck will be reduced by a percentage in direct proportion to the ratio of the pipe tunnel to the vessel's total GT. Applies when the certificate is shown.
+DISCHARGING SLOP (RINSING WATER) TO RECIPIENT FACILITIES
+Full port dues will be levied on vessels calling at the Port of Gothenburg to discharge slop originating from another location, or from vessels not calling at the port. For vessels calling at the Port of Gothenburg solely to discharge their own slop, the port dues will be levied at the rate applicable to other vessels in accordance with Section 2.12.
+
+DUES FOR SHIP-GENERATED WASTE
+The Port of Gothenburg charges for receiving waste from vessels in accordance with Swedish legislation.
+DUES FOR SHIP-GENERATED SOLID WASTE
+Vessels arriving from European ports
+0,13 SEK/GT
+Vessels arriving from non-European ports
+0,24 SEK/GT
+Discount with certificates
+- 0,05 SEK/GT
+The discount applies if the vessel is certified according to Commission Implementing Regulation (EU) 2022/91.
+
+PORT TARIFF 2026
+PORT OF GOTHENBURG
+
+DUES FOR SLUDGE AND OILY BILGE WATER
+Sludge from vessels arriving from European ports, up to 11 m³
+0,21 SEK/GT
+Sludge from vessels arriving from non-European ports, up to 11 m³
+0,31 SEK/GT
+Sludge exceeding 11 m³
+2 400 SEK/m³
+The terms and conditions for discharging waste, and information on where and how waste should be discharged, are published in the Port of Gothenburg General Port Regulations.
+
+DUES FOR SCRUBBER WASTE
+Administration fee
+800 SEK
+Scrubber waste unloaded in the Port of Gothenburg will be charged at the actual cost plus an administration fee.
+
+ENVIRONMENTAL DISCOUNTS
+Vessels with a minimum ESI score of 30 points or at least CSI-class 4 will be granted a 10% discount on the port infrastructure dues, based on GT.
+Vessels that bunker at least 30% fossil-free fuel of their annual consumption get an additional 10% discount. The condition for receiving the new environmental discount is that the fossil-free fuel must be bunkered in Gothenburg. The purpose of the new environmental discount is to speed up the transition to more climate-neutral shipping and is therefore planned to last a number of years.
+The discount is given retroactively upon receipt of documentation showing:
+–
+The amount of fossil-free fuel bunkered in Gothenburg (X thousand tonnes per year)
+–
+The vessel's total annual consumption of bunkered fuel (Y thousand tonnes per year)
+CALCULATION MODELS
+In 2026, a vessel with a GT of 50,000 bunkered X thousand tonnes of fossil-free fuel in Gothenburg. The vessel's 2026 bunker consumption totals Y thousand tonnes. If X/Y is > 0.3 a discount of 10% of paid-in Port infrastructure dues is repaid.
+The number of port calls during the year × 50,000 GT × current port dues (price/GT) × 0.1 = Retroactive discount.
+
+PORT TARIFF 2026
+PORT OF GOTHENBURG
+
+DUES FOR FRESH WATER
+Dues are levied for fresh water when delivered from quayside fire hydrants owned by and at the disposal of the Port of Gothenburg.
+FRESH WATER
+Fresh water < 50m³
+0 SEK
+Fresh water > 50m³
+50 SEK/m³
+
+OTHER DUES
+RINSING WATER
+Port dues for cargo
+6 SEK/ton
+Dues are levied for rinsing water originating from another location, or from vessels not calling at the port.
+LAY-UP DUES
+Gothenburg's Energy Port does not have the facilities to offer extra lay-up time before commencing unloading/loading. After unloading/loading has been completed, extra lay-up time can only be granted in exceptional cases.
+
+Lay-up dues are levied if a vessel remains moored at the quay for more than 24 hours after unloading/loading has been completed. No lay-up dues are levied if the lay-up is due to circumstances under the control of the Port Authority or the Swedish Maritime Administration.
+The dues are calculated based on the vessel's length overall (LOA) in metres.
+Port dues for each calendar day or part thereof
+45 SEK/m (LOA)
+
+DUES FOR CONNECTING TO OPS
+Connection Fee – only one fee per port call
+7 000 SEK
+Variable electricity consumption is invoiced
+Variable (depending on consumption and spot price)
+To connect to OPS (Onshore Power Supply) at jetty 519, 520 or 521 in the Energy Port, the vessel needs to be approved by Port of Gothenburg. A request to connect/approval shall be done in advance by filling in a form found under E-services at Port of Gothenburg's website – OPS Energy Port.
+It is compulsory, for all vessels, fitted with electrical connection, mooring at jetty 519, 520 or 521, to use OPS Energy Port if they have received approval by Port of Gothenburg.
+
+PORT TARIFF 2026
+PORT OF GOTHENBURG
+
+CALCULATION MODELS
+TANKERS
+A vessel at 14 000 GT arrives at the Port of Gothenburg from a port in Europe. The vessel has an ESI score of at least 30 points. Leaves 15 m³ (> 11 m³) sludge and receives a SEK 0.05 discount/GT on the waste fee when a valid certificate can be presented.
+Port infrastructure dues
+14 000 GT x 4,18 SEK
+= 58 520 SEK
+ESI/CSI discount
+14 000 GT x 4,18 SEK -10%
+= - 5 852 SEK
+Sludge
+14 000 GT x 0,21 SEK
+= 2 940 SEK
+Sludge exceeding 11m³
+4m³ x 2 400 SEK
+= 9 200 SEK
+Solid waste
+14 000 GT x 0,13 SEK
+= 1 820 SEK
+Total port tariff
+= 67 028 SEK
+
+A vessel at 120 000 GT arrives at the Port of Gothenburg from a port outside of Europe. The vessel has an ESI score of at least 30 points. Leaves 15 m³ (> 11 m³) sludge
+Port infrastructure dues
+120 000 GT x 5,89 SEK
+= 706 800 SEK
+ESI/CSI discount
+120 000 GT x 5,89 SEK -10%
+= - 70 680 SEK
+Sludge
+120 000 GT x 0,31 SEK
+= 37 200 SEK
+Sludge exceeding 11m³
+4m³ x 2 400 SEK
+= 9 200 SEK
+Solid waste
+120 000 GT x 0,24 SEK
+= 28 800
+Total port tariff
+= 711 720 SEK
+
+PORT TARIFF 2026
+PORT OF GOTHENBURG
+
+2.2 CONTAINER VESSELS
+PORT INFRASTRUCTURE DUES
+Dues are based on a system of progressive banding, i.e. for the first 20,000 GT, the vessel is charged at the 0– 20,000 GT band rate, for the next 20,000 GT, the charge is at the 20,001– 40,000 GT band rate, etc.
+The dues for container vessels are designed to reflect the cargo capacity of the vessels and their varying cargo turnover per call. Consideration is also given to other market conditions.
+PORT INFRASTRUCTURE DUES
+0 - 20 000 GT
+1,96 SEK/GT
+20 001 - 40 000 GT
+1,71 SEK/GT
+40 001 – 60 000 GT
+1,15 SEK/GT
+> 60 001 GT
+0,80 SEK/GT
+
+DUES FOR SHIP-GENERATED WASTE
+The Port of Gothenburg charges for receiving waste from vessels in accordance with Swedish legislation.
+DUES FOR SHIP-GENERATED SOLID WASTE
+Vessels arriving from European ports
+0,13 SEK/GT
+Vessels arriving from non-European ports
+0,24 SEK/GT
+Discount with certificates
+- 0,05 SEK/GT
+The discount applies if the vessel is certified according to Commission Implementing Regulation (EU) 2022/91.
+DUES FOR SLUDGE AND OILY BILGE WATER
+Sludge from vessels arriving from European ports, up to 11 m³
+0,21 SEK/GT
+Sludge from vessels arriving from non-European ports, up to 11 m³
+0,31 SEK/GT
+Sludge exceeding 11 m³
+2 400 SEK/m³
+The terms and conditions for discharging waste, and information on where and how waste should be discharged, are published in the Port of Gothenburg General Port Regulations.
+DUES FOR SCRUBBER WASTE
+Administration fee
+800 SEK
+Scrubber waste unloaded in the Port of Gothenburg will be charged at the actual cost plus an administration fee.
+
+PORT TARIFF 2026
+PORT OF GOTHENBURG
+
+ENVIRONMENTAL DISCOUNTS
+Vessels with a minimum ESI score of 30 points or at least CSI-class 4 will be granted a 10% discount on the port infrastructure dues, based on GT.
+Vessels that bunker at least 30% fossil-free fuel of their annual consumption get an additional 10% discount. The condition for receiving the new environmental discount is that the fossil-free fuel must be bunkered in Gothenburg. The purpose of the new environmental discount is to speed up the transition to more climate-neutral shipping and is therefore planned to last a number of years.
+The discount is given retroactively upon receipt of documentation showing:
+–
+The amount of fossil-free fuel bunkered in Gothenburg (X thousand tonnes per year)
+–
+The vessel's total annual consumption of bunkered fuel (Y thousand tonnes per year)
+CALCULATION MODELS
+In 2026, a vessel with a GT of 50,000 bunkered X thousand tonnes of fossil-free fuel in Gothenburg. The vessel's 2026 bunker consumption totals Y thousand tonnes. If X/Y is > 0.3 a discount of 10% of paid-in Port infrastructure dues is repaid.
+The number of port calls during the year × 50,000 GT × current port dues (price/GT) × 0.1 = Retroactive discount.
+
+OTHER DISCOUNTS
+INTRODUCTORY DISCOUNT
+New services may be subject to introductory discount.
+FREQUENCY DISCOUNT
+Scheduled shipping routes with calls at the Port of Gothenburg twice on the same route (import call and export call) are entitled to a 50% discount on port dues based on GT for the second call.
+
+PORT TARIFF 2026
+PORT OF GOTHENBURG
+
+CALCULATION MODELS
+CONTAINER VESSELS
+A vessel of 70 000 GT arrives at the Port of Gothenburg from a port in Europe. Leaves 15m³ (> 11m³) sludge.
+Port infrastructure dues
+(20 000 GT ×1,96 SEK ) +
+(20 000 GT ×1,71 SEK) +
+(20 000 GT × 1,15 SEK ) +
+(10 000 GT × 0,80 SEK )
+= 104 400 SEK
+Sludge
+70 000 GT x 0,17 SEK
+= 14 700 SEK
+Sludge exceeding 11m³
+4m³ x 2 300 SEK
+= 9 600 SEK
+Solid waste
+70 000 GT x 0,13 SEK
+= 9 100 SEK
+Total port tariff
+= 137 800 SEK
+
+A vessel of 12,000 GT arrives at the Port of Gothenburg from a port outside of Europe. The vessel has an ESI score of at least 30 points.
+Port infrastructure dues
+12 000 GT x 1,96 SEK
+= 23 520 SEK
+ESI/CSI discount
+12 000 GT x 1,96 SEK -10%
+= - 2 352 SEK
+Sludge
+12 000 GT x 0,31 SEK
+= 3 720 SEK
+Solid waste
+12 000 GT x 0,24 SEK
+= 2 880 SEK
+Total port tariff
+= 27 768 SEK
+
+PORT TARIFF 2026
+PORT OF GOTHENBURG
+
+2.3 RORO VESSELS
+PORT INFRASTRUCTURE DUES
+Dues are based on a system of progressive banding, i.e. the first two calls for one service (as recognised by the Port Authority) are charged at the 1–2 calls per week band rate. For the next call during that week, the charge is at the 3–6 calls per week band rate, etc. The term "week" refers to a calendar week, and from Monday–Sunday.
+The due level for RORO vessels is designed to reflect the nature of liner traffic and encourage high frequency for intra-European transport. The calls are characterized by large cargo capacity and high capacity utilization. The frequency discount is designed to enhance competitiveness compared to land-based transport.
+PORT INFRASTRUCTURE DUES
+1 - 2 calls per week and service
+1,57 SEK/GT
+3 - 6 calls per week and service
+1,28 SEK/GT
+7 or more calls per week and service
+0,84 SEK/GT
+
+DUES FOR SHIP-GENERATED WASTE
+The Port of Gothenburg charges for receiving waste from vessels in accordance with Swedish legislation.
+DUES FOR SHIP-GENERATED SOLID WASTE
+Vessels arriving from European ports
+0,13 SEK/GT
+Vessels arriving from non-European ports
+0,24 SEK/GT
+Discount with certificates
+- 0,05 SEK/GT
+The discount applies if the vessel is certified according to Commission Implementing Regulation (EU) 2022/91.
+DUES FOR SLUDGE AND OILY BILGE WATER
+Sludge from vessels arriving from European ports, up to 11 m³
+0,21 SEK/GT
+Sludge from vessels arriving from non-European ports, up to 11 m³
+0,31 SEK/GT
+Sludge exceeding 11 m³
+2 400 SEK/m³
+The terms and conditions for discharging waste, and information on where and how waste should be discharged, are published in the Port of Gothenburg General Port Regulations.
+
+PORT TARIFF 2026
+PORT OF GOTHENBURG
+
+DUES FOR SCRUBBER WASTE
+Administration fee
+800 SEK
+Scrubber waste unloaded in the Port of Gothenburg will be charged at the actual cost plus an administration fee.
+
+ENVIRONMENTAL DISCOUNTS
+Vessels with a minimum ESI score of 30 points or at least CSI-class 4 will be granted a 10% discount on the port infrastructure dues, based on GT.
+Vessels that bunker at least 30% fossil-free fuel of their annual consumption get an additional 10% discount. The condition for receiving the new environmental discount is that the fossil-free fuel must be bunkered in Gothenburg. The purpose of the new environmental discount is to speed up the transition to more climate-neutral shipping and is therefore planned to last a number of years.
+The discount is given retroactively upon receipt of documentation showing:
+–
+The amount of fossil-free fuel bunkered in Gothenburg (X thousand tonnes per year)
+–
+The vessel's total annual consumption of bunkered fuel (Y thousand tonnes per year)
+
+CALCULATION MODELS
+In 2026, a vessel with a GT of 50,000 bunkered X thousand tonnes of fossil-free fuel in Gothenburg. The vessel's 2026 bunker consumption totals Y thousand tonnes. If X/Y is > 0.3 a discount of 10% of paid-in Port infrastructure dues is repaid.
+The number of port calls during the year × 50,000 GT × current port dues (price/GT) × 0.1 = Retroactive discount.
+
+OTHER DISCOUNTS
+INTRODUCTORY DISCOUNT
+New services may be subject to introductory discount.
+
+PORT TARIFF 2026
+PORT OF GOTHENBURG
+
+CALCULATION MODELS
+RORO VESSELS
+A Roro vessel of 20 000 GT arrives at the Port of Gothenburg for the seventh time per week and service. The vessel arrives from a port in Europe. The vessel has an ESI score of at least 30 points. Leaves 15 m³ (>11 m³) sludge.
+Port infrastructure dues
+20 000 GT x 0,84 SEK
+= 16 800 SEK
+ESI/CSI discount
+20 000 GT x 0,84 SEK -10%
+= - 1 680 SEK
+Sludge
+20 000 GT x 0,21 SEK
+= 4 200 SEK
+Sludge exceeding 11m³
+4m³ x 2 400 SEK
+= 9 600 SEK
+Solid waste
+20 000 GT x 0,13 SEK
+= 2 600
+Total port tariff
+= 31 520 SEK
+
+PORT TARIFF 2026
+PORT OF GOTHENBURG
+
+2.4 CAR CARRIERS
+PORT INFRASTRUCTURE DUES
+The due level for car carriers is designed to reflect the nature of liner traffic, including the need for frequency and the lower cargo turnover per call for car carriers. These vessels are primarily transoceanic with large cargo capacity.
+PORT INFRASTRUCTURE DUES
+Car carriers
+1,00 SEK/GT
+
+DUES FOR SHIP-GENERATED WASTE
+The Port of Gothenburg charges for receiving waste from vessels in accordance with Swedish legislation.
+DUES FOR SHIP-GENERATED SOLID WASTE
+Vessels arriving from European ports
+0,13 SEK/GT
+Vessels arriving from non-European ports
+0,24 SEK/GT
+Discount with certificates
+- 0,05 SEK/GT
+The discount applies if the vessel is certified according to Commission Implementing Regulation (EU) 2022/91.
+
+DUES FOR SLUDGE AND OILY BILGE WATER
+Sludge from vessels arriving from European ports, up to 11 m³
+0,21 SEK/GT
+Sludge from vessels arriving from non-European ports, up to 11 m³
+0,31 SEK/GT
+Sludge exceeding 11 m³
+2 400 SEK/m³
+The terms and conditions for discharging waste, and information on where and how waste should be discharged, are published in the Port of Gothenburg General Port Regulations.
+
+DUES FOR SCRUBBER WASTE
+Administration fee
+800 SEK
+Scrubber waste unloaded in the Port of Gothenburg will be charged at the actual cost plus an administration fee.
+
+PORT TARIFF 2026
+PORT OF GOTHENBURG
+
+ENVIRONMENTAL DISCOUNTS
+Vessels with a minimum ESI score of 30 points or at least CSI-class 4 will be granted a 10% discount on the port infrastructure dues, based on GT.
+Vessels that bunker at least 30% fossil-free fuel of their annual consumption get an additional 10% discount. The condition for receiving the new environmental discount is that the fossil-free fuel must be bunkered in Gothenburg. The purpose of the new environmental discount is to speed up the transition to more climate-neutral shipping and is therefore planned to last a number of years.
+The discount is given retroactively upon receipt of documentation showing:
+–
+The amount of fossil-free fuel bunkered in Gothenburg (X thousand tonnes per year)
+–
+The vessel's total annual consumption of bunkered fuel (Y thousand tonnes per year)
+
+CALCULATION MODELS
+In 2026, a vessel with a GT of 50,000 bunkered X thousand tonnes of fossil-free fuel in Gothenburg. The vessel's 2026 bunker consumption totals Y thousand tonnes. If X/Y is > 0.3 a discount of 10% of paid-in Port infrastructure dues is repaid.
+The number of port calls during the year × 50,000 GT × current port dues (price/GT) × 0.1 = Retroactive discount.
+
+OTHER DISCOUNTS
+INTRODUCTORY DISCOUNT
+New services may be subject to introductory discount.
+
+CALCULATION MODELS
+BREAK BULK (LOLO VESSELS)
+A vessel of 60 000 GT arrives at the car terminal from a port in Europe. The vessel leaves 15 m³ (> 11 m³) sludge.
+Port infrastructure dues
+60 000 GT x 1,00 SEK
+= 60 000 SEK
+Sludge
+60 000 GT x 0,21 SEK
+= 12 600 SEK
+Sludge exceeding 11m³
+4 m3x 2 400 SEK
+= 9 600 SEK
+Solid waste
+60 000 GT x 0,13 SEK
+= 7 800 SEK
+Total port tariff
+= 90 000 SEK
+
+PORT TARIFF 2026
+PORT OF GOTHENBURG
+
+2.5 ROPAX- & PASSENGER VESSELS
+PORT INFRASTRUCTURE DUES
+This refers to vessels carrying passengers and freight, passengers and vehicles or only passengers, and that are in regular service available to the general public, in accordance with a sailing schedule approved by the Port of Gothenburg.
+Dues are based on a system of progressive banding, i.e. the first two calls for one service (as recognised by the Port Authority) are charged at the 1–2 calls per week band rate. For the next call during that week, the charge is at the 3–6 calls per week band rate, etc. The term "week" refers to a calendar week, and from Monday–Sunday.
+The due level for Ropax vessels and passenger ferries is designed to reflect the nature of liner traffic and encourage high frequency for intra-European transport. The calls are characterized by large cargo capacity and high capacity utilization. The frequency discount is designed to enhance competitiveness compared to land-based transport.
+PORT INFRASTRUCTURE DUES
+1 - 2 calls per week and service
+1,57 SEK/GT
+3 - 6 calls per week and service
+1,28 SEK/GT
+7 - 20 calls per week and service
+0,84 SEK/GT
+21 or more calls per week and service
+0,67 SEK/GT
+
+DUES FOR SHIP-GENERATED WASTE
+The Port of Gothenburg charges for receiving waste from vessels in accordance with Swedish legislation.
+DUES FOR SHIP-GENERATED SOLID WASTE
+Vessels arriving from European ports
+0,13 SEK/GT
+Vessels arriving from non-European ports
+0,24 SEK/GT
+Discount with certificates
+- 0,05 SEK/GT
+The discount applies if the vessel is certified according to Commission Implementing Regulation (EU) 2022/91.
+DUES FOR SLUDGE AND OILY BILGE WATER
+Sludge from vessels arriving from European ports, up to 11 m³
+0,21 SEK/GT
+Sludge from vessels arriving from non-European ports, up to 11 m³
+0,31 SEK/GT
+Sludge exceeding 11 m³
+2 400 SEK/m³
+The terms and conditions for discharging waste, and information on where and how waste should be discharged, are published in the Port of Gothenburg General Port Regulations.
+
+PORT TARIFF 2026
+PORT OF GOTHENBURG
+
+DUES FOR SCRUBBER WASTE
+Administration fee
+800 SEK
+Scrubber waste unloaded in the Port of Gothenburg will be charged at the actual cost plus an administration fee.
+
+ENVIRONMENTAL DISCOUNTS
+Vessels with a minimum ESI score of 30 points or at least CSI-class 4 will be granted a 10% discount on the port infrastructure dues, based on GT.
+Vessels that bunker at least 30% fossil-free fuel of their annual consumption get an additional 10% discount. The condition for receiving the new environmental discount is that the fossil-free fuel must be bunkered in Gothenburg. The purpose of the new environmental discount is to speed up the transition to more climate-neutral shipping and is therefore planned to last a number of years.
+The discount is given retroactively upon receipt of documentation showing:
+–
+The amount of fossil-free fuel bunkered in Gothenburg (X thousand tonnes per year)
+–
+The vessel's total annual consumption of bunkered fuel (Y thousand tonnes per year)
+
+CALCULATION MODELS
+In 2026, a vessel with a GT of 50,000 bunkered X thousand tonnes of fossil-free fuel in Gothenburg. The vessel's 2026 bunker consumption totals Y thousand tonnes. If X/Y is > 0.3 a discount of 10% of paid-in Port infrastructure dues is repaid.
+The number of port calls during the year × 50,000 GT × current port dues (price/GT) × 0.1 = Retroactive discount.
+
+LAY-UP DUES
+LAY-UP DUES
+For quays 33–37, lay-up dues are levied for each calendar day or part thereof. The dues are calculated based on the vessel's length overall (LOA) in metres.
+Port dues for each calendar day or part thereof
+45 SEK/m (LOA)
+
+PORT TARIFF 2026
+PORT OF GOTHENBURG
+
+CALCULATION MODELS
+ROPAX- & PASSENGER VESSELS
+A Ropax and passenger of 20 000 GT vessel arrives at the Port of Gothenburg for the seventh time per week and service. The vessel arrives from a port in Europe. The vessel has an ESI score of at least 30 points.
+Port infrastructure dues
+20 000 GT x 0,84 SEK
+= 16 800 SEK
+ESI/CSI discount
+20 000 GT x 0,84 SEK -10%
+= - 1 680 SEK
+Sludge
+20 000 GT x 0,21 SEK
+= 4 200 SEK
+Solid waste
+20 000 GT x 0,13 SEK
+= 2 600 SEK
+Total port tariff
+= 21 920 SEK
+
+PORT TARIFF 2026
+PORT OF GOTHENBURG
+
+2.6 CRUISE VESSLES
+PORT INFRASTRUCTURE DUES
+The due level for cruise ships is designed to account for their seasonal traffic and high demands on passenger services. Incentives for making multiple calls by the same cruise line or outside the regular season are offered in the form of discounts.
+Dues are calculated based on GT bands, and for the vessel's total GT. The following dues are levied.
+PORT INFRASTRUCTURE DUES
+0 - 20 000 GT
+5,78 SEK/GT, to a maximum of 71 600 SEK
+> 20 001 GT
+3,58 SEK/GT
+
+For cruise liners belonging to the same shipping company, or to a company operating under the same brand, there is a 15% discount off port dues from the seventh call at the Port of Gothenburg in any single season. Cruise operators that do not belong to or are not owned by a shipping group may be offered an alternative discount structure.
+Seasonal rebates: -30%/GT during the period 1 October – 30 April. May not be combined with discount for seventh call and thereafter.
+For vessels that cancel their call less than 4 weeks before the planned call date, an ISPS fee of 20 000 SEK will be charged. For vessels that stay longer than one calendar day, an ISPS fee of 20 000 SEK will be charged for each commenced calendar day occurring after the first calendar day.
+
+DUES FOR SHIP-GENERATED WASTE
+The Port of Gothenburg charges for receiving waste from vessels in accordance with Swedish legislation.
+DUES FOR SHIP-GENERATED SOLID WASTE
+Vessels arriving from European ports
+0,13 SEK/GT
+Vessels arriving from non-European ports
+0,24 SEK/GT
+Discount with certificates
+- 0,05 SEK/GT
+The discount applies if the vessel is certified according to Commission Implementing Regulation (EU) 2022/91.
+
+PORT TARIFF 2026
+PORT OF GOTHENBURG
+
+DUES FOR SLUDGE AND OILY BILGE WATER
+Sludge from vessels arriving from European ports, up to 11 m³
+0,21 SEK/GT
+Sludge from vessels arriving from non-European ports, up to 11 m³
+0,31 SEK/GT
+Sludge exceeding 11 m³
+2 400 SEK/m³
+The terms and conditions for discharging waste, and information on where and how waste shou
+
+[Extraction truncated at page 21 of 37 by the sandbox fetch tooling's body-size limit — the recorded limitation, provenance header above. Pages 22-37 (the remainder of the cruise section, break bulk, inland waterways, yachts, archipelago traffic, harbour vessels, other vessels, vessels at external quays and passing vessels) are available at the upstream URL. No encoded rule cites them.]

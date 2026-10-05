@@ -27,3 +27,4 @@ npm-debug.log*
 
 # Generated data copy for web (canonical is in core/data/)
 web/src/data/
+web/coverage/

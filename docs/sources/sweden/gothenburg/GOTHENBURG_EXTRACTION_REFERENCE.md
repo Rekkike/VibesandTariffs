@@ -18,16 +18,19 @@ Tariff 2026; Sjöfartsverket price list 2026 (issued 2025-11-01).
 
 | ID | Document | Biller | Prices? | Repository path |
 |----|----------|--------|---------|-----------------|
-| G1 | Port of Gothenburg, Port Tariff 2026 | Port of Gothenburg | Yes | not archived — upstream: https://www.portofgothenburg.com/globalassets/dokument/port-tariff-2026.pdf |
+| G1 | Port of Gothenburg, Port Tariff 2026 | Port of Gothenburg | Yes | `docs/sources/sweden/gothenburg/port-authority/port-tariff-2026.txt` (archived v0.4.7 — the verbatim text extraction from the primary-route fetch 2026-10-02; SHA-256 `e8a85b1e17efc46ed78c328412b627b90c52ba01dcc7828861ffb968839f36ed`; the tooling's extraction truncates at page 21 of 37, the recorded limitation, the prislista precedent; every G1-cited encoded rule cites pages 9-13, inside the archived range, and every encoded figure was verified against the archive) — upstream URL in the port YAML (https://www.portofgothenburg.com/globalassets/dokument/port-tariff-2026.pdf) |
 | G2 | APM Terminals Gothenburg, Terminal Tariff 2026 (June revision) | APM Terminals Gothenburg | Yes | `docs/sources/sweden/gothenburg/apm-terminals-terminal-tariff-2026-june.txt` (archived v0.4.6 — the verbatim text extraction, delivered by the product owner 2026-10-02 outside the sandbox from the publisher’s tariff page, https://www.apmterminals.com/en/gothenburg/services/terminal-tariff, after every fetch route was refused at v0.4.5; the binary PDF is not retained by the delivery tooling, the recorded limitation, the prislista precedent) |
 | G2b | APM Terminals Terms of Business, v31 March 2025 | APM Terminals Gothenburg | Terms (no rates) | `docs/sources/sweden/gothenburg/apm-terms-of-business-2025-03-31.txt` (archived v0.4.6, same delivery; the legal wrapper the tariff’s own §8 incorporates) |
 | G3 | Sjöfartsverket, Prislista farleds- och lotsavgifter 2026 | Sjöfartsverket | Yes | `docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt` (archived v0.4.5 — the verbatim text extraction, the fetchable artifact; the binary PDF remains unarchived, the recorded limitation) — upstream URL in the port YAML (https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf); earlier revisions of this reference claimed an in-repo archive path that never existed (fixed in the worked-example fix pass, spec v0.2.37; the never-existed .pdf citation paths repaired to the real .txt path at v0.4.5); the national extraction reference `docs/sources/sweden/national/NATIONAL_EXTRACTION_REFERENCE.md` (v0.4.5) is the national block's authority of record, shared by all five Swedish silos |
 
-G1 is not archived in the repository; the port file carries its live publisher
-URL as `upstream_url` per the v0.2.32 source-link contract
-(`document_not_archived` in the converted registry). G2 is archived since
-v0.4.6 (the delivered text extraction above); the APMT rules' citations point
-at the archived .txt path, and G2 has left the not-archived list.
+G1 is archived since v0.4.7 (the model health audit pass: the primary-route
+fetch served the document to a plain client 2026-10-02, the verbatim text
+extraction archived with the truncation limitation recorded in its provenance
+header); the port-authority rules' 10 citations point at the archived .txt
+path, and G1 has left the not-archived list, which is now empty. G2 is
+archived since v0.4.6 (the delivered text extraction above); the APMT rules'
+citations point at the archived .txt path, and G2 has left the not-archived
+list.
 
 ## 1a. The APMT operator layer (v0.4.6)
 

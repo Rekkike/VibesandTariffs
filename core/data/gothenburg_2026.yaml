@@ -112,8 +112,8 @@ fee_rules:
         description: "Frequency discount: 50% on GT-based port dues for the second call on the same route (import call and export call pair; requires the explicit same-route attestation)"
         stacking_order: 3
     source_reference:
-      document_name: "port-tariff-2026.pdf"
-      document_url: "docs/sources/sweden/gothenburg/port-authority/port-tariff-2026.pdf"
+      document_name: "port-tariff-2026.txt"
+      document_url: "docs/sources/sweden/gothenburg/port-authority/port-tariff-2026.txt"
       upstream_url: "https://www.portofgothenburg.com/globalassets/dokument/port-tariff-2026.pdf"
       document_issued: "2025-12-01"
       page: 9
@@ -161,8 +161,8 @@ fee_rules:
         description: "EU 2022/91 waste-certificate discount (tariff §10): -0.05 SEK/GT off the solid-waste line for certified vessels"
         stack_method: additive
     source_reference:
-      document_name: "port-tariff-2026.pdf"
-      document_url: "docs/sources/sweden/gothenburg/port-authority/port-tariff-2026.pdf"
+      document_name: "port-tariff-2026.txt"
+      document_url: "docs/sources/sweden/gothenburg/port-authority/port-tariff-2026.txt"
       upstream_url: "https://www.portofgothenburg.com/globalassets/dokument/port-tariff-2026.pdf"
       document_issued: "2025-12-01"
       page: 10
@@ -188,8 +188,8 @@ fee_rules:
         description: "EU 2022/91 waste-certificate discount (tariff §10): -0.05 SEK/GT off the solid-waste line for certified vessels"
         stack_method: additive
     source_reference:
-      document_name: "port-tariff-2026.pdf"
-      document_url: "docs/sources/sweden/gothenburg/port-authority/port-tariff-2026.pdf"
+      document_name: "port-tariff-2026.txt"
+      document_url: "docs/sources/sweden/gothenburg/port-authority/port-tariff-2026.txt"
       upstream_url: "https://www.portofgothenburg.com/globalassets/dokument/port-tariff-2026.pdf"
       document_issued: "2025-12-01"
       page: 10
@@ -215,8 +215,8 @@ fee_rules:
     applicable_conditions:
       arrival_origin: europe
     source_reference:
-      document_name: "port-tariff-2026.pdf"
-      document_url: "docs/sources/sweden/gothenburg/port-authority/port-tariff-2026.pdf"
+      document_name: "port-tariff-2026.txt"
+      document_url: "docs/sources/sweden/gothenburg/port-authority/port-tariff-2026.txt"
       upstream_url: "https://www.portofgothenburg.com/globalassets/dokument/port-tariff-2026.pdf"
       document_issued: "2025-12-01"
       page: 10
@@ -239,8 +239,8 @@ fee_rules:
     applicable_conditions:
       arrival_origin: outside-europe
     source_reference:
-      document_name: "port-tariff-2026.pdf"
-      document_url: "docs/sources/sweden/gothenburg/port-authority/port-tariff-2026.pdf"
+      document_name: "port-tariff-2026.txt"
+      document_url: "docs/sources/sweden/gothenburg/port-authority/port-tariff-2026.txt"
       upstream_url: "https://www.portofgothenburg.com/globalassets/dokument/port-tariff-2026.pdf"
       document_issued: "2025-12-01"
       page: 10
@@ -262,8 +262,8 @@ fee_rules:
     applicable_conditions:
       sludge_extra_m3: 'present'
     source_reference:
-      document_name: "port-tariff-2026.pdf"
-      document_url: "docs/sources/sweden/gothenburg/port-authority/port-tariff-2026.pdf"
+      document_name: "port-tariff-2026.txt"
+      document_url: "docs/sources/sweden/gothenburg/port-authority/port-tariff-2026.txt"
       upstream_url: "https://www.portofgothenburg.com/globalassets/dokument/port-tariff-2026.pdf"
       document_issued: "2025-12-01"
       page: 10
@@ -291,8 +291,8 @@ fee_rules:
     applicable_conditions:
       fresh_water_m3: 'present'
     source_reference:
-      document_name: "port-tariff-2026.pdf"
-      document_url: "docs/sources/sweden/gothenburg/port-authority/port-tariff-2026.pdf"
+      document_name: "port-tariff-2026.txt"
+      document_url: "docs/sources/sweden/gothenburg/port-authority/port-tariff-2026.txt"
       upstream_url: "https://www.portofgothenburg.com/globalassets/dokument/port-tariff-2026.pdf"
       document_issued: "2025-12-01"
       page: 11
@@ -312,8 +312,8 @@ fee_rules:
     applicable_conditions:
       scrubber_waste: true
     source_reference:
-      document_name: "port-tariff-2026.pdf"
-      document_url: "docs/sources/sweden/gothenburg/port-authority/port-tariff-2026.pdf"
+      document_name: "port-tariff-2026.txt"
+      document_url: "docs/sources/sweden/gothenburg/port-authority/port-tariff-2026.txt"
       upstream_url: "https://www.portofgothenburg.com/globalassets/dokument/port-tariff-2026.pdf"
       document_issued: "2025-12-01"
       page: 10
@@ -356,8 +356,8 @@ fee_rules:
       ops_usage: true
       vessel_type: tanker
     source_reference:
-      document_name: "port-tariff-2026.pdf"
-      document_url: "docs/sources/sweden/gothenburg/port-authority/port-tariff-2026.pdf"
+      document_name: "port-tariff-2026.txt"
+      document_url: "docs/sources/sweden/gothenburg/port-authority/port-tariff-2026.txt"
       upstream_url: "https://www.portofgothenburg.com/globalassets/dokument/port-tariff-2026.pdf"
       document_issued: "2025-12-01"
       page: 12
@@ -376,8 +376,8 @@ fee_rules:
       daily_rate: 45
       basis: loa_m
     source_reference:
-      document_name: "port-tariff-2026.pdf"
-      document_url: "docs/sources/sweden/gothenburg/port-authority/port-tariff-2026.pdf"
+      document_name: "port-tariff-2026.txt"
+      document_url: "docs/sources/sweden/gothenburg/port-authority/port-tariff-2026.txt"
       upstream_url: "https://www.portofgothenburg.com/globalassets/dokument/port-tariff-2026.pdf"
       document_issued: "2025-12-01"
       page: 13

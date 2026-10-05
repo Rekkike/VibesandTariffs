@@ -1,13 +1,16 @@
-Port Call Cost Analyzer — Intended State (three-port edition, v0.2.55)
+Port Call Cost Analyzer — Intended State (six-port edition, refreshed v0.4.7)
 
 This document is the historical audit concordance of the project's intended
 state. It began as the Gothenburg-only pilot's authority of record (the
 original preamble claimed sole authority over the repository); since v0.2.17
-the repository carries three ports, and since v0.2.32 the committed
+the repository has grown, and since v0.4.0 it carries six ports; since v0.2.32 the committed
 specification (`docs/SPECIFICATION.md`) is the sole governing authority for
 the architecture, data model, engine, and UI contracts. This document now
 serves as the audit-trail record: it states the intended structure of the
-repository and the verification checkpoints that the test suite pins. Where
+repository and the verification checkpoints that the test suite pins.
+Refreshed at v0.4.7 (the model health audit pass) to describe the delivered
+six-port reality; where a sentence records a historical state it is marked
+as such, never rewritten. Where
 this document and the specification overlap, **the specification governs**;
 the figures recorded here remain as historical checkpoints (they are pinned
 by tests as literal expectations, and the per-port extraction references in
@@ -31,7 +34,8 @@ docs/
     germany/
       hamburg/ (Hamburg port documents + HAMBURG_EXTRACTION_REFERENCE.md)
 core/
-  data/    gothenburg_2026.yaml, hamburg_2026.yaml, helsingborg_2026.yaml,
+  data/    gavle_2026.yaml, gothenburg_2026.yaml, hamburg_2026.yaml,
+           helsingborg_2026.yaml, norrkoping_2026.yaml, norvik_2026.yaml,
            exchange_rates.yaml, vessel_library.yaml
   src/     (engine, types, loader, index)
   test/
@@ -53,10 +57,12 @@ new specification changelog row in the same change.
 
 ## 2. Ports
 
-Three ports are live, each with its own canonical data file, extraction
-reference, and per-port workspace page; a cross-port comparison view (a
-presentation over multiple single-port computations, never a separate
-calculation path) prices one identical call at any subset of them:
+Six ports are live (three at this document's v0.2.55 refresh; the v0.4.0
+expansion added Gavle, Norrköping, and Norvik), each with its own canonical
+data file, extraction reference, and per-port workspace page; a cross-port
+comparison view (a presentation over multiple single-port computations,
+never a separate calculation path) prices one identical call at any subset
+of them:
 
 - **Gothenburg 2026** (`gothenburg_2026.yaml`): the original pilot. Billers:
   Port of Gothenburg (port authority), Sjöfartsverket (national), APM
@@ -134,9 +140,13 @@ call of month, pilotage 4+ hours' notice.
 | Readiness fee (Class 8, call 1) | 51,555 |
 
 These figures are asserted by `core/test/engine.test.ts` (the Panamax
-Verification block) and `core/test/gothenburg_repair.test.ts`; the default
-Maren Maersk call totals are pinned at GOT 3,007,051.15 SEK /
-HAM 2,313,489.31 EUR / HEL 8,481,257.40 SEK by the web suites. The
+Verification block) and `core/test/gothenburg_repair.test.ts`. The default
+Maren Maersk call totals are pinned (corrected at v0.4.7 to the delivered
+figures; the v0.2.55-era figures this sentence carried - GOT 3,007,051.15 /
+HAM 2,313,489.31 / HEL 8,481,257.40 - were superseded by the godsavgift
+promotion at v0.2.61 and the later figure-moving passes) at GLE
+10,306,979.35 / GOT 3,275,851.15 SEK / HAM 2,204,910.90 EUR / HEL
+8,750,057.40 / NRK 8,297,772.50 / NVK 11,952,324.05 SEK by the web suites. The
 boundary tests (frequency discount at calls 2/3/6, ordering-fee boundaries,
 pilotage 7-hour discount, godsavgift splits, transit/transshipment
 exemptions, not-registered = E, NT/CSI matrix spot checks) are likewise

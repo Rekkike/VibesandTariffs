@@ -148,10 +148,14 @@ describe('Source link integrity (spec v0.2.26)', () => {
     // attribution): the APMT Terminal Tariff is archived (the product-
     // owner-delivered text extraction) and the 15 APMT citations point at
     // the archived .txt path — G2 leaves the not-archived list; only the
-    // port-authority G1 document remains.
-    const notArchived = [
-      'docs/sources/sweden/gothenburg/port-authority/port-tariff-2026.pdf',
-    ].sort();
+    // port-authority G1 document remained.
+    // v0.4.7 re-baseline (the model health audit pass, in-test
+    // attribution): G1 is archived (the primary-route fetch's verbatim
+    // text extraction, pages 1-21 with the truncation limitation
+    // recorded in its provenance header) and the 10 port-authority
+    // citations point at the archived .txt path — G1 leaves the
+    // not-archived list, which is now empty.
+    const notArchived: string[] = [].sort();
     const cited = new Set<string>();
     const marked = new Set<string>();
     for (const { port } of ports) {
@@ -276,7 +280,61 @@ describe('Source link integrity (spec v0.2.26)', () => {
       }
     }
     expect(blobUrls).toBeGreaterThan(0);
-    expect(notArchivedFlags).toBeGreaterThan(0);
+    // v0.4.7 re-baseline (the model health audit pass, in-test
+    // attribution): G1 (the last not-archived source) is archived, so no
+    // registry rule carries the document_not_archived flag. The flagged-
+    // when-absent machinery stays (the converter branch above); the
+    // invariant is now zero flags, never at-least-one.
+    expect(notArchivedFlags).toBe(0);
     expect(notArchivedWithUpstream).toBe(notArchivedFlags);
+  });
+
+  it('the G1 port-authority archive exists with its provenance and the silo cites the real path (v0.4.7 archive-presence pin)', () => {
+    // The model health audit pass closed the not-archived list's last
+    // entry: the Port of Gothenburg Port Tariff 2026 fetched from the
+    // primary route (the host serves plain clients) and archived as the
+    // verbatim text extraction, pages 1-21 — the truncation limitation
+    // recorded in the provenance header, the prislista precedent. Every
+    // G1-cited encoded rule cites pages 9-13, inside the archived range;
+    // every encoded figure verified against the archive (the audit's
+    // figure table). No contradiction; the anchor-port stop was not met.
+    const archivePath = path.join(REPO_ROOT, 'docs/sources/sweden/gothenburg/port-authority/port-tariff-2026.txt');
+    const text = fs.readFileSync(archivePath, 'utf8');
+    // Identity: issuer, title, edition, currency, provenance, limitation.
+    expect(text).toContain('Port of Gothenburg');
+    expect(text).toContain('PORT TARIFF 2026');
+    expect(text).toContain('VERSION 1 - Effective from January 1, 2026');
+    expect(text).toContain('The prices quoted below are in SEK');
+    expect(text).toContain('Fetched 2026-10-02');
+    expect(text).toContain('portofgothenburg.com/globalassets/dokument/port-tariff-2026.pdf');
+    expect(text).toContain('truncates at page 21 of 37');
+    // The encoded container-call authority: the section 2.2 schedules the
+    // silo's rules cite, verbatim.
+    expect(text).toContain('2.2 CONTAINER VESSELS');
+    expect(text).toContain('1,96 SEK/GT');
+    expect(text).toContain('1,71 SEK/GT');
+    expect(text).toContain('1,15 SEK/GT');
+    expect(text).toContain('0,80 SEK/GT');
+    expect(text).toContain('0,13 SEK/GT');
+    expect(text).toContain('0,24 SEK/GT');
+    expect(text).toContain('0,21 SEK/GT');
+    expect(text).toContain('0,31 SEK/GT');
+    expect(text).toContain('2 400 SEK/m³');
+    expect(text).toContain('800 SEK');
+    expect(text).toContain('50 SEK/m³');
+    expect(text).toContain('7 000 SEK');
+    expect(text).toContain('45 SEK/m (LOA)');
+    expect(text).toContain('50% discount on port dues based on GT for the second call');
+    // The extraction reference records the archive and its SHA.
+    const reference = fs.readFileSync(path.join(REPO_ROOT, 'docs/sources/sweden/gothenburg/GOTHENBURG_EXTRACTION_REFERENCE.md'), 'utf8');
+    expect(reference).toContain('port-tariff-2026.txt');
+    expect(reference).toContain('e8a85b1e17efc46ed78c328412b627b90c52ba01dcc7828861ffb968839f36ed');
+    // The silo's port-authority rules cite the real archived path, never
+    // the never-existed .pdf repository path.
+    const gotYaml = fs.readFileSync(path.join(DATA_DIR, 'gothenburg_2026.yaml'), 'utf8');
+    const g1RuleCitations = gotYaml.split('document_url: "docs/sources/sweden/gothenburg/port-authority/port-tariff-2026.txt"').length - 1;
+    expect(g1RuleCitations).toBe(10);
+    expect(gotYaml).not.toContain('document_url: "docs/sources/sweden/gothenburg/port-authority/port-tariff-2026.pdf"');
+    expect(gotYaml).not.toContain('document_name: "port-tariff-2026.pdf"');
   });
 });
