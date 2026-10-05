@@ -29,6 +29,16 @@ The web suite requires `npm test` (react-scripts); the direct jest runner lacks 
 
 Never wait on a hung fetch. Abandon it, mark the source unreachable, and move on. A marked-unreachable source is an honest finding; a session stalled on a fetch is a lost session.
 
+### 5.1 Verification-artifacts doctrine (standing, recorded v0.5.2; the observed fetch-tool artifacts, never re-diagnosed)
+
+The sandbox's fetch tooling produces three recurring artifacts against the served site. Each is a property of the tooling, not a defect in the deployment or the model; each has a recorded resolution; no future session re-diagnoses them.
+
+1. **The 0-kr hydration snapshot** (observed v0.5.0, confirmed harmless by real-browser check): a fetch of the served page can return the pre-hydration DOM — the HTML shell with the empty root, which reads as 0 kr and no figures. It is not a deployment defect or an engine regression. Resolution: the shell-level checks that matter are the bundle reference (`main.<hash>.js`) and the version marker; the hydrated application is confirmed by a real-browser check (or the rendered-application markers), never by the snapshot's zeros.
+
+2. **The ~32k bundle truncation on large JS assets** (observed on the served bundle): the fetch tooling truncates large JS bodies at roughly 32 KB of a much larger document. It is not a corrupted build or a served-artifact discrepancy. Resolution: check the expected byte length before asserting any content (the spec §8 truncation protocol's retry-and-length discipline), and prove identity through the CI artifact manifest and the hashed filename, never through a truncated body's content.
+
+3. **The stale-branch trap** (observed v0.5.1, twenty minutes lost): a legacy branch snapshot (`gh-pages`, deleted at v0.5.2) that has no serving role under the Actions artifact route can be probed as if it were the served artifact, producing a false hash discrepancy. It is not a deployment failure. Resolution: the served artifact's evidence class is named in the amended spec §8 — the CI artifact manifest or the live shell's own bundle reference; a probe returning any other artifact class is a mis-targeted probe, reported as such, never as a served-artifact discrepancy.
+
 ## 6. Session-start order
 
 1. Confirm the repository head and the delivered ledger (core and web test counts) before any change.

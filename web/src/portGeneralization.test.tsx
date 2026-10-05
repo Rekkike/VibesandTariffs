@@ -50,11 +50,11 @@ describe('currency declaration is data (spec v0.2.59)', () => {
     expect(ctx.rows[0]).toEqual({
       from_currency: 'EUR',
       to_currency: 'SEK',
-      // v0.4.6 ritual pin (in-test attribution): 11.29 as of 2026-10-02
-      // (previously 11.331, 2026-09-30) — conversion-only expectations
+      // v0.5.2 ritual pin (in-test attribution): 11.2525 as of 2026-10-05
+      // (previously 11.29, 2026-10-02) — conversion-only expectations
       // move with the ritual.
-      rate: 11.29,
-      as_of: '2026-10-02',
+      rate: 11.2525,
+      as_of: '2026-10-05',
       source: 'ECB euro reference rate (SEK per EUR)'
     });
   });
@@ -156,7 +156,7 @@ describe('comparison scalability controls (spec v0.2.59)', () => {
     // attribution): Gävle's Grand Total moves 1,370,979.35 ->
     // 10,306,979.35. v0.5.1 re-baseline (the Bremerhaven expansion, in-test
     // attribution): the seventh port's converted total 24,829,786 kr
-    // (2,199,272.49 EUR x 11.29) ranks between Norvik and Hamburg, so the
+    // (2,199,272.49 EUR x 11.2525) ranks between Norvik and Hamburg, so the
     // order becomes Gothenburg, Norrköping, Helsingborg, Gävle, Norvik,
     // Bremerhaven, Hamburg (cheapest-first on the converted basis; HAM's
     // converted 24,893,444 kr still ranks last — v0.4.6 ritual figure). The

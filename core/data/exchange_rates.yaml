@@ -29,13 +29,14 @@
 # re-verifies the EUR->SEK rate against the latest TARGET-business-day
 # publication and updates the rate and as_of below.
 #   Previous pin (v0.3.2 ritual, verified 2026-10-01): 11.331 as of 2026-09-30.
-#   Current  pin (v0.4.6 ritual, verified 2026-10-02):
+#   Previous pin (v0.4.6 ritual, verified 2026-10-02): 11.29 as of 2026-10-02.
+#   Current  pin (v0.5.2 ritual, verified 2026-10-05):
 #   https://api.frankfurter.app/latest?from=EUR&to=SEK
-#   { "base": "EUR", "date": "2026-10-02", "rates": { "SEK": 11.29 } }
+#   { "base": "EUR", "date": "2026-10-05", "rates": { "SEK": 11.2525 } }
 published_pairs:
   - pair: EUR-SEK
     from_currency: EUR
     to_currency: SEK
-    rate: 11.29
-    as_of: 2026-10-02
+    rate: 11.2525
+    as_of: 2026-10-05
     source: ECB euro reference rate (SEK per EUR)

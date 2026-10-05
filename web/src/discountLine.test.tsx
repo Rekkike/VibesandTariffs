@@ -123,11 +123,11 @@ describe('comparison-legibility zero-drift pins (spec v0.2.64)', () => {
       '11\u00a0952\u00a0324\u00a0kr61.34 SEK/GT effective \u2014 derived, not a published rate',
       // v0.5.1 re-baseline (the Bremerhaven expansion, in-test attribution):
       // the seventh port's column - native 2,199,677.26 EUR, converted
-      // 24,834,356 kr, per-GT 127.45 (2,199,677.26 x 11.29 / 194,849);
+      // 24,751,868 kr, per-GT 127.03 (2,199,677.26 x 11.2525 / 194,849);
       // ranks between Norvik and Hamburg (cheapest-first).
-      '2\u00a0199\u00a0677\u00a0\u20ac\u2248 24\u00a0834\u00a0356\u00a0kr converted \u2014 at 11.29 kr/EUR, 2026-10-02127.45 SEK/GT effective \u2014 derived, not a published rate; converted at the exchange-rate input (at 11.29 kr/EUR, 2026-10-02)',
-      // v0.4.6 ritual drift (the only movement): the conversion-only figure moves with the standing rate re-verification — 11.29 as of 2026-10-02 (was 11.331, 2026-09-30); 2,204,910.90 EUR × 11.29 = 24,893,444 kr; ÷ 194,849 GT = 127.76 SEK/GT. The native totals (3,275,851 kr / 2,204,911 € / 8,750,057 kr) and per-GT 16.81 / 44.91 are untouched.
-      '2\u00a0204\u00a0911\u00a0\u20ac\u2248 24\u00a0893\u00a0444\u00a0kr converted \u2014 at 11.29 kr/EUR, 2026-10-02127.76 SEK/GT effective \u2014 derived, not a published rate; converted at the exchange-rate input (at 11.29 kr/EUR, 2026-10-02)'
+      '2\u00a0199\u00a0677\u00a0\u20ac\u2248 24\u00a0751\u00a0868\u00a0kr converted \u2014 at 11.2525 kr/EUR, 2026-10-05127.03 SEK/GT effective \u2014 derived, not a published rate; converted at the exchange-rate input (at 11.2525 kr/EUR, 2026-10-05)',
+      // v0.5.2 ritual drift (the only movement): the conversion-only figure moves with the standing rate re-verification — 11.2525 as of 2026-10-05 (was 11.29, 2026-10-02); 2,204,910.90 EUR × 11.2525 = 24,810,760 kr; ÷ 194,849 GT = 127.33 SEK/GT. The native totals (3,275,851 kr / 2,204,911 € / 8,750,057 kr) and per-GT 16.81 / 44.91 are untouched.
+      '2\u00a0204\u00a0911\u00a0\u20ac\u2248 24\u00a0810\u00a0760\u00a0kr converted \u2014 at 11.2525 kr/EUR, 2026-10-05127.33 SEK/GT effective \u2014 derived, not a published rate; converted at the exchange-rate input (at 11.2525 kr/EUR, 2026-10-05)'
     ]);
   });
 
@@ -532,8 +532,8 @@ describe('the derived per-GT metric\u2019s per-GT-OPS disclosure (spec v0.2.64, 
     const totalRow = Array.from(container!.querySelectorAll('.comparison-total-row'))
       .find(r => (r.textContent ?? '').includes('Grand Total'))!;
     const hamCell = Array.from(totalRow.querySelectorAll('.comparison-total-pergt'))
-      // v0.4.6 ritual drift: HAM+OPS converts at 11.29 — 2,213,035.90 EUR × 11.29 ÷ 194,849 = 128.23 SEK/GT (was 128.69 at 11.331).
-      .find(c => (c.textContent ?? '').includes('128.23'))!;
+      // v0.5.2 ritual drift: HAM+OPS converts at 11.2525 — 2,213,035.90 EUR × 11.2525 ÷ 194,849 = 127.80 SEK/GT (was 128.23 at 11.29).
+      .find(c => (c.textContent ?? '').includes('127.80'))!;
     expect(hamCell.textContent).toContain('includes user-specified OPS');
     expect(hamCell.textContent).not.toContain('per-GT OPS charge uses the same GT basis');
   });
