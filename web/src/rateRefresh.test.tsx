@@ -185,7 +185,7 @@ describe('rate-fetch removal (spec v0.4.0 rider — the v0.3.2/v0.3.5 reversal)'
     expect(block.querySelectorAll('a[data-testid="ecb-rates-link"]')).toHaveLength(1);
   });
 
-  it('the published-pairs structure stays exactly as is (data architecture, not fetch machinery): the YAML carries the single EUR-SEK pair the registry mirrors', () => {
+  it('the published-pairs structure stays exactly as is (data architecture, not fetch machinery): the YAML carries the two EUR-anchored pairs the registry mirrors', () => {
     const yamlText = fs.readFileSync(
       path.join(__dirname, '..', '..', 'core', 'data', 'exchange_rates.yaml'), 'utf8'
     );
@@ -195,7 +195,10 @@ describe('rate-fetch removal (spec v0.4.0 rider — the v0.3.2/v0.3.5 reversal)'
     // with the standing rate re-verification.
     expect(yamlText.includes('rate: 11.2525')).toBe(true);
     expect(yamlText.includes('as_of: 2026-10-05')).toBe(true);
-    expect(exchangeRates).toHaveLength(1);
+    // v0.6.0 Aarhus expansion: the second EUR-anchored pair (the derived
+    // cross's denominator; the ritual now checks both pairs).
+    expect(yamlText.includes('rate: 7.4745')).toBe(true);
+    expect(exchangeRates).toHaveLength(2);
     expect(eurSek.pair ?? eurSek.from_currency + '-' + eurSek.to_currency).toBe('EUR-SEK');
   });
 });

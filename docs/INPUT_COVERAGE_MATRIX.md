@@ -35,6 +35,7 @@ estimate, the storage-day pairs that the port prices, lay time, engine tier.
 | NRK | `nrk_liner_service`; the national shared set |
 | NVK | the national shared set |
 | BRV | `terminal_operator` (EUROGATE CTB default / NTB variant), `pilotage_segment_pct` (the Weser sea-approach default 65; scales the Lotsabgaben line only - the Aussenweser fees line is definitionally 100 percent, the asymmetry recorded here), `towage_amount` (est.), lashing/twistlock/IMO/lay-by/reefer-days/small-call counts (the Eurogate P&C optional services, blank-defaulted), `storage_days_import`/`storage_days_export` (the ch. 7 scenario surfaces, zero-defaulted), the shared EU-ETS pair |
+| AAR | `tug_count` (override for the published towage bands' LOA default - the assumed-parameter flag fires when the port default applies), `esi_score` (the 4.5-percent ESI-discount gate, the shared environmental surface), `pilotage_hours`/`pilotage_extra_pilot`/`pilotage_ordering_lead_time_hours` (the shared pilotage set), lashing/DG/reefer/reefer-days counts (the APMT optional services, blank-defaulted), `storage_days_import` (the tariff-10 storage scenario surface, zero-defaulted), the shared EU-ETS pair and OPS block. The mooring line needs no input (the published GT bands price it); the 140-unit APMT minimum is a rule floor, never an input (v0.6.0) |
 
 ## 3. Engine inputs with no UI anywhere (unrecorded asymmetry, recorded here)
 
@@ -101,6 +102,30 @@ directive that orders them.
 - The Bremerhaven mooring convention: crew-handled per the directive's
   convention; no archived authority addresses Bremerhaven boatmen (the
   evidentiary status stated in the extraction reference section 7), v0.5.1.
+- The APMT Aarhus scenario surfaces (AAR): the gate-move (truck/rail),
+  yard, VAS, and reefer-plug surfaces are priced rules awaiting scenario
+  inputs - the expansion-gate doctrine (recorded per the Aarhus extraction
+  reference section 6; encoded where an input keys one, blank-zero
+  otherwise), v0.6.0.
+- The crane own-gear surface (AAR): the port container cranes rent
+  excluding operator at 2,175 DKK/hour for ships working with their own
+  gear at port quays (Crane Terms 8.1); the standard call at the APMT
+  terminal prices the APMT quay rate and the crane rule never fires -
+  recorded as the own-gear scenario surface, never a default line
+  (the Aarhus extraction reference section 3), v0.6.0.
+- The conditional electricity/shore-power/vet surfaces (AAR): the ToC
+  13/14 electricity and shore-power tariffs (2.75 DKK/kWh plus connection
+  fees) and the 15 veterinary border-control fee are conditional
+  surfaces - they fire only for calls that order shore power or carry
+  third-country animal products; no input keys them today, recorded not
+  forced (the extraction reference section 6), v0.6.0.
+- The waste-geography condition (AAR): the slop-oil free maximums depend on
+  the last port's position relative to the Wilhelmshaven-Kristiansand line
+  (5 m3 east / 10 m3 west); the waste scenario carries no last-port
+  geography input, so the no-special-fee principle plus the ToC's named
+  exceptions encode and the condition is recorded (the extraction
+  reference section 8 - the gate doctrine's encode-or-record decision),
+  v0.6.0.
 
 ## 6. Coherence-check adjudication
 

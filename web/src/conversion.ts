@@ -90,6 +90,21 @@ export function declaredRateFor(
     throw new Error(`declaredRateFor: '${currency}' is the comparison basis itself - no conversion path needed`);
   }
   const row = context.rows.find(r => r.from_currency === currency && r.to_currency === context.basis);
+  if (row) {
+    return row;
+  }
+  // v0.6.0 Aarhus: DKK's declared path is the EUR-anchored published pair
+  // (EUR->DKK) - the published-pairs architecture stores ECB rates EUR-base
+  // only, so no direct DKK->SEK row can exist in the registry; the derived
+  // cross carries the conversion. A registry with no EUR->DKK row fails
+  // loudly below, exactly as before - the loud-failure contract is
+  // unchanged, only the declared-row shape is the anchored pair.
+  if (currency === 'DKK') {
+    const anchored = context.rows.find(r => r.from_currency === 'EUR' && r.to_currency === 'DKK');
+    if (anchored) {
+      return anchored;
+    }
+  }
   if (!row) {
     throw new Error(
       `declaredRateFor: no declared conversion path for '${currency}' toward the comparison basis ` +
@@ -142,11 +157,28 @@ export function resolveExchangeRate(
 // declared path in the context (spec v0.2.59) - an undeclared currency
 // throws rather than silently rendering unconverted while the ranking
 // still orders it against basis-currency amounts.
+//
+// v0.6.0 Aarhus expansion - the derived cross (the first non-EUR-anchored
+// conversion): the published-pairs structure stores only EUR-anchored
+// published rates. EUR converts at the resolved EUR->SEK rate exactly as
+// before (byte-identical); DKK converts through the derived cross
+// SEK per DKK = (EUR->SEK) / (EUR->DKK) - computed at full precision from
+// the two published pairs with the user's EUR-rate override applied
+// numerator-side, rounded at display only, never a fixed ratio in code.
+// The declared DKK row must exist in the context (the loud-failure
+// contract); its published pin supplies the denominator.
+export interface DerivedCrossRates {
+  // The published EUR->DKK row (DKK per EUR) from the registry; required
+  // for any DKK conversion. Absent means no DKK figure is being converted.
+  eurToDkk?: DeclaredRateRow;
+}
+
 export function toComparisonBasis(
   amount: number,
   currency: string,
   rate: ExchangeRateInfo,
-  context?: ComparisonBasisContext
+  context?: ComparisonBasisContext,
+  derived?: DerivedCrossRates
 ): { amount: number; converted: boolean } {
   const basis = context?.basis ?? DEFAULT_BASIS_CURRENCY;
   if (currency === basis) {
@@ -158,8 +190,29 @@ export function toComparisonBasis(
     // currency throws, never silently ranks raw amounts (spec v0.2.59).
     declaredRateFor(context, currency);
   }
-  // Without a context (the module's own unit tests, degenerate loads) the
-  // resolved rate converts every non-basis currency, the v0.2.31 behavior.
+  // The derived cross (v0.6.0): DKK converts at
+  // (the resolved EUR->SEK rate) / (the published EUR->DKK rate), full
+  // precision, rounded at display only. Every other declared currency
+  // (EUR) converts at the resolved rate exactly as before. Without a
+  // context (the module's own unit tests, degenerate loads) the resolved
+  // rate converts every non-basis currency, the v0.2.31 behavior.
+  if (currency === 'DKK') {
+    // A direct DKK->basis row (the v0.2.59 declaration shape; synthetic
+    // only today - the registry script enforces EUR-anchored published
+    // pairs) converts at its own rate. The live path is the derived cross.
+    const direct = context?.rows.find(r => r.from_currency === 'DKK' && r.to_currency === basis);
+    if (direct) {
+      return { amount: amount * direct.rate, converted: true };
+    }
+    const dkkRow = derived?.eurToDkk ?? context?.rows.find(r => r.from_currency === 'EUR' && r.to_currency === 'DKK');
+    if (!dkkRow) {
+      throw new Error(
+        `toComparisonBasis: DKK conversion requires the published EUR->DKK rate row (core/data/exchange_rates.yaml, spec v0.6.0); none declared`
+      );
+    }
+    const sekPerDkk = rate.rate / dkkRow.rate;
+    return { amount: amount * sekPerDkk, converted: true };
+  }
   return { amount: amount * rate.rate, converted: true };
 }
 
@@ -177,7 +230,8 @@ export function conversionLabel(rate: ExchangeRateInfo): string {
 export function rankByConvertedBasis(
   totals: { portId: string; amount: number; currency: string }[],
   rate: ExchangeRateInfo,
-  context?: ComparisonBasisContext
+  context?: ComparisonBasisContext,
+  derived?: DerivedCrossRates
 ): { cheapestPortId: string | null; mostExpensivePortId: string | null } {
   if (totals.length < 2) {
     return { cheapestPortId: null, mostExpensivePortId: null };
@@ -187,7 +241,7 @@ export function rankByConvertedBasis(
   let mostExpensive: string | null = null;
   let mostExpensiveBasis = -Infinity;
   for (const t of totals) {
-    const basis = toComparisonBasis(t.amount, t.currency, rate, context).amount;
+    const basis = toComparisonBasis(t.amount, t.currency, rate, context, derived).amount;
     if (basis < cheapestBasis) {
       cheapestBasis = basis;
       cheapest = t.portId;
@@ -208,9 +262,10 @@ export function rankByConvertedBasis(
 export function rankOrderByConvertedBasis(
   totals: { portId: string; amount: number; currency: string }[],
   rate: ExchangeRateInfo,
-  context?: ComparisonBasisContext
+  context?: ComparisonBasisContext,
+  derived?: DerivedCrossRates
 ): { portId: string; amount: number; currency: string }[] {
   const basis = (t: { amount: number; currency: string }) =>
-    toComparisonBasis(t.amount, t.currency, rate, context).amount;
+    toComparisonBasis(t.amount, t.currency, rate, context, derived).amount;
   return [...totals].sort((a, b) => basis(a) - basis(b));
 }

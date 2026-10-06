@@ -162,6 +162,17 @@ export interface PerUnitRate {
   default_by_loa?: {         // suggested count by LOA class (spec 3.3: defaults are data, user-overridable)
     bands: { min_m?: number; max_m?: number; count: number; description?: string }[];
   };
+  // GT-banded per-unit flat amounts (v0.6.0 Aarhus expansion: the port's
+  // published towage bands — the price per tugboat by the assisted ship's
+  // GT band, ToC §7.4). When present, the unit rate is not a single rate:
+  // the vessel's GT selects the band, and the band's flat amount prices
+  // each unit (tug). The unit count path is unchanged — the same tug_count
+  // input and default_by_loa machinery the estimate convention uses; the
+  // published bands replace the estimated rate at Aarhus only, per-port
+  // honest, never a global convention change.
+  banded_by_gt?: {
+    bands: { min: number | null; max: number | null; amount: number }[];
+  };
   // Cargo-tonnage derivation from container counts (spec v0.2.61, the
   // godsavgift encoding): tonnes = 20ft count x weight_20_input + 40ft count
   // x weight_40_input, charged over the international-traffic basis (loaded

@@ -871,11 +871,99 @@ const brv: Record<string, FunctionalClassInfo> = {
   }
 };
 
+// Aarhus 2026 (v0.6.0; sources: Port of Aarhus Terms and Conditions of
+// Business 2026 - port dues 4.2, ESI discount 4.3, ISPS 3.3, work levy 8.1,
+// wharfage 8, pilotage 5.3 (the 1-July-2026 edition), mooring 6.3 (the
+// July-2026 edition), towage 7.4 (the port\'s own tugs HERMES and AROS);
+// APMT Aarhus 2026 tariff - quay 2.1, gate 4, lashing 2.5, reefer 7,
+// storage 10, IMDG 11/5.2). The pilotage provider IS the port (Pilotage
+// STC 1, in force 01.11.2022). The mooring and towage lines are the
+// model\'s first PUBLISHED-price surfaces of those families - authority
+// services, never estimates.
+const aar: Record<string, FunctionalClassInfo> = {
+  aarhus_port_due: {
+    functional_class: 'berth_terminal_infrastructure',
+    basis_note: 'Port due for ships over 3,000 GT - 4.00 DKK per GT up to 7 calendar days, 0.70 DKK per GT per day beyond (ToC 4.2); the ESI discount (4.3) adjusts it',
+    source: 'Port of Aarhus - Terms and Conditions of Business 2026.pdf 4.2'
+  },
+  aarhus_port_due_extension: {
+    functional_class: 'berth_terminal_infrastructure',
+    basis_note: 'Port-due supplement beyond 7 calendar days - 0.70 DKK per GT per commenced day (ToC 4.2)',
+    source: 'Port of Aarhus - Terms and Conditions of Business 2026.pdf 4.2'
+  },
+  aarhus_pilotage: {
+    functional_class: 'purchased_service',
+    basis_note: 'Pilotage per call by GT band - the Port of Aarhus IS the pilotage provider and biller (Pilotage STC 1: the port handles the public pilotage and is legally obliged to deliver it to all ships calling); the 5.3 bands are the port\'s own July-2026 prices',
+    source: 'Port of Aarhus - Terms and Conditions of Business 2026.pdf 5.3 (updated 1 July 2026)'
+  },
+  aarhus_mooring: {
+    functional_class: 'purchased_service',
+    basis_note: 'Mooring per call by GT band - mandatory approved line handlers over 80 m LOA (ToC 6.1), the port or an approved supplier provides them; the 6.3 bands are published prices, the model\'s first priced mooring (an authority service, never an estimate)',
+    source: 'Port of Aarhus - Terms and Conditions of Business 2026.pdf 6.1/6.3 (updated 1 July 2026)'
+  },
+  aarhus_towage: {
+    functional_class: 'purchased_service',
+    basis_note: 'Towage per tugboat by the assisted ship\'s GT band - the port\'s own tugs m.s. HERMES and AROS (ToC 7.4); published bands replace the estimate convention at Aarhus only, per-port honest',
+    source: 'Port of Aarhus - Terms and Conditions of Business 2026.pdf 7.4'
+  },
+  aarhus_isps: {
+    functional_class: 'readiness_safety_capacity',
+    basis_note: 'ISPS fee per loaded container (ToC 3.3) - the security fee with the stated ISPS safety purpose, the classification contract\'s own example',
+    source: 'Port of Aarhus - Terms and Conditions of Business 2026.pdf 3.3'
+  },
+  aarhus_work_environment_levy: {
+    functional_class: 'cargo_throughput_levy',
+    basis_note: 'Working-environment levy per container (ToC 8.1) - a per-unit worker-welfare charge on throughput (reg. no. 181 of 18 May 1965), charged to the ship\'s agent or customer',
+    source: 'Port of Aarhus - Terms and Conditions of Business 2026.pdf 8.1'
+  },
+  aarhus_wharfage: {
+    functional_class: 'cargo_throughput_levy',
+    basis_note: 'Wharfage per loaded container (ToC 8) - the cargo-side authority charge; payment is the recipient\'s or sender\'s responsibility (rendered and attributed, never silently dropped)',
+    source: 'Port of Aarhus - Terms and Conditions of Business 2026.pdf 8'
+  },
+  apmt_aarhus_container_handling: {
+    functional_class: 'cargo_throughput_levy',
+    basis_note: 'APMT quay operations - 1,105.00 DKK per container (tariff 2.1); continuous work from start-up times, lashing/unlashing excluded (the basis wording verbatim); published-default honesty flag carried',
+    source: 'Aarhus-01_01_2026-31_12_2026-Tariff - 2026.pdf 2.1'
+  },
+  apmt_aarhus_lashing: {
+    functional_class: 'cargo_throughput_levy',
+    basis_note: 'APMT lashing/unlashing per gang-hour (tariff 2.5) - ordered service, blank charges zero',
+    source: 'Aarhus-01_01_2026-31_12_2026-Tariff - 2026.pdf 2.5'
+  },
+  apmt_aarhus_gate_move_truck: {
+    functional_class: 'cargo_throughput_levy',
+    basis_note: 'APMT truck gate move per container (tariff 4.1) - the landside leg, the container-through comparison surface',
+    source: 'Aarhus-01_01_2026-31_12_2026-Tariff - 2026.pdf 4.1'
+  },
+  apmt_aarhus_reefer_daily: {
+    functional_class: 'cargo_throughput_levy',
+    basis_note: 'APMT reefer daily monitoring (tariff 7.1) - scenario surface, blank charges zero',
+    source: 'Aarhus-01_01_2026-31_12_2026-Tariff - 2026.pdf 7.1'
+  },
+  apmt_aarhus_storage_full: {
+    functional_class: 'cargo_throughput_levy',
+    basis_note: 'APMT full-container storage tiers (tariff 10.1) - scenario surface over the published tier ladder',
+    source: 'Aarhus-01_01_2026-31_12_2026-Tariff - 2026.pdf 10.1'
+  },
+  apmt_aarhus_storage_imdg: {
+    functional_class: 'cargo_throughput_levy',
+    basis_note: 'APMT IMDG-container storage tiers, group 1 (tariff 10.3) - scenario surface over the published tier ladder',
+    source: 'Aarhus-01_01_2026-31_12_2026-Tariff - 2026.pdf 10.3'
+  },
+  apmt_aarhus_imdg_surcharge: {
+    functional_class: 'cargo_throughput_levy',
+    basis_note: 'APMT IMDG surcharge - percent-of-rate classes for quay/yard/gate operations (tariff 11; the 825.00 DKK incorrect-IMO inspection line 5.2 is the same surface); fires only for dangerous-goods units',
+    source: 'Aarhus-01_01_2026-31_12_2026-Tariff - 2026.pdf 11/5.2'
+  }
+};
+
 export const PORT_FUNCTIONAL_CLASSIFICATION: Record<string, Record<string, FunctionalClassInfo>> = {
   gothenburg: got,
   hamburg: ham,
   helsingborg: hbg,
-  bremerhaven: brv
+  bremerhaven: brv,
+  aarhus: aar
 };
 // Classification for the Swedish national rule-id patterns shared by all
 // five Swedish ports (Gothenburg sjofartsverket_*, Helsingborg sfv_*,

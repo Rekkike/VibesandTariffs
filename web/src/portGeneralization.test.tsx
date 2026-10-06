@@ -44,9 +44,9 @@ const registryRows = ((portsRegistry as any).exchange_rates ?? []) as DeclaredRa
 const ctx = resolveComparisonBasis(registryRows);
 
 describe('currency declaration is data (spec v0.2.59)', () => {
-  it('the registry declares SEK as the comparison basis with the EUR conversion path', () => {
+  it('the registry declares SEK as the comparison basis with both EUR conversion paths', () => {
     expect(ctx.basis).toBe('SEK');
-    expect(ctx.rows).toHaveLength(1);
+    expect(ctx.rows).toHaveLength(2);
     expect(ctx.rows[0]).toEqual({
       from_currency: 'EUR',
       to_currency: 'SEK',
@@ -56,6 +56,16 @@ describe('currency declaration is data (spec v0.2.59)', () => {
       rate: 11.2525,
       as_of: '2026-10-05',
       source: 'ECB euro reference rate (SEK per EUR)'
+    });
+    // v0.6.0 Aarhus expansion: the second EUR-anchored published pair
+    // (the cross-rate machinery's denominator; the derived cross
+    // DKK->SEK = (EUR->SEK) / (EUR->DKK), never a fixed ratio in code).
+    expect(ctx.rows[1]).toEqual({
+      from_currency: 'EUR',
+      to_currency: 'DKK',
+      rate: 7.4745,
+      as_of: '2026-10-05',
+      source: 'ECB euro reference rate (DKK per EUR)'
     });
   });
 
@@ -67,19 +77,24 @@ describe('currency declaration is data (spec v0.2.59)', () => {
   });
 
   it('red proof: a port with an undeclared currency fails loudly - never ranks on raw amounts', () => {
-    // A future DKK port with no DKK rate row: the conversion throws, the
-    // comparison never silently renders it unconverted while the ranking
-    // orders its raw DKK amounts against SEK amounts.
+    // A DKK port with no DKK path (v0.6.0: the real registry declares the
+    // EUR->DKK pair, so the red-proof context is a DKK-less registry): the
+    // conversion throws, the comparison never silently renders it
+    // unconverted while the ranking orders its raw DKK amounts against
+    // SEK amounts.
+    const dkkLessCtx = resolveComparisonBasis(
+      registryRows.filter(r => r.to_currency !== 'DKK')
+    );
     const dkkTotals = [
       { portId: 'gothenburg', amount: 1_534_126, currency: 'SEK' },
       { portId: 'aarhus', amount: 900_000, currency: 'DKK' }
     ];
-    expect(() => toComparisonBasis(900_000, 'DKK', rate(11.275, true), ctx))
-      .toThrow(/no declared conversion path for 'DKK'/);
-    expect(() => rankByConvertedBasis(dkkTotals, rate(11.275, true), ctx))
-      .toThrow(/no declared conversion path for 'DKK'/);
-    expect(() => rankOrderByConvertedBasis(dkkTotals, rate(11.275, true), ctx))
-      .toThrow(/no declared conversion path for 'DKK'/);
+    expect(() => toComparisonBasis(900_000, 'DKK', rate(11.275, true), dkkLessCtx))
+      .toThrow(/no declared conversion path for 'DKK'|DKK conversion requires the published EUR->DKK/);
+    expect(() => rankByConvertedBasis(dkkTotals, rate(11.275, true), dkkLessCtx))
+      .toThrow(/no declared conversion path for 'DKK'|DKK conversion requires the published EUR->DKK/);
+    expect(() => rankOrderByConvertedBasis(dkkTotals, rate(11.275, true), dkkLessCtx))
+      .toThrow(/no declared conversion path for 'DKK'|DKK conversion requires the published EUR->DKK/);
   });
 
   it('declaring the DKK row makes the port comparable with zero code change (data-only fix)', () => {
@@ -88,7 +103,7 @@ describe('currency declaration is data (spec v0.2.59)', () => {
       { from_currency: 'DKK', to_currency: 'SEK', rate: 1.5, as_of: '2026-09-21', source: 'test fixture' }
     ]);
     const conv = toComparisonBasis(900_000, 'DKK', rate(11.275, true), dkkCtx);
-    expect(conv).toEqual({ amount: 900_000 * 11.275, converted: true });
+    expect(conv).toEqual({ amount: 900_000 * 1.5, converted: true });
     expect(() => declaredRateFor(dkkCtx, 'DKK')).not.toThrow();
   });
 
@@ -159,16 +174,21 @@ describe('comparison scalability controls (spec v0.2.59)', () => {
     // (2,199,272.49 EUR x 11.2525) ranks between Norvik and Hamburg, so the
     // order becomes Gothenburg, Norrköping, Helsingborg, Gävle, Norvik,
     // Bremerhaven, Hamburg (cheapest-first on the converted basis; HAM's
-    // converted 24,893,444 kr still ranks last — v0.4.6 ritual figure). The
-    // single ranking rule is unchanged.
+    // converted 24,893,444 kr still ranks last — v0.4.6 ritual figure).
+    // v0.6.0 re-baseline (the Aarhus expansion, in-test attribution): the
+    // eighth port's converted total 9,557,151.94 kr (6,348,361.00 DKK x
+    // 11.2525/7.4745, the derived cross) ranks between Helsingborg
+    // (8,750,057.40) and Gävle (10,306,979.35), so Aarhus takes the fourth
+    // column. The single ranking rule is unchanged.
     expect(headerCells).toHaveLength(LOADED_PORTS.length + 1);
     expect(headerCells[1]).toContain('Gothenburg');
     expect(headerCells[2]).toContain('Norrköping');
     expect(headerCells[3]).toContain('Helsingborg');
-    expect(headerCells[4]).toContain('Gävle');
-    expect(headerCells[5]).toContain('Norvik');
-    expect(headerCells[6]).toContain('Bremerhaven');
-    expect(headerCells[7]).toContain('Hamburg');
+    expect(headerCells[4]).toContain('Aarhus');
+    expect(headerCells[5]).toContain('Gävle');
+    expect(headerCells[6]).toContain('Norvik');
+    expect(headerCells[7]).toContain('Bremerhaven');
+    expect(headerCells[8]).toContain('Hamburg');
   });
 
   it('the cheapest/most-expensive markers are consistent with the column order (same single ranking rule)', async () => {
@@ -189,13 +209,16 @@ describe('comparison scalability controls (spec v0.2.59)', () => {
     expect(cards.length).toBe(LOADED_PORTS.length);
     // v0.4.2 re-baseline (the Yilport terminal layer): same ranked order as
     // desktop. v0.5.1 re-baseline (the Bremerhaven expansion): same order.
+    // v0.6.0 re-baseline (the Aarhus expansion): same order — Aarhus's
+    // derived-cross total ranks fourth, between Helsingborg and Gävle.
     expect(cards[0]).toContain('Gothenburg');
     expect(cards[1]).toContain('Norrköping');
     expect(cards[2]).toContain('Helsingborg');
-    expect(cards[3]).toContain('Gävle');
-    expect(cards[4]).toContain('Norvik');
-    expect(cards[5]).toContain('Bremerhaven');
-    expect(cards[6]).toContain('Hamburg');
+    expect(cards[3]).toContain('Aarhus');
+    expect(cards[4]).toContain('Gävle');
+    expect(cards[5]).toContain('Norvik');
+    expect(cards[6]).toContain('Bremerhaven');
+    expect(cards[7]).toContain('Hamburg');
   });
 
   it('a subset selection renders only the selected ports - the bounded fresh-load default does not render unselected ports', async () => {
@@ -381,6 +404,20 @@ describe('port-specific reset fields (spec v0.2.60)', () => {
         'lashing_containers', 'twistlock_containers', 'imo_containers',
         'layby_hours', 'reefer_extra_days', 'small_call_containers',
         'storage_days_import', 'storage_days_export'
+      ],
+      // v0.6.0 Aarhus expansion: the eighth port's own per-port set — the
+      // published-towage tug count (the LOA default is an override surface),
+      // the ESI score (the 4.5-percent discount gate), the APMT
+      // optional-service and storage scenario inputs, and the shared
+      // per-port block.
+      aarhus: [
+        'engine_tier', 'engine_tier_estimated', 'esi_score', 'tug_count',
+        'pilotage_hours', 'pilotage_extra_pilot',
+        'pilotage_ordering_lead_time_hours', 'lay_up_days',
+        'ops_electricity_price', 'ops_demand_charge', 'ops_connection_charge',
+        'ets_emissions_tco2', 'ets_allowance_price',
+        'lashing_containers', 'dangerous_goods_units', 'reefer_units',
+        'reefer_extra_days', 'storage_days_import', 'storage_days_export'
       ]
     };
     for (const port of LOADED_PORTS) {

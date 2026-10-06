@@ -887,6 +887,32 @@ export function evaluateFeeRule(
         ruleUnitRate = roundToCent(effectiveRate);
         break;
       }
+      // GT-banded per-unit flat amounts (v0.6.0, the Aarhus towage bands):
+      // the vessel's GT selects the band; the band's flat amount prices
+      // each unit. The tug-count path above (tug_count input, default_by_loa
+      // suggestion) is unchanged; only the per-unit price is banded. A vessel
+      // GT outside every band renders nothing (never a silently unbanded
+      // rate).
+      if (perUnit.banded_by_gt) {
+        const band = perUnit.banded_by_gt.bands.find(b =>
+          (b.min === null || vessel.gt > b.min) && (b.max === null || vessel.gt <= b.max)
+        );
+        if (!band) {
+          qualityFlags.push({
+            type: 'fallback_value',
+            description: `No GT band found for ${vessel.gt} on ${rule.id}`,
+            severity: 'warning'
+          });
+          return null;
+        }
+        effectiveRate = band.amount;
+        rateApplied = `Banded per unit: ${unitCount} * ${band.amount} (GT band ${band.min ?? '-\u221e'}-${band.max ?? '\u221e'})`;
+        bandOrBasis = `gt=${vessel.gt}, ${perUnit.unit_type}=${unitCount}`;
+        baseAmount = unitCount * effectiveRate;
+        ruleUnitCount = unitCount;
+        ruleUnitRate = effectiveRate;
+        break;
+      }
       if (perUnit.unit_rate_input) {
         const override = (call as any)[perUnit.unit_rate_input];
         if (typeof override === 'number' && override >= 0) {

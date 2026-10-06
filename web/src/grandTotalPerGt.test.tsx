@@ -79,8 +79,8 @@ describe('Grand Total derived per-GT — desktop comparison (spec v0.2.58)', () 
       .find(r => (r.textContent ?? '').includes('Grand Total'))!;
     expect(totalRow).toBeDefined();
     const perGtCells = totalRow.querySelectorAll('.comparison-total-pergt');
-    // v0.5.1: seven loaded ports, seven per-GT cells.
-    expect(perGtCells.length).toBe(7);
+    // v0.5.1: seven loaded ports. v0.6.0: eight loaded ports, eight per-GT cells.
+    expect(perGtCells.length).toBe(8);
     for (const cell of Array.from(perGtCells)) {
       expect(cell.textContent).toContain('SEK/GT effective — derived, not a published rate');
     }
@@ -199,8 +199,8 @@ describe('Grand Total derived per-GT — OPS honesty (spec v0.2.58)', () => {
     const totalRow = Array.from(container!.querySelectorAll('.comparison-total-row'))
       .find(r => (r.textContent ?? '').includes('Grand Total'))!;
     const perGtCells = totalRow.querySelectorAll('.comparison-total-pergt');
-    // v0.5.1: seven loaded ports, seven per-GT cells.
-    expect(perGtCells.length).toBe(7);
+    // v0.5.1: seven loaded ports. v0.6.0: eight loaded ports, eight per-GT cells.
+    expect(perGtCells.length).toBe(8);
     for (const cell of Array.from(perGtCells)) {
       expect(cell.textContent).toContain('includes user-specified OPS');
       expect(cell.textContent).toContain('derived, not a published rate');

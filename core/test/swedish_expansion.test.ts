@@ -269,9 +269,9 @@ describe('Swedish domestic expansion — Sjöfartsverket shared rules (reference
     const files = fs.readdirSync(DATA_DIR).filter(f => f.endsWith('.yaml'));
     const portFiles = files.filter(f => f !== 'exchange_rates.yaml' && f !== 'vessel_library.yaml');
     expect(portFiles.sort()).toEqual([
-      'bremerhaven_2026.yaml', 'gavle_2026.yaml', 'gothenburg_2026.yaml',
-      'hamburg_2026.yaml', 'helsingborg_2026.yaml', 'norrkoping_2026.yaml',
-      'norvik_2026.yaml'
+      'aarhus_2026.yaml', 'bremerhaven_2026.yaml', 'gavle_2026.yaml',
+      'gothenburg_2026.yaml', 'hamburg_2026.yaml', 'helsingborg_2026.yaml',
+      'norrkoping_2026.yaml', 'norvik_2026.yaml'
     ]);
   });
 });

@@ -32,6 +32,14 @@ import portsRegistry from './data/ports.json';
 import { defaultCall, calculatePortCallCost, DEFAULT_VESSEL } from '@port-cost/core';
 import type { CallInput, PortDefinition } from '@port-cost/core/types';
 
+// The PortWorkspace render (the full MUI workspace with the Hamburg silo's
+// composite-tranche derivation surfaces) exceeds jest's 5 s default in the
+// sandbox environment - the same class the selectionDrawer suite records
+// with its own 30 s allowance. Observed ~8 s at both the v0.5.2 baseline
+// (8725f8d) and on this branch - an environment-slow render, never an
+// assertion or a behavior change.
+jest.setTimeout(30000);
+
 const LOADED_PORTS: PortDefinition[] = ((portsRegistry as any).ports ?? []).filter(
   (p: any) => p && p.fee_rules && Array.isArray(p.fee_rules)
 );

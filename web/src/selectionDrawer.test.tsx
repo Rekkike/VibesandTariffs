@@ -45,11 +45,12 @@ const LOADED_PORTS: PortDefinition[] = ((portsRegistry as any).ports ?? []).filt
 
 // The synthetic new-country port (test-only, never a silo): cloned from
 // an existing silo's real shape with its identity fields re-pointed. At
-// v0.5.1 the real registry carries seven ports (the cap pins run against
-// the real registry), so this fixture's remaining role is the grouping
-// proof's new-country case - a country no real silo carries (Denmark),
-// demonstrating that a new country's group appears the day its port
-// exists without touching any data file.
+// v0.6.0 the real registry carries eight ports in five countries
+// including Denmark (the Aarhus silo - the fixture's v0.5.1 Denmark role
+// is retired to the real registry), so this fixture's remaining role is
+// the grouping proof's new-country case - a country no real silo
+// carries (Finland), demonstrating that a new country's group appears
+// the day its port exists without touching any data file.
 const buildSeventhPort = (): PortDefinition => {
   const base = yaml.load(
     fs.readFileSync(
@@ -63,7 +64,7 @@ const buildSeventhPort = (): PortDefinition => {
       ...base.metadata,
       id: 'test_synthetic_seventh_port',
       name: 'Synthetic Seventh Port',
-      country: 'Denmark'
+      country: 'Finland'
     }
   };
 };
@@ -137,21 +138,26 @@ describe('port drawer (spec v0.5.0) - structure and grouping', () => {
     const headers = Array.from(
       container.querySelectorAll('.port-drawer-country-header')
     ).map(h => (h.textContent ?? '').trim());
-    // The seven-port reality (v0.5.1): five Swedish silos plus the two
-    // German ports - grouping is data-derived from metadata.country,
-    // never enumerated in code; the registry's alphabetical order puts
-    // Bremerhaven first, so Germany is the first group.
-    expect(headers).toEqual(['Germany', 'Sweden']);
+    // The eight-port reality (v0.6.0): five Swedish silos, the two German
+    // ports, and the Danish silo - grouping is data-derived from
+    // metadata.country, never enumerated in code; the registry's
+    // alphabetical order puts Aarhus first, so Denmark is the first
+    // group.
+    expect(headers).toEqual(['Denmark', 'Germany', 'Sweden']);
     const groups = groupPortsByCountry(LOADED_PORTS);
-    expect(groups.map(g => g.country)).toEqual(['Germany', 'Sweden']);
+    // v0.6.0 re-baseline: the Aarhus silo founds the Denmark group - the
+    // fixture's v0.5.1 synthetic-Denmark role is retired; Denmark is now
+    // the real first group (registry order: aarhus first).
+    expect(groups.map(g => g.country)).toEqual(['Denmark', 'Germany', 'Sweden']);
     expect(groups.find(g => g.country === 'Sweden')!.ports).toHaveLength(5);
     expect(groups.find(g => g.country === 'Germany')!.ports).toHaveLength(2);
+    expect(groups.find(g => g.country === 'Denmark')!.ports).toHaveLength(1);
     // No code-side country enumeration: the grouping helper reads the
     // field exactly as carried (a new country appears the day its port
     // exists - pinned by the fixture grouping below; the synthetic
-    // fixture's country is Denmark, a country no real silo carries).
+    // fixture's country is Finland, a country no real silo carries).
     const withEighth = groupPortsByCountry([...LOADED_PORTS, buildSeventhPort()]);
-    expect(withEighth.map(g => g.country)).toEqual(['Germany', 'Sweden', 'Denmark']);
+    expect(withEighth.map(g => g.country)).toEqual(['Denmark', 'Germany', 'Sweden', 'Finland']);
     act(() => { root.unmount(); });
     container.remove();
   });
@@ -322,13 +328,14 @@ describe('port drawer (spec v0.5.0) - the comparison cap (6, the 140 px floor ar
     act(() => { toggle.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
   };
 
-  it('with seven real ports loaded the cap binds in the DOM (v0.5.1: the Bremerhaven expansion makes the cap live - the sixth-port pin the v0.5.0 suite could never falsify now has its real red seam)', () => {
-    // The audit's own arithmetic re-checked at seven: 7 x 140 = 980 px plus
-    // the bounded label column exceeds the supported 1024-1200 px band, so
-    // the cap stays 6 and now BINDS on the real port set. With six of the
-    // seven selected, the seventh unchecked checkbox renders disabled -
-    // the cap defect class the v0.5.0 suite needed a fixture for is now
-    // reachable on the real registry.
+  it('with eight real ports loaded the cap binds in the DOM (v0.5.1 made the cap live at seven; v0.6.0: the eighth port widens the bound set - two unchecked rows render disabled at cap)', () => {
+    // The audit's own arithmetic re-checked at eight: 8 x 140 = 1,120 px
+    // plus the bounded label column exceeds the supported 1024-1200 px
+    // band by more than seven did, so the cap stays 6 and BINDS on the
+    // real port set with two ports left out. With six of the eight
+    // selected, the two unchecked checkboxes render disabled - the cap
+    // defect class the v0.5.0 suite needed a fixture for is reachable on
+    // the real registry.
     const container = document.createElement('div');
     document.body.appendChild(container);
     const root = createRoot(container);
@@ -337,10 +344,10 @@ describe('port drawer (spec v0.5.0) - the comparison cap (6, the 140 px floor ar
     const boxes = Array.from(
       container.querySelectorAll('.port-drawer-body input[type="checkbox"]')
     ) as HTMLInputElement[];
-    expect(boxes).toHaveLength(7);
+    expect(boxes).toHaveLength(8);
     const unchecked = boxes.filter(b => !b.checked);
-    expect(unchecked).toHaveLength(1);
-    expect(unchecked[0].disabled).toBe(true);
+    expect(unchecked).toHaveLength(2);
+    expect(unchecked.every(b => b.disabled)).toBe(true);
     const checkedBoxes = boxes.filter(b => b.checked);
     expect(checkedBoxes).toHaveLength(6);
     expect(checkedBoxes.every(b => !b.disabled)).toBe(true);
@@ -348,10 +355,11 @@ describe('port drawer (spec v0.5.0) - the comparison cap (6, the 140 px floor ar
     container.remove();
   });
 
-  it('at cap the next unchecked checkbox renders disabled with the cap message - never a silent drop (the real seven-port registry, the v0.5.1 re-shape)', () => {
-    // v0.5.1: the Bremerhaven silo IS the seventh port - the cap binds on
-    // the real registry. Six of the seven real ports selected, the one
-    // unchecked port renders disabled with the cap message.
+  it('at cap the unchecked checkboxes render disabled with the cap message - never a silent drop (the real eight-port registry, the v0.6.0 re-shape)', () => {
+    // v0.6.0: the Aarhus silo is the eighth port - the cap binds on the
+    // real registry with two left out. Six of the eight real ports
+    // selected, the two unchecked ports render disabled with the cap
+    // message (the message still names the single remedy: uncheck one).
     const container = document.createElement('div');
     document.body.appendChild(container);
     const root = createRoot(container);
@@ -378,8 +386,8 @@ describe('port drawer (spec v0.5.0) - the comparison cap (6, the 140 px floor ar
   });
 
   it('the handler-level cap pin: a forced change event at cap is a no-op; below cap the handler honors the check (the disabled-input mutation swallows clicks - the DOM gate never dispatches; the v0.5.1 real-registry re-shape)', () => {
-    // v0.5.1: the cap pins run against the real seven-port registry - the
-    // unchecked seventh real port is the disabled control. The forced-
+    // v0.6.0: the cap pins run against the real eight-port registry - the
+    // unchecked ports are the disabled controls. The forced-
     // change form is unchanged (the DOM gate still swallows the click).
     const container = document.createElement('div');
     document.body.appendChild(container);

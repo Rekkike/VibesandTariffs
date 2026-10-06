@@ -191,9 +191,10 @@ describe('the shared-reference contract (spec v0.4.4: referenced, never duplicat
     const fs = require('fs');
     const files = fs.readdirSync('../core/data').filter((f: string) => f.endsWith('.yaml'));
     expect(files.sort()).toEqual([
-      'bremerhaven_2026.yaml', 'exchange_rates.yaml', 'gavle_2026.yaml',
-      'gothenburg_2026.yaml', 'hamburg_2026.yaml', 'helsingborg_2026.yaml',
-      'norrkoping_2026.yaml', 'norvik_2026.yaml', 'vessel_library.yaml'
+      'aarhus_2026.yaml', 'bremerhaven_2026.yaml', 'exchange_rates.yaml',
+      'gavle_2026.yaml', 'gothenburg_2026.yaml', 'hamburg_2026.yaml',
+      'helsingborg_2026.yaml', 'norrkoping_2026.yaml', 'norvik_2026.yaml',
+      'vessel_library.yaml'
     ]);
   });
 

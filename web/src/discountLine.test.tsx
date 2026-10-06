@@ -115,6 +115,12 @@ describe('comparison-legibility zero-drift pins (spec v0.2.64)', () => {
       // 44.27 → 42.59); every other cell byte-identical.
       '8\u00a0297\u00a0773\u00a0kr42.59 SEK/GT effective \u2014 derived, not a published rate',
       '8\u00a0750\u00a0057\u00a0kr44.91 SEK/GT effective \u2014 derived, not a published rate',
+      // v0.6.0 re-baseline (the Aarhus expansion, in-test attribution): the
+      // eighth port's column - native 6,348,361.00 DKK, converted
+      // 9,557,152 kr via the derived cross (11.2525/7.4745, rounded at
+      // display only), per-GT 49.05 ((6,348,361 x 11.2525/7.4745) /
+      // 194,849); ranks between Helsingborg and G\u00e4vle (cheapest-first).
+      '6\u00a0348\u00a0361\u00a0Dkr\u2248 9\u00a0557\u00a0152\u00a0kr converted \u2014 at 11.2525 kr/EUR, 2026-10-0549.05 SEK/GT effective \u2014 derived, not a published rate; converted at the exchange-rate input (at 11.2525 kr/EUR, 2026-10-05)',
       // v0.4.2 re-baseline (the Yilport terminal layer, in-test attribution):
       // G\u00e4vle 1,370,979.35 + 8,936,000 = 10,306,979.35; per-GT
       // 10,306,979.35 / 194,849 = 52.8973 -> 52.90 (was 7.04); the column
@@ -159,11 +165,18 @@ describe('comparison-legibility zero-drift pins (spec v0.2.64)', () => {
       // 29,780.57 (the social_fund family renders on the reach-berth
       // stage per the engine's segment derivation) = 114,506.10 EUR.
       // Ranks between Norvik and Hamburg.
-      .toBe('To reach the berth1\u00a0068\u00a0651\u00a0kr2\u00a0199\u00a0088\u00a0kr2\u00a0378\u00a0057\u00a0kr1\u00a0370\u00a0979\u00a0kr2\u00a0081\u00a0124\u00a0kr114\u00a0506\u00a0\u20ac119\u00a0740\u00a0\u20ac');
+      // v0.6.0 re-baseline (the Aarhus expansion): the eighth port's
+      // reach-berth stage - port due 779,396.00 + pilotage 18,565.00 +
+      // mooring 6,200.00 + towage 162,000.00 = 966,161.00 DKK, fourth
+      // column (between Helsingborg and G\u00e4vle).
+      .toBe('To reach the berth1\u00a0068\u00a0651\u00a0kr2\u00a0199\u00a0088\u00a0kr2\u00a0378\u00a0057\u00a0kr966\u00a0161\u00a0Dkr1\u00a0370\u00a0979\u00a0kr2\u00a0081\u00a0124\u00a0kr114\u00a0506\u00a0\u20ac119\u00a0740\u00a0\u20ac');
     expect((stageRows[1].textContent ?? '').trim())
       // v0.5.1: Bremerhaven's at-berth stage - the Eurogate CTB berthing
       // charge 553,371.16 EUR, between the Swedish zeros and HAM's cell.
-      .toBe('At the berth0\u00a0kr0\u00a0kr0\u00a0kr0\u00a0kr0\u00a0kr553\u00a0371\u00a0\u20ac553\u00a0371\u00a0\u20ac');
+      // v0.6.0 re-baseline (the Aarhus expansion): Aarhus levies no
+      // at-berth charge - the honest zero in DKK joins the column between
+      // the Swedish zeros and Bremerhaven's cell.
+      .toBe('At the berth0\u00a0kr0\u00a0kr0\u00a0kr0\u00a0Dkr0\u00a0kr0\u00a0kr553\u00a0371\u00a0\u20ac553\u00a0371\u00a0\u20ac');
     expect((stageRows[2].textContent ?? '').trim())
       // v0.4.1 re-baseline (in-test attribution): Norrköping's quayside
       // stage loses the seeded 328,400 kr storage charge (4,797,485 →
@@ -183,7 +196,10 @@ describe('comparison-legibility zero-drift pins (spec v0.2.64)', () => {
       // 1,432,000.00 + security 99,800.00 = 1,531,800.00 EUR (the
       // social-fund surcharge renders on the reach-berth stage per the
       // engine's segment derivation), between Norvik and HAM.
-      .toBe('Quayside operations2\u00a0207\u00a0200\u00a0kr6\u00a0098\u00a0685\u00a0kr6\u00a0372\u00a0000\u00a0kr8\u00a0936\u00a0000\u00a0kr9\u00a0871\u00a0200\u00a0kr1\u00a0531\u00a0800\u00a0\u20ac1\u00a0531\u00a0800\u00a0\u20ac');
+      // v0.6.0 re-baseline (the Aarhus expansion): Aarhus's quayside stage -
+      // ISPS 38,600 + levy 23,600 + wharfage 900,000 + APMT handling
+      // 4,420,000 = 5,382,200.00 DKK, fourth column.
+      .toBe('Quayside operations2\u00a0207\u00a0200\u00a0kr6\u00a0098\u00a0685\u00a0kr6\u00a0372\u00a0000\u00a0kr5\u00a0382\u00a0200\u00a0Dkr8\u00a0936\u00a0000\u00a0kr9\u00a0871\u00a0200\u00a0kr1\u00a0531\u00a0800\u00a0\u20ac1\u00a0531\u00a0800\u00a0\u20ac');
   });
 });
 
@@ -370,8 +386,9 @@ describe('discounts received — the rendering (spec v0.2.64, item 2)', () => {
     // The honest zero still renders for the ports that fired nothing.
     const noDiscount = discountRow.querySelectorAll('.comparison-no-discount');
     // v0.5.1: the firing GOT discount leaves six honest zeros (seven ports
-    // minus the one that fired).
-    expect(noDiscount.length).toBe(6);
+    // minus the one that fired). v0.6.0: eight ports minus the one that
+    // fired - seven honest zeros.
+    expect(noDiscount.length).toBe(7);
   });
 
   it('desktop: the discount sum follows the conversion disclosure machinery (Hamburg native EUR with the converted secondary)', async () => {
@@ -494,8 +511,8 @@ describe('the derived per-GT metric\u2019s per-GT-OPS disclosure (spec v0.2.64, 
     const totalRow = Array.from(container!.querySelectorAll('.comparison-total-row'))
       .find(r => (r.textContent ?? '').includes('Grand Total'))!;
     const perGtCells = totalRow.querySelectorAll('.comparison-total-pergt');
-    // v0.5.1: seven loaded ports.
-    expect(perGtCells.length).toBe(7);
+    // v0.5.1: seven loaded ports. v0.6.0: eight loaded ports.
+    expect(perGtCells.length).toBe(8);
     // GOT and HEL (per-GT descriptor enabled + value entered) carry the
     // disclosure; HAM (no per-GT component) carries only the inclusion note.
     const texts = Array.from(perGtCells).map(c => c.textContent ?? '');
@@ -503,15 +520,19 @@ describe('the derived per-GT metric\u2019s per-GT-OPS disclosure (spec v0.2.64, 
     // ports carry the per-GT OPS disclosure (their per_gt descriptors are
     // enabled and the entered per-GT value flows in); HAM (no per-GT
     // component) carries only the inclusion note - the last cell.
+    // v0.6.0 (the Aarhus expansion): the ranked order is GOT, NRK, HEL,
+    // AAR, GLE, NVK, BRV, HAM. Aarhus (index 3) is a DKK port with no
+    // per-GT descriptor - the inclusion note only, like HAM; the five
+    // SEK ports are indices 0, 1, 2, 4, 5.
     expect(texts[0]).toContain('includes user-specified OPS');
     expect(texts[0]).toContain('per-GT OPS charge uses the same GT basis as the port dues');
     expect(texts[0]).toContain('flows into this derived metric');
     expect(texts[1]).toContain('per-GT OPS charge uses the same GT basis as the port dues');
     expect(texts[2]).toContain('per-GT OPS charge uses the same GT basis as the port dues');
-    expect(texts[3]).toContain('per-GT OPS charge uses the same GT basis as the port dues');
+    expect(texts[3]).not.toContain('per-GT OPS charge uses the same GT basis');
+    expect(texts[3]).toContain('includes user-specified OPS');
     expect(texts[4]).toContain('per-GT OPS charge uses the same GT basis as the port dues');
-    expect(texts[5]).not.toContain('per-GT OPS charge uses the same GT basis');
-    expect(texts[5]).toContain('includes user-specified OPS');
+    expect(texts[5]).toContain('per-GT OPS charge uses the same GT basis as the port dues');
   });
 
   it('without OPS the note carries no disclosure (the plain derived note only, unchanged)', async () => {

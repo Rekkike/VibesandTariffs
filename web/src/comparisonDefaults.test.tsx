@@ -201,7 +201,7 @@ describe('comparison shared-call per-port defaults (spec v0.2.53 defect fix)', (
     expect(ees!.amount).toBe(168000);
   });
 
-  it('zero drift: the comparison columns equal the pinned per-port totals at all seven ports (re-pinned v0.2.61; extended v0.4.0; v0.5.1)', () => {
+  it('zero drift: the comparison columns equal the pinned per-port totals at all eight ports (re-pinned v0.2.61; extended v0.4.0; v0.5.1; v0.6.0)', () => {
     const sharedCall = defaultCall('gothenburg');
     const pinned: Record<string, number> = {
       // v0.2.61 drift re-pin (godsavgift promotion, expected per the
@@ -231,7 +231,14 @@ describe('comparison shared-call per-port defaults (spec v0.2.53 defect fix)', (
       // existing. The extraction reference's section 9 arithmetic:
       // 59,195.13 + 885.84 + 2,085.26 + 3,459.30 + 4,100.00 + 553,371.16
       // + 1,432,000.00 + 99,800.00 + 29,780.57 + 15,000.00 = 2,199,677.26.
-      bremerhaven: 2199677.26
+      bremerhaven: 2199677.26,
+      // v0.6.0 Aarhus expansion: the eighth port's own default-call
+      // baseline (MAREN MAERSK's profile, worst case) — the expansion adds
+      // a port; it changes nothing existing. The extraction reference's
+      // section 9 arithmetic: 779,396.00 + 18,565.00 + 6,200.00 +
+      // 162,000.00 + 38,600.00 + 23,600.00 + 900,000.00 + 4,420,000.00 =
+      // 6,348,361.00 DKK.
+      aarhus: 6348361.00
     };
     for (const port of LOADED_PORTS) {
       const result = calculatePortCallCost(port, {

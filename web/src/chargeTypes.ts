@@ -68,7 +68,7 @@ export const CHARGE_TYPE_LINES: ChargeTypeLine[] = [
     id: 'cargo_dues',
     label: 'Cargo dues',
     description:
-      'Per unit/tonne of cargo handled: the Swedish ports\' cargo-side dues (Helsingborg tariff p.6, Gävle Yilport S2 §5.1, Norrköping S1 p.10, Norvik S1 3.2.3)'
+      'Per unit/tonne of cargo handled: the Swedish ports\' cargo-side dues (Helsingborg tariff p.6, Gävle Yilport S2 §5.1, Norrköping S1 p.10, Norvik S1 3.2.3) + Aarhus wharfage (ToC §8: 225.00 DKK per loaded container)'
   }
 ];
 
@@ -98,7 +98,8 @@ const CARGO_RULE_IDS = new Set([
   'pon_cargo_due_20ft',
   'pon_cargo_due_gt20ft',
   'snv_pos_cargo_due_le20ft',
-  'snv_pos_cargo_due_gt20ft'
+  'snv_pos_cargo_due_gt20ft',
+  'aarhus_wharfage'
 ]);
 
 export function chargeTypeForRule(ruleId: string): ChargeTypeId | null {
@@ -165,6 +166,7 @@ const STAGE_BY_FAMILY: Record<string, ComparisonStageId> = {
   port_dues: 'reach_berth',
   pilotage: 'reach_berth',
   ordering_fee: 'reach_berth',
+  mooring: 'reach_berth',
   towage: 'reach_berth',
   waste: 'reach_berth',
   environmental_surcharge: 'reach_berth',
@@ -189,12 +191,6 @@ const STAGE_BY_FAMILY: Record<string, ComparisonStageId> = {
   // cargo, so neither the at-berth nor the quayside stage describes it;
   // one family does not re-shape the comparison surface.
   regulatory: 'reach_berth',
-  // GOT mooring disclosure (spec v0.3.1): a berth-side purchased nautical
-  // service — the boatmen make fast the lines at the berth; the final act
-  // of the same nautical sequence as pilotage and towage (Sjöfartsverket's
-  // own page files the båtmän restriction under the Göteborg pilotage
-  // area). The audit's stage adjudication: "To reach the berth".
-  mooring: 'reach_berth'
 };
 
 export const STAGE_BY_CHARGE_TYPE: Record<ChargeTypeId, ComparisonStageId> = {

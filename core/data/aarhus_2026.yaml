@@ -1,0 +1,546 @@
+# ============================================================================
+# Port of Aarhus 2026 — the eighth port silo (v0.6.0 Aarhus expansion)
+#
+# Authority of record: docs/sources/denmark/aarhus/
+# AARHUS_EXTRACTION_REFERENCE.md (the per-port pattern; every figure below is
+# transcribed from the eight archived documents with the citations carried).
+#
+# All amounts in DKK — the model's first non-EUR-non-SEK port. Conversions
+# toward the SEK comparison basis run through the published-pairs machinery
+# (the DKK pair in core/data/exchange_rates.yaml, added this pass), never a
+# fixed ratio in code. The engine prices in DKK natively; currency local
+# throughout.
+#
+# Mid-year vintage: the pilotage (§5.3) and mooring (§6.3) figures are the
+# 1-July-2026 edition inside the 2026 ToC (the document's own cover states
+# the update); the Danish-version precedence clause is recorded (the encoding
+# works from the English edition with the clause noted).
+#
+# Billers: Port of Aarhus A/S (the authority layer — including pilotage: the
+# port IS the pilotage provider and biller per Pilotage STC §1, in force
+# 01.11.2022) and APM Terminals Aarhus A/S (the operator layer).
+# ============================================================================
+metadata:
+  id: aarhus
+  name: Port of Aarhus
+  country: Denmark
+  currency: DKK
+  validity_start: "2026-01-01"
+  validity_end: "2026-12-31"
+  description: "Aarhus port call costs: the Port of Aarhus Terms and Conditions of Business 2026 (port dues, ESI discount, ISPS, working-environment levy, wharfage, pilotage — the port is the pilotage provider, mooring, towage — the port's own tugs HERMES and AROS), the APMT Aarhus terminal layer (the 1,105.00 DKK quay rate with the 140-unit minimum, gate, yard, reefer, VAS, storage, surcharges). Pilotage and mooring carry the 1-July-2026 mid-year vintage. The Danish ToC version prevails on discrepancy; the encoding works from the English edition with the clause noted."
+
+billers:
+  - id: port_of_aarhus
+    name: Port of Aarhus A/S
+    description: "The port authority and the pilotage provider (Pilotage STC §1: the port handles the public pilotage in Port of Aarhus and is legally obliged to deliver pilotage to all ships calling); the mooring line handlers' provider; the owner of the tugboats m.s. HERMES and AROS"
+    currency: DKK
+  - id: apm_terminals_aarhus
+    name: APM Terminals Aarhus A/S
+    description: "Terminal operator at Port of Aarhus (the container terminal); the published schedule is the default — written agreed rates prevail (ToB §2.1, the published-default honesty flag carried on the APMT lines)"
+    currency: DKK
+
+fee_rules:
+  # ==========================================================================
+  # THE AUTHORITY LAYER — Port of Aarhus Terms and Conditions of Business 2026
+  # ==========================================================================
+  - id: aarhus_port_due
+    fee_family: port_dues
+    biller: Port of Aarhus A/S
+    name: Port Due (over 3,000 GT)
+    description: "ToC §4.2: port due for ships over 3,000 GT — 4.00 DKK per GT up to 7 calendar days duration; supplement 0.70 DKK per GT per day beyond 7 calendar days (the extension rule below). The GT base is the tonnage certificate (SBT-deductible per the ToC's own definitions). The under-3,000-GT and under-150-m branches are recorded in the extraction reference, never encoded (the container-call scope)."
+    rate_structure:
+      type: per_unit
+      unit_type: gt
+      unit_rate: 4.00
+    adjustments:
+      - type: discount
+        percentage: 4.5
+        condition: "esi_score >= 30"
+        description: "Environmental discount (ToC §4.3): ships achieving a minimum ESI score of 30 points are awarded a 4.5% discount on the port due, based on GT (registration per the ESI regulations; cruise ships exempt — out of scope)"
+        stack_method: additive
+        stacking_order: 1
+    source_reference:
+      document_name: "Port of Aarhus - Terms and Conditions of Business 2026.pdf"
+      document_url: "docs/sources/denmark/aarhus/port-of-aarhus/Port of Aarhus - Terms and Conditions of Business 2026.pdf"
+      document_issued: "2026-01-01"
+      page: "§4.2–4.3"
+      clause: "4.2; 4.3"
+      verified_on: "2026-10-06"
+      verified_by: "vibe-session-aarhus-expansion"
+  - id: aarhus_port_due_extension
+    fee_family: port_dues
+    biller: Port of Aarhus A/S
+    name: Port Due Extension (beyond 7 calendar days)
+    description: "ToC §4.2: supplement for over 7 calendar days duration — 0.70 DKK per GT per commenced day beyond the seventh. Falls back to lay time (the default 50 h carries no extension)."
+    rate_structure:
+      type: per_commenced_period
+      basis: gt
+      hours_input: port_time_hours
+      fallback_hours: lay_time_hours
+      free_hours: 168
+      period_hours: 24
+      tiers:
+        - up_to_excess_hours: null
+          rate_per_period_per_basis: 0.70
+    source_reference:
+      document_name: "Port of Aarhus - Terms and Conditions of Business 2026.pdf"
+      document_url: "docs/sources/denmark/aarhus/port-of-aarhus/Port of Aarhus - Terms and Conditions of Business 2026.pdf"
+      document_issued: "2026-01-01"
+      page: "§4.2"
+      clause: "4.2"
+      verified_on: "2026-10-06"
+      verified_by: "vibe-session-aarhus-expansion"
+  - id: aarhus_pilotage
+    fee_family: pilotage
+    biller: Port of Aarhus A/S
+    name: Pilotage (the port's own service; the July-2026 edition)
+    description: "ToC §5.3 (prices updated as of 1 July 2026 — the mid-year vintage): pilotage per call by GT band of the ship assisted. The Port of Aarhus IS the pilotage provider and biller (Pilotage STC §1, in force 01.11.2022: 'Port of Aarhus handles the public pilotage in Port of Aarhus'; the port is under Danish law obliged to deliver pilotage to all ships calling) — the bands encode directly as the port's own prices. Waiting time 1,170 DKK per commenced hour beyond 30 minutes (recorded); cancellation 595 DKK (recorded)."
+    rate_structure:
+      type: banded_flat
+      basis: gt
+      bands:
+        - min: null
+          max: 3000
+          amount: 4995.00
+        - min: 3000
+          max: 4500
+          amount: 6355.00
+        - min: 4500
+          max: 6000
+          amount: 10325.00
+        - min: 6000
+          max: 10000
+          amount: 11525.00
+        - min: 10000
+          max: 20000
+          amount: 14495.00
+        - min: 20000
+          max: null
+          amount: 18565.00
+    source_reference:
+      document_name: "Port of Aarhus - Terms and Conditions of Business 2026.pdf"
+      document_url: "docs/sources/denmark/aarhus/port-of-aarhus/Port of Aarhus - Terms and Conditions of Business 2026.pdf"
+      document_issued: "2026-07-01"
+      page: "§5.3"
+      clause: "5.3 (updated 1 July 2026)"
+      verified_on: "2026-10-06"
+      verified_by: "vibe-session-aarhus-expansion"
+  - id: aarhus_mooring
+    fee_family: mooring
+    biller: Port of Aarhus A/S
+    name: Mooring (mandatory approved line handlers over 80 m LOA; the July-2026 edition)
+    description: "ToC §6.1/§6.3 (prices updated as of 1 July 2026): all ships exceeding 80 meters LOA and calling at a quay must use one or more approved line handlers (mandatory; provided by the Port of Aarhus or an externally approved supplier). Price per mooring by GT band of the ship assisted — the model's first priced mooring, an authority service (published band price, never an estimate). Waiting time at departure 1,175 DKK per commenced hour beyond 30 min (recorded); boat assistance 4,450 DKK/h (recorded); cancellation 595 DKK (recorded). Shifting along the quay may be crew-handled (recorded)."
+    rate_structure:
+      type: banded_flat
+      basis: gt
+      bands:
+        - min: null
+          max: 2000
+          amount: 695.00
+        - min: 2000
+          max: 3000
+          amount: 1010.00
+        - min: 3000
+          max: 4500
+          amount: 1295.00
+        - min: 4500
+          max: 6000
+          amount: 2525.00
+        - min: 6000
+          max: 10000
+          amount: 3350.00
+        - min: 10000
+          max: 20000
+          amount: 3795.00
+        - min: 20000
+          max: null
+          amount: 6200.00
+    source_reference:
+      document_name: "Port of Aarhus - Terms and Conditions of Business 2026.pdf"
+      document_url: "docs/sources/denmark/aarhus/port-of-aarhus/Port of Aarhus - Terms and Conditions of Business 2026.pdf"
+      document_issued: "2026-07-01"
+      page: "§6.1, §6.3"
+      clause: "6.1 (mandatory over 80 m LOA); 6.3 (updated 1 July 2026)"
+      verified_on: "2026-10-06"
+      verified_by: "vibe-session-aarhus-expansion"
+  - id: aarhus_towage
+    fee_family: towage
+    biller: Port of Aarhus A/S
+    name: Towage (the port's own tugs — published bands, per-port honest)
+    description: "ToC §7.4: price per tugboat by GT band of the assisted ship — the port's own tugboats m.s. HERMES (5,400 hp, 66.5 t bollard pull) and AROS (4,750 hp, 55 t bollard pull); the Scandinavian Tugowners Standard Conditions of 1985 govern (archived). The published band replaces the estimated-parameter convention AT AARHUS ONLY — the band prices one tugboat; the call's tug count keys the total (the same LOA-class default the estimate convention uses: LOA < 150 m: 0 tugs; 150–250 m: 1; > 250 m: 2, user-overridable). The estimate convention is unchanged at every other port. Hourly rate 7,050 DKK (recorded); waiting 5,875 DKK/h beyond 30 min (recorded); cancellation 3,525 DKK (recorded); 50% surcharge for towing without main engines and 50% reduction for shifting (recorded)."
+    rate_structure:
+      type: per_unit
+      unit_type: tug_count
+      unit_rate: 0
+      banded_by_gt:
+        bands:
+          - min: null
+            max: 10000
+            amount: 18500.00
+          - min: 10000
+            max: 20000
+            amount: 24700.00
+          - min: 20000
+            max: 50000
+            amount: 40500.00
+          - min: 50000
+            max: null
+            amount: 81000.00
+      default_by_loa:
+        bands:
+        - max_m: 150
+          count: 0
+          description: 'LOA < 150 m: 0 tugs'
+        - min_m: 150
+          max_m: 250
+          count: 1
+          description: '150-250 m: 1 tug'
+        - min_m: 250
+          count: 2
+          description: '> 250 m: 2 tugs'
+    source_reference:
+      document_name: "Port of Aarhus - Terms and Conditions of Business 2026.pdf"
+      document_url: "docs/sources/denmark/aarhus/port-of-aarhus/Port of Aarhus - Terms and Conditions of Business 2026.pdf"
+      document_issued: "2026-01-01"
+      page: "§7.4"
+      clause: "7.4 (the tugs HERMES and AROS; the Scandinavian Tugowners Standard Conditions of 1985 govern)"
+      verified_on: "2026-10-06"
+      verified_by: "vibe-session-aarhus-expansion"
+  - id: aarhus_isps
+    fee_family: security
+    biller: Port of Aarhus A/S
+    name: ISPS Fee (per loaded container)
+    description: "ToC §3.3: the Port of Aarhus charges a separate ISPS fee of 9.65 DKK per loaded container (also per self-propelled unit and wind turbine blade — out of the container scope). The 0.25 DKK/ton surface for goods at ISPS-secured quays is recorded in the extraction reference (the per-container line prices the container call); transit goods: the incoming leg only (recorded)."
+    rate_structure:
+      type: per_unit
+      unit_type: move
+      unit_rate: 9.65
+    source_reference:
+      document_name: "Port of Aarhus - Terms and Conditions of Business 2026.pdf"
+      document_url: "docs/sources/denmark/aarhus/port-of-aarhus/Port of Aarhus - Terms and Conditions of Business 2026.pdf"
+      document_issued: "2026-01-01"
+      page: "§3.3"
+      clause: "3.3"
+      verified_on: "2026-10-06"
+      verified_by: "vibe-session-aarhus-expansion"
+  - id: aarhus_work_environment_levy
+    fee_family: security
+    biller: Port of Aarhus A/S
+    name: Working-Environment Levy (per container)
+    description: "ToC §8.1: per the Ministry of Labour's regulation no. 181 of 18 May 1965 (welfare facilities for dockworkers), the work-environment levy is 5.90 DKK per container and self-propelled unit loaded or unloaded over the quay (0.59 DKK per ton of dry bulk and general cargo — out of the container scope). Charged by the Port of Aarhus to the ship's local agent or customer."
+    rate_structure:
+      type: per_unit
+      unit_type: container_total
+      unit_rate: 5.90
+    source_reference:
+      document_name: "Port of Aarhus - Terms and Conditions of Business 2026.pdf"
+      document_url: "docs/sources/denmark/aarhus/port-of-aarhus/Port of Aarhus - Terms and Conditions of Business 2026.pdf"
+      document_issued: "2026-01-01"
+      page: "§8.1"
+      clause: "8.1"
+      verified_on: "2026-10-06"
+      verified_by: "vibe-session-aarhus-expansion"
+  - id: aarhus_wharfage
+    fee_family: cargo_fee
+    biller: Port of Aarhus A/S
+    name: Wharfage (cargo side, per loaded container)
+    description: "ToC §8: wharfage is paid to the Port of Aarhus for all goods unloaded, loaded, or otherwise discharged by sea or land — 225 DKK per container with goods; empty containers 0. Payment of the wharfage is the responsibility of the recipient or sender of the goods — the CARGO SIDE (the GOT/HEL cargo-side analogue; rendered and attributed, never silently dropped). Ro-ro 210 DKK/unit, wind-turbine blades 485 DKK/unit, passenger fees — out of the container scope (recorded)."
+    rate_structure:
+      type: per_unit
+      unit_type: move
+      unit_rate: 225.00
+    source_reference:
+      document_name: "Port of Aarhus - Terms and Conditions of Business 2026.pdf"
+      document_url: "docs/sources/denmark/aarhus/port-of-aarhus/Port of Aarhus - Terms and Conditions of Business 2026.pdf"
+      document_issued: "2026-01-01"
+      page: "§8"
+      clause: "8"
+      verified_on: "2026-10-06"
+      verified_by: "vibe-session-aarhus-expansion"
+  # ==========================================================================
+  # THE OPERATOR LAYER — APMT Aarhus (the 2026 tariff; ToB published-default
+  # honesty flag carried on every APMT line)
+  # ==========================================================================
+  - id: apmt_aarhus_container_handling
+    fee_family: terminal_handling
+    biller: APM Terminals Aarhus A/S
+    name: Container Handling (quay operations)
+    description: "APMT Aarhus 2026 tariff §2.1: 1,105.00 DKK per container (full or empty), load or discharge move. Basis wording verbatim: 'The rate is based on continuous work from the start-up times and do not include lashing/unlashing of containers.' Minimum payment: 140 units per call — the default 4,000-move call exceeds it by 3,860; the minimum is encoded as the rule's floor (140 x 1,105.00 = 154,700.00 DKK) and never fires at the default (pinned)."
+    rate_structure:
+      type: per_unit
+      unit_type: move
+      unit_rate: 1105.00
+    minimum: 154700
+    contract_vs_published:
+      description: "Published-default schedule (APMT Terms of Business §2.1, 14 Jan 2026 V20): the rates are the rates agreed in writing between the Parties or, where no such rates have been agreed, the rates listed on the website — contract rates may differ from the published schedule; the published-default honesty flag"
+      severity: warning
+    source_reference:
+      document_name: "Aarhus-01_01_2026-31_12_2026-Tariff - 2026.pdf"
+      document_url: "docs/sources/denmark/aarhus/apmt/Aarhus-01_01_2026-31_12_2026-Tariff - 2026.pdf"
+      document_issued: "2026-01-01"
+      page: "§2.1"
+      clause: "2.1 (minimum payment: 140 unit per call)"
+      verified_on: "2026-10-06"
+      verified_by: "vibe-session-aarhus-expansion"
+  - id: apmt_aarhus_lashing
+    fee_family: cargo_fee
+    biller: APM Terminals Aarhus A/S
+    name: Lashing / Unlashing (gang-hour based)
+    description: "APMT Aarhus 2026 tariff §2.5: lashing per gang (2 persons) per hour — 2,251.00 DKK weekday 1st shift (07:00-16:00), 2,786.00 2nd shift, 3,545.00 all other times; minimum payment 4 hours. Ordered service — fires only when a lashing container count is entered; blank charges zero, never a seeded count. The shift schedule is a recorded surface (the weekday 1st-shift rate prices the entered count)."
+    rate_structure:
+      type: per_unit
+      unit_type: lashing_containers
+      unit_rate: 2251.00
+    contract_vs_published:
+      description: "Published-default schedule (APMT Terms of Business §2.1, 14 Jan 2026 V20): written agreed rates prevail over the published schedule; the published-default honesty flag"
+      severity: warning
+    source_reference:
+      document_name: "Aarhus-01_01_2026-31_12_2026-Tariff - 2026.pdf"
+      document_url: "docs/sources/denmark/aarhus/apmt/Aarhus-01_01_2026-31_12_2026-Tariff - 2026.pdf"
+      document_issued: "2026-01-01"
+      page: "§2.5"
+      clause: "2.5"
+      verified_on: "2026-10-06"
+      verified_by: "vibe-session-aarhus-expansion"
+  - id: apmt_aarhus_gate_move_truck
+    fee_family: cargo_fee
+    biller: APM Terminals Aarhus A/S
+    name: Gate Move (truck)
+    description: "APMT Aarhus 2026 tariff §4.1: 338.00 DKK per container, full or empty, including the horizontal move from truck to yard/stack or vice versa; based on delivery on weekdays Mon-Thu 06:00-18:00, Fri 06:00-17:00 (the gate access surcharge 100 DKK/container Mon-Thu 18:00-19:00 is a recorded surface). The landside leg — the comparison view's container-through toggle surface (the BRV/Eurogate precedent); blank charges zero."
+    rate_structure:
+      type: per_unit
+      unit_type: gate_moves_truck
+      unit_rate: 338.00
+    contract_vs_published:
+      description: "Published-default schedule (APMT Terms of Business §2.1, 14 Jan 2026 V20): written agreed rates prevail over the published schedule; the published-default honesty flag"
+      severity: warning
+    source_reference:
+      document_name: "Aarhus-01_01_2026-31_12_2026-Tariff - 2026.pdf"
+      document_url: "docs/sources/denmark/aarhus/apmt/Aarhus-01_01_2026-31_12_2026-Tariff - 2026.pdf"
+      document_issued: "2026-01-01"
+      page: "§4.1"
+      clause: "4.1"
+      verified_on: "2026-10-06"
+      verified_by: "vibe-session-aarhus-expansion"
+  - id: apmt_aarhus_reefer_daily
+    fee_family: cargo_fee
+    biller: APM Terminals Aarhus A/S
+    name: Reefer Daily Monitoring
+    description: "APMT Aarhus 2026 tariff §7.1: monitoring/daily running charge 380.00 DKK per container per day. Fires only with reefer units and reefer days; blank charges zero. The RDEC variable energy charge (§7.2) rides the actual-consumption basis — recorded, never default-fired."
+    rate_structure:
+      type: per_commenced_day
+      daily_rate: 380.00
+      basis: reefer_extra_days
+      unit_input: reefer_units
+      unit_type: reefer
+    contract_vs_published:
+      description: "Published-default schedule (APMT Terms of Business §2.1, 14 Jan 2026 V20): written agreed rates prevail over the published schedule; the published-default honesty flag"
+      severity: warning
+    source_reference:
+      document_name: "Aarhus-01_01_2026-31_12_2026-Tariff - 2026.pdf"
+      document_url: "docs/sources/denmark/aarhus/apmt/Aarhus-01_01_2026-31_12_2026-Tariff - 2026.pdf"
+      document_issued: "2026-01-01"
+      page: "§7.1"
+      clause: "7.1"
+      verified_on: "2026-10-06"
+      verified_by: "vibe-session-aarhus-expansion"
+  - id: apmt_aarhus_storage_full
+    fee_family: storage
+    biller: APM Terminals Aarhus A/S
+    name: Storage of Full Containers (scenario)
+    description: "APMT Aarhus 2026 tariff §10.1: storage of full containers — tier 1 (days 0-4) 0.00; tier 2 (5-8) 75.00; tier 3 (9-14) 125.00; tier 4 (15-21) 225.00; tier 5 (22+) 350.00 DKK per TEU per day. Scenario surface — fires only when storage days are entered; blank renders no line (the v0.4.1 convention)."
+    rate_structure:
+      type: progressive_daily
+      days_input: storage_days_import
+      container_count_input: containers_discharged_le20ft
+      free_days: 4
+      bands:
+        - min_days: 1
+          max_days: 4
+          rate_per_container_per_day: 75.00
+        - min_days: 5
+          max_days: 10
+          rate_per_container_per_day: 125.00
+        - min_days: 11
+          max_days: 17
+          rate_per_container_per_day: 225.00
+        - min_days: 18
+          max_days: null
+          rate_per_container_per_day: 350.00
+    scenario_adjusted:
+      description: "scenario-derived figure — the storage-day count is the user's scenario input over the pinned §10.1 schedule; never tariff-transcribed usage"
+      severity: info
+    contract_vs_published:
+      description: "Published-default schedule (APMT Terms of Business §2.1, 14 Jan 2026 V20): written agreed rates prevail over the published schedule; the published-default honesty flag"
+      severity: warning
+    source_reference:
+      document_name: "Aarhus-01_01_2026-31_12_2026-Tariff - 2026.pdf"
+      document_url: "docs/sources/denmark/aarhus/apmt/Aarhus-01_01_2026-31_12_2026-Tariff - 2026.pdf"
+      document_issued: "2026-01-01"
+      page: "§10.1"
+      clause: "10.1"
+      verified_on: "2026-10-06"
+      verified_by: "vibe-session-aarhus-expansion"
+  - id: apmt_aarhus_storage_imdg
+    fee_family: storage
+    biller: APM Terminals Aarhus A/S
+    name: Storage of IMDG Containers (scenario)
+    description: "APMT Aarhus 2026 tariff §10.3: storage of full IMDG containers per TEU per day — group 1 (classes 2.1, 2.2, 3, 4.1, 5.1, 8, 9): 113/188/338/525/1,050 by day band; group 2 (4.2, 4.3): 150/250/450/700/1,400; group 3 (1, 2, 5.2, 6): 263/438/788/1,225/2,450. Scenario surface — the dangerous-goods storage days; blank renders no line. The group-1 rate prices the entered days (the conservative class mapping is recorded in the extraction reference)."
+    rate_structure:
+      type: progressive_daily
+      days_input: storage_days_import
+      container_count_input: dangerous_goods_units
+      free_days: 4
+      bands:
+        - min_days: 1
+          max_days: 4
+          rate_per_container_per_day: 113.00
+        - min_days: 5
+          max_days: 10
+          rate_per_container_per_day: 188.00
+        - min_days: 11
+          max_days: 17
+          rate_per_container_per_day: 338.00
+        - min_days: 18
+          max_days: 24
+          rate_per_container_per_day: 525.00
+        - min_days: 25
+          max_days: null
+          rate_per_container_per_day: 1050.00
+    scenario_adjusted:
+      description: "scenario-derived figure — the storage-day count is the user's scenario input over the pinned §10.3 schedule; never tariff-transcribed usage"
+      severity: info
+    contract_vs_published:
+      description: "Published-default schedule (APMT Terms of Business §2.1, 14 Jan 2026 V20): written agreed rates prevail over the published schedule; the published-default honesty flag"
+      severity: warning
+    source_reference:
+      document_name: "Aarhus-01_01_2026-31_12_2026-Tariff - 2026.pdf"
+      document_url: "docs/sources/denmark/aarhus/apmt/Aarhus-01_01_2026-31_12_2026-Tariff - 2026.pdf"
+      document_issued: "2026-01-01"
+      page: "§10.3"
+      clause: "10.3"
+      verified_on: "2026-10-06"
+      verified_by: "vibe-session-aarhus-expansion"
+  - id: apmt_aarhus_imdg_surcharge
+    fee_family: gate_hazardous
+    biller: APM Terminals Aarhus A/S
+    name: IMDG Surcharge (percent of rate, quay/yard/gate)
+    description: "APMT Aarhus 2026 tariff §11: IMDG surcharges for quay, yard and gate operations, percent of rate — class 1 250%, 2.1 100%, 2.2 100%, 2.3 250%, 3 100%, 4.1 100%, 4.2 100%, 4.3 100%, 5.1 100%, 5.2 250%, 6 250%, 8 100%, 9 100% (the 825.00 DKK incorrect-IMO inspection line §5.2 is the same dangerous-goods surface). Fires only for dangerous-goods units; the default call carries none — blank charges zero."
+    rate_structure:
+      type: per_unit
+      unit_type: dangerous_goods
+      unit_rate: 825.00
+    contract_vs_published:
+      description: "Published-default schedule (APMT Terms of Business §2.1, 14 Jan 2026 V20): written agreed rates prevail over the published schedule; the published-default honesty flag"
+      severity: warning
+    source_reference:
+      document_name: "Aarhus-01_01_2026-31_12_2026-Tariff - 2026.pdf"
+      document_url: "docs/sources/denmark/aarhus/apmt/Aarhus-01_01_2026-31_12_2026-Tariff - 2026.pdf"
+      document_issued: "2026-01-01"
+      page: "§11, §5.2"
+      clause: "11 (IMDG classes); 5.2"
+      verified_on: "2026-10-06"
+      verified_by: "vibe-session-aarhus-expansion"
+  # ==========================================================================
+  # EU REGULATORY BLOCK (spec v0.2.69) — transcribed per the silo principle
+  # ==========================================================================
+  - id: aarhus_eu_ets_allowances
+    fee_family: regulatory
+    biller: EU (European Union) - shipping company's administering authority
+    name: EU ETS Allowances (user-specified basis)
+    description: "EU ETS surrender obligation for this call's in-scope emissions (Directive (EU) 2023/959 amending Directive 2003/87/EC, Articles 3ga-3gb): cargo and passenger ships of or above 5,000 GT, regardless of flag. Scope: 100 percent of in-port emissions plus the voyage fraction - 50 percent of extra-EU leg emissions, 100 percent of intra-EU (the shared arrival-origin selector carries the leg). The entered emissions figure is the user's own in-scope tonnage for this call - no published per-call figure exists. Blank inputs render nothing (the blank-means-nothing contract)."
+    rate_structure:
+      type: flat
+      amount: 0
+      ets_product:
+        emissions_input: ets_emissions_tco2
+        price_input: ets_allowance_price
+        phase_in_fraction: 1.0
+        phase_in_pct: 100
+        basis_note: "ETS surrender for 2026-reported emissions at 100 percent (Directive 2003/87/EC Art. 3gb(1), inserted by Directive (EU) 2023/959); leg scope per the shared arrival-origin selector (extra-EU leg: 50 percent of voyage emissions + 100 percent in-port; intra-EU: 100 percent); allowances are surrendered in EUR (the EU-market instrument's own currency)"
+    applicable_conditions:
+      min_gt: 5000
+    estimated_parameter:
+      description: "derived from user-specified inputs - the emissions basis and the EUA price are the user's own (no published per-call emissions figure or allowance price exists; THETIS-MRV annual figures orient the entry, never default it)"
+      severity: info
+    source_reference:
+      document_name: "faq-maritime-ets.html.md (official Commission FAQ; Directive (EU) 2023/959 the instrument)"
+      document_url: "docs/sources/eu/ets/faq-maritime-ets.html.md"
+      upstream_url: "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32023L0959"
+      document_issued: "2023-05-10"
+      page: "Timing & scope"
+      clause: "Directive 2003/87/EC Art. 3ga-3gb as inserted by Directive (EU) 2023/959; surrender fractions 40/70/100 percent of 2024/2025/2026-reported emissions"
+      verified_on: "2026-10-06"
+      verified_by: "vibe-session-aarhus-expansion"
+  - id: aarhus_fueleu_notice
+    fee_family: regulatory
+    biller: EU (European Union) - FuelEU compliance balance
+    name: FuelEU Maritime - annual compliance balance (notice, no per-call charge)
+    description: "FuelEU Maritime (Regulation (EU) 2023/1805, Art. 4) applies to this vessel at this port (commercial ship above 5,000 GT): the yearly average GHG intensity of the energy used on board is limited against the 2020 reference value 91.16 gCO2e/MJ, reduced 2 percent for 2025-2029 (limit 89.34 gCO2e/MJ); in-scope energy is 100 percent intra-EU voyages and at berth, 50 percent on extra-EU legs. The compliance balance is assessed ANNUALLY per ship; a per-call FuelEU charge cannot be computed honestly - no per-call figure is rendered; this line is a notice only and adds nothing to any total."
+    rate_structure:
+      type: flat
+      amount: 0
+    regulatory_notice:
+      description: "FuelEU Maritime applies to this vessel at this port (commercial ship above 5,000 GT, Regulation (EU) 2023/1805 Art. 2/4): the yearly average GHG intensity of the energy used on board is limited against the 2020 reference value 91.16 gCO2e/MJ minus 2 percent for 2025-2029 (limit 89.34 gCO2e/MJ), well-to-wake; a compliance deficit is penalised at 2,400 EUR per tonne VLSFO-equivalent energy (Art. 23, Annex IV B). The compliance balance is ANNUAL per ship with pooling, banking, and borrowing across ships and years (Arts. 20-21) - a per-call FuelEU charge cannot be computed honestly, so no per-call figure is rendered; this notice adds nothing to any total."
+      severity: info
+    applicable_conditions:
+      min_gt: 5000
+    source_reference:
+      document_name: "fueleu-maritime.html.md + fueleu-qa.html.md (official Commission pages; Regulation (EU) 2023/1805 the instrument)"
+      document_url: "docs/sources/eu/fueleu/fueleu-maritime.html.md"
+      upstream_url: "https://eur-lex.europa.eu/eli/reg/2023/1805/oj/eng"
+      document_issued: "2023-09-13"
+      page: "Key facts"
+      clause: "Regulation (EU) 2023/1805 Art. 4 (91.16 reference, 2 percent 2025-2029), Arts. 20-21 (banking/borrowing/pooling), Art. 23 + Annex IV B (2,400 EUR/t VLSFO-eq penalty)"
+      verified_on: "2026-10-06"
+      verified_by: "vibe-session-aarhus-expansion"
+
+# Per-port default-call data (spec v0.2.59): configuration only — list-price
+# defaults, never rates. The engine overlays these on the shared worst-case
+# core (core/src/defaults.ts).
+default_call:
+  # tug_count stays blank (the engine applies the LOA-class tug default,
+  # flagged — the same convention as the GOT towage estimate; at Aarhus the
+  # default count keys the published band, not an estimated rate)
+  tug_count: null
+
+# OPS speculative component descriptor (spec v0.2.57, data-authored
+# v0.2.59): presence, currency, unit — configuration only, no rates. The
+# ToC §14 publishes shore-power prices (2.75 DKK/kWh plus connection fees
+# 29,500/15,500 DKK) — conditional surfaces, recorded in the extraction
+# reference, never default-fired; the speculative machinery renders the
+# user's own OPS speculation.
+ops_speculative:
+  electricity: { enabled: true, currency: DKK, unit: DKK/kWh }
+  demand: { enabled: true, currency: DKK, unit: DKK/call }
+  connection: { enabled: true, currency: DKK, unit: DKK/call }
+  per_gt: { enabled: false, currency: DKK, unit: DKK/GT }
+
+# Per-port input profile (spec v0.2.59): the input sections the workspace
+# renders for this port. UI configuration, never rates.
+input_profile:
+  reset_fields:
+    - engine_tier
+    - engine_tier_estimated
+    - esi_score
+    - tug_count
+    - pilotage_hours
+    - pilotage_extra_pilot
+    - pilotage_ordering_lead_time_hours
+    - lay_up_days
+    - ops_electricity_price
+    - ops_demand_charge
+    - ops_connection_charge
+    - ets_emissions_tco2
+    - ets_allowance_price
+    - lashing_containers
+    - dangerous_goods_units
+    - reefer_units
+    - reefer_extra_days
+    - storage_days_import
+    - storage_days_export
+  fields:
+    - build_year
+  sections:
+    - id: eu_regulatory
+      heading: EU Regulatory (ETS allowances - user-specified basis)
