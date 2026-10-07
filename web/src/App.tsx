@@ -75,6 +75,11 @@ const App: React.FC = () => {
   const [page, setPage] = useState<Page>(
     activePort ? { kind: 'port', portId: activePort.metadata.id } : { kind: 'comparison' }
   );
+  // Print-request handshake (spec v0.6.5, unit 2): the Print control lives
+  // in the app header beside the theme toggle; the comparison view owns the
+  // dialog. A monotonically increasing request id opens the dialog (never a
+  // boolean - two clicks in a row must both register).
+  const [printRequest, setPrintRequest] = useState(0);
   const [vessel, setVessel] = useState<VesselInput>(DEFAULT_VESSEL);
   // Active vessel label (spec v0.2.47/v0.2.48): the app header displays the
   // priced vessel, updating live with the selection. A fresh load prices
@@ -208,6 +213,32 @@ const App: React.FC = () => {
           >
             {themeMode === 'dark' ? '☽ Light' : '☀ Dark'}
           </button>
+          {/* Print control (spec v0.6.5, unit 2): relocated from the
+              comparison body to the header bar, beside the theme toggle.
+              On the port-workspace page it routes to the comparison first
+              (the printed artifact is the comparison); on the comparison
+              page it requests the print dialog through the handshake. */}
+          {page.kind === 'comparison' ? (
+            <button
+              type="button"
+              className="print-export-button"
+              onClick={() => setPrintRequest(n => n + 1)}
+              aria-label="Print or save the comparison as PDF"
+              data-testid="print-export-button"
+            >
+              Print / Save as PDF
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="print-export-button"
+              onClick={() => setPage({ kind: 'comparison' })}
+              aria-label="Compare ports to print the comparison"
+              data-testid="print-export-button"
+            >
+              Print / Save as PDF
+            </button>
+          )}
         </Box>
       </Paper>
 
@@ -232,6 +263,8 @@ const App: React.FC = () => {
           selectedPortIds={comparisonSelection}
           activeVessel={activeVesselLabel}
           assumedCallFields={assumedCallFields}
+          printRequest={printRequest}
+          onPrintRequestHandled={() => setPrintRequest(0)}
         />
       ) : currentPort ? (
         <PortWorkspace

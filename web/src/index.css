@@ -36,6 +36,10 @@
   --error-tint: rgba(255, 143, 143, 0.12);
   --accent-tint: rgba(110, 168, 254, 0.14);
   --focus-ring: #8cbcff;
+  /* Modal shadow (v0.6.5 close repair): the print dialog's elevation as a
+     token - the v0.2.51 theme discipline keeps every color literal inside
+     the :root blocks. */
+  --modal-shadow: rgba(0, 0, 0, 0.25);
 
   /* Spacing scale (4px base) */
   --space-1: 4px;
@@ -1696,6 +1700,37 @@ textarea:focus-visible,
 .print-continuation,
 .print-grand-total-footnote {
   display: none;
+}
+
+/* Print dialog (spec v0.6.5, unit 1): a modal over the comparison view -
+   tokens only (the v0.2.51 theme discipline). */
+.print-dialog {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--surface);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  padding: var(--space-4);
+  min-width: 340px;
+  max-width: 480px;
+  box-shadow: 0 var(--space-2) var(--space-4) var(--modal-shadow);
+  z-index: 1000;
+}
+.print-dialog-option {
+  display: block;
+  margin: var(--space-2) 0;
+}
+.print-dialog-hint {
+  display: block;
+  color: var(--text-secondary);
+  margin-top: var(--space-1);
+}
+.print-dialog-actions {
+  display: flex;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
 }
 
 @media print {

@@ -256,8 +256,12 @@ describe('comparison view responsive rendering paths', () => {
       button!.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     });
     expect(button!.getAttribute('aria-expanded')).toBe('true');
+    // v0.6.5 re-baseline (unit 3, in-test attribution): the conversion
+    // toggle's label is renamed to "Convert to SEK" everywhere it appears
+    // (the dialog's checkbox carries the same wording); the state is
+    // carried by aria-expanded, no longer by show/hide wording.
     const buttonAfter = container!.querySelector<HTMLButtonElement>('.comparison-conversion-disclosure');
-    expect(buttonAfter!.textContent).toBe('Hide converted figures');
+    expect(buttonAfter!.textContent).toBe('Convert to SEK');
   });
 
   it('desktop: no conversion disclosure control renders', async () => {
