@@ -889,9 +889,11 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
         Print / Save as PDF
       </button>
 
-      {/* The print page set (spec v0.6.1): hidden on screen, rendered into
-          the print output — one self-contained page per three port columns,
-          every page carrying the mandatory parameter header and the N-of-M
+      {/* The print page set (spec v0.6.2): hidden on screen, portaled to
+          the document body (outside #root, so the print stylesheet hides
+          the entire screen view — the print pages are the complete printed
+          output) — one self-contained page per three port columns, every
+          page carrying the mandatory parameter header and the N-of-M
           footer. Reads the same computed model as the screen table; no
           engine interaction, no figure recomputation. */}
       {selectedPorts.length > 0 && printActive && (

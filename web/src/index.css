@@ -1670,26 +1670,30 @@ textarea:focus-visible,
   margin-top: var(--space-1);
 }
 
-/* ====================== Print / PDF export (spec v0.6.1) ======================
+/* ====================== Print / PDF export (spec v0.6.2) ======================
    A4 portrait, three port columns per page (the settled 3+3+3 constant in
    printPages.ts). Every page is self-contained: the mandatory parameter
    header, the charge lines, stage subtotals, Grand Total and per-GT
    disclosure print in full on each page; no table row slices across pages.
-   All interactive chrome is hidden: inputs, buttons, the port drawer, and
-   every hover-dependent behavior (hover does not exist on paper).
+   The print surface is the table, only the table (spec v0.6.2): the entire
+   screen view (#root) is hidden on paper — the print pages, portaled to
+   the document body, are the complete printed output (header,
+   continuation note, table, footer). The screen's flags block does not
+   print (the user ruling: no flag section in print at all — the table
+   stays self-describing through its own in-cell annotations).
    The print-specific classes (print-page, print-header, print-footer,
-   print-continuation, print-flag-text, print-export-button) are display:
-   none on screen and live only inside this block - the screen's layout is
-   byte-identical to v0.6.0.
+   print-continuation) are display: none on screen; the pages render via
+   a body portal only while printing - the screen's layout is
+   byte-identical to v0.6.1.
    ========================================================================== */
 
-/* Screen: the print-only blocks and the export button stay hidden until
-   print media takes over. */
+/* Screen: the print-only blocks stay hidden until print media takes over.
+   (The export button is a screen element styled elsewhere; the print
+   pages live outside #root entirely.) */
 .print-page,
 .print-header,
 .print-footer,
-.print-continuation,
-.print-flag-text {
+.print-continuation {
   display: none;
 }
 
@@ -1706,11 +1710,21 @@ textarea:focus-visible,
     font-size: 10px;
   }
 
+  /* The print surface is the table, only the table (spec v0.6.2): the
+     entire screen view is hidden — the print pages (portaled to the
+     document body, outside #root) are the complete printed output:
+     header, continuation note, table, footer, nothing else renders to
+     paper. */
+  #root {
+    display: none !important;
+  }
+
   /* Interactive chrome hidden on paper: the app header's controls (theme
      toggle, version chip - the version renders in the mandatory print
      header instead), the port drawer, every input, every button including
      the export button itself, and the workspace/nav surfaces outside the
-     comparison. */
+     comparison. (Redundant with #root hiding — kept as the chrome
+     suppression contract in its own right, independent of the portal.) */
   .header-controls,
   .port-drawer,
   .port-nav,
@@ -1745,8 +1759,16 @@ textarea:focus-visible,
     display: none !important;
   }
 
+  /* Pagination integrity (spec v0.6.2): the footer rides with its page
+     content — the page (header + table + footer) never splits across
+     sheets, so an orphaned footer on a near-empty trailing page cannot
+     occur; each printed page breaks before the next. */
   .print-page {
     display: block !important;
+    break-inside: avoid;
+    page-break-inside: avoid;
+    break-before: page;
+    page-break-before: always;
   }
 
   .print-header {
@@ -1779,12 +1801,12 @@ textarea:focus-visible,
     text-align: center;
   }
 
-  /* Flags as printed text (spec v0.6.1): the title attribute a screen
-     reader or hover tooltip would surface prints in full; the screen badge
-     label alone is not enough on paper. */
+  /* Flags are an interactive-surface feature and do not print (spec
+     v0.6.2, the user ruling: no flag section in print at all); the table
+     stays self-describing through its own in-cell annotations. */
+  .print-flag-row,
   .print-flag-text {
-    display: inline !important;
-    font-size: 8px;
+    display: none !important;
   }
 
   /* Table faces for print: dark surfaces, tints, and shadows flatten to
@@ -1807,13 +1829,11 @@ textarea:focus-visible,
     color: #1a1e22 !important;
   }
 
-  /* Page break control: each printed page breaks before the next; the
-     page's own table never breaks internally (self-contained pages). */
-  .print-page {
-    break-before: page;
-    page-break-before: always;
-  }
-
+  /* Row-level break integrity (spec v0.6.2): the page's own table never
+     breaks internally (self-contained pages), and a row — above all the
+     Grand Total row with its derived-per-GT annotation — never splits
+     across a sheet boundary. The page-level break-before lives in the
+     pagination-integrity block above. */
   .print-page:first-of-type {
     break-before: auto;
     page-break-before: auto;

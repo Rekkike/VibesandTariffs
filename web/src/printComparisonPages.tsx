@@ -1,4 +1,4 @@
-// The printed comparison page set (spec v0.6.1): one self-contained page
+// The printed comparison page set (spec v0.6.2): one self-contained page
 // per three port columns (the settled constant in printPages.ts). Pure
 // presentation over the already-computed comparison model - the page table
 // re-derives nothing: it reads the same rowsBySegment/rateInfo/composition
@@ -6,7 +6,15 @@
 // every charge line, stage subtotal, Grand Total, and per-GT disclosure
 // repeated on every page (a printed comparison is unfalsifiable without
 // its parameters - the mandatory header carries them all).
+// The print surface is the table, only the table (spec v0.6.2): the pages
+// portal to the document body so the print stylesheet can hide the entire
+// screen view (#root) - the print pages are the complete printed output,
+// header, continuation note, table, footer, nothing else. The screen's
+// flags block is an interactive-surface feature and does not print; the
+// table stays self-describing through its own in-cell annotations (the
+// derived-not-published per-GT note, the estimated-towage basis notes).
 import React from 'react';
+import { createPortal } from 'react-dom';
 import { Box, Table, TableBody, TableCell, TableHead, TableRow } from '@mui/material';
 import type { CallInput, PortDefinition, QualityFlag, VesselInput } from '@port-cost/core';
 import { formatRate } from './conversion';
@@ -14,21 +22,6 @@ import type { ComparisonBasisContext, ExchangeRateInfo } from './conversion';
 import { printContinuationNote, printPagesFor } from './printPages';
 import type { PrintPage } from './printPages';
 import { APP_VERSION } from './version';
-
-export interface PrintFlagLine {
-  label: string;
-  description: string;
-}
-
-// The screen comparison's own flag surface, printed: every quality flag a
-// page's ports carry renders as short printed text - hover does not exist
-// on paper, so the title text (the flag's own description) prints beside
-// the badge label. Every flag visible on screen has a printed counterpart.
-export const printFlagLinesFor = (flags: QualityFlag[]): PrintFlagLine[] =>
-  flags.map(flag => ({
-    label: flag.severity === 'error' ? `[${flag.severity.toUpperCase()}]` : flag.severity === 'warning' ? '[WARNING]' : '[INFO]',
-    description: flag.description
-  }));
 
 export interface PrintComparisonPagesProps {
   ports: PortDefinition[];
@@ -84,12 +77,6 @@ export const PrintComparisonPages: React.FC<PrintComparisonPagesProps> = ({
   const pages = printPagesFor(ports.map(p => ({ id: p.metadata.id, name: p.metadata.name })));
   const totalPorts = ports.length;
   const portById = new Map(ports.map(p => [p.metadata.id, p]));
-  const flagLinesByPortId = new Map(
-    portResults.map(pr => [
-      pr.port.metadata.id,
-      printFlagLinesFor(((pr as { result?: { quality_flags?: QualityFlag[] } | null }).result?.quality_flags ?? []) as QualityFlag[])
-    ])
-  );
   const cheapestPortId = null;
   const mostExpensivePortId = null;
 
@@ -232,27 +219,6 @@ export const PrintComparisonPages: React.FC<PrintComparisonPagesProps> = ({
                 );
               })}
             </TableRow>
-            {page.ports.some(({ id }) => (flagLinesByPortId.get(id)?.length ?? 0) > 0) && (
-              <TableRow className="print-flag-row">
-                <TableCell>
-                  <strong>Flags (printed text \u2014 hover does not exist on paper)</strong>
-                </TableCell>
-                {page.ports.map(({ id }) => {
-                  const lines = flagLinesByPortId.get(id) ?? [];
-                  return (
-                    <TableCell key={id} align="right" className="amount">
-                      {lines.length === 0
-                        ? '\u2014'
-                        : lines.map((l, i) => (
-                          <span key={i} className="print-flag-text" style={{ display: 'block' }}>
-                            {l.label} {l.description}
-                          </span>
-                        ))}
-                    </TableCell>
-                  );
-                })}
-              </TableRow>
-            )}
             {cheapestPortId === null && mostExpensivePortId === null && null}
           </TableBody>
         </Table>
@@ -262,9 +228,13 @@ export const PrintComparisonPages: React.FC<PrintComparisonPagesProps> = ({
   };
 
   if (totalPorts === 0) return null;
-  return (
+  // The pages portal to the document body (spec v0.6.2): the print
+  // stylesheet hides the entire screen view (#root), so the pages must
+  // live outside it - the print pages are the complete printed output.
+  return createPortal(
     <Box className="print-pages" data-testid="print-pages">
       {pages.map(renderPage)}
-    </Box>
+    </Box>,
+    document.body
   );
 };
