@@ -36,6 +36,10 @@
   --error-tint: rgba(255, 143, 143, 0.12);
   --accent-tint: rgba(110, 168, 254, 0.14);
   --focus-ring: #8cbcff;
+  /* Modal shadow (v0.6.5 close repair): the print dialog's elevation as a
+     token - the v0.2.51 theme discipline keeps every color literal inside
+     the :root blocks. */
+  --modal-shadow: rgba(0, 0, 0, 0.25);
 
   /* Spacing scale (4px base) */
   --space-1: 4px;
@@ -1711,7 +1715,7 @@ textarea:focus-visible,
   padding: var(--space-4);
   min-width: 340px;
   max-width: 480px;
-  box-shadow: 0 var(--space-2) var(--space-4) rgba(0, 0, 0, 0.25);
+  box-shadow: 0 var(--space-2) var(--space-4) var(--modal-shadow);
   z-index: 1000;
 }
 .print-dialog-option {

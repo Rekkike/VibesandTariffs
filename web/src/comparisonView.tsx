@@ -120,17 +120,23 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
   // Print-request handshake (spec v0.6.5, unit 2): a change from zero
   // opens the dialog (the header control's press); the view confirms
   // handling so the App-level id resets without a re-open loop.
+  // The live toggle values at the moment the dialog opens; a ref so the
+  // print-request effect can stay keyed on printRequest alone (the dialog
+  // opens once per press, never re-opening on a later toggle change).
+  const liveTogglesRef = React.useRef({ derivationsVisible, conversionsVisible, containerThroughVisible });
+  liveTogglesRef.current = { derivationsVisible, conversionsVisible, containerThroughVisible };
   useEffect(() => {
     if (printRequest > 0) {
+      const live = liveTogglesRef.current;
       setPrintDialogSelections({
-        derivations: derivationsVisible,
-        conversions: conversionsVisible,
-        containerThrough: containerThroughVisible
+        derivations: live.derivationsVisible,
+        conversions: live.conversionsVisible,
+        containerThrough: live.containerThroughVisible
       });
       setPrintDialogOpen(true);
       onPrintRequestHandled?.();
     }
-  }, [printRequest]);
+  }, [printRequest, onPrintRequestHandled]);
   useEffect(() => {
     const showPrintPages = () => {
       // flushSync commits the pages into the DOM synchronously inside the
