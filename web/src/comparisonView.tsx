@@ -909,6 +909,9 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
           activeVessel={activeVessel}
           formatCurrency={formatCurrency}
           derivationsVisible={derivationsVisible}
+          conversionsVisible={conversionsVisible}
+          containerThroughVisible={containerThroughVisible}
+          hinterlandMode={hinterlandMode}
         />
       )}
     </Box>

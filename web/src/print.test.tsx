@@ -136,6 +136,9 @@ describe('print header content — the unfalsifiability rule (spec v0.6.2)', () 
           formatCurrency={(amount, currency) =>
             new Intl.NumberFormat('sv-SE', { style: 'currency', currency, minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amount)}
           derivationsVisible={true}
+          conversionsVisible={true}
+          containerThroughVisible={false}
+          hinterlandMode={"truck"}
         />
       );
     });
@@ -444,6 +447,9 @@ describe('currency, annotations, and figures on paper (spec v0.6.2, unit 4)', ()
           formatCurrency={(amount, currency) =>
             new Intl.NumberFormat('sv-SE', { style: 'currency', currency, minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amount)}
           derivationsVisible={true}
+          conversionsVisible={true}
+          containerThroughVisible={false}
+          hinterlandMode={"truck"}
         />
       );
     });
@@ -491,6 +497,9 @@ describe('currency, annotations, and figures on paper (spec v0.6.2, unit 4)', ()
           formatCurrency={(amount, currency) =>
             new Intl.NumberFormat('sv-SE', { style: 'currency', currency, minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amount)}
           derivationsVisible={true}
+          conversionsVisible={true}
+          containerThroughVisible={false}
+          hinterlandMode={"truck"}
         />
       );
     });
@@ -562,6 +571,9 @@ describe('fee-derivation toggle follow-through on paper (spec v0.6.3, unit 1)', 
           formatCurrency={(amount, currency) =>
             new Intl.NumberFormat('sv-SE', { style: 'currency', currency, minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amount)}
           derivationsVisible={derivationsVisible}
+          conversionsVisible={true}
+          containerThroughVisible={false}
+          hinterlandMode={"truck"}
         />
       );
     });
@@ -659,6 +671,9 @@ describe('printed call parameters as set (spec v0.6.3, unit 1)', () => {
           formatCurrency={(amount, currency) =>
             new Intl.NumberFormat('sv-SE', { style: 'currency', currency, minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amount)}
           derivationsVisible={false}
+          conversionsVisible={true}
+          containerThroughVisible={false}
+          hinterlandMode={"truck"}
         />
       );
     });
@@ -725,6 +740,9 @@ describe('port-group completeness on paper (spec v0.6.4, unit 1)', () => {
           formatCurrency={(amount, currency) =>
             new Intl.NumberFormat('sv-SE', { style: 'currency', currency, minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amount)}
           derivationsVisible={derivationsVisible}
+          conversionsVisible={true}
+          containerThroughVisible={false}
+          hinterlandMode={"truck"}
         />
       );
     });
@@ -843,6 +861,9 @@ describe('break-integrity for the tallest detail rows (spec v0.6.4, unit 2)', ()
           formatCurrency={(amount, currency) =>
             new Intl.NumberFormat('sv-SE', { style: 'currency', currency, minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amount)}
           derivationsVisible={true}
+          conversionsVisible={true}
+          containerThroughVisible={false}
+          hinterlandMode={"truck"}
         />
       );
     });
@@ -866,5 +887,176 @@ describe('break-integrity for the tallest detail rows (spec v0.6.4, unit 2)', ()
       await act(async () => { root.unmount(); });
       container.remove();
     }
+  });
+});
+
+// Toggle follow-through, generalized (spec v0.6.4, unit 3): every
+// print-relevant state control on the screen carries through to print -
+// the paper inherits the session state, never imposes defaults. The audit
+// found three controls beyond the fee-derivation toggle (already v0.6.3):
+// the derived/converted sums toggle (conversionsVisible - the observed
+// defect: the Grand Total printed the converted figure regardless of
+// screen state), and the compare container-through surface (its toggle and
+// the hinterland-mode selector). Red proofs per the standing discipline:
+// the print path forcing each default makes the opposite pin red - the
+// always-convert v0.6.3 shape fails the OFF pin, the never-convert shape
+// fails the ON pin, the always-render container-through shape fails the
+// OFF pin; all restored green.
+describe('derived/converted sums toggle follow-through on paper (spec v0.6.4, unit 3)', () => {
+  const renderConverted = async (conversionsVisible: boolean) => {
+    const ports = LOADED_PORTS.filter(p => ['aarhus', 'gothenburg'].includes(p.metadata.id));
+    const call = defaultCall('gothenburg');
+    const portResults = ports.map(port => {
+      const merged = { ...defaultCall(port.metadata.id), ...call, port_id: port.metadata.id } as CallInput;
+      return { port, result: calculatePortCallCost(port, { vessel: DEFAULT_VESSEL, call: merged }) };
+    });
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    const root = createRoot(container);
+    const rateInfo = { rate: 11.2525, date: '2026-10-05', source: 'ECB euro reference rate (SEK per EUR)', is_default: true };
+    await act(async () => {
+      root.render(
+        <PrintComparisonPages
+          ports={ports}
+          portResults={portResults as never}
+          rowsByStage={[] as never}
+          vessel={DEFAULT_VESSEL}
+          call={call}
+          rateInfo={rateInfo}
+          comparisonBasisContext={{ basis: 'SEK', rows: DECLARED_ROWS }}
+          declaredRows={DECLARED_ROWS}
+          activeVessel="MAREN MAERSK (IMO 9632129)"
+          formatCurrency={(amount, currency) =>
+            new Intl.NumberFormat('sv-SE', { style: 'currency', currency, minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amount)}
+          derivationsVisible={false}
+          conversionsVisible={conversionsVisible}
+          containerThroughVisible={false}
+          hinterlandMode={"truck"}
+        />
+      );
+    });
+    return { container, root };
+  };
+
+  it('converted ON: the Grand Total prints the converted comparison-basis sum beside the native figure', async () => {
+    const { container, root } = await renderConverted(true);
+    try {
+      const totalRow = document.body.querySelector('.comparison-total-row');
+      expect(totalRow).not.toBeNull();
+      // The Aarhus native DKK figure with its converted SEK secondary -
+      // exactly the screen's ON state (native primary, converted secondary).
+      expect(totalRow!.textContent).toContain('6\u00a0348\u00a0361');
+      expect(totalRow!.textContent).toContain('\u2248');
+      expect(totalRow!.textContent).toContain('9\u00a0557\u00a0152');
+    } finally {
+      await act(async () => { root.unmount(); });
+      container.remove();
+    }
+  });
+
+  it('converted OFF: the converted sums do not print - the native figures stand alone, exactly the screen\'s OFF state', async () => {
+    const { container, root } = await renderConverted(false);
+    try {
+      const totalRow = document.body.querySelector('.comparison-total-row');
+      expect(totalRow).not.toBeNull();
+      // The native figure prints; the converted secondary does not.
+      expect(totalRow!.textContent).toContain('6\u00a0348\u00a0361');
+      expect(totalRow!.textContent).not.toContain('\u2248');
+      expect(totalRow!.textContent).not.toContain('9\u00a0557\u00a0152');
+      // No converted figure anywhere on the printed page (the toggle is a
+      // class, not a single pin: the whole page inherits the OFF state).
+      expect(document.body.textContent ?? '').not.toContain('converted \u2014');
+    } finally {
+      await act(async () => { root.unmount(); });
+      container.remove();
+    }
+  });
+});
+
+describe('compare container-through follow-through on paper (spec v0.6.4, unit 3)', () => {
+  const renderContainerThrough = async (visible: boolean, mode: 'truck' | 'rail') => {
+    const ports = LOADED_PORTS.filter(p => ['gavle', 'norrkoping', 'gothenburg'].includes(p.metadata.id));
+    const call = defaultCall('gothenburg');
+    const portResults = ports.map(port => {
+      const merged = { ...defaultCall(port.metadata.id), ...call, port_id: port.metadata.id } as CallInput;
+      return { port, result: calculatePortCallCost(port, { vessel: DEFAULT_VESSEL, call: merged }) };
+    });
+    const ruleNames = buildRuleNamesByPort(ports);
+    const ruleAttrs = buildRuleAttributesByPort(ports);
+    const rowsByStage = buildRowsBySegment(portResults as never, ruleNames, ruleAttrs, DEFAULT_VESSEL.gt).rowsByStage;
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    const root = createRoot(container);
+    const rateInfo = { rate: 11.2525, date: '2026-10-05', source: 'ECB euro reference rate (SEK per EUR)', is_default: true };
+    await act(async () => {
+      root.render(
+        <PrintComparisonPages
+          ports={ports}
+          portResults={portResults as never}
+          rowsByStage={rowsByStage as never}
+          vessel={DEFAULT_VESSEL}
+          call={call}
+          rateInfo={rateInfo}
+          comparisonBasisContext={{ basis: 'SEK', rows: DECLARED_ROWS }}
+          declaredRows={DECLARED_ROWS}
+          activeVessel="MAREN MAERSK (IMO 9632129)"
+          formatCurrency={(amount, currency) =>
+            new Intl.NumberFormat('sv-SE', { style: 'currency', currency, minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amount)}
+          derivationsVisible={false}
+          conversionsVisible={true}
+          containerThroughVisible={visible}
+          hinterlandMode={mode}
+        />
+      );
+    });
+    return { container, root };
+  };
+
+  it('toggle ON: the container-through row prints with the session\'s hinterland mode and per-port legs', async () => {
+    const { container, root } = await renderContainerThrough(true, 'rail');
+    try {
+      const row = document.body.querySelector('[data-testid="print-container-through-row"]');
+      expect(row).not.toBeNull();
+      expect(row!.textContent).toContain('Container-through addition');
+      // The session's own mode states on paper (rail), never a default.
+      expect(row!.textContent).toContain('Hinterland mode: rail stack');
+      // The per-port legs print: Norrköping's rail rates, Gävle's honest
+      // bundled note - the screen's own row content.
+      expect(row!.textContent).toContain('bundled');
+      expect(row!.querySelector('[data-testid="print-container-through-norrkoping"]')?.textContent).toContain('526');
+    } finally {
+      await act(async () => { root.unmount(); });
+      container.remove();
+    }
+  });
+
+  it('toggle OFF: the container-through row does not print - the screen\'s default-off state', async () => {
+    const { container, root } = await renderContainerThrough(false, 'truck');
+    try {
+      expect(document.body.querySelector('[data-testid="print-container-through-row"]')).toBeNull();
+      expect(document.body.textContent ?? '').not.toContain('Container-through addition');
+    } finally {
+      await act(async () => { root.unmount(); });
+      container.remove();
+    }
+  });
+
+  it('the audit pin: every print-relevant screen control is wired through the view\'s print path - no print-side default exists', () => {
+    // The comparison view wires its own live state into PrintComparisonPages:
+    // the fee-derivation toggle, the converted-sums toggle, the
+    // container-through toggle and its hinterland mode, plus the live rate
+    // input (rateInfo). The print component takes them as required props -
+    // no default parameter anywhere in its signature.
+    const viewSource = fs.readFileSync(path.join(__dirname, 'comparisonView.tsx'), 'utf8');
+    const printSource = fs.readFileSync(path.join(__dirname, 'printComparisonPages.tsx'), 'utf8');
+    expect(viewSource).toMatch(/derivationsVisible=\{derivationsVisible\}/);
+    expect(viewSource).toMatch(/conversionsVisible=\{conversionsVisible\}/);
+    expect(viewSource).toMatch(/containerThroughVisible=\{containerThroughVisible\}/);
+    expect(viewSource).toMatch(/hinterlandMode=\{hinterlandMode\}/);
+    // The print component never defaults a toggle (a default would be a
+    // print-side state imposition - the defect class this unit closes).
+    expect(printSource).not.toMatch(/derivationsVisible[^?]*=\s*(true|false)\b/);
+    expect(printSource).not.toMatch(/conversionsVisible[^?]*=\s*(true|false)\b/);
+    expect(printSource).not.toMatch(/containerThroughVisible[^?]*=\s*(true|false)\b/);
   });
 });
