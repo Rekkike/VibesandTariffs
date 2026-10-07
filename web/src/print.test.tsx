@@ -17,6 +17,7 @@ import * as reactDom from 'react-dom';
 import * as fs from 'fs';
 import * as path from 'path';
 import { ComparisonView } from './App';
+import { buildRuleNamesByPort, buildRuleAttributesByPort, buildRowsBySegment } from './comparisonModel';
 import { PrintComparisonPages, printRateBasisNote } from './printComparisonPages';
 import { PRINT_COLUMNS_PER_PAGE, printContinuationNote, printPagesFor } from './printPages';
 import portsRegistry from './data/ports.json';
@@ -134,6 +135,7 @@ describe('print header content — the unfalsifiability rule (spec v0.6.2)', () 
           activeVessel="MAREN MAERSK (IMO 9632129)"
           formatCurrency={(amount, currency) =>
             new Intl.NumberFormat('sv-SE', { style: 'currency', currency, minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amount)}
+          derivationsVisible={true}
         />
       );
     });
@@ -154,7 +156,7 @@ describe('print header content — the unfalsifiability rule (spec v0.6.2)', () 
         // own source); the version-guard ritual pins it against the spec
         // header - this suite never carries a second version literal.
         expect(text).toContain(`Version: ${APP_VERSION}`);
-        expect(APP_VERSION).toBe('v0.6.2');
+        expect(APP_VERSION).toBe('v0.6.3');
         expect(text).toContain('Tariff year: 2026');
         expect(text).toContain('Vessel profile: MAREN MAERSK (IMO 9632129)');
         expect(text).toContain('ESI:');
@@ -163,6 +165,87 @@ describe('print header content — the unfalsifiability rule (spec v0.6.2)', () 
         expect(text).toContain('EUR\u2192DKK 7.4745 (2026-10-05)');
         expect(text).toContain('Rate basis:');
       });
+    } finally {
+      await act(async () => { root!.unmount(); });
+      container.remove();
+    }
+  });
+
+  // The four-line structured header (spec v0.6.3, unit 3): the header is a
+  // compact four-line block, never a run-on. Line 1 app name, version,
+  // tariff year; line 2 vessel profile (name, IMO, GT, TEU), ESI, and the
+  // classes exactly as the screen context strip states them; line 3 the
+  // call parameters as set (live values); line 4 the rate basis, both
+  // published pairs with their as_of dates. All four lines on every page.
+  // Red proof per the standing discipline: the structural pin was observed
+  // red against the v0.6.2 run-on header (one title paragraph plus a single
+  // space-joined span run, no .print-header-line blocks) before being
+  // trusted, then restored green.
+  it('the header renders as the four-line block on every page - line 1: app, version, tariff year', async () => {
+    const { container, root } = await renderPrintPages(LOADED_PORTS.map(p => p.metadata.id));
+    try {
+      const lines = document.body.querySelectorAll('.print-header .print-header-line');
+      // Exactly four lines per header, three headers - and the structural
+      // pin: the run-on v0.6.2 shape (no line blocks) is red by this count.
+      expect(lines.length).toBe(12);
+      document.body.querySelectorAll('.print-header').forEach(h => {
+        expect(h.querySelectorAll('.print-header-line').length).toBe(4);
+      });
+      // Line 1 on every page: app name, version, tariff year.
+      document.body.querySelectorAll('[data-testid="print-header-line-1"]').forEach(l => {
+        const text = l.textContent ?? '';
+        expect(text).toContain('Port Call Cost Analyzer — Port Comparison (printed)');
+        expect(text).toContain(`Version: ${APP_VERSION}`);
+        expect(text).toContain('Tariff year: 2026');
+      });
+    } finally {
+      await act(async () => { root!.unmount(); });
+      container.remove();
+    }
+  });
+
+  it('line 2: vessel profile (name, IMO, GT, TEU), ESI, and the classes as the screen context strip states them', async () => {
+    const { container, root } = await renderPrintPages(LOADED_PORTS.map(p => p.metadata.id));
+    try {
+      document.body.querySelectorAll('[data-testid="print-header-line-2"]').forEach(l => {
+        const text = l.textContent ?? '';
+        expect(text).toContain('Vessel profile: MAREN MAERSK (IMO 9632129)');
+        expect(text).toContain('GT: 194,849');
+        expect(text).toContain('TEU capacity: 19,076');
+        expect(text).toContain('ESI: not entered');
+        // The classes exactly as the screen context strip states them.
+        expect(text).toContain('CSI: not entered');
+        expect(text).toContain('Sjöfartsverket class: E (default — not registered)');
+      });
+    } finally {
+      await act(async () => { root!.unmount(); });
+      container.remove();
+    }
+  });
+
+  it('line 3: the call parameters as set (live values), line 4: the rate basis with both published pairs and as_of dates', async () => {
+    const { container, root } = await renderPrintPages(LOADED_PORTS.map(p => p.metadata.id));
+    try {
+      document.body.querySelectorAll('[data-testid="print-header-line-3"]').forEach(l => {
+        const text = l.textContent ?? '';
+        // Live values per the unit 1.2 pin: the default call's 4,000 moves
+        // and 50 h lay time, stated as the session's own call.
+        expect(text).toContain('Container moves: 4,000 (loaded + discharged)');
+        expect(text).toContain('Lay time: 50 h at berth');
+      });
+      document.body.querySelectorAll('[data-testid="print-header-line-4"]').forEach(l => {
+        const text = l.textContent ?? '';
+        expect(text).toContain('Rate basis: EUR\u2192SEK 11.2525 (2026-10-05); EUR\u2192DKK 7.4745 (2026-10-05)');
+        expect(text).toContain('Comparison basis:');
+        // The JSX-escape trap: the printed text carries the real arrow
+        // character, never a literal backslash-u sequence.
+        expect(text).not.toContain('\\u2192');
+      });
+      // The whole printed surface is free of literal escape sequences -
+      // the known trap from the prior session, pinned here.
+      expect(document.body.textContent ?? '').not.toContain('\\u2192');
+      expect(document.body.textContent ?? '').not.toContain('\\u2014');
+      expect(document.body.textContent ?? '').not.toContain('\\u00b7');
     } finally {
       await act(async () => { root!.unmount(); });
       container.remove();
@@ -260,7 +343,7 @@ describe('the export button and chrome hiding (spec v0.6.2, units 1 and 3)', () 
     expect(printBlock).toMatch(/\.disclosure-header/);
     // The print-only blocks stay hidden on screen (the flags class is
     // pinned to stay hidden on paper too - the no-flag-section ruling).
-    const screenBlock = cssSource.match(/\.print-page,\n\.print-header,\n\.print-footer,\n\.print-continuation\s*\{\s*display:\s*none;\s*\}/);
+    const screenBlock = cssSource.match(/\.print-page,\n\.print-header,\n\.print-footer,\n\.print-continuation,\n\.print-grand-total-footnote\s*\{\s*display:\s*none;\s*\}/);
     expect(screenBlock).not.toBeNull();
     // A4 portrait is the page size.
     expect(printBlock).toMatch(/size:\s*A4 portrait/);
@@ -271,14 +354,22 @@ describe('the export button and chrome hiding (spec v0.6.2, units 1 and 3)', () 
     // Self-contained pages: the page's table never slices across pages.
     expect(printBlock).toMatch(/\.print-page \.comparison-table\s*\{\s*break-inside:\s*avoid/);
     expect(printBlock).toMatch(/break-before:\s*page/);
-    // Pagination integrity (spec v0.6.2, unit 2): the page block itself
-    // never splits (the footer rides with its page content — no orphaned
-    // footer on a near-empty trailing page), and no table row — above all
-    // the Grand Total row with its derived-per-GT annotation — ever splits
-    // across a sheet boundary. Both pins were observed red against the
-    // v0.6.1 stylesheet (no page-level break-inside) before being trusted.
-    expect(printBlock).toMatch(/\.print-page\s*\{[^}]*break-inside:\s*avoid/);
-    expect(printBlock).toMatch(/\.print-page \.comparison-table tr\s*\{\s*break-inside:\s*avoid/);
+    // Row-level break integrity (spec v0.6.3, unit 2): the page block does
+    // NOT carry break-inside: avoid - with detail toggled ON a page can
+    // outgrow one sheet, and an unsatisfiable page-level avoid is what
+    // permitted the observed mid-cell fragmentation (the Berth-dues
+    // description splitting across pages 1-2, the Grand Total annotation
+    // running past the visible area). The page keeps its forced break-before
+    // and flows when taller than a sheet; the row-level avoid holds: a row
+    // taller than the remaining space moves whole to the next sheet, never
+    // splitting mid-cell. The page-block pin was observed red against the
+    // v0.6.2 stylesheet (the page-level avoid present) before being trusted.
+    expect(printBlock).not.toMatch(/\.print-page\s*\{[^}]*break-inside/);
+    expect(printBlock).toMatch(/\.print-page\s*\{[^}]*break-before:\s*page/);
+    expect(printBlock).toMatch(/\.print-page \.comparison-table tr,\n\s*\.print-page \.comparison-table tr td,\n\s*\.print-page \.comparison-table tr th\s*\{\s*break-inside:\s*avoid/);
+    // The multi-paragraph detail blocks (the toggle-ON line detail and its
+    // derivation subtitle) never split mid-block.
+    expect(printBlock).toMatch(/\.print-line-detail,\n\s*\.print-page \.comparison-table \.print-derivation-detail\s*\{\s*break-inside:\s*avoid/);
   });
 
   it('the print page set mounts on beforeprint and unmounts on afterprint — the screen DOM stays byte-identical otherwise', async () => {
@@ -343,6 +434,7 @@ describe('currency, annotations, and figures on paper (spec v0.6.2, unit 4)', ()
           activeVessel="MAREN MAERSK (IMO 9632129)"
           formatCurrency={(amount, currency) =>
             new Intl.NumberFormat('sv-SE', { style: 'currency', currency, minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amount)}
+          derivationsVisible={true}
         />
       );
     });
@@ -389,6 +481,7 @@ describe('currency, annotations, and figures on paper (spec v0.6.2, unit 4)', ()
           activeVessel="MAREN MAERSK (IMO 9632129)"
           formatCurrency={(amount, currency) =>
             new Intl.NumberFormat('sv-SE', { style: 'currency', currency, minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amount)}
+          derivationsVisible={true}
         />
       );
     });
@@ -415,5 +508,162 @@ describe('currency, annotations, and figures on paper (spec v0.6.2, unit 4)', ()
     const viewSource = fs.readFileSync(path.join(__dirname, 'comparisonView.tsx'), 'utf8');
     expect(viewSource).toMatch(/window\.print\(\)/);
     expect(viewSource).not.toMatch(/jspdf/i);
+  });
+});
+
+// Fee-derivation detail toggle follow-through on the print path (spec
+// v0.6.3, unit 1): the paper inherits the session state - the print output
+// carries the fee-derivation subtitles exactly when the comparison
+// screen's toggle is ON, and charge-line names only when it is OFF. The
+// print path reads the toggle from live state (the prop), never applying
+// its own default. Red proofs per the standing discipline: the OFF pin was
+// observed red by forcing the component's default to ON (the print path
+// applying its own default), the ON pin by forcing it OFF; both restored.
+describe('fee-derivation toggle follow-through on paper (spec v0.6.3, unit 1)', () => {
+  const buildRealRowsByStage = () => {
+    const ports = LOADED_PORTS.filter(p => ['gothenburg', 'gavle'].includes(p.metadata.id));
+    const call = defaultCall('gothenburg');
+    const portResults = ports.map(port => {
+      const merged = { ...defaultCall(port.metadata.id), ...call, port_id: port.metadata.id } as CallInput;
+      return { port, result: calculatePortCallCost(port, { vessel: DEFAULT_VESSEL, call: merged }) };
+    });
+    const ruleNames = buildRuleNamesByPort(ports);
+    const ruleAttrs = buildRuleAttributesByPort(ports);
+    return { ports, portResults, rowsByStage: buildRowsBySegment(portResults as never, ruleNames, ruleAttrs, DEFAULT_VESSEL.gt).rowsByStage };
+  };
+
+  const renderWithToggle = async (derivationsVisible: boolean) => {
+    const { ports, portResults, rowsByStage } = buildRealRowsByStage();
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    const root = createRoot(container);
+    const rateInfo = { rate: 11.2525, date: '2026-10-05', source: 'ECB euro reference rate (SEK per EUR)', is_default: true };
+    await act(async () => {
+      root!.render(
+        <PrintComparisonPages
+          ports={ports}
+          portResults={portResults as never}
+          rowsByStage={rowsByStage as never}
+          vessel={DEFAULT_VESSEL}
+          call={defaultCall('gothenburg')}
+          rateInfo={rateInfo}
+          comparisonBasisContext={{ basis: 'SEK', rows: DECLARED_ROWS }}
+          declaredRows={DECLARED_ROWS}
+          activeVessel="MAREN MAERSK (IMO 9632129)"
+          formatCurrency={(amount, currency) =>
+            new Intl.NumberFormat('sv-SE', { style: 'currency', currency, minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amount)}
+          derivationsVisible={derivationsVisible}
+        />
+      );
+    });
+    return { container, root };
+  };
+
+  it('toggle ON: the printed fee rows carry their derivation subtitles (the screen\'s own condensed text)', async () => {
+    const { container, root } = await renderWithToggle(true);
+    try {
+      const details = document.body.querySelectorAll('.print-derivation-detail');
+      expect(details.length).toBeGreaterThan(0);
+      // The subtitle uses the screen's own strings - the condensed
+      // derivation's structure label, never a print-only rewording.
+      const text = document.body.textContent ?? '';
+      expect(details[0].textContent?.length ?? 0).toBeGreaterThan(0);
+      // Per-line detail rows render beneath the figures (name · biller).
+      expect(document.body.querySelectorAll('.print-line-detail').length).toBeGreaterThan(0);
+      expect(details[0].closest('.print-line-detail')?.textContent ?? '').toContain('\u00b7');
+    } finally {
+      await act(async () => { root!.unmount(); });
+      container.remove();
+    }
+  });
+
+  it('detail OFF: the Grand Total renders compact - the per-GT derivation annotations become a footnote block beneath the table, not in-cell padding', async () => {
+    const { container, root } = await renderWithToggle(false);
+    try {
+      const footnote = document.body.querySelector('[data-testid="print-grand-total-footnote-1"]');
+      expect(footnote).not.toBeNull();
+      expect(footnote!.textContent).toContain('derived, not a published rate');
+      // The Grand Total row itself stays compact: no in-cell per-GT annotation.
+      const totalRow = document.body.querySelector('.comparison-total-row');
+      expect(totalRow!.textContent ?? '').not.toContain('derived, not a published rate');
+    } finally {
+      await act(async () => { root!.unmount(); });
+      container.remove();
+    }
+  });
+
+  it('detail ON: the per-GT derivation annotations render inline in the Grand Total cell - no footnote block', async () => {
+    const { container, root } = await renderWithToggle(true);
+    try {
+      expect(document.body.querySelector('[data-testid="print-grand-total-footnote-1"]')).toBeNull();
+      const totalRow = document.body.querySelector('.comparison-total-row');
+      expect(totalRow!.textContent ?? '').toContain('derived, not a published rate');
+    } finally {
+      await act(async () => { root!.unmount(); });
+      container.remove();
+    }
+  });
+
+  it('toggle OFF: the printed fee rows carry charge-line names only, clean - no derivation text', async () => {
+    const { container, root } = await renderWithToggle(false);
+    try {
+      expect(document.body.querySelectorAll('.print-derivation-detail').length).toBe(0);
+      expect(document.body.querySelectorAll('.print-line-detail').length).toBe(0);
+    } finally {
+      await act(async () => { root!.unmount(); });
+      container.remove();
+    }
+  });
+});
+
+// Printed call parameters as actually set (spec v0.6.3, unit 1.2): the
+// paper is a snapshot of the session - the header's call parameters print
+// the live call values, byte-for-byte as the screen states them. The moves
+// pin: an altered call (3,200 moves instead of the 4,000 default) prints
+// 3,200, never the default. Red proof: observed red before the header
+// carried the moves parameter at all (the v0.6.2 header printed none).
+describe('printed call parameters as set (spec v0.6.3, unit 1)', () => {
+  it('an altered moves value prints altered, not the 4,000 default - the header states the session\'s own call', async () => {
+    const ports = LOADED_PORTS.filter(p => p.metadata.id === 'gothenburg');
+    const call = {
+      ...defaultCall('gothenburg'),
+      containers_loaded_le20ft: 400, containers_loaded_gt20ft: 1200,
+      containers_discharged_le20ft: 400,
+      containers_discharged_gt20ft: 1200
+    } as CallInput;
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    const root = createRoot(container);
+    const rateInfo = { rate: 11.2525, date: '2026-10-05', source: 'ECB euro reference rate (SEK per EUR)', is_default: true };
+    await act(async () => {
+      root!.render(
+        <PrintComparisonPages
+          ports={ports}
+          portResults={[] as never}
+          rowsByStage={[] as never}
+          vessel={DEFAULT_VESSEL}
+          call={call}
+          rateInfo={rateInfo}
+          comparisonBasisContext={{ basis: 'SEK', rows: DECLARED_ROWS }}
+          declaredRows={DECLARED_ROWS}
+          activeVessel="MAREN MAERSK (IMO 9632129)"
+          formatCurrency={(amount, currency) =>
+            new Intl.NumberFormat('sv-SE', { style: 'currency', currency, minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amount)}
+          derivationsVisible={false}
+        />
+      );
+    });
+    try {
+      const header = document.body.querySelector('.print-header');
+      expect(header).not.toBeNull();
+      const text = header!.textContent ?? '';
+      expect(text).toContain('Container moves: 3,200 (loaded + discharged)');
+      expect(text).not.toContain('4,000');
+      // Lay time as set (the default call's 50 h) still prints.
+      expect(text).toContain('Lay time: 50 h at berth');
+    } finally {
+      await act(async () => { root!.unmount(); });
+      container.remove();
+    }
   });
 });

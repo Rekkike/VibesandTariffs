@@ -1693,7 +1693,8 @@ textarea:focus-visible,
 .print-page,
 .print-header,
 .print-footer,
-.print-continuation {
+.print-continuation,
+.print-grand-total-footnote {
   display: none;
 }
 
@@ -1763,10 +1764,16 @@ textarea:focus-visible,
      content — the page (header + table + footer) never splits across
      sheets, so an orphaned footer on a near-empty trailing page cannot
      occur; each printed page breaks before the next. */
+  /* Row-level break integrity (spec v0.6.3, unit 2): the page block does
+     NOT carry break-inside: avoid. With detail toggled ON a page's table
+     can outgrow one sheet; a page-level avoid is then unsatisfiable and the
+     browser fragments content anyway (the observed mid-cell splits). The
+     page keeps its forced break-before (each printed page starts on a new
+     sheet) and flows across sheets when taller than one - while the
+     row-level rules below hold: a row taller than the remaining sheet
+     space moves whole to the next sheet, never splitting mid-cell. */
   .print-page {
     display: block !important;
-    break-inside: avoid;
-    page-break-inside: avoid;
     break-before: page;
     page-break-before: always;
   }
@@ -1786,10 +1793,29 @@ textarea:focus-visible,
     margin: 0 0 1mm 0;
   }
 
+  /* The four-line structured header (spec v0.6.3, unit 3): each parameter
+     line is its own compact block, never a run-on. */
+  .print-header .print-header-line {
+    margin: 0 0 0.5mm 0;
+    font-size: 9px;
+    font-weight: 400;
+  }
+
   .print-continuation {
     display: block !important;
     font-size: 9px;
     margin: 1.5mm 0;
+  }
+  /* Grand Total footnote (spec v0.6.3, unit 2.2): the detail-OFF per-GT
+     derivation annotations render as a short footnote block beneath the
+     table - compact, kept with the table (never split from it). */
+  .print-grand-total-footnote {
+    display: block;
+    font-size: 9px;
+    margin: 2mm 0 0 0;
+    line-height: 1.4;
+    break-inside: avoid;
+    page-break-inside: avoid;
   }
 
   .print-footer {
@@ -1844,7 +1870,14 @@ textarea:focus-visible,
     page-break-inside: avoid;
   }
 
-  .print-page .comparison-table tr {
+  .print-page .comparison-table tr,
+  .print-page .comparison-table tr td,
+  .print-page .comparison-table tr th {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  .print-page .comparison-table .print-line-detail,
+  .print-page .comparison-table .print-derivation-detail {
     break-inside: avoid;
     page-break-inside: avoid;
   }

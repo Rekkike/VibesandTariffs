@@ -1,4 +1,4 @@
-// The printed comparison page set (spec v0.6.2): one self-contained page
+// The printed comparison page set (spec v0.6.2, amended v0.6.3): one self-contained page
 // per three port columns (the settled constant in printPages.ts). Pure
 // presentation over the already-computed comparison model - the page table
 // re-derives nothing: it reads the same rowsBySegment/rateInfo/composition
@@ -23,6 +23,18 @@ import { printContinuationNote, printPagesFor } from './printPages';
 import type { PrintPage } from './printPages';
 import { APP_VERSION } from './version';
 
+// One printed fee line (the comparison model's own line record, carried
+// into print as-is): the charge-line name, its biller, its amount, and the
+// condensed derivation (the screen's own subtitle text - structure and
+// composition, spec v0.2.42) that the fee-derivation toggle gates.
+export interface PrintComparisonLine {
+  name: string;
+  biller: string;
+  amount: number;
+  estimated: boolean;
+  derivation?: { structure: string; composition: string; total: string } | null;
+}
+
 export interface PrintComparisonPagesProps {
   ports: PortDefinition[];
   portResults: {
@@ -37,12 +49,12 @@ export interface PrintComparisonPagesProps {
     stage: { id: string; label: string };
     chargeTypeRows: {
       chargeType: { id: string; label: string; description: string };
-      perPort: Map<string, { amount: number; currency: string } | undefined>;
+      perPort: Map<string, { amount: number; currency: string; lines?: PrintComparisonLine[] } | undefined>;
       leviedAt: string[];
     }[];
     familyRows: {
       family: string;
-      perPort: Map<string, { amount: number; currency: string } | undefined>;
+      perPort: Map<string, { amount: number; currency: string; lines?: PrintComparisonLine[] } | undefined>;
     }[];
   }[];
   vessel: VesselInput;
@@ -52,6 +64,12 @@ export interface PrintComparisonPagesProps {
   declaredRows: { from_currency: string; to_currency: string; rate: number; as_of: string; source: string }[];
   activeVessel: string;
   formatCurrency: (amount: number, currency: string) => string;
+  // Fee-derivation detail toggle (spec v0.6.3, unit 1): the print path
+  // reads the toggle from live state - the paper inherits the session, it
+  // never applies its own default. ON: the printed fee rows carry their
+  // derivation subtitles (the screen's own condensed text). OFF: charge-line
+  // names only, clean - byte-identical to the v0.6.2 print.
+  derivationsVisible: boolean;
 }
 
 // The rate-basis note (the unfalsifiability rule's currency line): every
@@ -72,7 +90,8 @@ export const PrintComparisonPages: React.FC<PrintComparisonPagesProps> = ({
   rateInfo,
   declaredRows,
   activeVessel,
-  formatCurrency
+  formatCurrency,
+  derivationsVisible
 }) => {
   const pages = printPagesFor(ports.map(p => ({ id: p.metadata.id, name: p.metadata.name })));
   const totalPorts = ports.length;
@@ -80,22 +99,75 @@ export const PrintComparisonPages: React.FC<PrintComparisonPagesProps> = ({
   const cheapestPortId = null;
   const mostExpensivePortId = null;
 
+  // The printed fee-line detail (spec v0.6.3, unit 1): rendered only while
+  // the session's fee-derivation toggle is ON - each charge line beneath the
+  // row's figure as the screen renders it (name \u00b7 biller: amount),
+  // with its derivation subtitle using the screen's own strings and the
+  // same composition/structure wording rules. OFF renders none of it - the
+  // printed fee rows keep charge-line names only, clean.
+  const printLineDetail = (
+    entry: { amount: number; currency: string; lines?: PrintComparisonLine[] } | undefined,
+    currency: string
+  ) =>
+    derivationsVisible &&
+    entry?.lines?.map((line, index) => (
+      <Box key={index} className="print-line-detail" sx={{ fontSize: '0.75rem' }}>
+        <Box component="span" className="print-line-name">
+          {line.name} · {line.biller}: {formatCurrency(line.amount, entry.currency || currency)}
+        </Box>
+        {line.derivation && (
+          <Box component="span" className="print-derivation-detail" style={{ display: 'block' }}>
+            {line.derivation.composition && line.derivation.composition.startsWith(`${line.derivation.structure}:`) ? (
+              <span className="comparison-derivation-composition">{line.derivation.composition}</span>
+            ) : (
+              <>
+                <span className="comparison-derivation-structure">{line.derivation.structure}</span>
+                {line.derivation.composition && line.derivation.composition !== line.derivation.structure && (
+                  <span className="comparison-derivation-composition"> — {line.derivation.composition}</span>
+                )}
+              </>
+            )}
+          </Box>
+        )}
+      </Box>
+    ));
+
+  // The printed header is a compact four-line block (spec v0.6.3, unit 3),
+  // never a run-on: line 1 the app name, version, tariff year; line 2 the
+  // vessel profile (name, IMO, GT, TEU), ESI, and the environmental classes
+  // exactly as the screen's context strip states them; line 3 the call
+  // parameters as set (live values); line 4 the rate basis, both published
+  // pairs with their as_of dates. Every line on every page. The JSX text
+  // uses real characters (· — →) - an escaped \uXXXX sequence in JSX text
+  // renders as a literal backslash sequence on paper.
   const renderHeader = (page: PrintPage) => (
     <Box className="print-header" component="section" aria-label="Printed comparison parameters">
-      <p className="print-header-title">
-        Port Call Cost Analyzer — Port Comparison (printed)
+      <p className="print-header-title print-header-line" data-testid="print-header-line-1">
+        Port Call Cost Analyzer — Port Comparison (printed) · Version: {APP_VERSION} · Tariff year:{' '}
+        {ports.map(p => p.metadata.validity_start?.slice(0, 4)).filter((y, i, a) => a.indexOf(y) === i).join('/')}
       </p>
-      <span>Version: {APP_VERSION}</span>{' '}
-      <span>Tariff year: {ports.map(p => p.metadata.validity_start?.slice(0, 4)).filter((y, i, a) => a.indexOf(y) === i).join('/')}</span>{' '}
-      <span>Vessel profile: {activeVessel}</span>{' '}
-      <span>GT: {vessel.gt.toLocaleString('en-US')}</span>{' '}
-      <span>ESI: {call.esi_score != null ? `${call.esi_score} (entered)` : 'not entered'}</span>{' '}
-      <span>Lay time: {call.lay_time_hours != null ? `${call.lay_time_hours} h at berth` : 'not entered'}</span>{' '}
-      <span>{printRateBasisNote(declaredRows)}</span>{' '}
-      <span>
-        Converted figures (the comparison basis): {formatRate(rateInfo)}; the EUR\u2192DKK pair
-        carries the Danish column's conversion at its published as_of.
-      </span>
+      <p className="print-header-line" data-testid="print-header-line-2">
+        Vessel profile: {activeVessel || vessel.name} · GT: {vessel.gt.toLocaleString('en-US')} · TEU capacity:{' '}
+        {vessel.teu_capacity ? vessel.teu_capacity.toLocaleString('en-US') : 'not entered'} · ESI:{' '}
+        {call.esi_score != null ? `${call.esi_score} (entered)` : 'not entered'} · CSI:{' '}
+        {call.clean_shipping_index_class
+          ? `${call.clean_shipping_index_class} (entered)`
+          : 'not entered'} · Sjöfartsverket class:{' '}
+        {call.csi_class
+          ? call.csi_class === 'E'
+            ? `${call.csi_class} (default — not registered)`
+            : `${call.csi_class} (entered)`
+          : 'not entered'}
+      </p>
+      <p className="print-header-line" data-testid="print-header-line-3">
+        Container moves:{' '}
+        {((call.containers_loaded_le20ft || 0) + (call.containers_loaded_gt20ft || 0) +
+          (call.containers_discharged_le20ft || 0) + (call.containers_discharged_gt20ft || 0)).toLocaleString('en-US')} (loaded + discharged) · Lay time:{' '}
+        {call.lay_time_hours != null ? `${call.lay_time_hours} h at berth` : 'not entered'}
+      </p>
+      <p className="print-header-line" data-testid="print-header-line-4">
+        {printRateBasisNote(declaredRows)} · Comparison basis: {formatRate(rateInfo)}
+      </p>
     </Box>
   );
 
@@ -154,9 +226,12 @@ export const PrintComparisonPages: React.FC<PrintComparisonPagesProps> = ({
                     {page.ports.map(({ id }) => (
                       <TableCell key={id} align="right" className="amount">
                         {leviedAt.includes(id) ? (
-                          <span className="comparison-figure">
-                            {formatCurrency(perPort.get(id)?.amount ?? 0, portById.get(id)!.metadata.currency)}
-                          </span>
+                          <>
+                            <span className="comparison-figure">
+                              {formatCurrency(perPort.get(id)?.amount ?? 0, portById.get(id)!.metadata.currency)}
+                            </span>
+                            {printLineDetail(perPort.get(id), portById.get(id)!.metadata.currency)}
+                          </>
                         ) : (
                           <span className="comparison-not-levied">not levied at this port</span>
                         )}
@@ -172,9 +247,12 @@ export const PrintComparisonPages: React.FC<PrintComparisonPagesProps> = ({
                     {page.ports.map(({ id }) => (
                       <TableCell key={id} align="right" className="amount">
                         {perPort.get(id) ? (
-                          <span className="comparison-figure">
-                            {formatCurrency(perPort.get(id)!.amount, portById.get(id)!.metadata.currency)}
-                          </span>
+                          <>
+                            <span className="comparison-figure">
+                              {formatCurrency(perPort.get(id)!.amount, portById.get(id)!.metadata.currency)}
+                            </span>
+                            {printLineDetail(perPort.get(id), portById.get(id)!.metadata.currency)}
+                          </>
                         ) : (
                           <span className="comparison-not-levied">not levied at this port</span>
                         )}
@@ -208,9 +286,11 @@ export const PrintComparisonPages: React.FC<PrintComparisonPagesProps> = ({
                             )}
                           </Box>
                         )}
-                        <Box sx={{ fontSize: '0.75rem' }} className="comparison-secondary">
-                          {(result.total / vessel.gt).toFixed(2)} {result.currency}/GT effective — derived, not a published rate
-                        </Box>
+                        {derivationsVisible && (
+                          <Box sx={{ fontSize: '0.75rem' }} className="comparison-secondary">
+                            {(result.total / vessel.gt).toFixed(2)} {result.currency}/GT effective — derived, not a published rate
+                          </Box>
+                        )}
                       </Box>
                     ) : (
                       <span className="comparison-error">error</span>
@@ -222,6 +302,23 @@ export const PrintComparisonPages: React.FC<PrintComparisonPagesProps> = ({
             {cheapestPortId === null && mostExpensivePortId === null && null}
           </TableBody>
         </Table>
+        {/* Grand Total footnote (spec v0.6.3, unit 2.2): with the detail
+            toggle OFF the per-GT derivation annotations render as a short
+            footnote block beneath the table, not in-cell padding — the Grand
+            Total row stays compact. With the toggle ON they render inline
+            in the cell (the v0.6.2 shape). */}
+        {!derivationsVisible && (
+          <Box className="print-grand-total-footnote" data-testid={`print-grand-total-footnote-${page.pageNumber}`}>
+            {page.ports
+              .map(({ id }) => {
+                const result = portResults.find(p => p.port.metadata.id === id)?.result;
+                if (!result) return null;
+                return `${portById.get(id)?.metadata.name}: ${(result.total / vessel.gt).toFixed(2)} ${result.currency}/GT effective — derived, not a published rate`;
+              })
+              .filter(Boolean)
+              .join(' | ')}
+          </Box>
+        )}
         {renderFooter(page)}
       </Box>
     );

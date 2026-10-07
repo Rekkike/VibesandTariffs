@@ -908,6 +908,7 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
           declaredRows={((portsRegistry as { exchange_rates?: { from_currency: string; to_currency: string; rate: number; as_of: string; source: string }[] }).exchange_rates ?? [])}
           activeVessel={activeVessel}
           formatCurrency={formatCurrency}
+          derivationsVisible={derivationsVisible}
         />
       )}
     </Box>
