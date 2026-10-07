@@ -496,3 +496,55 @@ describe('fee-derivation toggle follow-through on paper (spec v0.6.3, unit 1)', 
     }
   });
 });
+
+// Printed call parameters as actually set (spec v0.6.3, unit 1.2): the
+// paper is a snapshot of the session - the header's call parameters print
+// the live call values, byte-for-byte as the screen states them. The moves
+// pin: an altered call (3,200 moves instead of the 4,000 default) prints
+// 3,200, never the default. Red proof: observed red before the header
+// carried the moves parameter at all (the v0.6.2 header printed none).
+describe('printed call parameters as set (spec v0.6.3, unit 1)', () => {
+  it('an altered moves value prints altered, not the 4,000 default - the header states the session\'s own call', async () => {
+    const ports = LOADED_PORTS.filter(p => p.metadata.id === 'gothenburg');
+    const call = {
+      ...defaultCall('gothenburg'),
+      containers_loaded_le20ft: 400, containers_loaded_gt20ft: 1200,
+      containers_discharged_le20ft: 400,
+      containers_discharged_gt20ft: 1200
+    } as CallInput;
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    const root = createRoot(container);
+    const rateInfo = { rate: 11.2525, date: '2026-10-05', source: 'ECB euro reference rate (SEK per EUR)', is_default: true };
+    await act(async () => {
+      root!.render(
+        <PrintComparisonPages
+          ports={ports}
+          portResults={[] as never}
+          rowsByStage={[] as never}
+          vessel={DEFAULT_VESSEL}
+          call={call}
+          rateInfo={rateInfo}
+          comparisonBasisContext={{ basis: 'SEK', rows: DECLARED_ROWS }}
+          declaredRows={DECLARED_ROWS}
+          activeVessel="MAREN MAERSK (IMO 9632129)"
+          formatCurrency={(amount, currency) =>
+            new Intl.NumberFormat('sv-SE', { style: 'currency', currency, minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amount)}
+          derivationsVisible={false}
+        />
+      );
+    });
+    try {
+      const header = document.body.querySelector('.print-header');
+      expect(header).not.toBeNull();
+      const text = header!.textContent ?? '';
+      expect(text).toContain('Container moves: 3,200 (loaded + discharged)');
+      expect(text).not.toContain('4,000');
+      // Lay time as set (the default call's 50 h) still prints.
+      expect(text).toContain('Lay time: 50 h at berth');
+    } finally {
+      await act(async () => { root!.unmount(); });
+      container.remove();
+    }
+  });
+});

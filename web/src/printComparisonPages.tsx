@@ -142,6 +142,8 @@ export const PrintComparisonPages: React.FC<PrintComparisonPagesProps> = ({
       <span>Vessel profile: {activeVessel}</span>{' '}
       <span>GT: {vessel.gt.toLocaleString('en-US')}</span>{' '}
       <span>ESI: {call.esi_score != null ? `${call.esi_score} (entered)` : 'not entered'}</span>{' '}
+      <span>Container moves: {((call.containers_loaded_le20ft || 0) + (call.containers_loaded_gt20ft || 0) +
+        (call.containers_discharged_le20ft || 0) + (call.containers_discharged_gt20ft || 0)).toLocaleString('en-US')} (loaded + discharged)</span>{' '}
       <span>Lay time: {call.lay_time_hours != null ? `${call.lay_time_hours} h at berth` : 'not entered'}</span>{' '}
       <span>{printRateBasisNote(declaredRows)}</span>{' '}
       <span>
