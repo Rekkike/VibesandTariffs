@@ -268,9 +268,11 @@ export const PrintComparisonPages: React.FC<PrintComparisonPagesProps> = ({
                             )}
                           </Box>
                         )}
-                        <Box sx={{ fontSize: '0.75rem' }} className="comparison-secondary">
-                          {(result.total / vessel.gt).toFixed(2)} {result.currency}/GT effective — derived, not a published rate
-                        </Box>
+                        {derivationsVisible && (
+                          <Box sx={{ fontSize: '0.75rem' }} className="comparison-secondary">
+                            {(result.total / vessel.gt).toFixed(2)} {result.currency}/GT effective — derived, not a published rate
+                          </Box>
+                        )}
                       </Box>
                     ) : (
                       <span className="comparison-error">error</span>
@@ -282,6 +284,23 @@ export const PrintComparisonPages: React.FC<PrintComparisonPagesProps> = ({
             {cheapestPortId === null && mostExpensivePortId === null && null}
           </TableBody>
         </Table>
+        {/* Grand Total footnote (spec v0.6.3, unit 2.2): with the detail
+            toggle OFF the per-GT derivation annotations render as a short
+            footnote block beneath the table, not in-cell padding — the Grand
+            Total row stays compact. With the toggle ON they render inline
+            in the cell (the v0.6.2 shape). */}
+        {!derivationsVisible && (
+          <Box className="print-grand-total-footnote" data-testid={`print-grand-total-footnote-${page.pageNumber}`}>
+            {page.ports
+              .map(({ id }) => {
+                const result = portResults.find(p => p.port.metadata.id === id)?.result;
+                if (!result) return null;
+                return `${portById.get(id)?.metadata.name}: ${(result.total / vessel.gt).toFixed(2)} ${result.currency}/GT effective — derived, not a published rate`;
+              })
+              .filter(Boolean)
+              .join(' | ')}
+          </Box>
+        )}
         {renderFooter(page)}
       </Box>
     );

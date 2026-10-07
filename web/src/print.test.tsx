@@ -135,6 +135,7 @@ describe('print header content — the unfalsifiability rule (spec v0.6.2)', () 
           activeVessel="MAREN MAERSK (IMO 9632129)"
           formatCurrency={(amount, currency) =>
             new Intl.NumberFormat('sv-SE', { style: 'currency', currency, minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amount)}
+          derivationsVisible={true}
         />
       );
     });
@@ -261,7 +262,7 @@ describe('the export button and chrome hiding (spec v0.6.2, units 1 and 3)', () 
     expect(printBlock).toMatch(/\.disclosure-header/);
     // The print-only blocks stay hidden on screen (the flags class is
     // pinned to stay hidden on paper too - the no-flag-section ruling).
-    const screenBlock = cssSource.match(/\.print-page,\n\.print-header,\n\.print-footer,\n\.print-continuation\s*\{\s*display:\s*none;\s*\}/);
+    const screenBlock = cssSource.match(/\.print-page,\n\.print-header,\n\.print-footer,\n\.print-continuation,\n\.print-grand-total-footnote\s*\{\s*display:\s*none;\s*\}/);
     expect(screenBlock).not.toBeNull();
     // A4 portrait is the page size.
     expect(printBlock).toMatch(/size:\s*A4 portrait/);
@@ -352,6 +353,7 @@ describe('currency, annotations, and figures on paper (spec v0.6.2, unit 4)', ()
           activeVessel="MAREN MAERSK (IMO 9632129)"
           formatCurrency={(amount, currency) =>
             new Intl.NumberFormat('sv-SE', { style: 'currency', currency, minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amount)}
+          derivationsVisible={true}
         />
       );
     });
@@ -398,6 +400,7 @@ describe('currency, annotations, and figures on paper (spec v0.6.2, unit 4)', ()
           activeVessel="MAREN MAERSK (IMO 9632129)"
           formatCurrency={(amount, currency) =>
             new Intl.NumberFormat('sv-SE', { style: 'currency', currency, minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amount)}
+          derivationsVisible={true}
         />
       );
     });
@@ -487,6 +490,33 @@ describe('fee-derivation toggle follow-through on paper (spec v0.6.3, unit 1)', 
       // Per-line detail rows render beneath the figures (name · biller).
       expect(document.body.querySelectorAll('.print-line-detail').length).toBeGreaterThan(0);
       expect(details[0].closest('.print-line-detail')?.textContent ?? '').toContain('\u00b7');
+    } finally {
+      await act(async () => { root!.unmount(); });
+      container.remove();
+    }
+  });
+
+  it('detail OFF: the Grand Total renders compact - the per-GT derivation annotations become a footnote block beneath the table, not in-cell padding', async () => {
+    const { container, root } = await renderWithToggle(false);
+    try {
+      const footnote = document.body.querySelector('[data-testid="print-grand-total-footnote-1"]');
+      expect(footnote).not.toBeNull();
+      expect(footnote!.textContent).toContain('derived, not a published rate');
+      // The Grand Total row itself stays compact: no in-cell per-GT annotation.
+      const totalRow = document.body.querySelector('.comparison-total-row');
+      expect(totalRow!.textContent ?? '').not.toContain('derived, not a published rate');
+    } finally {
+      await act(async () => { root!.unmount(); });
+      container.remove();
+    }
+  });
+
+  it('detail ON: the per-GT derivation annotations render inline in the Grand Total cell - no footnote block', async () => {
+    const { container, root } = await renderWithToggle(true);
+    try {
+      expect(document.body.querySelector('[data-testid="print-grand-total-footnote-1"]')).toBeNull();
+      const totalRow = document.body.querySelector('.comparison-total-row');
+      expect(totalRow!.textContent ?? '').toContain('derived, not a published rate');
     } finally {
       await act(async () => { root!.unmount(); });
       container.remove();

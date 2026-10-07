@@ -1693,7 +1693,8 @@ textarea:focus-visible,
 .print-page,
 .print-header,
 .print-footer,
-.print-continuation {
+.print-continuation,
+.print-grand-total-footnote {
   display: none;
 }
 
@@ -1796,6 +1797,17 @@ textarea:focus-visible,
     display: block !important;
     font-size: 9px;
     margin: 1.5mm 0;
+  }
+  /* Grand Total footnote (spec v0.6.3, unit 2.2): the detail-OFF per-GT
+     derivation annotations render as a short footnote block beneath the
+     table - compact, kept with the table (never split from it). */
+  .print-grand-total-footnote {
+    display: block;
+    font-size: 9px;
+    margin: 2mm 0 0 0;
+    line-height: 1.4;
+    break-inside: avoid;
+    page-break-inside: avoid;
   }
 
   .print-footer {
