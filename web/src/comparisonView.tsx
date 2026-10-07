@@ -1,4 +1,5 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { flushSync } from 'react-dom';
 import {
   Box,
   Paper,
@@ -40,6 +41,7 @@ import {
 } from './handlingBasis';
 import type { HinterlandMode } from './handlingBasis';
 import { buildDiscountLine } from './discountLine';
+import { PrintComparisonPages } from './printComparisonPages';
 
 interface ComparisonViewProps {
   ports: PortDefinition[];
@@ -82,6 +84,27 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
   const [containerThroughVisible, setContainerThroughVisible] = useState(false);
   const [hinterlandMode, setHinterlandMode] = useState<HinterlandMode>('truck');
   const [rateInput, setRateInput] = useState<string>('');
+  // Print activation (spec v0.6.1): the print page set mounts only while
+  // printing. beforeprint/afterprint fire for every print path (the export
+  // button's window.print() and the browser's own Ctrl+P alike); flushSync
+  // commits the pages into the DOM before the print snapshot is taken, so
+  // the printed artifact carries them while the screen DOM stays
+  // byte-identical to v0.6.0 at every other moment.
+  const [printActive, setPrintActive] = useState(false);
+  useEffect(() => {
+    const showPrintPages = () => {
+      // flushSync commits the pages into the DOM synchronously inside the
+      // beforeprint callback, before the browser takes its print snapshot.
+      flushSync(() => setPrintActive(true));
+    };
+    const hidePrintPages = () => setPrintActive(false);
+    window.addEventListener('beforeprint', showPrintPages);
+    window.addEventListener('afterprint', hidePrintPages);
+    return () => {
+      window.removeEventListener('beforeprint', showPrintPages);
+      window.removeEventListener('afterprint', hidePrintPages);
+    };
+  }, []);
   const dataRate = (portsRegistry as { exchange_rates?: { from_currency: string; to_currency: string; rate: number; as_of: string; source: string }[] }).exchange_rates?.find(
     r => r.from_currency === 'EUR' && r.to_currency === 'SEK'
   );
@@ -129,6 +152,9 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
   // per-GT OPS component and the user entered a value.
   const opsPerGtPresent = (result: { ops_speculative?: { lines: { id: string }[] } | null }) =>
     Boolean(result.ops_speculative?.lines.some(l => l.id === 'ops_spec_per_gt'));
+  const handlePrint = () => {
+    window.print();
+  };
   const { amountCell, convCell, grandTotalPerGtCell } = makeComparisonCells({
     rateInfo,
     comparisonBasisContext,
@@ -846,6 +872,41 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
             </Box>
           )}
         </Paper>
+      )}
+
+      {/* Print / PDF export (spec v0.6.1): the comparison's printed artifact
+          is the browser's own print pipeline over the print pages below —
+          no programmatic generation, no new dependency. The button hides in
+          the print output itself (the print stylesheet suppresses every
+          button, this one included). */}
+      <button
+        type="button"
+        className="print-export-button"
+        onClick={handlePrint}
+        aria-label="Print or save the comparison as PDF"
+        data-testid="print-export-button"
+      >
+        Print / Save as PDF
+      </button>
+
+      {/* The print page set (spec v0.6.1): hidden on screen, rendered into
+          the print output — one self-contained page per three port columns,
+          every page carrying the mandatory parameter header and the N-of-M
+          footer. Reads the same computed model as the screen table; no
+          engine interaction, no figure recomputation. */}
+      {selectedPorts.length > 0 && printActive && (
+        <PrintComparisonPages
+          ports={selectedPorts}
+          portResults={portResults as never}
+          rowsByStage={rowsBySegment.rowsByStage as never}
+          vessel={vessel}
+          call={call}
+          rateInfo={rateInfo}
+          comparisonBasisContext={comparisonBasisContext}
+          declaredRows={((portsRegistry as { exchange_rates?: { from_currency: string; to_currency: string; rate: number; as_of: string; source: string }[] }).exchange_rates ?? [])}
+          activeVessel={activeVessel}
+          formatCurrency={formatCurrency}
+        />
       )}
     </Box>
   );

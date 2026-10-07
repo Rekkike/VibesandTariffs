@@ -1669,3 +1669,170 @@ textarea:focus-visible,
   font-size: 0.75rem;
   margin-top: var(--space-1);
 }
+
+/* ====================== Print / PDF export (spec v0.6.1) ======================
+   A4 portrait, three port columns per page (the settled 3+3+3 constant in
+   printPages.ts). Every page is self-contained: the mandatory parameter
+   header, the charge lines, stage subtotals, Grand Total and per-GT
+   disclosure print in full on each page; no table row slices across pages.
+   All interactive chrome is hidden: inputs, buttons, the port drawer, and
+   every hover-dependent behavior (hover does not exist on paper).
+   The print-specific classes (print-page, print-header, print-footer,
+   print-continuation, print-flag-text, print-export-button) are display:
+   none on screen and live only inside this block - the screen's layout is
+   byte-identical to v0.6.0.
+   ========================================================================== */
+
+/* Screen: the print-only blocks and the export button stay hidden until
+   print media takes over. */
+.print-page,
+.print-header,
+.print-footer,
+.print-continuation,
+.print-flag-text {
+  display: none;
+}
+
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 12mm 10mm;
+  }
+
+  html,
+  body {
+    background: #ffffff !important;
+    color: #1a1e22 !important;
+    font-size: 10px;
+  }
+
+  /* Interactive chrome hidden on paper: the app header's controls (theme
+     toggle, version chip - the version renders in the mandatory print
+     header instead), the port drawer, every input, every button including
+     the export button itself, and the workspace/nav surfaces outside the
+     comparison. */
+  .header-controls,
+  .port-drawer,
+  .port-nav,
+  .btn,
+  button,
+  input,
+  select,
+  textarea,
+  .print-export-button,
+  .disclosure-header,
+  .theme-toggle,
+  .comparison-conversion,
+  .comparison-derivation-disclosure,
+  .comparison-conversion-disclosure,
+  .comparison-container-through-toggle {
+    display: none !important;
+  }
+
+  /* The screen's interactive comparison section (disclosures, rate input)
+     is replaced by the print pages; the comparison-section box itself is
+     kept for the print-page rendering but its interactive sub-blocks are
+     suppressed above. */
+  .app-shell {
+    padding: 0 !important;
+  }
+
+  /* The screen's table/cards are hidden: the print pages render the
+     self-contained page set instead (each page repeats the full line set
+     for its own columns). */
+  .comparison-table-container,
+  .comparison-cards {
+    display: none !important;
+  }
+
+  .print-page {
+    display: block !important;
+  }
+
+  .print-header {
+    display: block !important;
+    border-bottom: 1px solid #1a1e22;
+    padding-bottom: 2mm;
+    margin-bottom: 3mm;
+    font-size: 9px;
+    line-height: 1.4;
+  }
+
+  .print-header .print-header-title {
+    font-size: 13px;
+    font-weight: 600;
+    margin: 0 0 1mm 0;
+  }
+
+  .print-continuation {
+    display: block !important;
+    font-size: 9px;
+    margin: 1.5mm 0;
+  }
+
+  .print-footer {
+    display: block !important;
+    border-top: 1px solid #1a1e22;
+    padding-top: 1.5mm;
+    margin-top: 4mm;
+    font-size: 9px;
+    text-align: center;
+  }
+
+  /* Flags as printed text (spec v0.6.1): the title attribute a screen
+     reader or hover tooltip would surface prints in full; the screen badge
+     label alone is not enough on paper. */
+  .print-flag-text {
+    display: inline !important;
+    font-size: 8px;
+  }
+
+  /* Table faces for print: dark surfaces, tints, and shadows flatten to
+     paper; borders and text keep contrast. */
+  .print-page .comparison-table,
+  .print-page .comparison-table th,
+  .print-page .comparison-table td {
+    background: #ffffff !important;
+    color: #1a1e22 !important;
+    box-shadow: none !important;
+    border-color: #9aa3ac !important;
+  }
+
+  .print-page .comparison-table th {
+    background: #e9ebed !important;
+  }
+
+  .print-page .comparison-table .comparison-figure,
+  .print-page .comparison-table .comparison-secondary {
+    color: #1a1e22 !important;
+  }
+
+  /* Page break control: each printed page breaks before the next; the
+     page's own table never breaks internally (self-contained pages). */
+  .print-page {
+    break-before: page;
+    page-break-before: always;
+  }
+
+  .print-page:first-of-type {
+    break-before: auto;
+    page-break-before: auto;
+  }
+
+  .print-page .comparison-table {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .print-page .comparison-table tr {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  /* The screen's Paper elevation borders flatten; the page's own borders
+     draw the grid. */
+  .print-page .comparison-section,
+  .print-page .header {
+    box-shadow: none !important;
+  }
+}

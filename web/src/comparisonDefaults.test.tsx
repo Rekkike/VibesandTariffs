@@ -321,7 +321,12 @@ describe('comparison shared-call per-port defaults (spec v0.2.53 defect fix)', (
     const stripped = cssSource
       .replace(/\/\*[\s\S]*?\*\//g, '')
       .replace(/:root\s*\{[\s\S]*?\}/, '')
-      .replace(/:root\[data-theme='light'\]\s*\{[\s\S]*?\}/, '');
+      .replace(/:root\[data-theme='light'\]\s*\{[\s\S]*?\}/, '')
+      // v0.6.1 print block: the @media print paper palette is
+      // necessarily literal (paper is a fixed medium; the tokens carry
+      // the screen themes). Stripped by range so the discipline still
+      // holds everywhere else.
+      .replace(/@media print\s*\{[\s\S]*\n\}/, '');
     expect(stripped).not.toMatch(/#[0-9a-fA-F]{3,6}\b/);
     expect(stripped).not.toMatch(/rgba?\(/);
   });
