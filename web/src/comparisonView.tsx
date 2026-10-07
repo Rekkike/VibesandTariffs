@@ -57,6 +57,11 @@ interface ComparisonViewProps {
   // Profile-assumption fields (spec v0.2.48): the strip states the seeded
   // assumptions once per the honesty contracts.
   assumedCallFields?: string[];
+  // Print-request handshake (spec v0.6.5, unit 2): the header's Print
+  // control requests the dialog through the App-level id; the view opens
+  // the dialog when the id changes from zero and confirms handling.
+  printRequest?: number;
+  onPrintRequestHandled?: () => void;
 }
 
 // The comparison screen (spec v0.2.60 decomposition, audit item B
@@ -69,7 +74,9 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
   perPortCallOverrides,
   selectedPortIds,
   activeVessel,
-  assumedCallFields = []
+  assumedCallFields = [],
+  printRequest = 0,
+  onPrintRequestHandled
 }) => {
   const selectedPorts = ports.filter(p => selectedPortIds.includes(p.metadata.id));
   const isMobile = useIsMobile();
@@ -110,6 +117,20 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
     conversions: boolean;
     containerThrough: boolean;
   } | null>(null);
+  // Print-request handshake (spec v0.6.5, unit 2): a change from zero
+  // opens the dialog (the header control's press); the view confirms
+  // handling so the App-level id resets without a re-open loop.
+  useEffect(() => {
+    if (printRequest > 0) {
+      setPrintDialogSelections({
+        derivations: derivationsVisible,
+        conversions: conversionsVisible,
+        containerThrough: containerThroughVisible
+      });
+      setPrintDialogOpen(true);
+      onPrintRequestHandled?.();
+    }
+  }, [printRequest]);
   useEffect(() => {
     const showPrintPages = () => {
       // flushSync commits the pages into the DOM synchronously inside the
@@ -174,14 +195,6 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
   // per-GT OPS component and the user entered a value.
   const opsPerGtPresent = (result: { ops_speculative?: { lines: { id: string }[] } | null }) =>
     Boolean(result.ops_speculative?.lines.some(l => l.id === 'ops_spec_per_gt'));
-  const handlePrint = () => {
-    setPrintDialogSelections({
-      derivations: derivationsVisible,
-      conversions: conversionsVisible,
-      containerThrough: containerThroughVisible
-    });
-    setPrintDialogOpen(true);
-  };
   const handleDialogPrint = () => {
     setPrintSelectionOverride({ ...printDialogSelections });
     setPrintDialogOpen(false);
@@ -909,20 +922,6 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
         </Paper>
       )}
 
-      {/* Print / PDF export (spec v0.6.1): the comparison's printed artifact
-          is the browser's own print pipeline over the print pages below —
-          no programmatic generation, no new dependency. The button hides in
-          the print output itself (the print stylesheet suppresses every
-          button, this one included). */}
-      <button
-        type="button"
-        className="print-export-button"
-        onClick={handlePrint}
-        aria-label="Print or save the comparison as PDF"
-        data-testid="print-export-button"
-      >
-        Print / Save as PDF
-      </button>
       {/* The print dialog (spec v0.6.5, unit 1): opens on the Print
           control, one checkbox per print-relevant control, each defaulting
           to the live screen state with a one-line hint of what the paper

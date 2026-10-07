@@ -16,6 +16,7 @@ import { act } from 'react';
 import * as reactDom from 'react-dom';
 import * as fs from 'fs';
 import * as path from 'path';
+import App from './App';
 import { ComparisonView } from './App';
 import { buildRuleNamesByPort, buildRuleAttributesByPort, buildRowsBySegment } from './comparisonModel';
 import { PrintComparisonPages, printRateBasisNote } from './printComparisonPages';
@@ -318,12 +319,20 @@ describe('the export button and chrome hiding (spec v0.6.2, units 1 and 3)', () 
         />
       );
     });
-    const button = container.querySelector('[data-testid="print-export-button"]');
-    expect(button).not.toBeNull();
-    expect(button!.textContent).toBe('Print / Save as PDF');
-    // The button no longer prints directly: it opens the dialog first.
+    // The view-level export button is gone (unit 2 moved it to the app
+    // header); the dialog opens through the print-request handshake.
+    expect(container.querySelector('[data-testid="print-export-button"]')).toBeNull();
     await act(async () => {
-      button!.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      root!.render(
+        <ComparisonView
+          ports={LOADED_PORTS}
+          vessel={DEFAULT_VESSEL}
+          call={defaultCall('gothenburg')}
+          selectedPortIds={LOADED_PORTS.map(p => p.metadata.id)}
+          activeVessel="TEST"
+          printRequest={1}
+        />
+      );
     });
     expect(printSpy).not.toHaveBeenCalled();
     const dialog = container.querySelector('[data-testid="print-dialog"]');
@@ -1077,10 +1086,12 @@ describe('compare container-through follow-through on paper (spec v0.6.4, unit 3
 // the print path to ignore the dialog selections (always the live state)
 // makes the opposite-direction selection pins red.
 describe('print dialog (spec v0.6.5, unit 1)', () => {
+  let currentRoot: Root | null = null;
   const renderView = async () => {
     const container = document.createElement('div');
     document.body.appendChild(container);
     const root = createRoot(container);
+    currentRoot = root;
     await act(async () => {
       root.render(
         <ComparisonView
@@ -1094,11 +1105,29 @@ describe('print dialog (spec v0.6.5, unit 1)', () => {
     });
     return { container, root };
   };
-  const openDialog = async (container: HTMLDivElement) => {
-    const button = container.querySelector('[data-testid="print-export-button"]')!;
-    await act(async () => {
-      button.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+  let nextPrintRequestId = 0;
+  const rerenderWithPrintRequest = (container: HTMLDivElement) => {
+    const request = ++nextPrintRequestId;
+    // Re-render with a nonzero request id: the view opens the dialog and
+    // confirms handling (App resets the id; the view is idempotent here).
+    act(() => {
+      currentRoot!.render(
+        <ComparisonView
+          ports={LOADED_PORTS}
+          vessel={DEFAULT_VESSEL}
+          call={defaultCall('gothenburg')}
+          selectedPortIds={LOADED_PORTS.map(p => p.metadata.id)}
+          activeVessel="TEST"
+          printRequest={request}
+        />
+      );
     });
+  };
+  const openDialog = async (container: HTMLDivElement) => {
+    // The Print control lives in the app header since unit 2; the dialog
+    // opens through the print-request handshake. The test drives the
+    // view's own prop (exactly what App passes on the header press).
+    rerenderWithPrintRequest(container);
     return container.querySelector('[data-testid="print-dialog"]')!;
   };
   const setScreenToggles = async (container: HTMLDivElement, derivations: boolean, conversions: boolean) => {
@@ -1354,6 +1383,48 @@ describe('print dialog (spec v0.6.5, unit 1)', () => {
       });
     } finally {
       printSpy.mockRestore();
+      await act(async () => { root.unmount(); });
+      container.remove();
+    }
+  });
+});
+
+// Header print control (spec v0.6.5, unit 2): the Print / Save as PDF
+// control renders in the app header bar, in the header-controls container
+// beside the theme toggle. Red proof: removing the control turns the
+// placement pin red.
+describe('header print control placement (spec v0.6.5, unit 2)', () => {
+  it('the Print control renders in the header beside the theme toggle, and opens the dialog through the handshake', async () => {
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    const root = createRoot(container);
+    try {
+      await act(async () => {
+        root.render(<App />);
+      });
+      // The default page is a port workspace: the control routes to the
+      // comparison on click (the printed artifact is the comparison).
+      const button = container.querySelector('[data-testid="print-export-button"]') as HTMLButtonElement;
+      expect(button).not.toBeNull();
+      expect(button.textContent).toBe('Print / Save as PDF');
+      const controls = button.closest('.header-controls');
+      expect(controls).not.toBeNull();
+      expect(controls!.querySelector('.theme-toggle')).not.toBeNull();
+      // The control sits inside the header bar.
+      expect(button.closest('.header')).not.toBeNull();
+      // From the port-workspace page the first press routes to the
+      // comparison (the printed artifact); the mounted control then
+      // requests the dialog through the handshake.
+      await act(async () => {
+        button.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      });
+      const comparisonButton = container.querySelector('[data-testid="print-export-button"]') as HTMLButtonElement;
+      expect(comparisonButton).not.toBeNull();
+      await act(async () => {
+        comparisonButton.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      });
+      expect(container.querySelector('[data-testid="print-dialog"]')).not.toBeNull();
+    } finally {
       await act(async () => { root.unmount(); });
       container.remove();
     }
