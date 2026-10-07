@@ -1,4 +1,4 @@
-// The printed comparison page set (spec v0.6.2): one self-contained page
+// The printed comparison page set (spec v0.6.2, amended v0.6.3): one self-contained page
 // per three port columns (the settled constant in printPages.ts). Pure
 // presentation over the already-computed comparison model - the page table
 // re-derives nothing: it reads the same rowsBySegment/rateInfo/composition
@@ -23,6 +23,18 @@ import { printContinuationNote, printPagesFor } from './printPages';
 import type { PrintPage } from './printPages';
 import { APP_VERSION } from './version';
 
+// One printed fee line (the comparison model's own line record, carried
+// into print as-is): the charge-line name, its biller, its amount, and the
+// condensed derivation (the screen's own subtitle text - structure and
+// composition, spec v0.2.42) that the fee-derivation toggle gates.
+export interface PrintComparisonLine {
+  name: string;
+  biller: string;
+  amount: number;
+  estimated: boolean;
+  derivation?: { structure: string; composition: string; total: string } | null;
+}
+
 export interface PrintComparisonPagesProps {
   ports: PortDefinition[];
   portResults: {
@@ -37,12 +49,12 @@ export interface PrintComparisonPagesProps {
     stage: { id: string; label: string };
     chargeTypeRows: {
       chargeType: { id: string; label: string; description: string };
-      perPort: Map<string, { amount: number; currency: string } | undefined>;
+      perPort: Map<string, { amount: number; currency: string; lines?: PrintComparisonLine[] } | undefined>;
       leviedAt: string[];
     }[];
     familyRows: {
       family: string;
-      perPort: Map<string, { amount: number; currency: string } | undefined>;
+      perPort: Map<string, { amount: number; currency: string; lines?: PrintComparisonLine[] } | undefined>;
     }[];
   }[];
   vessel: VesselInput;
@@ -52,6 +64,12 @@ export interface PrintComparisonPagesProps {
   declaredRows: { from_currency: string; to_currency: string; rate: number; as_of: string; source: string }[];
   activeVessel: string;
   formatCurrency: (amount: number, currency: string) => string;
+  // Fee-derivation detail toggle (spec v0.6.3, unit 1): the print path
+  // reads the toggle from live state - the paper inherits the session, it
+  // never applies its own default. ON: the printed fee rows carry their
+  // derivation subtitles (the screen's own condensed text). OFF: charge-line
+  // names only, clean - byte-identical to the v0.6.2 print.
+  derivationsVisible: boolean;
 }
 
 // The rate-basis note (the unfalsifiability rule's currency line): every
@@ -72,13 +90,47 @@ export const PrintComparisonPages: React.FC<PrintComparisonPagesProps> = ({
   rateInfo,
   declaredRows,
   activeVessel,
-  formatCurrency
+  formatCurrency,
+  derivationsVisible
 }) => {
   const pages = printPagesFor(ports.map(p => ({ id: p.metadata.id, name: p.metadata.name })));
   const totalPorts = ports.length;
   const portById = new Map(ports.map(p => [p.metadata.id, p]));
   const cheapestPortId = null;
   const mostExpensivePortId = null;
+
+  // The printed fee-line detail (spec v0.6.3, unit 1): rendered only while
+  // the session's fee-derivation toggle is ON - each charge line beneath the
+  // row's figure as the screen renders it (name \u00b7 biller: amount),
+  // with its derivation subtitle using the screen's own strings and the
+  // same composition/structure wording rules. OFF renders none of it - the
+  // printed fee rows keep charge-line names only, clean.
+  const printLineDetail = (
+    entry: { amount: number; currency: string; lines?: PrintComparisonLine[] } | undefined,
+    currency: string
+  ) =>
+    derivationsVisible &&
+    entry?.lines?.map((line, index) => (
+      <Box key={index} className="print-line-detail" sx={{ fontSize: '0.75rem' }}>
+        <Box component="span" className="print-line-name">
+          {line.name} · {line.biller}: {formatCurrency(line.amount, entry.currency || currency)}
+        </Box>
+        {line.derivation && (
+          <Box component="span" className="print-derivation-detail" style={{ display: 'block' }}>
+            {line.derivation.composition && line.derivation.composition.startsWith(`${line.derivation.structure}:`) ? (
+              <span className="comparison-derivation-composition">{line.derivation.composition}</span>
+            ) : (
+              <>
+                <span className="comparison-derivation-structure">{line.derivation.structure}</span>
+                {line.derivation.composition && line.derivation.composition !== line.derivation.structure && (
+                  <span className="comparison-derivation-composition"> \u2014 {line.derivation.composition}</span>
+                )}
+              </>
+            )}
+          </Box>
+        )}
+      </Box>
+    ));
 
   const renderHeader = (page: PrintPage) => (
     <Box className="print-header" component="section" aria-label="Printed comparison parameters">
@@ -154,9 +206,12 @@ export const PrintComparisonPages: React.FC<PrintComparisonPagesProps> = ({
                     {page.ports.map(({ id }) => (
                       <TableCell key={id} align="right" className="amount">
                         {leviedAt.includes(id) ? (
-                          <span className="comparison-figure">
-                            {formatCurrency(perPort.get(id)?.amount ?? 0, portById.get(id)!.metadata.currency)}
-                          </span>
+                          <>
+                            <span className="comparison-figure">
+                              {formatCurrency(perPort.get(id)?.amount ?? 0, portById.get(id)!.metadata.currency)}
+                            </span>
+                            {printLineDetail(perPort.get(id), portById.get(id)!.metadata.currency)}
+                          </>
                         ) : (
                           <span className="comparison-not-levied">not levied at this port</span>
                         )}
@@ -172,9 +227,12 @@ export const PrintComparisonPages: React.FC<PrintComparisonPagesProps> = ({
                     {page.ports.map(({ id }) => (
                       <TableCell key={id} align="right" className="amount">
                         {perPort.get(id) ? (
-                          <span className="comparison-figure">
-                            {formatCurrency(perPort.get(id)!.amount, portById.get(id)!.metadata.currency)}
-                          </span>
+                          <>
+                            <span className="comparison-figure">
+                              {formatCurrency(perPort.get(id)!.amount, portById.get(id)!.metadata.currency)}
+                            </span>
+                            {printLineDetail(perPort.get(id), portById.get(id)!.metadata.currency)}
+                          </>
                         ) : (
                           <span className="comparison-not-levied">not levied at this port</span>
                         )}

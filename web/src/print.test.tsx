@@ -17,6 +17,7 @@ import * as reactDom from 'react-dom';
 import * as fs from 'fs';
 import * as path from 'path';
 import { ComparisonView } from './App';
+import { buildRuleNamesByPort, buildRuleAttributesByPort, buildRowsBySegment } from './comparisonModel';
 import { PrintComparisonPages, printRateBasisNote } from './printComparisonPages';
 import { PRINT_COLUMNS_PER_PAGE, printContinuationNote, printPagesFor } from './printPages';
 import portsRegistry from './data/ports.json';
@@ -415,5 +416,83 @@ describe('currency, annotations, and figures on paper (spec v0.6.2, unit 4)', ()
     const viewSource = fs.readFileSync(path.join(__dirname, 'comparisonView.tsx'), 'utf8');
     expect(viewSource).toMatch(/window\.print\(\)/);
     expect(viewSource).not.toMatch(/jspdf/i);
+  });
+});
+
+// Fee-derivation detail toggle follow-through on the print path (spec
+// v0.6.3, unit 1): the paper inherits the session state - the print output
+// carries the fee-derivation subtitles exactly when the comparison
+// screen's toggle is ON, and charge-line names only when it is OFF. The
+// print path reads the toggle from live state (the prop), never applying
+// its own default. Red proofs per the standing discipline: the OFF pin was
+// observed red by forcing the component's default to ON (the print path
+// applying its own default), the ON pin by forcing it OFF; both restored.
+describe('fee-derivation toggle follow-through on paper (spec v0.6.3, unit 1)', () => {
+  const buildRealRowsByStage = () => {
+    const ports = LOADED_PORTS.filter(p => ['gothenburg', 'gavle'].includes(p.metadata.id));
+    const call = defaultCall('gothenburg');
+    const portResults = ports.map(port => {
+      const merged = { ...defaultCall(port.metadata.id), ...call, port_id: port.metadata.id } as CallInput;
+      return { port, result: calculatePortCallCost(port, { vessel: DEFAULT_VESSEL, call: merged }) };
+    });
+    const ruleNames = buildRuleNamesByPort(ports);
+    const ruleAttrs = buildRuleAttributesByPort(ports);
+    return { ports, portResults, rowsByStage: buildRowsBySegment(portResults as never, ruleNames, ruleAttrs, DEFAULT_VESSEL.gt).rowsByStage };
+  };
+
+  const renderWithToggle = async (derivationsVisible: boolean) => {
+    const { ports, portResults, rowsByStage } = buildRealRowsByStage();
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    const root = createRoot(container);
+    const rateInfo = { rate: 11.2525, date: '2026-10-05', source: 'ECB euro reference rate (SEK per EUR)', is_default: true };
+    await act(async () => {
+      root!.render(
+        <PrintComparisonPages
+          ports={ports}
+          portResults={portResults as never}
+          rowsByStage={rowsByStage as never}
+          vessel={DEFAULT_VESSEL}
+          call={defaultCall('gothenburg')}
+          rateInfo={rateInfo}
+          comparisonBasisContext={{ basis: 'SEK', rows: DECLARED_ROWS }}
+          declaredRows={DECLARED_ROWS}
+          activeVessel="MAREN MAERSK (IMO 9632129)"
+          formatCurrency={(amount, currency) =>
+            new Intl.NumberFormat('sv-SE', { style: 'currency', currency, minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amount)}
+          derivationsVisible={derivationsVisible}
+        />
+      );
+    });
+    return { container, root };
+  };
+
+  it('toggle ON: the printed fee rows carry their derivation subtitles (the screen\'s own condensed text)', async () => {
+    const { container, root } = await renderWithToggle(true);
+    try {
+      const details = document.body.querySelectorAll('.print-derivation-detail');
+      expect(details.length).toBeGreaterThan(0);
+      // The subtitle uses the screen's own strings - the condensed
+      // derivation's structure label, never a print-only rewording.
+      const text = document.body.textContent ?? '';
+      expect(details[0].textContent?.length ?? 0).toBeGreaterThan(0);
+      // Per-line detail rows render beneath the figures (name · biller).
+      expect(document.body.querySelectorAll('.print-line-detail').length).toBeGreaterThan(0);
+      expect(details[0].closest('.print-line-detail')?.textContent ?? '').toContain('\u00b7');
+    } finally {
+      await act(async () => { root!.unmount(); });
+      container.remove();
+    }
+  });
+
+  it('toggle OFF: the printed fee rows carry charge-line names only, clean - no derivation text', async () => {
+    const { container, root } = await renderWithToggle(false);
+    try {
+      expect(document.body.querySelectorAll('.print-derivation-detail').length).toBe(0);
+      expect(document.body.querySelectorAll('.print-line-detail').length).toBe(0);
+    } finally {
+      await act(async () => { root!.unmount(); });
+      container.remove();
+    }
   });
 });
