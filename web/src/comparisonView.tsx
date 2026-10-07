@@ -91,13 +91,35 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
   // the printed artifact carries them while the screen DOM stays
   // byte-identical to v0.6.0 at every other moment.
   const [printActive, setPrintActive] = useState(false);
+  // Print dialog (spec v0.6.5, unit 1): the Print control opens a modal
+  // before printing, with one checkbox per print-relevant screen control.
+  // Each defaults to the current screen toggle state; each carries a
+  // one-line hint of what the paper will show in that state. The print
+  // pages read the dialog selections when printing went through the
+  // dialog, and the live screen state otherwise (the browser's own
+  // Ctrl+P path never sees the dialog) - the paper inherits the session,
+  // never a print-side default.
+  const [printDialogOpen, setPrintDialogOpen] = useState(false);
+  const [printDialogSelections, setPrintDialogSelections] = useState({
+    derivations: false,
+    conversions: false,
+    containerThrough: false
+  });
+  const [printSelectionOverride, setPrintSelectionOverride] = useState<{
+    derivations: boolean;
+    conversions: boolean;
+    containerThrough: boolean;
+  } | null>(null);
   useEffect(() => {
     const showPrintPages = () => {
       // flushSync commits the pages into the DOM synchronously inside the
       // beforeprint callback, before the browser takes its print snapshot.
       flushSync(() => setPrintActive(true));
     };
-    const hidePrintPages = () => setPrintActive(false);
+    const hidePrintPages = () => {
+      setPrintActive(false);
+      setPrintSelectionOverride(null);
+    };
     window.addEventListener('beforeprint', showPrintPages);
     window.addEventListener('afterprint', hidePrintPages);
     return () => {
@@ -153,7 +175,20 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
   const opsPerGtPresent = (result: { ops_speculative?: { lines: { id: string }[] } | null }) =>
     Boolean(result.ops_speculative?.lines.some(l => l.id === 'ops_spec_per_gt'));
   const handlePrint = () => {
+    setPrintDialogSelections({
+      derivations: derivationsVisible,
+      conversions: conversionsVisible,
+      containerThrough: containerThroughVisible
+    });
+    setPrintDialogOpen(true);
+  };
+  const handleDialogPrint = () => {
+    setPrintSelectionOverride({ ...printDialogSelections });
+    setPrintDialogOpen(false);
     window.print();
+  };
+  const handleDialogCancel = () => {
+    setPrintDialogOpen(false);
   };
   const { amountCell, convCell, grandTotalPerGtCell } = makeComparisonCells({
     rateInfo,
@@ -888,6 +923,81 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
       >
         Print / Save as PDF
       </button>
+      {/* The print dialog (spec v0.6.5, unit 1): opens on the Print
+          control, one checkbox per print-relevant control, each defaulting
+          to the live screen state with a one-line hint of what the paper
+          shows in that state. Print triggers the browser print with the
+          pages reading these selections; Cancel closes without printing.
+          The dialog lives inside the screen view, so the print stylesheet
+          (which hides the entire screen view) keeps it off the paper. */}
+      {printDialogOpen && (
+        <Box className="print-dialog" component="section" aria-label="Print options" data-testid="print-dialog">
+          <Typography variant="h6" component="h3">Print options</Typography>
+          <label className="print-dialog-option">
+            <input
+              type="checkbox"
+              checked={printDialogSelections.derivations}
+              onChange={(e) =>
+                setPrintDialogSelections(s => ({ ...s, derivations: e.target.checked }))}
+              data-testid="print-dialog-derivations"
+            />
+            {' '}Fee derivations
+            <Typography variant="caption" className="print-dialog-hint">
+              {printDialogSelections.derivations
+                ? 'Each fee line prints its structure and composition subtitle.'
+                : 'Charge-line names only - clean rows, no derivation subtitles.'}
+            </Typography>
+          </label>
+          <label className="print-dialog-option">
+            <input
+              type="checkbox"
+              checked={printDialogSelections.conversions}
+              onChange={(e) =>
+                setPrintDialogSelections(s => ({ ...s, conversions: e.target.checked }))}
+              data-testid="print-dialog-conversions"
+            />
+            {' '}Convert to SEK
+            <Typography variant="caption" className="print-dialog-hint">
+              {printDialogSelections.conversions
+                ? 'The Grand Total prints the converted SEK sum beside the native figure.'
+                : 'Native figures only - no converted sum on paper.'}
+            </Typography>
+          </label>
+          <label className="print-dialog-option">
+            <input
+              type="checkbox"
+              checked={printDialogSelections.containerThrough}
+              onChange={(e) =>
+                setPrintDialogSelections(s => ({ ...s, containerThrough: e.target.checked }))}
+              data-testid="print-dialog-container-through"
+            />
+            {' '}Container through
+            <Typography variant="caption" className="print-dialog-hint">
+              {printDialogSelections.containerThrough
+                ? 'The landside legs row prints with the session hinterland mode.'
+                : 'No container-through row on paper.'}
+            </Typography>
+          </label>
+          <Box className="print-dialog-actions">
+            <button
+              type="button"
+              className="print-dialog-print"
+              onClick={handleDialogPrint}
+              data-testid="print-dialog-print"
+            >
+              Print
+            </button>
+            <button
+              type="button"
+              className="print-dialog-cancel"
+              onClick={handleDialogCancel}
+              data-testid="print-dialog-cancel"
+            >
+              Cancel
+            </button>
+          </Box>
+        </Box>
+      )}
 
       {/* The print page set (spec v0.6.2): hidden on screen, portaled to
           the document body (outside #root, so the print stylesheet hides
@@ -908,9 +1018,9 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
           declaredRows={((portsRegistry as { exchange_rates?: { from_currency: string; to_currency: string; rate: number; as_of: string; source: string }[] }).exchange_rates ?? [])}
           activeVessel={activeVessel}
           formatCurrency={formatCurrency}
-          derivationsVisible={derivationsVisible}
-          conversionsVisible={conversionsVisible}
-          containerThroughVisible={containerThroughVisible}
+          derivationsVisible={printSelectionOverride ? printSelectionOverride.derivations : derivationsVisible}
+          conversionsVisible={printSelectionOverride ? printSelectionOverride.conversions : conversionsVisible}
+          containerThroughVisible={printSelectionOverride ? printSelectionOverride.containerThrough : containerThroughVisible}
           hinterlandMode={hinterlandMode}
         />
       )}

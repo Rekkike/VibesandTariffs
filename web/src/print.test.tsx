@@ -302,7 +302,7 @@ describe('the export button and chrome hiding (spec v0.6.2, units 1 and 3)', () 
     root = null;
   });
 
-  it('the comparison renders the Print / Save as PDF button calling window.print()', async () => {
+  it('the comparison renders the Print / Save as PDF button opening the print dialog (spec v0.6.5, unit 1)', async () => {
     const printSpy = jest.spyOn(window, 'print').mockImplementation(() => {});
     container = document.createElement('div');
     document.body.appendChild(container);
@@ -321,10 +321,13 @@ describe('the export button and chrome hiding (spec v0.6.2, units 1 and 3)', () 
     const button = container.querySelector('[data-testid="print-export-button"]');
     expect(button).not.toBeNull();
     expect(button!.textContent).toBe('Print / Save as PDF');
+    // The button no longer prints directly: it opens the dialog first.
     await act(async () => {
       button!.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     });
-    expect(printSpy).toHaveBeenCalled();
+    expect(printSpy).not.toHaveBeenCalled();
+    const dialog = container.querySelector('[data-testid="print-dialog"]');
+    expect(dialog).not.toBeNull();
     printSpy.mockRestore();
   });
 
@@ -1049,14 +1052,310 @@ describe('compare container-through follow-through on paper (spec v0.6.4, unit 3
     // no default parameter anywhere in its signature.
     const viewSource = fs.readFileSync(path.join(__dirname, 'comparisonView.tsx'), 'utf8');
     const printSource = fs.readFileSync(path.join(__dirname, 'printComparisonPages.tsx'), 'utf8');
-    expect(viewSource).toMatch(/derivationsVisible=\{derivationsVisible\}/);
-    expect(viewSource).toMatch(/conversionsVisible=\{conversionsVisible\}/);
-    expect(viewSource).toMatch(/containerThroughVisible=\{containerThroughVisible\}/);
+    // The view wires its own live state into PrintComparisonPages through
+    // the dialog-override coalescing (spec v0.6.5, unit 1): the pages read
+    // the dialog selections when printing went through the dialog, the
+    // live screen state otherwise.
+    expect(viewSource).toMatch(/printSelectionOverride \? printSelectionOverride\.derivations : derivationsVisible/);
+    expect(viewSource).toMatch(/printSelectionOverride \? printSelectionOverride\.conversions : conversionsVisible/);
+    expect(viewSource).toMatch(/printSelectionOverride \? printSelectionOverride\.containerThrough : containerThroughVisible/);
     expect(viewSource).toMatch(/hinterlandMode=\{hinterlandMode\}/);
     // The print component never defaults a toggle (a default would be a
     // print-side state imposition - the defect class this unit closes).
     expect(printSource).not.toMatch(/derivationsVisible[^?]*=\s*(true|false)\b/);
     expect(printSource).not.toMatch(/conversionsVisible[^?]*=\s*(true|false)\b/);
     expect(printSource).not.toMatch(/containerThroughVisible[^?]*=\s*(true|false)\b/);
+  });
+});
+
+// Print dialog (spec v0.6.5, unit 1): the Print control opens a modal
+// before printing - one checkbox per print-relevant screen control, each
+// defaulting to the live state, each with a one-line hint of what the
+// paper shows. The pages read the dialog selections, not the raw screen
+// state. Red proofs per the standing discipline: forcing each checkbox
+// default (ignoring the live state) makes the defaults pin red; forcing
+// the print path to ignore the dialog selections (always the live state)
+// makes the opposite-direction selection pins red.
+describe('print dialog (spec v0.6.5, unit 1)', () => {
+  const renderView = async () => {
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    const root = createRoot(container);
+    await act(async () => {
+      root.render(
+        <ComparisonView
+          ports={LOADED_PORTS}
+          vessel={DEFAULT_VESSEL}
+          call={defaultCall('gothenburg')}
+          selectedPortIds={LOADED_PORTS.map(p => p.metadata.id)}
+          activeVessel="TEST"
+        />
+      );
+    });
+    return { container, root };
+  };
+  const openDialog = async (container: HTMLDivElement) => {
+    const button = container.querySelector('[data-testid="print-export-button"]')!;
+    await act(async () => {
+      button.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+    return container.querySelector('[data-testid="print-dialog"]')!;
+  };
+  const setScreenToggles = async (container: HTMLDivElement, derivations: boolean, conversions: boolean) => {
+    const derivButton = container.querySelector('[aria-controls="comparison-derivation-panel"]') as HTMLButtonElement | null;
+    if (derivButton) {
+      await act(async () => { derivButton.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    }
+    // The conversion toggle is mobile-only (a disclosure inside the cards
+    // view); on the desktop DOM it is reached by its state default. The
+    // dialog-defaults pin below therefore exercises the live derivations
+    // toggle plus the default-off conversions state, which is exactly the
+    // screen state the dialog must inherit.
+    return derivations;
+  };
+  it('the dialog opens on the Print button press, with a Print and a Cancel control', async () => {
+    const { container, root } = await renderView();
+    try {
+      const dialog = await openDialog(container);
+      expect(dialog).not.toBeNull();
+      expect(dialog.querySelector('[data-testid="print-dialog-print"]')).not.toBeNull();
+      expect(dialog.querySelector('[data-testid="print-dialog-cancel"]')).not.toBeNull();
+      // One-line hints present for each option.
+      expect(dialog.querySelectorAll('.print-dialog-hint').length).toBe(3);
+    } finally {
+      await act(async () => { root.unmount(); });
+      container.remove();
+    }
+  });
+  it('each checkbox defaults to the live screen toggle state', async () => {
+    const { container, root } = await renderView();
+    try {
+      // Turn the fee-derivation toggle ON on screen first.
+      await setScreenToggles(container, true, false);
+      const dialog = await openDialog(container);
+      const deriv = dialog.querySelector('[data-testid="print-dialog-derivations"]') as HTMLInputElement;
+      const conv = dialog.querySelector('[data-testid="print-dialog-conversions"]') as HTMLInputElement;
+      const ct = dialog.querySelector('[data-testid="print-dialog-container-through"]') as HTMLInputElement;
+      // Derivations ON (the live state); the other two default OFF (the
+      // live default-off states).
+      expect(deriv.checked).toBe(true);
+      expect(conv.checked).toBe(false);
+      expect(ct.checked).toBe(false);
+    } finally {
+      await act(async () => { root.unmount(); });
+      container.remove();
+    }
+  });
+  it('Cancel closes the dialog without printing', async () => {
+    const printSpy = jest.spyOn(window, 'print').mockImplementation(() => {});
+    const { container, root } = await renderView();
+    try {
+      const dialog = await openDialog(container);
+      await act(async () => {
+        (dialog.querySelector('[data-testid="print-dialog-cancel"]') as HTMLElement).dispatchEvent(
+          new MouseEvent('click', { bubbles: true })
+        );
+      });
+      expect(container.querySelector('[data-testid="print-dialog"]')).toBeNull();
+      expect(printSpy).not.toHaveBeenCalled();
+    } finally {
+      printSpy.mockRestore();
+      await act(async () => { root.unmount(); });
+      container.remove();
+    }
+  });
+  it('Print in the dialog triggers the browser print with the pages reading the dialog selections - derivations ON while the screen is OFF', async () => {
+    const printSpy = jest.spyOn(window, 'print').mockImplementation(() => {});
+    const { container, root } = await renderView();
+    try {
+      // Screen OFF; the dialog flips derivations ON; the paper carries the
+      // derivation subtitles (the opposite direction of the screen state).
+      const dialog = await openDialog(container);
+      await act(async () => {
+        (dialog.querySelector('[data-testid="print-dialog-derivations"]') as HTMLInputElement)
+          .dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      });
+      await act(async () => {
+        (dialog.querySelector('[data-testid="print-dialog-print"]') as HTMLElement).dispatchEvent(
+          new MouseEvent('click', { bubbles: true })
+        );
+      });
+      expect(printSpy).toHaveBeenCalled();
+      await act(async () => {
+        window.dispatchEvent(new Event('beforeprint'));
+      });
+      const detail = document.body.querySelector('.print-derivation-detail');
+      expect(detail).not.toBeNull();
+      await act(async () => {
+        window.dispatchEvent(new Event('afterprint'));
+      });
+    } finally {
+      printSpy.mockRestore();
+      await act(async () => { root.unmount(); });
+      container.remove();
+    }
+  });
+  it('dialog selections OFF while the screen is ON - the paper omits what the dialog turned off', async () => {
+    const printSpy = jest.spyOn(window, 'print').mockImplementation(() => {});
+    const { container, root } = await renderView();
+    try {
+      // Screen derivations ON; the dialog turns it OFF; the paper stays
+      // clean (no derivation subtitles) - the pages read the dialog, not
+      // the raw screen state.
+      await setScreenToggles(container, true, false);
+      const dialog = await openDialog(container);
+      const deriv = dialog.querySelector('[data-testid="print-dialog-derivations"]') as HTMLInputElement;
+      expect(deriv.checked).toBe(true);
+      await act(async () => {
+        deriv.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      });
+      await act(async () => {
+        (dialog.querySelector('[data-testid="print-dialog-print"]') as HTMLElement).dispatchEvent(
+          new MouseEvent('click', { bubbles: true })
+        );
+      });
+      expect(printSpy).toHaveBeenCalled();
+      await act(async () => {
+        window.dispatchEvent(new Event('beforeprint'));
+      });
+      expect(document.body.querySelector('.print-derivation-detail')).toBeNull();
+      await act(async () => {
+        window.dispatchEvent(new Event('afterprint'));
+      });
+    } finally {
+      printSpy.mockRestore();
+      await act(async () => { root.unmount(); });
+      container.remove();
+    }
+  });
+  it('the converted-sums selection prints in both directions: ON adds the converted sum, OFF keeps it off the paper', async () => {
+    const printSpy = jest.spyOn(window, 'print').mockImplementation(() => {});
+    const { container, root } = await renderView();
+    try {
+      // Direction 1: screen OFF, dialog ON - the Grand Total carries the
+      // converted SEK sum.
+      let dialog = await openDialog(container);
+      await act(async () => {
+        (dialog.querySelector('[data-testid="print-dialog-conversions"]') as HTMLInputElement)
+          .dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      });
+      await act(async () => {
+        (dialog.querySelector('[data-testid="print-dialog-print"]') as HTMLElement).dispatchEvent(
+          new MouseEvent('click', { bubbles: true })
+        );
+      });
+      await act(async () => {
+        window.dispatchEvent(new Event('beforeprint'));
+      });
+      let totalRow = document.body.querySelector('body > .print-pages .comparison-total-row');
+      expect(totalRow).not.toBeNull();
+      expect(totalRow!.textContent).toContain('\u2248');
+      await act(async () => {
+        window.dispatchEvent(new Event('afterprint'));
+      });
+      // Direction 2: dialog OFF (the default-off screen state) - the
+      // converted sum is on no page.
+      dialog = await openDialog(container);
+      const conv = dialog.querySelector('[data-testid="print-dialog-conversions"]') as HTMLInputElement;
+      expect(conv.checked).toBe(false);
+      await act(async () => {
+        (dialog.querySelector('[data-testid="print-dialog-print"]') as HTMLElement).dispatchEvent(
+          new MouseEvent('click', { bubbles: true })
+        );
+      });
+      await act(async () => {
+        window.dispatchEvent(new Event('beforeprint'));
+      });
+      totalRow = document.body.querySelector('body > .print-pages .comparison-total-row');
+      expect(totalRow).not.toBeNull();
+      expect(totalRow!.textContent).not.toContain('\u2248');
+      await act(async () => {
+        window.dispatchEvent(new Event('afterprint'));
+      });
+    } finally {
+      printSpy.mockRestore();
+      await act(async () => { root.unmount(); });
+      container.remove();
+    }
+  });
+  it('the container-through selection prints in both directions: ON adds the row, OFF keeps it absent', async () => {
+    const printSpy = jest.spyOn(window, 'print').mockImplementation(() => {});
+    const { container, root } = await renderView();
+    try {
+      // Direction 1: dialog ON - the landside legs row prints.
+      let dialog = await openDialog(container);
+      await act(async () => {
+        (dialog.querySelector('[data-testid="print-dialog-container-through"]') as HTMLInputElement)
+          .dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      });
+      await act(async () => {
+        (dialog.querySelector('[data-testid="print-dialog-print"]') as HTMLElement).dispatchEvent(
+          new MouseEvent('click', { bubbles: true })
+        );
+      });
+      await act(async () => {
+        window.dispatchEvent(new Event('beforeprint'));
+      });
+      expect(document.body.querySelector('[data-testid="print-container-through-row"]')).not.toBeNull();
+      await act(async () => {
+        window.dispatchEvent(new Event('afterprint'));
+      });
+      // Direction 2: dialog OFF (the screen default) - no row on paper.
+      dialog = await openDialog(container);
+      const ct = dialog.querySelector('[data-testid="print-dialog-container-through"]') as HTMLInputElement;
+      expect(ct.checked).toBe(false);
+      await act(async () => {
+        (dialog.querySelector('[data-testid="print-dialog-print"]') as HTMLElement).dispatchEvent(
+          new MouseEvent('click', { bubbles: true })
+        );
+      });
+      await act(async () => {
+        window.dispatchEvent(new Event('beforeprint'));
+      });
+      expect(document.body.querySelector('[data-testid="print-container-through-row"]')).toBeNull();
+      await act(async () => {
+        window.dispatchEvent(new Event('afterprint'));
+      });
+    } finally {
+      printSpy.mockRestore();
+      await act(async () => { root.unmount(); });
+      container.remove();
+    }
+  });
+  it('the override clears after printing - a later Ctrl+P prints the live screen state again', async () => {
+    const printSpy = jest.spyOn(window, 'print').mockImplementation(() => {});
+    const { container, root } = await renderView();
+    try {
+      const dialog = await openDialog(container);
+      await act(async () => {
+        (dialog.querySelector('[data-testid="print-dialog-derivations"]') as HTMLInputElement)
+          .dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      });
+      await act(async () => {
+        (dialog.querySelector('[data-testid="print-dialog-print"]') as HTMLElement).dispatchEvent(
+          new MouseEvent('click', { bubbles: true })
+        );
+      });
+      await act(async () => {
+        window.dispatchEvent(new Event('beforeprint'));
+      });
+      expect(document.body.querySelector('.print-derivation-detail')).not.toBeNull();
+      await act(async () => {
+        window.dispatchEvent(new Event('afterprint'));
+      });
+      // The override is gone: the browser's own print path (no dialog)
+      // reads the live screen state (derivations OFF).
+      await act(async () => {
+        window.dispatchEvent(new Event('beforeprint'));
+      });
+      expect(document.body.querySelector('.print-derivation-detail')).toBeNull();
+      await act(async () => {
+        window.dispatchEvent(new Event('afterprint'));
+      });
+    } finally {
+      printSpy.mockRestore();
+      await act(async () => { root.unmount(); });
+      container.remove();
+    }
   });
 });
