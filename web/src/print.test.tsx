@@ -136,6 +136,9 @@ describe('print header content — the unfalsifiability rule (spec v0.6.2)', () 
           formatCurrency={(amount, currency) =>
             new Intl.NumberFormat('sv-SE', { style: 'currency', currency, minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amount)}
           derivationsVisible={true}
+          conversionsVisible={true}
+          containerThroughVisible={false}
+          hinterlandMode={"truck"}
         />
       );
     });
@@ -156,7 +159,7 @@ describe('print header content — the unfalsifiability rule (spec v0.6.2)', () 
         // own source); the version-guard ritual pins it against the spec
         // header - this suite never carries a second version literal.
         expect(text).toContain(`Version: ${APP_VERSION}`);
-        expect(APP_VERSION).toBe('v0.6.3');
+        expect(APP_VERSION).toBe('v0.6.4');
         expect(text).toContain('Tariff year: 2026');
         expect(text).toContain('Vessel profile: MAREN MAERSK (IMO 9632129)');
         expect(text).toContain('ESI:');
@@ -351,8 +354,17 @@ describe('the export button and chrome hiding (spec v0.6.2, units 1 and 3)', () 
     // print stylesheet suppresses the flag surfaces should they ever
     // render into the print DOM.
     expect(printBlock).toMatch(/\.print-flag-row,\n\s*\.print-flag-text\s*\{\s*display:\s*none\s*!important;\s*\}/);
-    // Self-contained pages: the page's table never slices across pages.
-    expect(printBlock).toMatch(/\.print-page \.comparison-table\s*\{\s*break-inside:\s*avoid/);
+    // Pagination completeness (spec v0.6.4, unit 1): the page's own table
+    // is NOT kept on one sheet (break-inside: auto). A table-level avoid
+    // is unsatisfiable whenever a detail-ON group's table outgrows one A4
+    // sheet, and Chromium's fragmentation pass then degrades — the observed
+    // v0.6.3 printout lost every port group after the first (three
+    // columns, "Page 1 of 2"). This pin was observed red against the
+    // v0.6.3 stylesheet (the table-level avoid still present) before
+    // being trusted; the row-level keeps-whole rules below are what make
+    // the flowing table safe.
+    expect(printBlock).toMatch(/\.print-page \.comparison-table\s*\{\s*break-inside:\s*auto/);
+    expect(printBlock).not.toMatch(/\.print-page \.comparison-table\s*\{\s*break-inside:\s*avoid/);
     expect(printBlock).toMatch(/break-before:\s*page/);
     // Row-level break integrity (spec v0.6.3, unit 2): the page block does
     // NOT carry break-inside: avoid - with detail toggled ON a page can
@@ -435,6 +447,9 @@ describe('currency, annotations, and figures on paper (spec v0.6.2, unit 4)', ()
           formatCurrency={(amount, currency) =>
             new Intl.NumberFormat('sv-SE', { style: 'currency', currency, minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amount)}
           derivationsVisible={true}
+          conversionsVisible={true}
+          containerThroughVisible={false}
+          hinterlandMode={"truck"}
         />
       );
     });
@@ -482,6 +497,9 @@ describe('currency, annotations, and figures on paper (spec v0.6.2, unit 4)', ()
           formatCurrency={(amount, currency) =>
             new Intl.NumberFormat('sv-SE', { style: 'currency', currency, minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amount)}
           derivationsVisible={true}
+          conversionsVisible={true}
+          containerThroughVisible={false}
+          hinterlandMode={"truck"}
         />
       );
     });
@@ -553,6 +571,9 @@ describe('fee-derivation toggle follow-through on paper (spec v0.6.3, unit 1)', 
           formatCurrency={(amount, currency) =>
             new Intl.NumberFormat('sv-SE', { style: 'currency', currency, minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amount)}
           derivationsVisible={derivationsVisible}
+          conversionsVisible={true}
+          containerThroughVisible={false}
+          hinterlandMode={"truck"}
         />
       );
     });
@@ -650,6 +671,9 @@ describe('printed call parameters as set (spec v0.6.3, unit 1)', () => {
           formatCurrency={(amount, currency) =>
             new Intl.NumberFormat('sv-SE', { style: 'currency', currency, minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amount)}
           derivationsVisible={false}
+          conversionsVisible={true}
+          containerThroughVisible={false}
+          hinterlandMode={"truck"}
         />
       );
     });
@@ -665,5 +689,374 @@ describe('printed call parameters as set (spec v0.6.3, unit 1)', () => {
       await act(async () => { root!.unmount(); });
       container.remove();
     }
+  });
+});
+
+// Port-group completeness (spec v0.6.4, unit 1): with N selected ports,
+// every selected port appears in the printed output - the groups follow the
+// print pagination doctrine (3 columns per group; 6 -> 3+3, 8 -> 3+3+2),
+// the numbering counts every group page, and each group's page carries
+// the header, the Grand Total, and the footnote block. The regression this
+// pins: the v0.6.3 printout at six ports carried three columns only
+// (Helsingborg, Norrköping, Norvik absent) - the unsatisfiable table-level
+// break-inside: avoid made Chromium's fragmentation pass drop every port
+// group after the first. Red proof per the standing discipline: with the
+// component rendering only the first page's slice (the regression shape),
+// this pin was observed red; restored green.
+describe('port-group completeness on paper (spec v0.6.4, unit 1)', () => {
+  // The user's own six-port selection (the fresh print-through evidence).
+  const SIX_PORT_IDS = ['aarhus', 'gavle', 'gothenburg', 'helsingborg', 'norrkoping', 'norvik'];
+
+  const renderSixPortPrint = async (derivationsVisible: boolean) => {
+    const ports = LOADED_PORTS.filter(p => SIX_PORT_IDS.includes(p.metadata.id));
+    const call = defaultCall('gothenburg');
+    const portResults = ports.map(port => {
+      const merged = { ...defaultCall(port.metadata.id), ...call, port_id: port.metadata.id } as CallInput;
+      try {
+        return { port, result: calculatePortCallCost(port, { vessel: DEFAULT_VESSEL, call: merged }) };
+      } catch {
+        return { port, result: null };
+      }
+    });
+    const ruleNames = buildRuleNamesByPort(ports);
+    const ruleAttrs = buildRuleAttributesByPort(ports);
+    const rowsByStage = buildRowsBySegment(portResults as never, ruleNames, ruleAttrs, DEFAULT_VESSEL.gt).rowsByStage;
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    const root = createRoot(container);
+    const rateInfo = { rate: 11.2525, date: '2026-10-05', source: 'ECB euro reference rate (SEK per EUR)', is_default: true };
+    await act(async () => {
+      root.render(
+        <PrintComparisonPages
+          ports={ports}
+          portResults={portResults as never}
+          rowsByStage={rowsByStage as never}
+          vessel={DEFAULT_VESSEL}
+          call={call}
+          rateInfo={rateInfo}
+          comparisonBasisContext={{ basis: 'SEK', rows: DECLARED_ROWS }}
+          declaredRows={DECLARED_ROWS}
+          activeVessel="MAREN MAERSK (IMO 9632129)"
+          formatCurrency={(amount, currency) =>
+            new Intl.NumberFormat('sv-SE', { style: 'currency', currency, minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amount)}
+          derivationsVisible={derivationsVisible}
+          conversionsVisible={true}
+          containerThroughVisible={false}
+          hinterlandMode={"truck"}
+        />
+      );
+    });
+    return { container, root };
+  };
+
+  it('six selected ports print as two groups (3+3) - every port name present, numbering Page 1 of 2 / Page 2 of 2', async () => {
+    const { container, root } = await renderSixPortPrint(false);
+    try {
+      const pages = document.body.querySelectorAll('body > .print-pages .print-page');
+      expect(pages.length).toBe(2);
+      // Every group carries exactly three port columns - all six names print.
+      const page1Names = Array.from(pages[0].querySelectorAll('.comparison-port-name')).map(n => n.textContent);
+      const page2Names = Array.from(pages[1].querySelectorAll('.comparison-port-name')).map(n => n.textContent);
+      expect(page1Names).toEqual(['Port of Aarhus', 'Port of Gävle', 'Port of Gothenburg']);
+      expect(page2Names).toEqual(['Port of Helsingborg', 'Port of Norrköping', 'Stockholm Norvik Port']);
+      // The numbering counts both group pages.
+      expect(pages[0].querySelector('.print-footer')?.textContent).toContain('Page 1 of 2');
+      expect(pages[1].querySelector('.print-footer')?.textContent).toContain('Page 2 of 2');
+    } finally {
+      await act(async () => { root.unmount(); });
+      container.remove();
+    }
+  });
+
+  it('each group page is self-contained: header and continuation note per group, Grand Total and footnote on every page', async () => {
+    const { container, root } = await renderSixPortPrint(false);
+    try {
+      const pages = document.body.querySelectorAll('body > .print-pages .print-page');
+      // The header prints on every page.
+      expect(pages[0].querySelector('.print-header')).not.toBeNull();
+      expect(pages[1].querySelector('.print-header')).not.toBeNull();
+      // The continuation note carries per group (page 2 states its ports).
+      expect(pages[0].querySelector('[data-testid="print-continuation-1"]')).toBeNull();
+      expect(pages[1].querySelector('[data-testid="print-continuation-2"]')?.textContent)
+        .toBe('continued \u2014 ports 4\u20136 of 6');
+      // The Grand Total row renders on every group's page, for that group's ports.
+      pages.forEach(page => {
+        const totalRow = page.querySelector('.comparison-total-row');
+        expect(totalRow).not.toBeNull();
+        expect(totalRow!.textContent).toContain('Grand Total');
+      });
+      // The footnote block renders on every group's page (detail OFF shape).
+      expect(document.body.querySelector('[data-testid="print-grand-total-footnote-1"]')).not.toBeNull();
+      expect(document.body.querySelector('[data-testid="print-grand-total-footnote-2"]')).not.toBeNull();
+    } finally {
+      await act(async () => { root.unmount(); });
+      container.remove();
+    }
+  });
+
+  it('detail ON at six ports: the same two-group completeness holds - the tall-row path never loses a group', async () => {
+    const { container, root } = await renderSixPortPrint(true);
+    try {
+      const pages = document.body.querySelectorAll('body > .print-pages .print-page');
+      expect(pages.length).toBe(2);
+      const names = Array.from(document.body.querySelectorAll('.print-page .comparison-port-name')).map(n => n.textContent);
+      expect(names).toContain('Port of Helsingborg');
+      expect(names).toContain('Port of Norrköping');
+      expect(names).toContain('Stockholm Norvik Port');
+      expect(pages[1].querySelector('.print-footer')?.textContent).toContain('Page 2 of 2');
+    } finally {
+      await act(async () => { root.unmount(); });
+      container.remove();
+    }
+  });
+});
+
+// Break-integrity for the tallest detail rows (spec v0.6.4, unit 2): a
+// detail-ON Cargo-dues row is taller than one A4 sheet, so no rule can keep
+// the row whole - the degradation must be explicit and readable (a cut at
+// block or line boundaries, the remainder on the next sheet), never a
+// mid-phrase split (the observed "...per" / "loaded container)" split of
+// the citation description). The label cell's own blocks carry the
+// break-inside: avoid so the fragmentation pass cuts between blocks, not
+// inside one. Red proof per the standing discipline: with the block-level
+// selector rule reverted (the v0.6.3 stylesheet shape), the pin was
+// observed red; restored green.
+describe('break-integrity for the tallest detail rows (spec v0.6.4, unit 2)', () => {
+  it('the label-cell blocks (charge-type label, citation description, family label) carry break-inside: avoid - the degradation cut lands between blocks, never mid-phrase', () => {
+    const printBlock = cssSource.match(/@media print\s*\{[\s\S]*\n\}/)![0];
+    expect(printBlock).toMatch(
+      /\.print-page \.comparison-table \.comparison-chargetype-label,\n\s*\.print-page \.comparison-table \.comparison-chargetype-desc,\n\s*\.print-page \.comparison-table \.comparison-family-label\s*\{\s*break-inside:\s*avoid/
+    );
+    // The row-level keeps-whole rules stay (a row that fits a sheet still
+    // moves whole) - the unit 2a selectors unchanged.
+    expect(printBlock).toMatch(/\.print-page \.comparison-table tr,\n\s*\.print-page \.comparison-table tr td,\n\s*\.print-page \.comparison-table tr th\s*\{\s*break-inside:\s*avoid/);
+  });
+
+  it('the tall Cargo dues row renders its citation description as a distinct block in the label cell (the DOM shape the avoid cuts along)', async () => {
+    const ports = LOADED_PORTS.filter(p => ['helsingborg', 'norrkoping'].includes(p.metadata.id));
+    const call = defaultCall('gothenburg');
+    const portResults = ports.map(port => {
+      const merged = { ...defaultCall(port.metadata.id), ...call, port_id: port.metadata.id } as CallInput;
+      return { port, result: calculatePortCallCost(port, { vessel: DEFAULT_VESSEL, call: merged }) };
+    });
+    const ruleNames = buildRuleNamesByPort(ports);
+    const ruleAttrs = buildRuleAttributesByPort(ports);
+    const rowsByStage = buildRowsBySegment(portResults as never, ruleNames, ruleAttrs, DEFAULT_VESSEL.gt).rowsByStage;
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    const root = createRoot(container);
+    const rateInfo = { rate: 11.2525, date: '2026-10-05', source: 'ECB euro reference rate (SEK per EUR)', is_default: true };
+    await act(async () => {
+      root.render(
+        <PrintComparisonPages
+          ports={ports}
+          portResults={portResults as never}
+          rowsByStage={rowsByStage as never}
+          vessel={DEFAULT_VESSEL}
+          call={call}
+          rateInfo={rateInfo}
+          comparisonBasisContext={{ basis: 'SEK', rows: DECLARED_ROWS }}
+          declaredRows={DECLARED_ROWS}
+          activeVessel="MAREN MAERSK (IMO 9632129)"
+          formatCurrency={(amount, currency) =>
+            new Intl.NumberFormat('sv-SE', { style: 'currency', currency, minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amount)}
+          derivationsVisible={true}
+          conversionsVisible={true}
+          containerThroughVisible={false}
+          hinterlandMode={"truck"}
+        />
+      );
+    });
+    try {
+      // The Cargo dues row exists with detail ON (the tall shape).
+      const cargoRow = Array.from(document.body.querySelectorAll('.comparison-chargetype-row'))
+        .find(r => r.querySelector('.comparison-chargetype-label')?.textContent === 'Cargo dues');
+      expect(cargoRow).toBeDefined();
+      // The citation description renders as its own block element, separate
+      // from the label - the fragmentation pass cuts between these blocks.
+      const label = cargoRow!.querySelector('.comparison-chargetype-label');
+      const desc = cargoRow!.querySelector('.comparison-chargetype-desc');
+      expect(label).not.toBeNull();
+      expect(desc).not.toBeNull();
+      // The citation is the user's observed split text, whole in one block.
+      expect(desc!.textContent).toContain('225.00 DKK per loaded container');
+      // The detail machinery rides the row (the per-line blocks, each
+      // individually avoid-guarded by the unit 2a rule).
+      expect(cargoRow!.querySelectorAll('.print-line-detail').length).toBeGreaterThan(0);
+    } finally {
+      await act(async () => { root.unmount(); });
+      container.remove();
+    }
+  });
+});
+
+// Toggle follow-through, generalized (spec v0.6.4, unit 3): every
+// print-relevant state control on the screen carries through to print -
+// the paper inherits the session state, never imposes defaults. The audit
+// found three controls beyond the fee-derivation toggle (already v0.6.3):
+// the derived/converted sums toggle (conversionsVisible - the observed
+// defect: the Grand Total printed the converted figure regardless of
+// screen state), and the compare container-through surface (its toggle and
+// the hinterland-mode selector). Red proofs per the standing discipline:
+// the print path forcing each default makes the opposite pin red - the
+// always-convert v0.6.3 shape fails the OFF pin, the never-convert shape
+// fails the ON pin, the always-render container-through shape fails the
+// OFF pin; all restored green.
+describe('derived/converted sums toggle follow-through on paper (spec v0.6.4, unit 3)', () => {
+  const renderConverted = async (conversionsVisible: boolean) => {
+    const ports = LOADED_PORTS.filter(p => ['aarhus', 'gothenburg'].includes(p.metadata.id));
+    const call = defaultCall('gothenburg');
+    const portResults = ports.map(port => {
+      const merged = { ...defaultCall(port.metadata.id), ...call, port_id: port.metadata.id } as CallInput;
+      return { port, result: calculatePortCallCost(port, { vessel: DEFAULT_VESSEL, call: merged }) };
+    });
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    const root = createRoot(container);
+    const rateInfo = { rate: 11.2525, date: '2026-10-05', source: 'ECB euro reference rate (SEK per EUR)', is_default: true };
+    await act(async () => {
+      root.render(
+        <PrintComparisonPages
+          ports={ports}
+          portResults={portResults as never}
+          rowsByStage={[] as never}
+          vessel={DEFAULT_VESSEL}
+          call={call}
+          rateInfo={rateInfo}
+          comparisonBasisContext={{ basis: 'SEK', rows: DECLARED_ROWS }}
+          declaredRows={DECLARED_ROWS}
+          activeVessel="MAREN MAERSK (IMO 9632129)"
+          formatCurrency={(amount, currency) =>
+            new Intl.NumberFormat('sv-SE', { style: 'currency', currency, minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amount)}
+          derivationsVisible={false}
+          conversionsVisible={conversionsVisible}
+          containerThroughVisible={false}
+          hinterlandMode={"truck"}
+        />
+      );
+    });
+    return { container, root };
+  };
+
+  it('converted ON: the Grand Total prints the converted comparison-basis sum beside the native figure', async () => {
+    const { container, root } = await renderConverted(true);
+    try {
+      const totalRow = document.body.querySelector('.comparison-total-row');
+      expect(totalRow).not.toBeNull();
+      // The Aarhus native DKK figure with its converted SEK secondary -
+      // exactly the screen's ON state (native primary, converted secondary).
+      expect(totalRow!.textContent).toContain('6\u00a0348\u00a0361');
+      expect(totalRow!.textContent).toContain('\u2248');
+      expect(totalRow!.textContent).toContain('9\u00a0557\u00a0152');
+    } finally {
+      await act(async () => { root.unmount(); });
+      container.remove();
+    }
+  });
+
+  it('converted OFF: the converted sums do not print - the native figures stand alone, exactly the screen\'s OFF state', async () => {
+    const { container, root } = await renderConverted(false);
+    try {
+      const totalRow = document.body.querySelector('.comparison-total-row');
+      expect(totalRow).not.toBeNull();
+      // The native figure prints; the converted secondary does not.
+      expect(totalRow!.textContent).toContain('6\u00a0348\u00a0361');
+      expect(totalRow!.textContent).not.toContain('\u2248');
+      expect(totalRow!.textContent).not.toContain('9\u00a0557\u00a0152');
+      // No converted figure anywhere on the printed page (the toggle is a
+      // class, not a single pin: the whole page inherits the OFF state).
+      expect(document.body.textContent ?? '').not.toContain('converted \u2014');
+    } finally {
+      await act(async () => { root.unmount(); });
+      container.remove();
+    }
+  });
+});
+
+describe('compare container-through follow-through on paper (spec v0.6.4, unit 3)', () => {
+  const renderContainerThrough = async (visible: boolean, mode: 'truck' | 'rail') => {
+    const ports = LOADED_PORTS.filter(p => ['gavle', 'norrkoping', 'gothenburg'].includes(p.metadata.id));
+    const call = defaultCall('gothenburg');
+    const portResults = ports.map(port => {
+      const merged = { ...defaultCall(port.metadata.id), ...call, port_id: port.metadata.id } as CallInput;
+      return { port, result: calculatePortCallCost(port, { vessel: DEFAULT_VESSEL, call: merged }) };
+    });
+    const ruleNames = buildRuleNamesByPort(ports);
+    const ruleAttrs = buildRuleAttributesByPort(ports);
+    const rowsByStage = buildRowsBySegment(portResults as never, ruleNames, ruleAttrs, DEFAULT_VESSEL.gt).rowsByStage;
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    const root = createRoot(container);
+    const rateInfo = { rate: 11.2525, date: '2026-10-05', source: 'ECB euro reference rate (SEK per EUR)', is_default: true };
+    await act(async () => {
+      root.render(
+        <PrintComparisonPages
+          ports={ports}
+          portResults={portResults as never}
+          rowsByStage={rowsByStage as never}
+          vessel={DEFAULT_VESSEL}
+          call={call}
+          rateInfo={rateInfo}
+          comparisonBasisContext={{ basis: 'SEK', rows: DECLARED_ROWS }}
+          declaredRows={DECLARED_ROWS}
+          activeVessel="MAREN MAERSK (IMO 9632129)"
+          formatCurrency={(amount, currency) =>
+            new Intl.NumberFormat('sv-SE', { style: 'currency', currency, minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amount)}
+          derivationsVisible={false}
+          conversionsVisible={true}
+          containerThroughVisible={visible}
+          hinterlandMode={mode}
+        />
+      );
+    });
+    return { container, root };
+  };
+
+  it('toggle ON: the container-through row prints with the session\'s hinterland mode and per-port legs', async () => {
+    const { container, root } = await renderContainerThrough(true, 'rail');
+    try {
+      const row = document.body.querySelector('[data-testid="print-container-through-row"]');
+      expect(row).not.toBeNull();
+      expect(row!.textContent).toContain('Container-through addition');
+      // The session's own mode states on paper (rail), never a default.
+      expect(row!.textContent).toContain('Hinterland mode: rail stack');
+      // The per-port legs print: Norrköping's rail rates, Gävle's honest
+      // bundled note - the screen's own row content.
+      expect(row!.textContent).toContain('bundled');
+      expect(row!.querySelector('[data-testid="print-container-through-norrkoping"]')?.textContent).toContain('526');
+    } finally {
+      await act(async () => { root.unmount(); });
+      container.remove();
+    }
+  });
+
+  it('toggle OFF: the container-through row does not print - the screen\'s default-off state', async () => {
+    const { container, root } = await renderContainerThrough(false, 'truck');
+    try {
+      expect(document.body.querySelector('[data-testid="print-container-through-row"]')).toBeNull();
+      expect(document.body.textContent ?? '').not.toContain('Container-through addition');
+    } finally {
+      await act(async () => { root.unmount(); });
+      container.remove();
+    }
+  });
+
+  it('the audit pin: every print-relevant screen control is wired through the view\'s print path - no print-side default exists', () => {
+    // The comparison view wires its own live state into PrintComparisonPages:
+    // the fee-derivation toggle, the converted-sums toggle, the
+    // container-through toggle and its hinterland mode, plus the live rate
+    // input (rateInfo). The print component takes them as required props -
+    // no default parameter anywhere in its signature.
+    const viewSource = fs.readFileSync(path.join(__dirname, 'comparisonView.tsx'), 'utf8');
+    const printSource = fs.readFileSync(path.join(__dirname, 'printComparisonPages.tsx'), 'utf8');
+    expect(viewSource).toMatch(/derivationsVisible=\{derivationsVisible\}/);
+    expect(viewSource).toMatch(/conversionsVisible=\{conversionsVisible\}/);
+    expect(viewSource).toMatch(/containerThroughVisible=\{containerThroughVisible\}/);
+    expect(viewSource).toMatch(/hinterlandMode=\{hinterlandMode\}/);
+    // The print component never defaults a toggle (a default would be a
+    // print-side state imposition - the defect class this unit closes).
+    expect(printSource).not.toMatch(/derivationsVisible[^?]*=\s*(true|false)\b/);
+    expect(printSource).not.toMatch(/conversionsVisible[^?]*=\s*(true|false)\b/);
+    expect(printSource).not.toMatch(/containerThroughVisible[^?]*=\s*(true|false)\b/);
   });
 });

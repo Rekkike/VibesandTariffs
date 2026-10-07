@@ -20,6 +20,8 @@ import type { CallInput, PortDefinition, QualityFlag, VesselInput } from '@port-
 import { formatRate } from './conversion';
 import type { ComparisonBasisContext, ExchangeRateInfo } from './conversion';
 import { printContinuationNote, printPagesFor } from './printPages';
+import type { HinterlandMode } from './handlingBasis';
+import { containerThroughParts } from './handlingBasis';
 import type { PrintPage } from './printPages';
 import { APP_VERSION } from './version';
 
@@ -70,6 +72,20 @@ export interface PrintComparisonPagesProps {
   // derivation subtitles (the screen's own condensed text). OFF: charge-line
   // names only, clean - byte-identical to the v0.6.2 print.
   derivationsVisible: boolean;
+  // Derived/converted sums toggle (spec v0.6.4, unit 3): the same
+  // follow-through class - the print path reads the toggle from live state.
+  // ON: the converted comparison-basis sums print as the screen shows them
+  // (the native-primary figure with its converted SEK secondary). OFF: they
+  // do not print - the native figures stand alone, exactly the screen's
+  // OFF state. The paper never imposes its own default.
+  conversionsVisible: boolean;
+  // Compare container-through surface (spec v0.6.4, unit 3): the toggle
+  // and its hinterland-mode selector follow through to print the same way
+  // - ON prints the landside-legs row (the screen's own row, its mode
+  // stated, presentation-only amounts never in the Grand Total); OFF
+  // prints nothing of it, the screen's default-off state.
+  containerThroughVisible: boolean;
+  hinterlandMode: HinterlandMode;
 }
 
 // The rate-basis note (the unfalsifiability rule's currency line): every
@@ -91,7 +107,10 @@ export const PrintComparisonPages: React.FC<PrintComparisonPagesProps> = ({
   declaredRows,
   activeVessel,
   formatCurrency,
-  derivationsVisible
+  derivationsVisible,
+  conversionsVisible,
+  containerThroughVisible,
+  hinterlandMode
 }) => {
   const pages = printPagesFor(ports.map(p => ({ id: p.metadata.id, name: p.metadata.name })));
   const totalPorts = ports.length;
@@ -260,6 +279,30 @@ export const PrintComparisonPages: React.FC<PrintComparisonPagesProps> = ({
                     ))}
                   </TableRow>
                 ))}
+                {containerThroughVisible && stage.id === 'quayside_operations' && (
+                  <TableRow className="comparison-container-through-row print-container-through-row" data-testid="print-container-through-row">
+                    <TableCell>
+                      <strong>Container-through addition (user-selected comparison surface)</strong>
+                      <span className="comparison-handling-basis-note" style={{ display: 'block', fontSize: '0.75rem' }}>
+                        Hinterland mode: {hinterlandMode === 'truck' ? 'truck gate' : 'rail stack'} (comparison-scoped selector; never a call input)
+                      </span>
+                    </TableCell>
+                    {page.ports.map(({ id }) => {
+                      const port = portById.get(id)!;
+                      const le = (call.containers_loaded_le20ft || 0) + (call.containers_discharged_le20ft || 0);
+                      const gt = (call.containers_loaded_gt20ft || 0) + (call.containers_discharged_gt20ft || 0);
+                      const part = containerThroughParts(id, hinterlandMode, le, gt);
+                      return (
+                        <TableCell key={id} align="right" className="amount" data-testid={`print-container-through-${id}`}>
+                          <Box component="span" sx={{ fontSize: '0.75rem', display: 'block' }}>{part.note}</Box>
+                          {part.addedAmount !== null
+                            ? <span className="comparison-figure">+{formatCurrency(part.addedAmount, port.metadata.currency)}</span>
+                            : <span className="comparison-not-levied">{part.bundled ? 'bundled rate unchanged' : 'not published'}</span>}
+                        </TableCell>
+                      );
+                    })}
+                  </TableRow>
+                )}
               </React.Fragment>
             ))}
             <TableRow className="comparison-total-row">
@@ -276,7 +319,7 @@ export const PrintComparisonPages: React.FC<PrintComparisonPagesProps> = ({
                         <span className="comparison-figure">
                           {formatCurrency(result.total, result.currency)}
                         </span>
-                        {result.currency !== 'SEK' && (
+                        {result.currency !== 'SEK' && conversionsVisible && (
                           <Box sx={{ fontSize: '0.75rem' }} className="comparison-secondary">
                             {'\u2248'} {formatCurrency(
                               result.currency === 'DKK'
