@@ -321,7 +321,7 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
               aria-controls="comparison-conversions-panel"
               onClick={() => setConversionsVisible(v => !v)}
             >
-              {conversionsVisible ? 'Hide converted figures' : 'Show converted figures'}
+              Convert to SEK
             </button>
           )}
           {/* Mobile transposition (spec v0.2.39): below the stacking

@@ -1430,3 +1430,51 @@ describe('header print control placement (spec v0.6.5, unit 2)', () => {
     }
   });
 });
+
+// ---------------------------------------------------------------------------
+// The conversion toggle renamed (spec v0.6.5, unit 3): the toggle's label is
+// "Convert to SEK" everywhere it appears - the mobile disclosure's screen
+// label and the print dialog's checkbox label carry the same wording. The
+// disclosure's state is carried by aria-expanded, no longer by show/hide
+// wording. The derivation toggle keeps its own name. Red proof: reverting
+// the screen label to the old show/hide wording turns this pin red.
+// ---------------------------------------------------------------------------
+describe('the conversion toggle renamed to Convert to SEK (spec v0.6.5, unit 3)', () => {
+  it('the screen label, the dialog checkbox label, and the source contract all read Convert to SEK; the derivation toggle keeps its name', async () => {
+    const viewSource = fs.readFileSync(path.resolve(__dirname, 'comparisonView.tsx'), 'utf8');
+    // The screen label is the static wording, never show/hide state text.
+    expect(viewSource).toMatch(/Convert to SEK/);
+    expect(viewSource).not.toMatch(/'Hide converted figures'|'Show converted figures'/);
+    // The dialog's conversions checkbox label carries the same wording.
+    expect(viewSource).toMatch(/\{' '\}Convert to SEK/);
+    // The derivation toggle keeps its own name (untouched by the rename).
+    expect(viewSource).toMatch(/'Hide fee derivations' : 'Show fee derivations'/);
+
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    const root = createRoot(container);
+    try {
+      await act(async () => {
+        root.render(
+          <ComparisonView
+            ports={LOADED_PORTS}
+            vessel={DEFAULT_VESSEL}
+            call={defaultCall('gothenburg')}
+            selectedPortIds={LOADED_PORTS.map(p => p.metadata.id)}
+            activeVessel="TEST"
+            printRequest={1}
+          />
+        );
+      });
+      const dialog = container.querySelector('[data-testid="print-dialog"]')!;
+      const convLabel = dialog.querySelector('[data-testid="print-dialog-conversions"]')!.closest('label')!;
+      expect(convLabel.textContent).toContain('Convert to SEK');
+      expect(convLabel.textContent).not.toContain('converted figures');
+      const derivLabel = dialog.querySelector('[data-testid="print-dialog-derivations"]')!.closest('label')!;
+      expect(derivLabel.textContent).toContain('Fee derivations');
+    } finally {
+      await act(async () => { root.unmount(); });
+      container.remove();
+    }
+  });
+});
