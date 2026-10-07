@@ -1793,6 +1793,14 @@ textarea:focus-visible,
     margin: 0 0 1mm 0;
   }
 
+  /* The four-line structured header (spec v0.6.3, unit 3): each parameter
+     line is its own compact block, never a run-on. */
+  .print-header .print-header-line {
+    margin: 0 0 0.5mm 0;
+    font-size: 9px;
+    font-weight: 400;
+  }
+
   .print-continuation {
     display: block !important;
     font-size: 9px;

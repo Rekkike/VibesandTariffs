@@ -123,7 +123,7 @@ export const PrintComparisonPages: React.FC<PrintComparisonPagesProps> = ({
               <>
                 <span className="comparison-derivation-structure">{line.derivation.structure}</span>
                 {line.derivation.composition && line.derivation.composition !== line.derivation.structure && (
-                  <span className="comparison-derivation-composition"> \u2014 {line.derivation.composition}</span>
+                  <span className="comparison-derivation-composition"> — {line.derivation.composition}</span>
                 )}
               </>
             )}
@@ -132,24 +132,42 @@ export const PrintComparisonPages: React.FC<PrintComparisonPagesProps> = ({
       </Box>
     ));
 
+  // The printed header is a compact four-line block (spec v0.6.3, unit 3),
+  // never a run-on: line 1 the app name, version, tariff year; line 2 the
+  // vessel profile (name, IMO, GT, TEU), ESI, and the environmental classes
+  // exactly as the screen's context strip states them; line 3 the call
+  // parameters as set (live values); line 4 the rate basis, both published
+  // pairs with their as_of dates. Every line on every page. The JSX text
+  // uses real characters (· — →) - an escaped \uXXXX sequence in JSX text
+  // renders as a literal backslash sequence on paper.
   const renderHeader = (page: PrintPage) => (
     <Box className="print-header" component="section" aria-label="Printed comparison parameters">
-      <p className="print-header-title">
-        Port Call Cost Analyzer — Port Comparison (printed)
+      <p className="print-header-title print-header-line" data-testid="print-header-line-1">
+        Port Call Cost Analyzer — Port Comparison (printed) · Version: {APP_VERSION} · Tariff year:{' '}
+        {ports.map(p => p.metadata.validity_start?.slice(0, 4)).filter((y, i, a) => a.indexOf(y) === i).join('/')}
       </p>
-      <span>Version: {APP_VERSION}</span>{' '}
-      <span>Tariff year: {ports.map(p => p.metadata.validity_start?.slice(0, 4)).filter((y, i, a) => a.indexOf(y) === i).join('/')}</span>{' '}
-      <span>Vessel profile: {activeVessel}</span>{' '}
-      <span>GT: {vessel.gt.toLocaleString('en-US')}</span>{' '}
-      <span>ESI: {call.esi_score != null ? `${call.esi_score} (entered)` : 'not entered'}</span>{' '}
-      <span>Container moves: {((call.containers_loaded_le20ft || 0) + (call.containers_loaded_gt20ft || 0) +
-        (call.containers_discharged_le20ft || 0) + (call.containers_discharged_gt20ft || 0)).toLocaleString('en-US')} (loaded + discharged)</span>{' '}
-      <span>Lay time: {call.lay_time_hours != null ? `${call.lay_time_hours} h at berth` : 'not entered'}</span>{' '}
-      <span>{printRateBasisNote(declaredRows)}</span>{' '}
-      <span>
-        Converted figures (the comparison basis): {formatRate(rateInfo)}; the EUR\u2192DKK pair
-        carries the Danish column's conversion at its published as_of.
-      </span>
+      <p className="print-header-line" data-testid="print-header-line-2">
+        Vessel profile: {activeVessel || vessel.name} · GT: {vessel.gt.toLocaleString('en-US')} · TEU capacity:{' '}
+        {vessel.teu_capacity ? vessel.teu_capacity.toLocaleString('en-US') : 'not entered'} · ESI:{' '}
+        {call.esi_score != null ? `${call.esi_score} (entered)` : 'not entered'} · CSI:{' '}
+        {call.clean_shipping_index_class
+          ? `${call.clean_shipping_index_class} (entered)`
+          : 'not entered'} · Sjöfartsverket class:{' '}
+        {call.csi_class
+          ? call.csi_class === 'E'
+            ? `${call.csi_class} (default — not registered)`
+            : `${call.csi_class} (entered)`
+          : 'not entered'}
+      </p>
+      <p className="print-header-line" data-testid="print-header-line-3">
+        Container moves:{' '}
+        {((call.containers_loaded_le20ft || 0) + (call.containers_loaded_gt20ft || 0) +
+          (call.containers_discharged_le20ft || 0) + (call.containers_discharged_gt20ft || 0)).toLocaleString('en-US')} (loaded + discharged) · Lay time:{' '}
+        {call.lay_time_hours != null ? `${call.lay_time_hours} h at berth` : 'not entered'}
+      </p>
+      <p className="print-header-line" data-testid="print-header-line-4">
+        {printRateBasisNote(declaredRows)} · Comparison basis: {formatRate(rateInfo)}
+      </p>
     </Box>
   );
 

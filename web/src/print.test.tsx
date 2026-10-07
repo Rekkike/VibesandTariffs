@@ -171,6 +171,87 @@ describe('print header content — the unfalsifiability rule (spec v0.6.2)', () 
     }
   });
 
+  // The four-line structured header (spec v0.6.3, unit 3): the header is a
+  // compact four-line block, never a run-on. Line 1 app name, version,
+  // tariff year; line 2 vessel profile (name, IMO, GT, TEU), ESI, and the
+  // classes exactly as the screen context strip states them; line 3 the
+  // call parameters as set (live values); line 4 the rate basis, both
+  // published pairs with their as_of dates. All four lines on every page.
+  // Red proof per the standing discipline: the structural pin was observed
+  // red against the v0.6.2 run-on header (one title paragraph plus a single
+  // space-joined span run, no .print-header-line blocks) before being
+  // trusted, then restored green.
+  it('the header renders as the four-line block on every page - line 1: app, version, tariff year', async () => {
+    const { container, root } = await renderPrintPages(LOADED_PORTS.map(p => p.metadata.id));
+    try {
+      const lines = document.body.querySelectorAll('.print-header .print-header-line');
+      // Exactly four lines per header, three headers - and the structural
+      // pin: the run-on v0.6.2 shape (no line blocks) is red by this count.
+      expect(lines.length).toBe(12);
+      document.body.querySelectorAll('.print-header').forEach(h => {
+        expect(h.querySelectorAll('.print-header-line').length).toBe(4);
+      });
+      // Line 1 on every page: app name, version, tariff year.
+      document.body.querySelectorAll('[data-testid="print-header-line-1"]').forEach(l => {
+        const text = l.textContent ?? '';
+        expect(text).toContain('Port Call Cost Analyzer — Port Comparison (printed)');
+        expect(text).toContain(`Version: ${APP_VERSION}`);
+        expect(text).toContain('Tariff year: 2026');
+      });
+    } finally {
+      await act(async () => { root!.unmount(); });
+      container.remove();
+    }
+  });
+
+  it('line 2: vessel profile (name, IMO, GT, TEU), ESI, and the classes as the screen context strip states them', async () => {
+    const { container, root } = await renderPrintPages(LOADED_PORTS.map(p => p.metadata.id));
+    try {
+      document.body.querySelectorAll('[data-testid="print-header-line-2"]').forEach(l => {
+        const text = l.textContent ?? '';
+        expect(text).toContain('Vessel profile: MAREN MAERSK (IMO 9632129)');
+        expect(text).toContain('GT: 194,849');
+        expect(text).toContain('TEU capacity: 19,076');
+        expect(text).toContain('ESI: not entered');
+        // The classes exactly as the screen context strip states them.
+        expect(text).toContain('CSI: not entered');
+        expect(text).toContain('Sjöfartsverket class: E (default — not registered)');
+      });
+    } finally {
+      await act(async () => { root!.unmount(); });
+      container.remove();
+    }
+  });
+
+  it('line 3: the call parameters as set (live values), line 4: the rate basis with both published pairs and as_of dates', async () => {
+    const { container, root } = await renderPrintPages(LOADED_PORTS.map(p => p.metadata.id));
+    try {
+      document.body.querySelectorAll('[data-testid="print-header-line-3"]').forEach(l => {
+        const text = l.textContent ?? '';
+        // Live values per the unit 1.2 pin: the default call's 4,000 moves
+        // and 50 h lay time, stated as the session's own call.
+        expect(text).toContain('Container moves: 4,000 (loaded + discharged)');
+        expect(text).toContain('Lay time: 50 h at berth');
+      });
+      document.body.querySelectorAll('[data-testid="print-header-line-4"]').forEach(l => {
+        const text = l.textContent ?? '';
+        expect(text).toContain('Rate basis: EUR\u2192SEK 11.2525 (2026-10-05); EUR\u2192DKK 7.4745 (2026-10-05)');
+        expect(text).toContain('Comparison basis:');
+        // The JSX-escape trap: the printed text carries the real arrow
+        // character, never a literal backslash-u sequence.
+        expect(text).not.toContain('\\u2192');
+      });
+      // The whole printed surface is free of literal escape sequences -
+      // the known trap from the prior session, pinned here.
+      expect(document.body.textContent ?? '').not.toContain('\\u2192');
+      expect(document.body.textContent ?? '').not.toContain('\\u2014');
+      expect(document.body.textContent ?? '').not.toContain('\\u00b7');
+    } finally {
+      await act(async () => { root!.unmount(); });
+      container.remove();
+    }
+  });
+
   it('the rate-basis note names both published pairs with their as_of dates', () => {
     const note = printRateBasisNote(DECLARED_ROWS);
     expect(note).toBe('Rate basis: EUR\u2192SEK 11.2525 (2026-10-05); EUR\u2192DKK 7.4745 (2026-10-05)');
