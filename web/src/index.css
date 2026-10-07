@@ -1887,6 +1887,34 @@ textarea:focus-visible,
     break-inside: avoid;
     page-break-inside: avoid;
   }
+  /* Break-integrity for the tallest detail rows (spec v0.6.4, unit 2):
+     the first column's own blocks - the charge-type label and its citation
+     description, the family label - carry the avoid as well. A detail-ON
+     Cargo-dues row is taller than one sheet, so the row-level avoid is
+     unsatisfiable (the fragmentation spec ignores it) and the row fragments
+     at its children's boundaries; without a block-level avoid on the
+     description block the cut landed mid-phrase (the observed "...per" /
+     "loaded container)" split - the citation text is one long block).
+     With the avoid on the block, a too-tall row degrades explicitly: the
+     cut lands between blocks (or between the description's own lines), the
+     remainder moves to the next sheet - never mid-word or mid-phrase. */
+  .print-page .comparison-table .comparison-chargetype-label,
+  .print-page .comparison-table .comparison-chargetype-desc,
+  .print-page .comparison-table .comparison-family-label {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  /* Break-integrity for the tallest detail rows (spec v0.6.4, unit 2):
+     the first column's own blocks - the charge-type label and its citation
+     description, the family label - carry the avoid as well. A detail-ON
+     Cargo-dues row is taller than one sheet, so the row-level avoid is
+     unsatisfiable (the fragmentation spec ignores it) and the row fragments
+     at its children's boundaries; without a block-level avoid on the
+     description block the cut landed mid-phrase (the observed "...per" /
+     "loaded container)" split - the citation text is one long block).
+     With the avoid on the block, a too-tall row degrades explicitly: the
+     cut lands between blocks (or between the description's own lines),
+     the remainder moves to the next sheet - never mid-word or mid-phrase. */
 
   /* The screen's Paper elevation borders flatten; the page's own borders
      draw the grid. */

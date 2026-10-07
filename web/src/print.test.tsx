@@ -792,3 +792,79 @@ describe('port-group completeness on paper (spec v0.6.4, unit 1)', () => {
     }
   });
 });
+
+// Break-integrity for the tallest detail rows (spec v0.6.4, unit 2): a
+// detail-ON Cargo-dues row is taller than one A4 sheet, so no rule can keep
+// the row whole - the degradation must be explicit and readable (a cut at
+// block or line boundaries, the remainder on the next sheet), never a
+// mid-phrase split (the observed "...per" / "loaded container)" split of
+// the citation description). The label cell's own blocks carry the
+// break-inside: avoid so the fragmentation pass cuts between blocks, not
+// inside one. Red proof per the standing discipline: with the block-level
+// selector rule reverted (the v0.6.3 stylesheet shape), the pin was
+// observed red; restored green.
+describe('break-integrity for the tallest detail rows (spec v0.6.4, unit 2)', () => {
+  it('the label-cell blocks (charge-type label, citation description, family label) carry break-inside: avoid - the degradation cut lands between blocks, never mid-phrase', () => {
+    const printBlock = cssSource.match(/@media print\s*\{[\s\S]*\n\}/)![0];
+    expect(printBlock).toMatch(
+      /\.print-page \.comparison-table \.comparison-chargetype-label,\n\s*\.print-page \.comparison-table \.comparison-chargetype-desc,\n\s*\.print-page \.comparison-table \.comparison-family-label\s*\{\s*break-inside:\s*avoid/
+    );
+    // The row-level keeps-whole rules stay (a row that fits a sheet still
+    // moves whole) - the unit 2a selectors unchanged.
+    expect(printBlock).toMatch(/\.print-page \.comparison-table tr,\n\s*\.print-page \.comparison-table tr td,\n\s*\.print-page \.comparison-table tr th\s*\{\s*break-inside:\s*avoid/);
+  });
+
+  it('the tall Cargo dues row renders its citation description as a distinct block in the label cell (the DOM shape the avoid cuts along)', async () => {
+    const ports = LOADED_PORTS.filter(p => ['helsingborg', 'norrkoping'].includes(p.metadata.id));
+    const call = defaultCall('gothenburg');
+    const portResults = ports.map(port => {
+      const merged = { ...defaultCall(port.metadata.id), ...call, port_id: port.metadata.id } as CallInput;
+      return { port, result: calculatePortCallCost(port, { vessel: DEFAULT_VESSEL, call: merged }) };
+    });
+    const ruleNames = buildRuleNamesByPort(ports);
+    const ruleAttrs = buildRuleAttributesByPort(ports);
+    const rowsByStage = buildRowsBySegment(portResults as never, ruleNames, ruleAttrs, DEFAULT_VESSEL.gt).rowsByStage;
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    const root = createRoot(container);
+    const rateInfo = { rate: 11.2525, date: '2026-10-05', source: 'ECB euro reference rate (SEK per EUR)', is_default: true };
+    await act(async () => {
+      root.render(
+        <PrintComparisonPages
+          ports={ports}
+          portResults={portResults as never}
+          rowsByStage={rowsByStage as never}
+          vessel={DEFAULT_VESSEL}
+          call={call}
+          rateInfo={rateInfo}
+          comparisonBasisContext={{ basis: 'SEK', rows: DECLARED_ROWS }}
+          declaredRows={DECLARED_ROWS}
+          activeVessel="MAREN MAERSK (IMO 9632129)"
+          formatCurrency={(amount, currency) =>
+            new Intl.NumberFormat('sv-SE', { style: 'currency', currency, minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amount)}
+          derivationsVisible={true}
+        />
+      );
+    });
+    try {
+      // The Cargo dues row exists with detail ON (the tall shape).
+      const cargoRow = Array.from(document.body.querySelectorAll('.comparison-chargetype-row'))
+        .find(r => r.querySelector('.comparison-chargetype-label')?.textContent === 'Cargo dues');
+      expect(cargoRow).toBeDefined();
+      // The citation description renders as its own block element, separate
+      // from the label - the fragmentation pass cuts between these blocks.
+      const label = cargoRow!.querySelector('.comparison-chargetype-label');
+      const desc = cargoRow!.querySelector('.comparison-chargetype-desc');
+      expect(label).not.toBeNull();
+      expect(desc).not.toBeNull();
+      // The citation is the user's observed split text, whole in one block.
+      expect(desc!.textContent).toContain('225.00 DKK per loaded container');
+      // The detail machinery rides the row (the per-line blocks, each
+      // individually avoid-guarded by the unit 2a rule).
+      expect(cargoRow!.querySelectorAll('.print-line-detail').length).toBeGreaterThan(0);
+    } finally {
+      await act(async () => { root.unmount(); });
+      container.remove();
+    }
+  });
+});
