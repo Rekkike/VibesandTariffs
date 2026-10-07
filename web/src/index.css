@@ -1855,19 +1855,25 @@ textarea:focus-visible,
     color: #1a1e22 !important;
   }
 
-  /* Row-level break integrity (spec v0.6.2): the page's own table never
-     breaks internally (self-contained pages), and a row — above all the
-     Grand Total row with its derived-per-GT annotation — never splits
-     across a sheet boundary. The page-level break-before lives in the
-     pagination-integrity block above. */
+  /* Pagination completeness (spec v0.6.4, unit 1): the page's own table
+     is NOT kept on one sheet. With the detail toggle ON (or a tall
+     charge-type row) a group's table outgrows one A4 sheet; a table-level
+     avoid is then unsatisfiable and Chromium's fragmentation pass degrades
+     — the observed v0.6.3 printout printed only the first port group
+     (three columns, "Page 1 of 2") and split the tallest citation row
+     mid-word. The table flows across sheets instead (break-inside: auto)
+     while the row-level rules below keep every row whole: a row taller
+     than the remaining sheet space moves whole to the next sheet. The
+     forced break-before between groups still guarantees each group's page
+     starts on a fresh sheet. */
   .print-page:first-of-type {
     break-before: auto;
     page-break-before: auto;
   }
 
   .print-page .comparison-table {
-    break-inside: avoid;
-    page-break-inside: avoid;
+    break-inside: auto;
+    page-break-inside: auto;
   }
 
   .print-page .comparison-table tr,

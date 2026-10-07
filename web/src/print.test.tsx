@@ -351,8 +351,17 @@ describe('the export button and chrome hiding (spec v0.6.2, units 1 and 3)', () 
     // print stylesheet suppresses the flag surfaces should they ever
     // render into the print DOM.
     expect(printBlock).toMatch(/\.print-flag-row,\n\s*\.print-flag-text\s*\{\s*display:\s*none\s*!important;\s*\}/);
-    // Self-contained pages: the page's table never slices across pages.
-    expect(printBlock).toMatch(/\.print-page \.comparison-table\s*\{\s*break-inside:\s*avoid/);
+    // Pagination completeness (spec v0.6.4, unit 1): the page's own table
+    // is NOT kept on one sheet (break-inside: auto). A table-level avoid
+    // is unsatisfiable whenever a detail-ON group's table outgrows one A4
+    // sheet, and Chromium's fragmentation pass then degrades — the observed
+    // v0.6.3 printout lost every port group after the first (three
+    // columns, "Page 1 of 2"). This pin was observed red against the
+    // v0.6.3 stylesheet (the table-level avoid still present) before
+    // being trusted; the row-level keeps-whole rules below are what make
+    // the flowing table safe.
+    expect(printBlock).toMatch(/\.print-page \.comparison-table\s*\{\s*break-inside:\s*auto/);
+    expect(printBlock).not.toMatch(/\.print-page \.comparison-table\s*\{\s*break-inside:\s*avoid/);
     expect(printBlock).toMatch(/break-before:\s*page/);
     // Row-level break integrity (spec v0.6.3, unit 2): the page block does
     // NOT carry break-inside: avoid - with detail toggled ON a page can
@@ -663,6 +672,122 @@ describe('printed call parameters as set (spec v0.6.3, unit 1)', () => {
       expect(text).toContain('Lay time: 50 h at berth');
     } finally {
       await act(async () => { root!.unmount(); });
+      container.remove();
+    }
+  });
+});
+
+// Port-group completeness (spec v0.6.4, unit 1): with N selected ports,
+// every selected port appears in the printed output - the groups follow the
+// print pagination doctrine (3 columns per group; 6 -> 3+3, 8 -> 3+3+2),
+// the numbering counts every group page, and each group's page carries
+// the header, the Grand Total, and the footnote block. The regression this
+// pins: the v0.6.3 printout at six ports carried three columns only
+// (Helsingborg, Norrköping, Norvik absent) - the unsatisfiable table-level
+// break-inside: avoid made Chromium's fragmentation pass drop every port
+// group after the first. Red proof per the standing discipline: with the
+// component rendering only the first page's slice (the regression shape),
+// this pin was observed red; restored green.
+describe('port-group completeness on paper (spec v0.6.4, unit 1)', () => {
+  // The user's own six-port selection (the fresh print-through evidence).
+  const SIX_PORT_IDS = ['aarhus', 'gavle', 'gothenburg', 'helsingborg', 'norrkoping', 'norvik'];
+
+  const renderSixPortPrint = async (derivationsVisible: boolean) => {
+    const ports = LOADED_PORTS.filter(p => SIX_PORT_IDS.includes(p.metadata.id));
+    const call = defaultCall('gothenburg');
+    const portResults = ports.map(port => {
+      const merged = { ...defaultCall(port.metadata.id), ...call, port_id: port.metadata.id } as CallInput;
+      try {
+        return { port, result: calculatePortCallCost(port, { vessel: DEFAULT_VESSEL, call: merged }) };
+      } catch {
+        return { port, result: null };
+      }
+    });
+    const ruleNames = buildRuleNamesByPort(ports);
+    const ruleAttrs = buildRuleAttributesByPort(ports);
+    const rowsByStage = buildRowsBySegment(portResults as never, ruleNames, ruleAttrs, DEFAULT_VESSEL.gt).rowsByStage;
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    const root = createRoot(container);
+    const rateInfo = { rate: 11.2525, date: '2026-10-05', source: 'ECB euro reference rate (SEK per EUR)', is_default: true };
+    await act(async () => {
+      root.render(
+        <PrintComparisonPages
+          ports={ports}
+          portResults={portResults as never}
+          rowsByStage={rowsByStage as never}
+          vessel={DEFAULT_VESSEL}
+          call={call}
+          rateInfo={rateInfo}
+          comparisonBasisContext={{ basis: 'SEK', rows: DECLARED_ROWS }}
+          declaredRows={DECLARED_ROWS}
+          activeVessel="MAREN MAERSK (IMO 9632129)"
+          formatCurrency={(amount, currency) =>
+            new Intl.NumberFormat('sv-SE', { style: 'currency', currency, minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amount)}
+          derivationsVisible={derivationsVisible}
+        />
+      );
+    });
+    return { container, root };
+  };
+
+  it('six selected ports print as two groups (3+3) - every port name present, numbering Page 1 of 2 / Page 2 of 2', async () => {
+    const { container, root } = await renderSixPortPrint(false);
+    try {
+      const pages = document.body.querySelectorAll('body > .print-pages .print-page');
+      expect(pages.length).toBe(2);
+      // Every group carries exactly three port columns - all six names print.
+      const page1Names = Array.from(pages[0].querySelectorAll('.comparison-port-name')).map(n => n.textContent);
+      const page2Names = Array.from(pages[1].querySelectorAll('.comparison-port-name')).map(n => n.textContent);
+      expect(page1Names).toEqual(['Port of Aarhus', 'Port of Gävle', 'Port of Gothenburg']);
+      expect(page2Names).toEqual(['Port of Helsingborg', 'Port of Norrköping', 'Stockholm Norvik Port']);
+      // The numbering counts both group pages.
+      expect(pages[0].querySelector('.print-footer')?.textContent).toContain('Page 1 of 2');
+      expect(pages[1].querySelector('.print-footer')?.textContent).toContain('Page 2 of 2');
+    } finally {
+      await act(async () => { root.unmount(); });
+      container.remove();
+    }
+  });
+
+  it('each group page is self-contained: header and continuation note per group, Grand Total and footnote on every page', async () => {
+    const { container, root } = await renderSixPortPrint(false);
+    try {
+      const pages = document.body.querySelectorAll('body > .print-pages .print-page');
+      // The header prints on every page.
+      expect(pages[0].querySelector('.print-header')).not.toBeNull();
+      expect(pages[1].querySelector('.print-header')).not.toBeNull();
+      // The continuation note carries per group (page 2 states its ports).
+      expect(pages[0].querySelector('[data-testid="print-continuation-1"]')).toBeNull();
+      expect(pages[1].querySelector('[data-testid="print-continuation-2"]')?.textContent)
+        .toBe('continued \u2014 ports 4\u20136 of 6');
+      // The Grand Total row renders on every group's page, for that group's ports.
+      pages.forEach(page => {
+        const totalRow = page.querySelector('.comparison-total-row');
+        expect(totalRow).not.toBeNull();
+        expect(totalRow!.textContent).toContain('Grand Total');
+      });
+      // The footnote block renders on every group's page (detail OFF shape).
+      expect(document.body.querySelector('[data-testid="print-grand-total-footnote-1"]')).not.toBeNull();
+      expect(document.body.querySelector('[data-testid="print-grand-total-footnote-2"]')).not.toBeNull();
+    } finally {
+      await act(async () => { root.unmount(); });
+      container.remove();
+    }
+  });
+
+  it('detail ON at six ports: the same two-group completeness holds - the tall-row path never loses a group', async () => {
+    const { container, root } = await renderSixPortPrint(true);
+    try {
+      const pages = document.body.querySelectorAll('body > .print-pages .print-page');
+      expect(pages.length).toBe(2);
+      const names = Array.from(document.body.querySelectorAll('.print-page .comparison-port-name')).map(n => n.textContent);
+      expect(names).toContain('Port of Helsingborg');
+      expect(names).toContain('Port of Norrköping');
+      expect(names).toContain('Stockholm Norvik Port');
+      expect(pages[1].querySelector('.print-footer')?.textContent).toContain('Page 2 of 2');
+    } finally {
+      await act(async () => { root.unmount(); });
       container.remove();
     }
   });
