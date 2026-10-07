@@ -272,14 +272,22 @@ describe('the export button and chrome hiding (spec v0.6.2, units 1 and 3)', () 
     // Self-contained pages: the page's table never slices across pages.
     expect(printBlock).toMatch(/\.print-page \.comparison-table\s*\{\s*break-inside:\s*avoid/);
     expect(printBlock).toMatch(/break-before:\s*page/);
-    // Pagination integrity (spec v0.6.2, unit 2): the page block itself
-    // never splits (the footer rides with its page content — no orphaned
-    // footer on a near-empty trailing page), and no table row — above all
-    // the Grand Total row with its derived-per-GT annotation — ever splits
-    // across a sheet boundary. Both pins were observed red against the
-    // v0.6.1 stylesheet (no page-level break-inside) before being trusted.
-    expect(printBlock).toMatch(/\.print-page\s*\{[^}]*break-inside:\s*avoid/);
-    expect(printBlock).toMatch(/\.print-page \.comparison-table tr\s*\{\s*break-inside:\s*avoid/);
+    // Row-level break integrity (spec v0.6.3, unit 2): the page block does
+    // NOT carry break-inside: avoid - with detail toggled ON a page can
+    // outgrow one sheet, and an unsatisfiable page-level avoid is what
+    // permitted the observed mid-cell fragmentation (the Berth-dues
+    // description splitting across pages 1-2, the Grand Total annotation
+    // running past the visible area). The page keeps its forced break-before
+    // and flows when taller than a sheet; the row-level avoid holds: a row
+    // taller than the remaining space moves whole to the next sheet, never
+    // splitting mid-cell. The page-block pin was observed red against the
+    // v0.6.2 stylesheet (the page-level avoid present) before being trusted.
+    expect(printBlock).not.toMatch(/\.print-page\s*\{[^}]*break-inside/);
+    expect(printBlock).toMatch(/\.print-page\s*\{[^}]*break-before:\s*page/);
+    expect(printBlock).toMatch(/\.print-page \.comparison-table tr,\n\s*\.print-page \.comparison-table tr td,\n\s*\.print-page \.comparison-table tr th\s*\{\s*break-inside:\s*avoid/);
+    // The multi-paragraph detail blocks (the toggle-ON line detail and its
+    // derivation subtitle) never split mid-block.
+    expect(printBlock).toMatch(/\.print-line-detail,\n\s*\.print-page \.comparison-table \.print-derivation-detail\s*\{\s*break-inside:\s*avoid/);
   });
 
   it('the print page set mounts on beforeprint and unmounts on afterprint — the screen DOM stays byte-identical otherwise', async () => {
