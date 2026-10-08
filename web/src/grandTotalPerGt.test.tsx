@@ -108,27 +108,29 @@ describe('Grand Total derived per-GT — desktop comparison (spec v0.2.58)', () 
     expect(text).toContain('61.34 SEK/GT');
   });
 
-  it('HAM converts through the rate input: 127.33 SEK/GT at the default 11.2525, with the derived-and-converted disclosure naming the rate dependency (v0.5.2 ritual re-baseline)', async () => {
+  it('HAM converts through the rate input: 127.01 SEK/GT at the default 11.224, with the derived-and-converted disclosure naming the rate dependency (v0.6.6 ritual re-baseline)', async () => {
     ({ container, root } = await renderComparison(false, defaultCall('gothenburg')));
     const totalRow = Array.from(container!.querySelectorAll('.comparison-total-row'))
       .find(r => (r.textContent ?? '').includes('Grand Total'))!;
-    // v0.5.1: two German ports now convert (Bremerhaven 127.03 SEK/GT
+    // v0.5.1: two German ports now convert (Bremerhaven 126.71 SEK/GT
     // beside HAM), so the HAM cell is found by its own figure, not by the
     // disclosure text alone.
     const hamCell = Array.from(totalRow.querySelectorAll('.comparison-total-pergt'))
-      .find(c => (c.textContent ?? '').includes('127.33 SEK/GT'))!;
+      .find(c => (c.textContent ?? '').includes('127.01 SEK/GT'))!;
     expect(hamCell).toBeDefined();
-    // v0.5.2 ritual re-baseline: 2,204,910.90 × 11.2525 ÷ 194,849 =
-    // 127.33 SEK/GT (was 127.76 at 11.29; the Eurogate terminal layer; §17.5).
-    expect(hamCell.textContent).toContain('127.33 SEK/GT');
-    expect(hamCell.textContent).toContain('11.2525 kr/EUR');
+    // v0.6.6 ritual re-baseline (in-test attribution): 11.224 as of
+    // 2026-10-07, the observed ECB TARGET publication (was 11.2525,
+    // 2026-10-05) - 2,204,910.90 × 11.224 ÷ 194,849 = 127.01 SEK/GT
+    // (was 127.33; the Eurogate terminal layer; §17.5).
+    expect(hamCell.textContent).toContain('127.01 SEK/GT');
+    expect(hamCell.textContent).toContain('11.224 kr/EUR');
     // The Bremerhaven per-GT renders with the same converted disclosure:
-    // 2,199,272.49 × 11.2525 ÷ 194,849 = 127.03 SEK/GT (v0.5.1 baseline;
-    // v0.5.2 ritual re-baseline at 11.2525, 2026-10-05).
+    // 2,199,272.49 × 11.224 ÷ 194,849 = 126.71 SEK/GT (v0.5.1 baseline;
+    // v0.6.6 ritual re-baseline at 11.224, 2026-10-07; was 127.03).
     const brvCell = Array.from(totalRow.querySelectorAll('.comparison-total-pergt'))
-      .find(c => (c.textContent ?? '').includes('127.03 SEK/GT'))!;
+      .find(c => (c.textContent ?? '').includes('126.71 SEK/GT'))!;
     expect(brvCell).toBeDefined();
-    expect(brvCell.textContent).toContain('11.2525 kr/EUR');
+    expect(brvCell.textContent).toContain('11.224 kr/EUR');
   });
 
   it('the figure changes when GT changes (a different vessel re-derives it)', async () => {
@@ -186,7 +188,7 @@ describe('Grand Total derived per-GT — mobile comparison cards (spec v0.2.58)'
     const hiddenTags = ham.querySelectorAll('.comparison-card-total .comparison-converted-hidden-tag');
     expect(hiddenTags.length).toBe(2);
     expect(Array.from(hiddenTags).some(t => (t.textContent ?? '').includes('converted per-GT figure hidden'))).toBe(true);
-    expect(ham.querySelector('.comparison-card-total')!.textContent).not.toContain('127.33');
+    expect(ham.querySelector('.comparison-card-total')!.textContent).not.toContain('127.01');
   });
 });
 
