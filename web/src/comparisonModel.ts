@@ -396,4 +396,33 @@ export const computeRanking = (
       .filter(pr => pr.result)
       .map(pr => ({ portId: pr.result!.port_id, amount: pr.result!.total, currency: pr.result!.currency })),
     rateInfo,
-    comparisonBasisContext);
+    comparisonBasisContext,
+    undefined,
+    incompletePortIds(portResults)
+  );
+
+
+// The incomplete-port state (v0.8.0 user ruling 2026-10-08), general
+// machinery, never a port hardcode: a port whose rendered result carries a
+// core-surface gap notice (the service_gap_notice flag on a
+// terminal-handling line - the notice renders only when no user-supplied
+// rate replaced the surface) holds the incomplete state. The cheapest /
+// most-expensive assignment skips incomplete ports; the ranked column
+// order is unchanged; a user-supplied rate clears the flag (the notice is
+// suppressed) and the badge re-evaluates live on the rendered totals.
+export const incompletePortIds = (portResults: PortResultEntry[]): Set<string> => {
+  const incomplete = new Set<string>();
+  for (const pr of portResults) {
+    if (!pr.result) continue;
+    const hasGapNotice = pr.result.billers
+      .flatMap(b => b.fees)
+      .some(f =>
+        f.fee_family === 'terminal_handling' &&
+        f.quality_flags.some(q => q.type === 'service_gap_notice')
+      );
+    if (hasGapNotice) {
+      incomplete.add(pr.result.port_id);
+    }
+  }
+  return incomplete;
+};

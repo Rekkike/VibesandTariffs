@@ -485,6 +485,13 @@ export interface FeeRule {
   service_gap_notice?: {
     description: string;
     severity?: 'info' | 'warning';
+    // v0.8.0 Rotterdam handling (the user-specified-rate pairing): when
+    // this call input carries a number, the notice line is suppressed —
+    // the user's own rate replaces the gap disclosure on the rendered
+    // surface (a rate entered means the surface is no longer a gap).
+    // The pairing is terminal-invariant and never touches published
+    // surfaces.
+    suppressed_by_input?: string;
   };
   // Optional percentage scaling from a call input (e.g. pilotage segment %).
   scale_by?: {
@@ -696,6 +703,7 @@ export interface CallInput {
   tug_count?: number;              // number of tug assists (drives towage unit counts where billed per tug)
   ees_rate_per_move?: number;      // Emergency Energy Surcharge per move (Helsingborg; datestamped monthly level)
   handling_rate_per_move?: number; // estimated handling rate per move (default 358 EUR)
+  handling_rate_per_move_user?: number; // user-specified handling rate per move, EUR (Rotterdam only, v0.8.0; blank = the evidenced notice renders and no total moves; a rate fires the flagged handling line and suppresses the notice)
   waste_short_sea_reduction?: boolean;          // -90% of total (application-based, off by default)
   waste_alternative_fuel_reduction?: boolean;   // -50% of MARPOL I share
   waste_sustainable_waste_reduction?: boolean; // -2% of MARPOL V share

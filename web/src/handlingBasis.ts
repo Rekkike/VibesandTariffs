@@ -51,7 +51,7 @@ export const HANDLING_BASIS_ANNOTATIONS: Record<string, HandlingBasisAnnotation>
   },
   rotterdam: {
     text:
-      'Handling basis: not published in the archived record. The deep-sea container terminal operators at Maasvlakte bill handling separately from Havenbedrijf Rotterdam N.V.\u2019s tariff \u2014 R1\u2019s own scope statement (Article 3) limits the General Terms and Conditions to Port Dues, Inland Port Dues and the Waste fee, and R3\u2019s third-party schedules (Tariffs of Third Parties 2026) price towage, pilotage and the KRVE boatmen, never stevedoring. No rate, no basis, and no scope is published for container handling in any archived document; the cost is excluded from the call total and carried as the notice line only \u2014 never a zero, never an invented figure.'
+      'Handling basis: not published on the vessel side at any of the four operators (the operator archive of record). ECT (Delta, Euromax, Delta II) publishes landside-only truck rates; RWG publishes conditions only, no tariff; APM Terminals Maasvlakte II publishes no tariff of its own; and the VRTO uniform conditions \u2014 which govern the members\u2019 Work by their own Article 2.2 \u2014 carry no rate schedule (the association has set no rates for years). Handling is carrier-contracted and billed separately at every terminal; the cost is excluded from the call total and carried as the notice line only \u2014 never a zero, never an invented figure.'
   }
 };
 
@@ -188,7 +188,7 @@ export function containerThroughParts(
         addedAmount: null,
         bundled: false,
         note:
-          'Not published: no handling rate of any basis exists in the archived record — the Maasvlakte deep-sea terminal operators bill handling separately from the port authority’s tariff (R1 Article 3 scopes the General Terms and Conditions to port dues, inland port dues and the waste fee; R3’s third-party schedules price towage, pilotage and mooring, never stevedoring). No figure is added and none is invented; not published is never rendered as a zero.'
+          'Not published on the vessel side at any of the four operators — ECT landside-only, RWG conditions-only, APMT Maasvlakte II unpublished, the VRTO conditions carry no rate schedule (the operator archive of record). Handling is carrier-contracted and billed separately at every terminal. No figure is added and none is invented; not published is never rendered as a zero.'
       };
     default:
       return {

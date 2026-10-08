@@ -29,7 +29,8 @@ import {
   buildRuleNamesByPort,
   buildRuleAttributesByPort,
   buildRowsBySegment,
-  computeRanking
+  computeRanking,
+  incompletePortIds
 } from './comparisonModel';
 import { equivalenceNoteForFamily, equivalenceNoteForRule, EQUIVALENCE_ANNOTATED_PORTS } from './equivalenceNotes';
 import { makeComparisonCells } from './comparisonCells';
@@ -187,6 +188,17 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
   );
   const cheapestTotalPortId = ranking.cheapestPortId;
   const mostExpensiveTotalPortId = ranking.mostExpensivePortId;
+  // The incomplete-port flag (v0.8.0 user ruling 2026-10-08): a port
+  // rendering a core-surface gap notice without a user-supplied rate holds
+  // the incomplete state and renders an "incomplete" flag at its column.
+  // Screen-only (the screen-only flag doctrine): the print pages carry no
+  // marker at all (cheapestPortId null on paper), so the flag never prints;
+  // the in-cell inclusion note remains the printed disclosure. The badge
+  // assignment skips incomplete ports (conversion.ts).
+  const incompletePorts = useMemo(
+    () => incompletePortIds(portResults),
+    [portResults]
+  );
   // Discounts received (spec v0.2.64): the tariff-derived discount inventory
   // per port, rendered as a line before the Grand Total on both comparison
   // surfaces. Speculation inputs are structurally excluded — OPS amounts
@@ -347,6 +359,9 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
                       )}
                       {result && mostExpensiveTotalPortId === port.metadata.id && (
                         <span className="comparison-marker comparison-most-expensive">most expensive</span>
+                      )}
+                      {result && incompletePorts.has(port.metadata.id) && (
+                        <span className="comparison-marker comparison-incomplete">incomplete</span>
                       )}
                     </Typography>
                     {!result ? (
@@ -542,6 +557,9 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
                       )}
                       {result && mostExpensiveTotalPortId === port.metadata.id && (
                         <span className="comparison-marker comparison-most-expensive">most expensive</span>
+                      )}
+                      {result && incompletePorts.has(port.metadata.id) && (
+                        <span className="comparison-marker comparison-incomplete">incomplete</span>
                       )}
                     </TableCell>
                   ))}

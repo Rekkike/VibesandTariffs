@@ -264,7 +264,12 @@ export function evaluateFeeRule(
       // both German terminal-scoped ports default to their EUROGATE
       // operator). The fallback flag text names the German models, not
       // Hamburg alone.
-      const known = ['HHLA', 'Eurogate', 'NTB'];
+      // v0.8.0 Rotterdam terminal layer: the four Rotterdam terminals join
+      // the known list (ECT Delta the default and reference operator —
+      // the fallback here stays the German models' own; a Rotterdam call
+      // always carries its port default, so the fallback text names the
+      // German precedent only when a German call lacks its operator).
+      const known = ['HHLA', 'Eurogate', 'NTB', 'ECT Delta', 'ECT Euromax', 'RWG', 'APM Terminals Maasvlakte II'];
       const entered = call.terminal_operator;
       const op = entered && known.includes(entered) ? entered : 'Eurogate';
       if (!required.includes(op)) {
@@ -394,6 +399,17 @@ export function evaluateFeeRule(
   // informational disclosure of a separately-billed service with no
   // published rate. Zero-amount by construction; the flag is what renders
   // (the informative-zero convention keeps the line visible).
+  // v0.8.0 (the user-specified-rate pairing): when suppressed_by_input
+  // names a call input that carries a number, the notice line renders
+  // nothing — the user's own rate replaces the gap disclosure (the paired
+  // user-rate rule fires on the same input). Suppression is entire: no
+  // zero line, no flag, nothing added.
+  if (rule.service_gap_notice?.suppressed_by_input) {
+    const paired = (call as any)[rule.service_gap_notice.suppressed_by_input];
+    if (typeof paired === 'number' && paired > 0) {
+      return null;
+    }
+  }
   if (rule.service_gap_notice) {
     qualityFlags.push({
       type: 'service_gap_notice',

@@ -231,16 +231,26 @@ export function rankByConvertedBasis(
   totals: { portId: string; amount: number; currency: string }[],
   rate: ExchangeRateInfo,
   context?: ComparisonBasisContext,
-  derived?: DerivedCrossRates
+  derived?: DerivedCrossRates,
+  // v0.8.0 (the incomplete-port skip rule, user ruling 2026-10-08): a
+  // port rendering a core-surface gap notice without a user-supplied rate
+  // holds the incomplete state and is skipped by the cheapest/most-
+  // expensive assignment - the badge goes to the next-cheapest complete
+  // port. General machinery, never a port hardcode: the caller derives the
+  // incomplete set from the rendered results. The table sort does not
+  // change (the ranked order stays the rendered totals' order).
+  incompletePortIds?: Set<string>
 ): { cheapestPortId: string | null; mostExpensivePortId: string | null } {
   if (totals.length < 2) {
     return { cheapestPortId: null, mostExpensivePortId: null };
   }
+  const incomplete = incompletePortIds ?? new Set<string>();
   let cheapest: string | null = null;
   let cheapestBasis = Infinity;
   let mostExpensive: string | null = null;
   let mostExpensiveBasis = -Infinity;
   for (const t of totals) {
+    if (incomplete.has(t.portId)) continue;
     const basis = toComparisonBasis(t.amount, t.currency, rate, context, derived).amount;
     if (basis < cheapestBasis) {
       cheapestBasis = basis;
