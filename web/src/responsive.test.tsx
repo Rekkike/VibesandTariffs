@@ -234,12 +234,16 @@ describe('comparison view responsive rendering paths', () => {
     const cheapestHeader = cheapest[0].closest('th') ?? cheapest[0].closest('.comparison-port-card');
     expect((cheapestHeader?.textContent ?? '')).toContain('Gothenburg');
     const mostExpensiveHeader = mostExpensive[0].closest('th') ?? mostExpensive[0].closest('.comparison-port-card');
-    // v0.5.1 re-baseline (the Bremerhaven expansion, in-test attribution):
-    // at this suite's 12,000-GT call Bremerhaven's converted total
-    // (44,610.32 EUR x 11.29 = 503,651 kr) overtakes Hamburg's
-    // (42,517.54 EUR x 11.29 = 480,023 kr) - the Raumgebuehr's overseas
-    // liner rate scales where HAM's GT component caps; the most-expensive
-    // badge moves to Bremerhaven. The single ranking rule is unchanged.
+    // v0.5.1 re-baseline (the Bremerhaven expansion): at this suite's
+    // 12,000-GT call Bremerhaven's converted total overtakes Hamburg's -
+    // the Raumgebuehr's overseas liner rate scales where HAM's GT
+    // component caps; the most-expensive badge moves to Bremerhaven.
+    // v0.6.6 ritual re-baseline (in-test attribution): 44,610.32 EUR x
+    // 11.224 = 500,706 kr vs Hamburg's 42,517.54 EUR x 11.224 =
+    // 477,217 kr (was 503,651 kr / 480,023 kr at 11.2525, 2026-10-05;
+    // the observed ECB TARGET publication moved the rate to 11.224,
+    // 2026-10-07) - Bremerhaven still holds the most-expensive badge.
+    // The single ranking rule is unchanged.
     expect((mostExpensiveHeader?.textContent ?? '')).toContain('Bremerhaven');
   });
 

@@ -33,21 +33,25 @@
 #   Previous pin (v0.3.2 ritual, verified 2026-10-01): 11.331 as of 2026-09-30.
 #   Previous pin (v0.4.6 ritual, verified 2026-10-02): 11.29 as of 2026-10-02.
 #   Previous pin (v0.5.2 ritual, verified 2026-10-05): 11.2525 as of 2026-10-05.
-#   Current  pin (v0.6.0 ritual, verified 2026-10-06):
+#   Previous pin (v0.6.0 ritual, verified 2026-10-06): 11.2525 as of 2026-10-05.
 #   https://api.frankfurter.app/latest?from=EUR&to=SEK,DKK
+#   Previous observed (v0.6.0 ritual, verified 2026-10-06):
 #   { "base": "EUR", "date": "2026-10-05", "rates": { "DKK": 7.4745, "SEK": 11.2525 } }
-#   SEK drift 0 (identical to the v0.5.2 pin and as_of); DKK added this pass
-#   (the Aarhus expansion's new pair, as_of 2026-10-05, the mirror's latest).
+#   Current  pin (v0.6.6 ritual, verified 2026-10-07):
+#   { "base": "EUR", "date": "2026-10-07", "rates": { "DKK": 7.4745, "SEK": 11.224 } }
+#   SEK drift declared: 11.2525 -> 11.224, as_of 2026-10-05 -> 2026-10-07;
+#   DKK drift 0 (7.4745, the same publication's DKK figure; the pair's
+#   as_of moves with the observed publication date).
 published_pairs:
   - pair: EUR-SEK
     from_currency: EUR
     to_currency: SEK
-    rate: 11.2525
-    as_of: 2026-10-05
+    rate: 11.224
+    as_of: 2026-10-07
     source: ECB euro reference rate (SEK per EUR)
   - pair: EUR-DKK
     from_currency: EUR
     to_currency: DKK
     rate: 7.4745
-    as_of: 2026-10-05
+    as_of: 2026-10-07
     source: ECB euro reference rate (DKK per EUR)

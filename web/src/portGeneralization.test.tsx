@@ -50,21 +50,26 @@ describe('currency declaration is data (spec v0.2.59)', () => {
     expect(ctx.rows[0]).toEqual({
       from_currency: 'EUR',
       to_currency: 'SEK',
-      // v0.5.2 ritual pin (in-test attribution): 11.2525 as of 2026-10-05
-      // (previously 11.29, 2026-10-02) — conversion-only expectations
-      // move with the ritual.
-      rate: 11.2525,
-      as_of: '2026-10-05',
+      // v0.6.6 ritual pin (in-test attribution): 11.224 as of 2026-10-07
+      // (previously 11.2525, 2026-10-05; the ECB TARGET publication
+      // observed at pass start) — conversion-only expectations move with
+      // the ritual.
+      rate: 11.224,
+      as_of: '2026-10-07',
       source: 'ECB euro reference rate (SEK per EUR)'
     });
     // v0.6.0 Aarhus expansion: the second EUR-anchored published pair
     // (the cross-rate machinery's denominator; the derived cross
     // DKK->SEK = (EUR->SEK) / (EUR->DKK), never a fixed ratio in code).
+    // v0.6.6 ritual re-baseline (in-test attribution): the DKK rate is
+    // unchanged at 7.4745 (drift 0); the pair's as_of moves with the
+    // observed publication date (2026-10-07, the same ECB TARGET
+    // publication the SEK pair moved on; was 2026-10-05).
     expect(ctx.rows[1]).toEqual({
       from_currency: 'EUR',
       to_currency: 'DKK',
       rate: 7.4745,
-      as_of: '2026-10-05',
+      as_of: '2026-10-07',
       source: 'ECB euro reference rate (DKK per EUR)'
     });
   });
@@ -175,9 +180,10 @@ describe('comparison scalability controls (spec v0.2.59)', () => {
     // order becomes Gothenburg, Norrköping, Helsingborg, Gävle, Norvik,
     // Bremerhaven, Hamburg (cheapest-first on the converted basis; HAM's
     // converted 24,893,444 kr still ranks last — v0.4.6 ritual figure).
-    // v0.6.0 re-baseline (the Aarhus expansion, in-test attribution): the
-    // eighth port's converted total 9,557,151.94 kr (6,348,361.00 DKK x
-    // 11.2525/7.4745, the derived cross) ranks between Helsingborg
+    // v0.6.6 ritual re-baseline (in-test attribution): the eighth port's
+    // converted total 9,532,945.86 kr (6,348,361.00 DKK x
+    // 11.224/7.4745, the derived cross; was 9,557,151.94 kr at 11.2525)
+    // ranks between Helsingborg
     // (8,750,057.40) and Gävle (10,306,979.35), so Aarhus takes the fourth
     // column. The single ranking rule is unchanged.
     expect(headerCells).toHaveLength(LOADED_PORTS.length + 1);

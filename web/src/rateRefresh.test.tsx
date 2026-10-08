@@ -190,11 +190,13 @@ describe('rate-fetch removal (spec v0.4.0 rider — the v0.3.2/v0.3.5 reversal)'
       path.join(__dirname, '..', '..', 'core', 'data', 'exchange_rates.yaml'), 'utf8'
     );
     expect(yamlText.includes('published_pairs:')).toBe(true);
-    // v0.5.2 ritual re-baseline (in-test attribution): 11.2525 as of
-    // 2026-10-05 (was 11.29, 2026-10-02) — conversion-only figures move
-    // with the standing rate re-verification.
-    expect(yamlText.includes('rate: 11.2525')).toBe(true);
-    expect(yamlText.includes('as_of: 2026-10-05')).toBe(true);
+    // v0.6.6 ritual re-baseline (in-test attribution): 11.224 as of
+    // 2026-10-07 (was 11.2525, 2026-10-05; the ECB TARGET publication
+    // observed at pass start) — conversion-only figures move with the
+    // standing rate re-verification. DKK 7.4745 unchanged at the same
+    // publication.
+    expect(yamlText.includes('rate: 11.224')).toBe(true);
+    expect(yamlText.includes('as_of: 2026-10-07')).toBe(true);
     // v0.6.0 Aarhus expansion: the second EUR-anchored pair (the derived
     // cross's denominator; the ritual now checks both pairs).
     expect(yamlText.includes('rate: 7.4745')).toBe(true);
