@@ -165,7 +165,7 @@ describe('print header content — the unfalsifiability rule (spec v0.6.2)', () 
         // own source); the version-guard ritual pins it against the spec
         // header - this suite never carries a second version literal.
         expect(text).toContain(`Version: ${APP_VERSION}`);
-        expect(APP_VERSION).toBe('v0.6.5');
+        expect(APP_VERSION).toBe('v0.6.6');
         expect(text).toContain('Tariff year: 2026');
         expect(text).toContain('Vessel profile: MAREN MAERSK (IMO 9632129)');
         expect(text).toContain('ESI:');
