@@ -488,3 +488,102 @@ movement case, priced by its own column only when a shift occurs - not a
 default-call service). Mooring is default-fired: the KRVE concession is
 mandatory in practice. A vessel LOA below the table's lower bound is a
 stop-and-report, never an extrapolated figure.
+
+## 9. The operator layer (v0.8.0, Unit 1; the four terminals and their operators)
+
+### 9.1 The two binary verifications (this unit's own re-reads)
+
+**(a) The R5 route matrix, Sea row, per area (PDF p. 21, re-read
+positionally this session).** The matrix's row labels carry each area's
+tariff-column number (A 1e Maasvlakte 4, B Europoort 5, C Botlek 6,
+D Waalhaven 6, E Bolnes 8, F Dordrecht 11, G Moerdijk 12,
+H Haringvliet 13, I Scheveningen 5, J 2e Maasvlakte 5). The Sea row's
+cells, positionally extracted (the S-IN/OUT column at x0 275-277 under the
+Sea column header at x0=290, between RVLNG at 235 and A at 341):
+
+- Sea -> area A (1e Maasvlakte): **S-IN/OUT + TC4** (the cell itself, not
+  only the label number - verified; consistent with the worked example's
+  own "tariff column 4" label).
+- Sea -> B (Europoort): S-IN/OUT + TC5; Sea -> C/D (Botlek/Waalhaven):
+  S-IN/OUT + TC6; Sea -> E (Bolnes): S-IN/OUT + TC8; Sea -> F (Dordrecht):
+  S-IN/OUT + TC11; Sea -> G (Moerdijk): S-IN/OUT + TC12; Sea -> H
+  (Haringvliet): S-IN/OUT + TC13; Sea -> I (Scheveningen): S-IN/OUT + TC5;
+  Sea -> J (2e Maasvlakte): **S-IN/OUT + TC5** (the v0.7.0 encoding,
+  re-confirmed).
+- The full IN/OUT column reads TC4 for Sea, TC4 for A, TC5 for B, TC6 for
+  C, TC6 for D, TC8 for E, TC11 for F, TC12 for G, TC13 for H, TC5 for I,
+  TC5 for J.
+
+**(b) The Boluda row definitions (R3, PDF p. 3, re-read positionally).**
+Row 1: "Rotterdam and Europoort area (from the river to the berth or
+v.v./maximum time 2 hours)". Row 2: "Maasvlakte 2 area (from the river to
+the berth or v.v./maximum time 2.5 hours)". Row 2 is explicitly the
+Maasvlakte 2 area only; row 1 is the general Rotterdam/Europoort schedule
+(the schedule's own note: for assistance outside the above-mentioned
+areas, special arrangements have to be made) - so **1e Maasvlakte falls
+under row 1**, by the document's own complement structure. The
+expectation holds. Fairplay's base list already names Maasvlakte I (the
++25% is the Maasvlakte II/Brittannienhaven Area only); Svitzer zone A
+covers Maasvlakte.
+
+### 9.2 The terminal-to-area mapping (the model's four deep-sea terminals)
+
+| Terminal | Operator | Area | Evidence class |
+|---|---|---|---|
+| ECT Delta | Hutchison Ports ECT | 1e Maasvlakte (A) | The R5 matrix defines area A as 1e Maasvlakte; the terminal sits on the original Maasvlakte (ECT's own terminal pages; the port's public record - ECT Delta at Europaweg 875, Maasvlakte) |
+| ECT Euromax | Hutchison Ports ECT | 1e Maasvlakte (A) | The north-westerly corner of the original Maasvlakte (ECT's own terminal page) |
+| RWG | Rotterdam World Gateway | 2e Maasvlakte (J) | The Prinses Amaliahaven, Maasvlakte 2 (the public record; RWG's own published material) |
+| APMT Maasvlakte II | APM Terminals | 2e Maasvlakte (J) | The Prinses Amaliahaven, Maasvlakte 2 (the public record) |
+
+The mapping evidence is the public geographic record (the terminals'
+own pages corroborate); the areas themselves are the brochure's own
+definitions (A = 1e Maasvlakte, J = 2e Maasvlakte, the R5 matrix).
+
+### 9.3 The publication finding per operator (the archived record)
+
+- **ECT (Delta, Euromax, Delta II)**: publishes **landside-only** truck
+  rates (the archived Tarieven wegvervoer 2026 v1.0: the Spreidingstoeslag
+  20.00, Spreidingspremie 5.00, Klimaattarief 3.50 per truck visit; the
+  archived truck-rate conditions v2.0 janvier 2026 govern them and name
+  the VRTO conditions as governing all ECT services). **No vessel-side
+  handling rate is published.**
+- **RWG**: publishes **conditions only** (the archived General Purchase
+  Conditions, versie juni 2020 - the vendor-side conditions; RWG's
+  terminal-conditions page states its activities are subject to the VRTO
+  conditions, with the purchase conditions applying to its own
+  purchases). **No tariff, no priced schedule, no vessel-side handling
+  rate.**
+- **APMT Maasvlakte II**: the terms page is CDN-blocked (Akamai 403,
+  observed on every route) and the user-delivered print-to-PDF has not
+  reached the Drive at the time of this unit; the search-record context
+  (no tariff of its own published, services deferred to VRTO) is
+  recorded as **CONTEXT ONLY** per the user's explicit ruling
+  (2026-10-08, "Go ahead, context only") - never cited as archive
+  evidence until the binary arrives. The uniform VRTO conditions (the
+  archived EN binary) govern the VRTO-member operators' Work by their
+  own Article 2.2, independent of each operator's own publication.
+- **VRTO**: the uniform General Terms and Conditions (the archived EN
+  binary, 7 pp, filed 11 December 2023) - the liability, payment, and
+  arbitration frame for the members' Work; **the VRTO itself has set no
+  rates for years** (the conditions contain no tariff schedules; the
+  last association-level rates predate the current conditions by
+  decades - the record: no VRTO rate schedule exists in any archived or
+  publicly available document).
+
+### 9.4 The adjudications of record (user-ruled, 2026-10-08)
+
+- **The default terminal is ECT Delta**, per the user's rule (the
+  operator with the complete available rates and tariffs - the only one
+  of the four publishing priced schedules of any kind), confirmed
+  2026-10-08. ECT Delta sits in area A (1e Maasvlakte); the selector's
+  default therefore prices the **MV1** pilotage route and towage schedule.
+- **The MV1 median towage re-adjudication**: at the MAREN reference LOA
+  band the three MV1 per-tug rates are Fairplay base 8,250 (the base list
+  already names Maasvlakte I - no surcharge), Svitzer zone A 5,737
+  (zone A covers Maasvlakte), Boluda row 1 8,191 - the median of
+  {8,250, 5,737, 8,191} is **8,191, Boluda in both areas**, disclosed
+  (the v0.7.0 MV2 adjudication chose Boluda row 2 by the same median
+  rule; the operator is area-invariant, the schedule is not).
+- The MV1 pilotage route is Sea -> A: **S-IN/OUT + TC4** (the
+  positionally verified Sea row cell); the MV2 route stays Sea -> J:
+  S-IN/OUT + TC5 (the v0.7.0 encoding, re-confirmed).
