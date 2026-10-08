@@ -119,6 +119,18 @@ export interface FlatRate {
   // arrival_origin dimension — the entered emissions figure is the
   // call's in-scope portion per the instrument's own 50/100% split,
   // disclosed on the line.
+  // flat_plus_per_gt (spec v0.7.0, Rotterdam waste fee): a flat component
+  // plus a per-GT component in one rule — charged = flat amount + GT ×
+  // per_gt_rate, with per_gt_maximum capping the whole fee (flat + per-GT
+  // together, never the per-GT component alone; the published maximum is a
+  // whole-fee ceiling). The composition steps render both components and,
+  // when capped, the cap line. amount_input is not used on these rules; the
+  // extension owns the amount. A missing GT renders nothing
+  // (blank-means-nothing), never a zero-GT charge.
+  flat_plus_per_gt?: {
+    per_gt_rate: number;     // EUR per GT
+    per_gt_maximum?: number; // ceiling on the whole fee (flat + per-GT)
+  };
   ets_product?: {
     emissions_input: string;        // call input: in-scope CO2 tonnes for this call
     price_input: string;            // call input: EUA price, EUR per tonne CO2
@@ -173,6 +185,16 @@ export interface PerUnitRate {
   banded_by_gt?: {
     bands: { min: number | null; max: number | null; amount: number }[];
   };
+  // LOA-banded per-unit flat amounts (v0.7.0 Rotterdam towage: the operators'
+  // published per-tug tariffs are banded on the vessel's length overall, not
+  // GT — Fairplay/Svitzer/Boluda price per tug by LOA band). The same
+  // contract as banded_by_gt: the vessel's LOA selects the band, the band's
+  // flat amount prices each unit (tug); the unit count path (tug_count input,
+  // default_by_loa suggestion) is unchanged. A vessel LOA outside every band
+  // renders nothing (never a silently unbanded rate).
+  banded_by_loa?: {
+    bands: { min: number | null; max: number | null; amount: number }[];
+  };
   // Cargo-tonnage derivation from container counts (spec v0.2.61, the
   // godsavgift encoding): tonnes = 20ft count x weight_20_input + 40ft count
   // x weight_40_input, charged over the international-traffic basis (loaded
@@ -185,6 +207,16 @@ export interface PerUnitRate {
     weight_20_input: string;   // call input: average weight per 20ft container
     weight_40_input: string;   // call input: average weight per 40ft container
     round_to_whole_tonnes: boolean; // SJÖFS 16 §: chargeable tonnage rounds to the nearest whole tonne
+  };
+  // GT efficiency cap (spec v0.7.0, Rotterdam cargo dues): the vessel's
+  // chargeable basis is capped by its GT efficiency — charged = min(count x
+  // unit_rate, GT x (cap_pct / 100) x unit_rate). When the cap binds, the
+  // line shows the uncapped figure, the capped figure, and the delta as a
+  // discount (rounded up, ceil on discounts per the standing rounding
+  // design) — never a silent reduction.
+  gt_efficiency_cap?: {
+    cap_pct: number;      // percent of GT that is chargeable (e.g. 35)
+    description?: string; // rendered basis note
   };
   // Two-rate value blend (spec v0.2.61): high_value_rate is the per_unit
   // unit_rate; the low-value share input carries the share of tonnage priced

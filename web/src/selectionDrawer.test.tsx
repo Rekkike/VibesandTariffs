@@ -138,26 +138,29 @@ describe('port drawer (spec v0.5.0) - structure and grouping', () => {
     const headers = Array.from(
       container.querySelectorAll('.port-drawer-country-header')
     ).map(h => (h.textContent ?? '').trim());
-    // The eight-port reality (v0.6.0): five Swedish silos, the two German
-    // ports, and the Danish silo - grouping is data-derived from
-    // metadata.country, never enumerated in code; the registry's
+    // The nine-port reality (v0.7.0): five Swedish silos, the two German
+    // ports, the Danish silo, and the Dutch silo - grouping is data-derived
+    // from metadata.country, never enumerated in code; the registry's
     // alphabetical order puts Aarhus first, so Denmark is the first
-    // group.
-    expect(headers).toEqual(['Denmark', 'Germany', 'Sweden']);
+    // group; the Netherlands group renders last, after Sweden.
+    expect(headers).toEqual(['Denmark', 'Germany', 'Sweden', 'Netherlands']);
     const groups = groupPortsByCountry(LOADED_PORTS);
     // v0.6.0 re-baseline: the Aarhus silo founds the Denmark group - the
     // fixture's v0.5.1 synthetic-Denmark role is retired; Denmark is now
     // the real first group (registry order: aarhus first).
-    expect(groups.map(g => g.country)).toEqual(['Denmark', 'Germany', 'Sweden']);
+    // v0.7.0 re-baseline: the Rotterdam silo founds the Netherlands group,
+    // rendering last, after Sweden.
+    expect(groups.map(g => g.country)).toEqual(['Denmark', 'Germany', 'Sweden', 'Netherlands']);
     expect(groups.find(g => g.country === 'Sweden')!.ports).toHaveLength(5);
     expect(groups.find(g => g.country === 'Germany')!.ports).toHaveLength(2);
     expect(groups.find(g => g.country === 'Denmark')!.ports).toHaveLength(1);
+    expect(groups.find(g => g.country === 'Netherlands')!.ports).toHaveLength(1);
     // No code-side country enumeration: the grouping helper reads the
     // field exactly as carried (a new country appears the day its port
     // exists - pinned by the fixture grouping below; the synthetic
     // fixture's country is Finland, a country no real silo carries).
     const withEighth = groupPortsByCountry([...LOADED_PORTS, buildSeventhPort()]);
-    expect(withEighth.map(g => g.country)).toEqual(['Denmark', 'Germany', 'Sweden', 'Finland']);
+    expect(withEighth.map(g => g.country)).toEqual(['Denmark', 'Germany', 'Sweden', 'Netherlands', 'Finland']);
     act(() => { root.unmount(); });
     container.remove();
   });
@@ -328,12 +331,12 @@ describe('port drawer (spec v0.5.0) - the comparison cap (6, the 140 px floor ar
     act(() => { toggle.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
   };
 
-  it('with eight real ports loaded the cap binds in the DOM (v0.5.1 made the cap live at seven; v0.6.0: the eighth port widens the bound set - two unchecked rows render disabled at cap)', () => {
-    // The audit's own arithmetic re-checked at eight: 8 x 140 = 1,120 px
+  it('with nine real ports loaded the cap binds in the DOM (v0.5.1 made the cap live at seven; v0.7.0: the ninth port widens the bound set - three unchecked rows render disabled at cap)', () => {
+    // The audit's own arithmetic re-checked at nine: 9 x 140 = 1,260 px
     // plus the bounded label column exceeds the supported 1024-1200 px
-    // band by more than seven did, so the cap stays 6 and BINDS on the
-    // real port set with two ports left out. With six of the eight
-    // selected, the two unchecked checkboxes render disabled - the cap
+    // band by more than eight did, so the cap stays 6 and BINDS on the
+    // real port set with three ports left out. With six of the nine
+    // selected, the three unchecked checkboxes render disabled - the cap
     // defect class the v0.5.0 suite needed a fixture for is reachable on
     // the real registry.
     const container = document.createElement('div');
@@ -344,9 +347,9 @@ describe('port drawer (spec v0.5.0) - the comparison cap (6, the 140 px floor ar
     const boxes = Array.from(
       container.querySelectorAll('.port-drawer-body input[type="checkbox"]')
     ) as HTMLInputElement[];
-    expect(boxes).toHaveLength(8);
+    expect(boxes).toHaveLength(9);
     const unchecked = boxes.filter(b => !b.checked);
-    expect(unchecked).toHaveLength(2);
+    expect(unchecked).toHaveLength(3);
     expect(unchecked.every(b => b.disabled)).toBe(true);
     const checkedBoxes = boxes.filter(b => b.checked);
     expect(checkedBoxes).toHaveLength(6);

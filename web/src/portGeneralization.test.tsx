@@ -186,15 +186,21 @@ describe('comparison scalability controls (spec v0.2.59)', () => {
     // ranks between Helsingborg
     // (8,750,057.40) and Gävle (10,306,979.35), so Aarhus takes the fourth
     // column. The single ranking rule is unchanged.
+    // v0.7.0 re-baseline (the Rotterdam expansion, in-test attribution):
+    // the ninth port's converted total 929,391 kr (82,803.88 EUR x 11.224)
+    // ranks cheapest of all nine, so Rotterdam takes the first column and
+    // every other port shifts one column right. The single ranking rule
+    // is unchanged.
     expect(headerCells).toHaveLength(LOADED_PORTS.length + 1);
-    expect(headerCells[1]).toContain('Gothenburg');
-    expect(headerCells[2]).toContain('Norrköping');
-    expect(headerCells[3]).toContain('Helsingborg');
-    expect(headerCells[4]).toContain('Aarhus');
-    expect(headerCells[5]).toContain('Gävle');
-    expect(headerCells[6]).toContain('Norvik');
-    expect(headerCells[7]).toContain('Bremerhaven');
-    expect(headerCells[8]).toContain('Hamburg');
+    expect(headerCells[1]).toContain('Rotterdam');
+    expect(headerCells[2]).toContain('Gothenburg');
+    expect(headerCells[3]).toContain('Norrköping');
+    expect(headerCells[4]).toContain('Helsingborg');
+    expect(headerCells[5]).toContain('Aarhus');
+    expect(headerCells[6]).toContain('Gävle');
+    expect(headerCells[7]).toContain('Norvik');
+    expect(headerCells[8]).toContain('Bremerhaven');
+    expect(headerCells[9]).toContain('Hamburg');
   });
 
   it('the cheapest/most-expensive markers are consistent with the column order (same single ranking rule)', async () => {
@@ -204,7 +210,8 @@ describe('comparison scalability controls (spec v0.2.59)', () => {
     expect(cheapest.length).toBe(1);
     expect(mostExpensive.length).toBe(1);
     // v0.4.2 re-baseline (the Yilport terminal layer): Gothenburg ranks cheapest.
-    expect((cheapest[0].closest('th')?.textContent ?? '')).toContain('Gothenburg');
+    // v0.7.0 re-baseline (the Rotterdam expansion): Rotterdam ranks cheapest.
+    expect((cheapest[0].closest('th')?.textContent ?? '')).toContain('Rotterdam');
     expect((mostExpensive[0].closest('th')?.textContent ?? '')).toContain('Hamburg');
   });
 
@@ -217,14 +224,17 @@ describe('comparison scalability controls (spec v0.2.59)', () => {
     // desktop. v0.5.1 re-baseline (the Bremerhaven expansion): same order.
     // v0.6.0 re-baseline (the Aarhus expansion): same order — Aarhus's
     // derived-cross total ranks fourth, between Helsingborg and Gävle.
-    expect(cards[0]).toContain('Gothenburg');
-    expect(cards[1]).toContain('Norrköping');
-    expect(cards[2]).toContain('Helsingborg');
-    expect(cards[3]).toContain('Aarhus');
-    expect(cards[4]).toContain('Gävle');
-    expect(cards[5]).toContain('Norvik');
-    expect(cards[6]).toContain('Bremerhaven');
-    expect(cards[7]).toContain('Hamburg');
+    // v0.7.0 re-baseline (the Rotterdam expansion): same order — Rotterdam's
+    // converted total 929,391 kr ranks first, cheapest of all nine.
+    expect(cards[0]).toContain('Rotterdam');
+    expect(cards[1]).toContain('Gothenburg');
+    expect(cards[2]).toContain('Norrköping');
+    expect(cards[3]).toContain('Helsingborg');
+    expect(cards[4]).toContain('Aarhus');
+    expect(cards[5]).toContain('Gävle');
+    expect(cards[6]).toContain('Norvik');
+    expect(cards[7]).toContain('Bremerhaven');
+    expect(cards[8]).toContain('Hamburg');
   });
 
   it('a subset selection renders only the selected ports - the bounded fresh-load default does not render unselected ports', async () => {
@@ -424,6 +434,15 @@ describe('port-specific reset fields (spec v0.2.60)', () => {
         'ets_emissions_tco2', 'ets_allowance_price',
         'lashing_containers', 'dangerous_goods_units', 'reefer_units',
         'reefer_extra_days', 'storage_days_import', 'storage_days_export'
+      ],
+      // v0.7.0 Rotterdam expansion: the ninth port's own per-port set - the
+      // ESI score (the five published discount bands), the berth-type and
+      // quay-hours inputs (the quay-dues commenced-period pricing), and
+      // the shared EU regulatory block.
+      rotterdam: [
+        'engine_tier', 'engine_tier_estimated', 'esi_score',
+        'berth_type', 'quay_hours',
+        'ets_emissions_tco2', 'ets_allowance_price'
       ]
     };
     for (const port of LOADED_PORTS) {

@@ -231,8 +231,12 @@ describe('comparison view responsive rendering paths', () => {
     // Gävle's Grand Total moves 1,370,979.35 -> 10,306,979.35 (the
     // verified operator layer), so Gävle no longer ranks cheapest -
     // Gothenburg (3,275,851.15) does; the single ranking rule is unchanged.
+    // v0.7.0 re-baseline (the Rotterdam expansion): Port of Rotterdam 2026
+    // ranks cheapest at this suite's 12,000-GT call - the badge moves from
+    // Gothenburg's header to Rotterdam's. The single ranking rule is
+    // unchanged.
     const cheapestHeader = cheapest[0].closest('th') ?? cheapest[0].closest('.comparison-port-card');
-    expect((cheapestHeader?.textContent ?? '')).toContain('Gothenburg');
+    expect((cheapestHeader?.textContent ?? '')).toContain('Port of Rotterdam 2026');
     const mostExpensiveHeader = mostExpensive[0].closest('th') ?? mostExpensive[0].closest('.comparison-port-card');
     // v0.5.1 re-baseline (the Bremerhaven expansion): at this suite's
     // 12,000-GT call Bremerhaven's converted total overtakes Hamburg's -

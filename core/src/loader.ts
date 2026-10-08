@@ -115,6 +115,28 @@ export function validateRateStructure(
           path: 'rate_structure.amount'
         });
       }
+      // flat_plus_per_gt (spec v0.7.0): per_gt_rate is mandatory; a missing
+      // or negative rate would silently price the per-GT component at zero.
+      if (flat.flat_plus_per_gt) {
+        if (typeof flat.flat_plus_per_gt.per_gt_rate !== 'number' || flat.flat_plus_per_gt.per_gt_rate < 0) {
+          errors.push({
+            rule_id: ruleId,
+            message: 'flat_plus_per_gt requires a non-negative per_gt_rate',
+            severity: 'error',
+            path: 'rate_structure.flat_plus_per_gt.per_gt_rate'
+          });
+        }
+        if (flat.flat_plus_per_gt.per_gt_maximum !== undefined &&
+            (typeof flat.flat_plus_per_gt.per_gt_maximum !== 'number' ||
+             flat.flat_plus_per_gt.per_gt_maximum < flat.amount)) {
+          errors.push({
+            rule_id: ruleId,
+            message: 'flat_plus_per_gt per_gt_maximum must be a number at least the flat amount',
+            severity: 'error',
+            path: 'rate_structure.flat_plus_per_gt.per_gt_maximum'
+          });
+        }
+      }
       break;
       
     case 'banded': {
@@ -361,6 +383,20 @@ export function validateRateStructure(
         }
       }
 
+      // GT efficiency cap (spec v0.7.0): cap_pct is mandatory and must be
+      // a sane percentage when the cap is declared — a missing cap would
+      // silently charge the uncapped basis.
+      if (perUnit.gt_efficiency_cap) {
+        if (typeof perUnit.gt_efficiency_cap.cap_pct !== 'number' ||
+            perUnit.gt_efficiency_cap.cap_pct <= 0 || perUnit.gt_efficiency_cap.cap_pct > 100) {
+          errors.push({
+            rule_id: ruleId,
+            message: 'gt_efficiency_cap requires a cap_pct in (0, 100]',
+            severity: 'error',
+            path: 'rate_structure.gt_efficiency_cap.cap_pct'
+          });
+        }
+      }
       // Value blend (spec v0.2.61): the low-value rate and share input are
       // mandatory when the blend is declared.
       if (perUnit.value_blend) {

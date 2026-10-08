@@ -122,6 +122,19 @@ describe('handling-basis annotations (spec v0.4.2, item 2) - a new annotation fa
     expect(got.note).toContain('Not published is never rendered as a zero');
     expect(got.note).not.toContain('not archived in-repo');
   });
+  it('the Rotterdam annotation (v0.7.0 Unit 5) states the not-published handling basis with the archived-document reason - never a zero, never an invented rate', () => {
+    const text = handlingBasisAnnotationFor('rotterdam')!.text;
+    expect(text).toContain('Handling basis: not published in the archived record');
+    expect(text).toContain('R1\u2019s own scope statement (Article 3)');
+    expect(text).toContain('price towage, pilotage and the KRVE boatmen, never stevedoring');
+    expect(text).toContain('never a zero, never an invented figure');
+    const through = containerThroughParts('rotterdam', 'truck', LE_UNITS, GT_UNITS);
+    expect(through.addedAmount).toBeNull();
+    expect(through.bundled).toBe(false);
+    expect(through.note).toContain('Not published: no handling rate of any basis exists in the archived record');
+    expect(through.note).toContain('not published is never rendered as a zero');
+  });
+
   it('the annotation family does not extend the cargo-family equivalence annotations (a separate module and class)', async () => {
     ({ container, root } = await renderComparison(defaultCall('gothenburg')));
     const basisNotes = (container ?? document).querySelectorAll('.comparison-handling-basis-note');

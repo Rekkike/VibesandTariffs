@@ -34,16 +34,13 @@ const LOADED_PORTS: PortDefinition[] = ((portsRegistry as any).ports ?? []).filt
 const DECLARED_ROWS = ((portsRegistry as any).exchange_rates ?? []) as {
   from_currency: string; to_currency: string; rate: number; as_of: string; source: string;
 }[];
-// The synthetic nine-port fixture: a ninth registry-shaped port (the
-// portGeneralization suite's Finland precedent - a country with no real
-// port yet) so the 3+3+3 composition pins on exactly nine columns, the
-// settled constant's first full page set.
-const SYNTHETIC_NINTH: { id: string; name: string } = {
-  id: 'synthetic_print_ninth',
-  name: 'Synthetic Ninth Port (print fixture)'
-};
-const eightPorts = LOADED_PORTS.map(p => ({ id: p.metadata.id, name: p.metadata.name }));
-const ninePorts = [...eightPorts, SYNTHETIC_NINTH];
+// v0.7.0 re-baseline (the Rotterdam expansion): the real registry is
+// nine ports - the eightPorts fixture becomes ninePorts, the 3+3+3
+// composition pins on the real registry (the settled constant's first
+// full page set, no synthetic filler). The synthetic ninth fixture
+// retires from composition duty (the Finland precedent it embodied is
+// pinned in the portGeneralization suite, where it belongs).
+const ninePorts = LOADED_PORTS.map(p => ({ id: p.metadata.id, name: p.metadata.name }));
 
 jest.setTimeout(30000);
 
@@ -58,13 +55,11 @@ describe('print page composition — the settled 3+3+3 constant (spec v0.6.2)', 
     expect(printPagesSource).toMatch(/never derived/);
   });
 
-  it('eight ports compose 3 + 3 + 2 — the current registry slices into two full pages and one honest short page', () => {
-    expect(LOADED_PORTS.length).toBe(8);
-    const pages = printPagesFor(eightPorts);
+  it('nine ports compose 3 + 3 + 3 — the current registry slices into three full pages (v0.7.0 re-baseline: Rotterdam makes the ninth column)', () => {
+    expect(LOADED_PORTS.length).toBe(9);
+    const pages = printPagesFor(ninePorts);
     expect(pages.length).toBe(3);
-    expect(pages[0].ports.length).toBe(3);
-    expect(pages[1].ports.length).toBe(3);
-    expect(pages[2].ports.length).toBe(2);
+    expect(pages.map(p => p.ports.length)).toEqual([3, 3, 3]);
     expect(pages[0].ports.map(p => p.id)).toEqual(
       ['aarhus', 'bremerhaven', 'gavle']
     );
@@ -72,21 +67,25 @@ describe('print page composition — the settled 3+3+3 constant (spec v0.6.2)', 
       ['gothenburg', 'hamburg', 'helsingborg']
     );
     expect(pages[2].ports.map(p => p.id)).toEqual(
-      ['norrkoping', 'norvik']
+      ['norrkoping', 'norvik', 'rotterdam']
     );
     expect(pages.map(p => p.pageNumber)).toEqual([1, 2, 3]);
     expect(pages.every(p => p.totalPages === 3)).toBe(true);
   });
 
-  it('the synthetic nine-port fixture composes exactly 3 + 3 + 3', () => {
+  it('the synthetic ninth fixture is retired from composition duty: the real nine-port registry composes 3+3+3 with no synthetic filler (v0.7.0)', () => {
+    // The fixture's retirement pin: the composition the synthetic port
+    // used to enable now holds on the real registry (Rotterdam is the
+    // ninth column), and no synthetic id appears in any page's columns.
     const pages = printPagesFor(ninePorts);
-    expect(pages.length).toBe(3);
     expect(pages.map(p => p.ports.length)).toEqual([3, 3, 3]);
-    expect(pages[2].ports[2].id).toBe(SYNTHETIC_NINTH.id);
+    const ids = pages.flatMap(p => p.ports.map(pp => pp.id));
+    expect(ids).toContain('rotterdam');
+    expect(ids.filter(id => id.startsWith('synthetic'))).toEqual([]);
   });
 
   it('a comparison of six or fewer ports stays on one page (the cap means a single printed page at the drawer cap)', () => {
-    const six = printPagesFor(eightPorts.slice(0, 6));
+    const six = printPagesFor(ninePorts.slice(0, 6));
     expect(six.length).toBe(2);
     expect(six[0].ports.length).toBe(3);
     expect(six[1].ports.length).toBe(3);
@@ -95,14 +94,11 @@ describe('print page composition — the settled 3+3+3 constant (spec v0.6.2)', 
     expect(printContinuationNote(six[1], 6)).toBe('continued \u2014 ports 4\u20136 of 6');
   });
 
-  it('the continuation note: blank on page 1, "continued — ports 4–6 of 8" on page 2, "continued — ports 7–8 of 8" on page 3', () => {
-    const pages = printPagesFor(eightPorts);
-    expect(printContinuationNote(pages[0], 8)).toBe('');
-    expect(printContinuationNote(pages[1], 8)).toBe('continued \u2014 ports 4\u20136 of 8');
-    expect(printContinuationNote(pages[2], 8)).toBe('continued \u2014 ports 7\u20138 of 8');
-    // The nine-port fixture's page 3 note names all nine.
-    const nine = printPagesFor(ninePorts);
-    expect(printContinuationNote(nine[2], 9)).toBe('continued \u2014 ports 7\u20139 of 9');
+  it('the continuation note: blank on page 1, "continued — ports 4–6 of 9" on page 2, "continued — ports 7–9 of 9" on page 3 (v0.7.0: the real nine-port registry)', () => {
+    const pages = printPagesFor(ninePorts);
+    expect(printContinuationNote(pages[0], 9)).toBe('');
+    expect(printContinuationNote(pages[1], 9)).toBe('continued \u2014 ports 4\u20136 of 9');
+    expect(printContinuationNote(pages[2], 9)).toBe('continued \u2014 ports 7\u20139 of 9');
   });
 });
 
@@ -165,7 +161,7 @@ describe('print header content — the unfalsifiability rule (spec v0.6.2)', () 
         // own source); the version-guard ritual pins it against the spec
         // header - this suite never carries a second version literal.
         expect(text).toContain(`Version: ${APP_VERSION}`);
-        expect(APP_VERSION).toBe('v0.6.6');
+        expect(APP_VERSION).toBe('v0.7.0');
         expect(text).toContain('Tariff year: 2026');
         expect(text).toContain('Vessel profile: MAREN MAERSK (IMO 9632129)');
         expect(text).toContain('ESI:');
@@ -285,9 +281,9 @@ describe('print header content — the unfalsifiability rule (spec v0.6.2)', () 
     try {
       expect(document.body.querySelector('[data-testid="print-continuation-1"]')).toBeNull();
       const c2 = document.body.querySelector('[data-testid="print-continuation-2"]');
-      expect(c2?.textContent).toBe('continued \u2014 ports 4\u20136 of 8');
+      expect(c2?.textContent).toBe('continued \u2014 ports 4\u20136 of 9');
       const c3 = document.body.querySelector('[data-testid="print-continuation-3"]');
-      expect(c3?.textContent).toBe('continued \u2014 ports 7\u20138 of 8');
+      expect(c3?.textContent).toBe('continued \u2014 ports 7\u20139 of 9');
     } finally {
       await act(async () => { root!.unmount(); });
       container.remove();

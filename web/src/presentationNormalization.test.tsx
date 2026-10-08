@@ -194,7 +194,11 @@ describe('the shared-reference contract (spec v0.4.4: referenced, never duplicat
       'aarhus_2026.yaml', 'bremerhaven_2026.yaml', 'exchange_rates.yaml',
       'gavle_2026.yaml', 'gothenburg_2026.yaml', 'hamburg_2026.yaml',
       'helsingborg_2026.yaml', 'norrkoping_2026.yaml', 'norvik_2026.yaml',
-      'vessel_library.yaml'
+      // v0.7.0 re-baseline (the Rotterdam expansion): the ninth silo's
+      // file joins the data-directory list; the no-port-local-copy
+      // contract itself held (Rotterdam carries no Sjofartsverket-style
+      // national block to duplicate).
+      'rotterdam_2026.yaml', 'vessel_library.yaml'
     ]);
   });
 

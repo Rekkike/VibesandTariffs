@@ -266,12 +266,16 @@ describe('Swedish domestic expansion — Sjöfartsverket shared rules (reference
   it('the national tables are not duplicated as a second shared file (the reference, not duplication, is itself pinned)', () => {
     // No national/sjofartsverket port file exists: the rules live in each
     // port's own file; the prislista is cited, not re-archived per port.
+    // v0.7.0 re-baseline (in-test attribution): Rotterdam joins the silo
+    // set — the enumeration is the registry's own file list, never a
+    // stale copy; Rotterdam carries no Sjöfartsverket rules (the Dutch
+    // silo), so the no-duplication contract is unaffected.
     const files = fs.readdirSync(DATA_DIR).filter(f => f.endsWith('.yaml'));
     const portFiles = files.filter(f => f !== 'exchange_rates.yaml' && f !== 'vessel_library.yaml');
     expect(portFiles.sort()).toEqual([
       'aarhus_2026.yaml', 'bremerhaven_2026.yaml', 'gavle_2026.yaml',
       'gothenburg_2026.yaml', 'hamburg_2026.yaml', 'helsingborg_2026.yaml',
-      'norrkoping_2026.yaml', 'norvik_2026.yaml'
+      'norrkoping_2026.yaml', 'norvik_2026.yaml', 'rotterdam_2026.yaml'
     ]);
   });
 });

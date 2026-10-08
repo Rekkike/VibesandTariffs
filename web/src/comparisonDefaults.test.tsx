@@ -238,7 +238,26 @@ describe('comparison shared-call per-port defaults (spec v0.2.53 defect fix)', (
       // section 9 arithmetic: 779,396.00 + 18,565.00 + 6,200.00 +
       // 162,000.00 + 38,600.00 + 23,600.00 + 900,000.00 + 4,420,000.00 =
       // 6,348,361.00 DKK.
-      aarhus: 6348361.00
+      aarhus: 6348361.00,
+      // v0.7.0 Rotterdam expansion: the ninth port's own default-call
+      // baseline (MAREN MAERSK's profile, worst case, the merged ETS-free
+      // default call) - the expansion adds a port; it changes nothing
+      // existing. Native total 82,803.88 EUR (engine total 8,280,388
+      // cents); the converted attribution at the pinned rate 11.224
+      // (2026-10-07) is 929,391 kr.
+      // v0.7.0 Unit 3 re-baseline (the pilotage join, in-test attribution):
+      // the compulsory Loodswezen pilotage fires on the default call -
+      // both sea voyages at the library draught 160 dm, 2 x (S 8,728 +
+      // TC5 1,700) = 20,856.00 - so the full-call baseline is 82,803.88 +
+      // 20,856.00 = 103,659.88 EUR (engine total 10,365,988 cents; the
+      // converted attribution 1,163,478 kr at 11.224).
+      // v0.7.0 Unit 4 re-baseline (the towage and mooring joins): the
+      // Boluda towage 20,478 (2 x 10,239 at the LOA band 384-425) and
+      // the KRVE mooring 4,836 + unmooring 4,497 (the 10-increment
+      // ladder at 399 m) join the default call - 103,659.88 + 29,811.00
+      // = 133,470.88 EUR (engine total 13,347,088 cents; the converted
+      // attribution 1,498,077 kr at 11.224).
+      rotterdam: 133470.88
     };
     for (const port of LOADED_PORTS) {
       const result = calculatePortCallCost(port, {

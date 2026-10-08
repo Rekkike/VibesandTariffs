@@ -48,6 +48,10 @@ export const HANDLING_BASIS_ANNOTATIONS: Record<string, HandlingBasisAnnotation>
   norvik: {
     text:
       'Handling basis: asymmetric. Export: "ISO containers receiving container to stack including single lift to vessel" 2,012 kr - vessel-side, no road leg. Import: "lifted from vessel, received into stack, and loaded to road transport" 2,012 kr - the road leg is bundled on the import side only. Rail separately priced: container loaded to/from rail stack including receiving, lifts and transfer to train 1,300 kr (trailer 1,575 kr).'
+  },
+  rotterdam: {
+    text:
+      'Handling basis: not published in the archived record. The deep-sea container terminal operators at Maasvlakte bill handling separately from Havenbedrijf Rotterdam N.V.\u2019s tariff \u2014 R1\u2019s own scope statement (Article 3) limits the General Terms and Conditions to Port Dues, Inland Port Dues and the Waste fee, and R3\u2019s third-party schedules (Tariffs of Third Parties 2026) price towage, pilotage and the KRVE boatmen, never stevedoring. No rate, no basis, and no scope is published for container handling in any archived document; the cost is excluded from the call total and carried as the notice line only \u2014 never a zero, never an invented figure.'
   }
 };
 
@@ -177,6 +181,14 @@ export function containerThroughParts(
         bundled: false,
         note:
           'Not published: the archived APMT Terminal Tariff 2026 (June revision) and its Terms of Business publish no separately priced landside leg — the tariff’s export/import entries are storage-clock calculation rules, not leg prices, and its §4.1 538 SEK figure is a dangerous-goods receipt/delivery surcharge — and the handling basis itself is not stated in the document. Not published is never rendered as a zero.'
+      };
+    case 'rotterdam':
+      return {
+        portId,
+        addedAmount: null,
+        bundled: false,
+        note:
+          'Not published: no handling rate of any basis exists in the archived record — the Maasvlakte deep-sea terminal operators bill handling separately from the port authority’s tariff (R1 Article 3 scopes the General Terms and Conditions to port dues, inland port dues and the waste fee; R3’s third-party schedules price towage, pilotage and mooring, never stevedoring). No figure is added and none is invented; not published is never rendered as a zero.'
       };
     default:
       return {

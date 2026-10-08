@@ -79,8 +79,10 @@ describe('Grand Total derived per-GT — desktop comparison (spec v0.2.58)', () 
       .find(r => (r.textContent ?? '').includes('Grand Total'))!;
     expect(totalRow).toBeDefined();
     const perGtCells = totalRow.querySelectorAll('.comparison-total-pergt');
-    // v0.5.1: seven loaded ports. v0.6.0: eight loaded ports, eight per-GT cells.
-    expect(perGtCells.length).toBe(8);
+    // v0.5.1: seven loaded ports. v0.6.0: eight loaded ports, eight per-GT
+    // cells. v0.7.0 (the Rotterdam expansion): nine loaded ports, nine
+    // per-GT cells.
+    expect(perGtCells.length).toBe(9);
     for (const cell of Array.from(perGtCells)) {
       expect(cell.textContent).toContain('SEK/GT effective — derived, not a published rate');
     }
@@ -101,11 +103,28 @@ describe('Grand Total derived per-GT — desktop comparison (spec v0.2.58)', () 
     // correction, in-test attribution): Norrköping loses the seeded one
     // chargeable export day (−328,400 kr), 8,297,772.50 ÷ 194,849 =
     // 42.5857 → 42.59 (was 44.27); Gävle and Norvik byte-identical.
-    expect(text).toContain('42.59 SEK/GT');
+    // v0.4.0 Swedish domestic expansion: the three new ports' pure-division
     // v0.4.2 re-baseline (the Yilport terminal layer, in-test attribution):
     // Gävle 10,306,979.35 / 194,849 = 52.8973 -> 52.90 (was 7.04).
+    expect(text).toContain('42.59 SEK/GT');
     expect(text).toContain('52.90 SEK/GT');
     expect(text).toContain('61.34 SEK/GT');
+    // v0.7.0 re-baseline (the Rotterdam expansion, in-test attribution):
+    // the ninth port's figure cross-checked through the pinned Grand Total
+    // string - 82,803.88 EUR converted at 11.224 (2026-10-07) = 929,391 kr;
+    // / 194,849 GT = 4.7714 -> 4.77 SEK/GT effective.
+    // v0.7.0 Unit 3 re-baseline (the pilotage join): the compulsory
+    // pilotage adds 20,856.00 (both sea voyages at the library draught
+    // 160 dm), so the cross-check runs through the full-call string -
+    // 103,659.88 EUR -> rendered 103 660 €; converted 1,163,478 kr at
+    // 11.224; / 194,849 GT = 5.9702 -> 5.97 SEK/GT effective.
+    // v0.7.0 Unit 4 re-baseline (the towage and mooring joins): Boluda
+    // towage 20,478 plus KRVE mooring 4,836 and unmooring 4,497 - the
+    // cross-check runs through 133,470.88 EUR -> rendered 133 471 €;
+    // converted 1,498,077 kr at 11.224; / 194,849 GT = 7.6912 ->
+    // 7.69 SEK/GT effective.
+    expect(text).toContain('133\u00a0471\u00a0\u20ac');
+    expect(text).toContain('7.69 SEK/GT');
   });
 
   it('HAM converts through the rate input: 127.01 SEK/GT at the default 11.224, with the derived-and-converted disclosure naming the rate dependency (v0.6.6 ritual re-baseline)', async () => {
@@ -201,8 +220,10 @@ describe('Grand Total derived per-GT — OPS honesty (spec v0.2.58)', () => {
     const totalRow = Array.from(container!.querySelectorAll('.comparison-total-row'))
       .find(r => (r.textContent ?? '').includes('Grand Total'))!;
     const perGtCells = totalRow.querySelectorAll('.comparison-total-pergt');
-    // v0.5.1: seven loaded ports. v0.6.0: eight loaded ports, eight per-GT cells.
-    expect(perGtCells.length).toBe(8);
+    // v0.5.1: seven loaded ports. v0.6.0: eight loaded ports, eight per-GT
+    // cells. v0.7.0 (the Rotterdam expansion): nine loaded ports, nine
+    // per-GT cells.
+    expect(perGtCells.length).toBe(9);
     for (const cell of Array.from(perGtCells)) {
       expect(cell.textContent).toContain('includes user-specified OPS');
       expect(cell.textContent).toContain('derived, not a published rate');

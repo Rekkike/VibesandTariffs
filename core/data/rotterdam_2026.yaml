@@ -1,0 +1,1266 @@
+# ============================================================================
+# Port of Rotterdam 2026 — the ninth port silo (v0.7.0 Rotterdam expansion)
+#
+# Authority of record: docs/sources/netherlands/rotterdam/
+# ROTTERDAM_EXTRACTION_REFERENCE.md (the per-port pattern; every figure below
+# is transcribed from the archived documents with the citations carried).
+#
+# All amounts in EUR. The engine prices in EUR natively; the SEK comparison
+# basis runs through the published-pairs machinery (the EUR pair in
+# core/data/exchange_rates.yaml), never a fixed ratio in code.
+#
+# Biller: Havenbedrijf Rotterdam N.V. (the port authority — seaport dues,
+# buoy/dolphin/public quay dues, and the waste fee for seagoing vessels are
+# invoiced with one combined invoice per the ToC Article 5.1).
+#
+# The 2026 tariff year: the General Terms and Conditions including Port
+# Tariffs 2026 (the seaport-dues recalculation introduced 2025 — the
+# sustainability component added to the per-GT basis, the efficiency
+# consideration on cargo; indexation 3.5% for 2026 per the published tariff
+# communication).
+# ============================================================================
+metadata:
+  id: rotterdam
+  name: Port of Rotterdam
+  country: Netherlands
+  currency: EUR
+  validity_start: "2026-01-01"
+  validity_end: "2026-12-31"
+  description: "Rotterdam port call costs: the Havenbedrijf Rotterdam General Terms and Conditions including Port Tariffs 2026 (seaport dues — the vessel component and the sustainability component per GT with the ESI discount bands, cargo dues per tonne with the GT-efficiency cap, the waste fee for seagoing vessels — flat plus per-GT with the whole-fee maximum, the buoy/dolphin and public quay dues). The seaport-dues recalculation introduced 2025 (sustainability and efficiency); indexation 3.5% for 2026."
+
+billers:
+  - id: havenbedrijf_rotterdam
+    name: Havenbedrijf Rotterdam N.V.
+    description: "The port authority: seaport dues, buoy, dolphin and public quay dues, and the waste fee for Seagoing Vessels (invoiced with one combined invoice, ToC Article 5.1)"
+    currency: EUR
+  - id: boluda_towage_rotterdam
+    name: Boluda Towage Rotterdam B.V.
+    description: "The adjudicated default towage operator (the median MV2 per-tug rate at the MAREN reference LOA band; the Maasvlakte 2 area schedule, maximum assistance time 2.5 hours)"
+    currency: EUR
+  - id: krve
+    name: KRVE (Koninklijke Roeiers Vereeniging Eendracht)
+    description: "The boatmen concession (mooring, unmooring, shifting; mandatory in practice)"
+    currency: EUR
+  - id: nederlandse_loodswezen_rr
+    name: Nederlands Loodswezen (region Rotterdam-Rijnmond)
+    description: "The pilotage authority: the compulsory pilotage voyages to and from the pilot station (Sea to tariff area J and back), priced per the Pilotage Tariffs 2026 brochure"
+    currency: EUR
+
+fee_rules:
+  # ==========================================================================
+  # SEAPORT DUES — ToC §2.2 (Articles 7-15); rates per Annex 1
+  # ==========================================================================
+  - id: rotterdam_seaport_dues
+    fee_family: port_dues
+    biller: Havenbedrijf Rotterdam N.V.
+    name: Seaport Dues (vessel and sustainability components)
+    description: "ToC §2.2 Article 8.1 with Annex 1: the seaport dues — the vessel component (EUR 0.151 per GT) plus the sustainability component (EUR 0.067 per GT), both over the vessel's gross tonnage per the International Tonnage Certificate (Article 8.2: only whole GT units count). The sustainability component is the 2025-recalculation's sustainability pillar; the ESI discount (Annex 1 §1.4, Article 12.1) discounts the sustainability component by the ESI-score band. Whole-GT basis; no tranche, no cap on the GT basis."
+    rate_structure:
+      type: composite_tranche
+      basis: gt
+      tranches:
+        - min: null
+          max: null
+          components:
+            vessel: 0.151
+            sustainability: 0.067
+      component_labels:
+        vessel: Vessel component
+        sustainability: Sustainability component
+      component_adjustments:
+        sustainability:
+          # ESI discount on the sustainability component (Annex 1 §1.4,
+          # verified live at portofrotterdam.com/en/sea-shipping/seaport-dues/
+          # environmental-ship-index-discount): score bands 5/10/60/80/100
+          # percent. The published table's sixth band (ESI >= 81 with ESI NOx
+          # >= 60) carries 120% — it requires the ESI NOx sub-score, an input
+          # the model does not carry; the unconditional 100% band at ESI >= 61
+          # is the least-favourable encoding (never overstate a benefit), the
+          # 120% NOx variant recorded in the extraction reference.
+          - kind: score_discount_pct_with_cap
+            input: esi_score
+            description: "ESI discount"
+            bands:
+              - { min: 1, max: 21, pct: 5 }
+              - { min: 21, max: 31, pct: 10 }
+              - { min: 31, max: 41, pct: 60 }
+              - { min: 41, max: 61, pct: 80 }
+              - { min: 61, max: null, pct: 100 }
+    source_reference:
+      document_name: "General Terms and Conditions including Port Tariffs — Port Tariffs 2026"
+      document_url: "docs/sources/netherlands/rotterdam/port-of-rotterdam/port-tariffs-and-conditions-port-of-rotterdam-2026.pdf"
+      upstream_url: "https://www.portofrotterdam.com/sites/default/files/2025-12/port-tariffs-and-conditions-port-of%20-rotterdam-2026.pdf"
+      document_issued: "2026-01-01"
+      page: "Annex 1"
+      clause: "Article 8.1; Annex 1 seaport-dues table; Annex 1 §1.4 ESI discount table"
+      verified_on: "2026-10-08"
+      verified_by: "vibe-session-rotterdam-expansion"
+
+  - id: rotterdam_cargo_dues
+    fee_family: cargo_fee
+    biller: Havenbedrijf Rotterdam N.V.
+    name: Seaport Dues (cargo component, GT-efficiency capped)
+    description: "ToC §2.2 Article 8.1 with Annex 1: the cargo leg of the seaport dues — EUR 0.562 per tonne of Cargo (the ToC definition: all merchandise, containers and trailers loaded and discharged, expressed in metric tonnes; Article 8.2 whole-unit counting). The 2025 recalculation's efficiency pillar: the chargeable tonnage is capped at the GT-implied ceiling (35% of the vessel's GT) — a vessel is not charged for cargo tonnage beyond what its size implies it can carry; the cap's delta renders as a discount on the line, never a silent reduction. Chargeable tonnes derive from the call's container counts and the shared planning weights (the cargo_tonnage machinery), the godsavgift convention."
+    rate_structure:
+      type: per_unit
+      unit_type: cargo_tonnage_from_containers
+      unit_rate: 0.562
+      cargo_tonnage:
+        weight_20_input: cargo_weight_per_20ft
+        weight_40_input: cargo_weight_per_40ft
+        round_to_whole_tonnes: true
+      gt_efficiency_cap:
+        cap_pct: 35
+        description: "GT-efficiency cap: chargeable tonnage capped at 35% of the vessel's GT (the 2025 recalculation's efficiency consideration)"
+    source_reference:
+      document_name: "General Terms and Conditions including Port Tariffs — Port Tariffs 2026"
+      document_url: "docs/sources/netherlands/rotterdam/port-of-rotterdam/port-tariffs-and-conditions-port-of-rotterdam-2026.pdf"
+      upstream_url: "https://www.portofrotterdam.com/sites/default/files/2025-12/port-tariffs-and-conditions-port-of%20-rotterdam-2026.pdf"
+      document_issued: "2026-01-01"
+      page: "Annex 1"
+      clause: "Article 8.1; Annex 1 seaport-dues cargo table; Article 1(d) Cargo definition"
+      verified_on: "2026-10-08"
+      verified_by: "vibe-session-rotterdam-expansion"
+
+  # ==========================================================================
+  # WASTE FEE FOR SEAGOING VESSELS — ToC §2.4 (Articles 17-20); rates Annex 1
+  # ==========================================================================
+  - id: rotterdam_waste_fee
+    fee_family: waste
+    biller: Havenbedrijf Rotterdam N.V.
+    name: Waste Fee for Seagoing Vessels
+    description: "ToC §2.4 Article 18 with the Annex 1 waste-fee rate table: the contribution in the costs of receipt, storage and disposal of ship-related waste (MARPOL 73/78 Annex I oil and Annex V solid; Article 1(jj), the Dutch Prevention of Pollution from Ships Act Article 6(1)) — incurred whether or not waste is actually issued (Article 17.1). EUR 220 flat plus EUR 0.05 per GT, with the published maximum of EUR 2,000 capping the whole fee (the flat and the per-GT part together — the published maximum is a whole-fee ceiling; at the MAREN default's 194,849 GT the fee is at its maximum)."
+    rate_structure:
+      type: flat
+      amount: 220
+      flat_plus_per_gt:
+        per_gt_rate: 0.05
+        per_gt_maximum: 2000
+    source_reference:
+      document_name: "General Terms and Conditions including Port Tariffs — Port Tariffs 2026"
+      document_url: "docs/sources/netherlands/rotterdam/port-of-rotterdam/port-tariffs-and-conditions-port-of-rotterdam-2026.pdf"
+      upstream_url: "https://www.portofrotterdam.com/sites/default/files/2025-12/port-tariffs-and-conditions-port-of%20-rotterdam-2026.pdf"
+      document_issued: "2026-01-01"
+      page: "Annex 1"
+      clause: "Article 17.1; Article 18; Annex 1 waste-fee rate table"
+      verified_on: "2026-10-08"
+      verified_by: "vibe-session-rotterdam-expansion"
+
+  # ==========================================================================
+  # BUOY, DOLPHIN AND PUBLIC QUAY DUES — ToC §2.3 (Article 16); rates Annex 1
+  # ==========================================================================
+  - id: rotterdam_public_quay_dues
+    fee_family: port_dues
+    biller: Havenbedrijf Rotterdam N.V.
+    name: "Public Quay Dues (berth_type: 'quay' gated)"
+    description: "ToC §2.3 Article 16 with the Annex 1 buoy/dolphin/public-quay table: for use of the public quays with a Seagoing Vessel — EUR 3.86 per metre (or part thereof) of the ship's length overall, per 24 hours or part thereof (verified live at portofrotterdam.com, the public-quay rate). Condition-gated on berth_type 'quay': the fee only fires when the call's berth type is the public quay (Article 16.1: use of buoys, dolphin constructions or public quays) — a container call at a terminal berth carries none of it; the rule never default-fires."
+    rate_structure:
+      type: per_commenced_period
+      basis: loa
+      hours_input: quay_hours
+      free_hours: 0
+      period_hours: 24
+      tiers:
+        - up_to_excess_hours: null
+          rate_per_period_per_basis: 3.86
+    applicable_conditions:
+      berth_type: quay
+    source_reference:
+      document_name: "General Terms and Conditions including Port Tariffs — Port Tariffs 2026"
+      document_url: "docs/sources/netherlands/rotterdam/port-of-rotterdam/port-tariffs-and-conditions-port-of-rotterdam-2026.pdf"
+      upstream_url: "https://www.portofrotterdam.com/sites/default/files/2025-12/port-tariffs-and-conditions-port-of%20-rotterdam-2026.pdf"
+      document_issued: "2026-01-01"
+      page: "Annex 1"
+      clause: "Article 16.1; Annex 1 buoy/dolphin/public-quay table"
+      verified_on: "2026-10-08"
+      verified_by: "vibe-session-rotterdam-expansion"
+
+  # ==========================================================================
+  # TOWAGE (Unit 4a) - Boluda Towage Rotterdam B.V., the adjudicated default
+  # operator (the median MV2 per-tug rate at the MAREN reference LOA band;
+  # the Fairplay and Svitzer figures are recorded in the extraction
+  # reference section 8.1). The Maasvlakte 2 area schedule (row 2, maximum
+  # assistance time 2.5 hours) prices each tug by LOA band. The tug count
+  # rides the estimated-parameter convention - the settled shared LOA-class
+  # default (<150 m: 0; 150-250 m: 1; >250 m: 2), user-overridable, never
+  # re-flagged, never re-invented. Towage is default-fired per the
+  # comparability principle.
+  # ==========================================================================
+  - id: rotterdam_towage
+    fee_family: towage
+    biller: Boluda Towage Rotterdam B.V.
+    name: 'Towage (Boluda, Maasvlakte 2 area - per tug by LOA band)'
+    description: "R3 (Tariffs of Third Parties 2026), the Boluda Towage Rotterdam B.V. schedule, row 2 the Maasvlakte 2 area (from the river to the berth or vice versa, maximum assistance time 2.5 hours), rates per move and for each tug employed, EUR, by the vessel's length overall per Lloyd's Register. The default-operator adjudication (recorded in the extraction reference section 8.1): no operator preference exists in the document, so the median MV2 per-tug rate at the MAREN reference LOA band selects Boluda (10,239 against Fairplay's 10,312.50 with the Maasvlakte II surcharge and Svitzer's 5,737; the base-rate cross-check 8,191 also selects Boluda) - the least-biased documentable choice, disclosed. The tug count is the settled shared LOA-class default (the estimated-parameter convention, user-overridable). Waiting 1,625/h, dead ships +50%, fog +50%, LNG restrictions +150%, deep-draught restrictions +50%, holidays +25%, shifting-within-area +50% (all recorded in the reference, none default-call services)."
+    rate_structure:
+      type: per_unit
+      unit_type: tug_count
+      unit_rate: 0
+      count_input: tug_count
+      banded_by_loa:
+        bands:
+          - { min: null, max: 163, amount: 3729 }
+          - { min: 163, max: 175, amount: 4236 }
+          - { min: 175, max: 187, amount: 4743 }
+          - { min: 187, max: 212, amount: 5281 }
+          - { min: 212, max: 236, amount: 6406 }
+          - { min: 236, max: 260, amount: 7263 }
+          - { min: 260, max: 285, amount: 7725 }
+          - { min: 285, max: 309, amount: 7779 }
+          - { min: 309, max: 334, amount: 8469 }
+          - { min: 334, max: 358, amount: 9477 }
+          - { min: 358, max: 383, amount: 9818 }
+          - { min: 383, max: 425, amount: 10239 }
+      default_by_loa:
+        bands:
+          - max_m: 150
+            count: 0
+            description: 'LOA < 150 m: 0 tugs'
+          - min_m: 150
+            max_m: 250
+            count: 1
+            description: '150-250 m: 1 tug'
+          - min_m: 250
+            count: 2
+            description: '> 250 m: 2 tugs'
+    source_reference:
+      document_name: "Tariffs of Third Parties 2026"
+      document_url: "docs/sources/netherlands/rotterdam/port-of-rotterdam/tariffs-of-third-parties-port-of-rotterdam-2026.pdf"
+      upstream_url: "https://www.portofrotterdam.com/sites/default/files/2026-01/tariffs-of-third-parties-port-of-rotterdam-2026.pdf"
+      document_issued: "2026-01-01"
+      page: "p. 3 (Boluda row 2, the Maasvlakte 2 area)"
+      clause: "Boluda Towage Rotterdam B.V., ROTTERDAM/EUROPOORT item 2; rates per move and for each tug employed"
+      verified_on: "2026-10-08"
+      verified_by: "vibe-session-rotterdam-expansion"
+
+  # ==========================================================================
+  # MOORING (Unit 4b) - KRVE (Koninklijke Roeiers Vereeniging Eendracht),
+  # the mandatory boatmen concession. The A1 table's mooring class (the
+  # adjudicated default: the document designates no standard class, the
+  # median of the three class figures at the last base band is mooring's
+  # 3,576; the unmooring and shifting figures are recorded in the
+  # extraction reference section 8.2). The call prices mooring and
+  # unmooring - the two compulsory boatmen services at the berth. Default-
+  # fired: the KRVE concession is mandatory in practice. A vessel LOA below
+  # the table's lower bound is a stop-and-report, never extrapolated.
+  # ==========================================================================
+  - id: rotterdam_mooring
+    fee_family: mooring
+    biller: KRVE (Koninklijke Roeiers Vereeniging Eendracht)
+    name: 'Mooring and Unmooring (KRVE, by LOA band - the mooring class default)'
+    description: "R3 (Tariffs of Third Parties 2026), the KRVE A1 rates per sea-going vessel in the Rotterdam harbour-area: the mooring class (the adjudicated default - the median of {3,576, 3,327, 5,178} at the last base band; no class is designated standard in the document, the choice disclosed; unmooring and shifting recorded in the reference section 8.2) by LOA band, plus the same table's unmooring class for the call's second compulsory boatmen service. Beyond the last base band 345.00-349.99 m, per additional 5 meters or part thereof in excess of 350 meters: mooring +126, unmooring +117 (the document's increment semantics, encoded through the linear extension over the 350 m threshold). Weekend/public-holiday surcharge 35% (C1), waiting time (A4), cancellation (A5), the lock variants (A1a-e) and the A2 man-hour assistance (79.00 per man per hour, minimum 2 hours) are recorded in the reference, never default-call services. Mooring is default-fired: the KRVE concession is mandatory in practice."
+    rate_structure:
+      type: banded_flat
+      basis: loa
+      bands:
+        - { min: null, max: 99.99, amount: 199 }
+        - { min: 99.99, max: 114.99, amount: 262 }
+        - { min: 114.99, max: 124.99, amount: 280 }
+        - { min: 124.99, max: 134.99, amount: 325 }
+        - { min: 134.99, max: 144.99, amount: 354 }
+        - { min: 144.99, max: 154.99, amount: 399 }
+        - { min: 154.99, max: 164.99, amount: 460 }
+        - { min: 164.99, max: 174.99, amount: 606 }
+        - { min: 174.99, max: 184.99, amount: 652 }
+        - { min: 184.99, max: 194.99, amount: 707 }
+        - { min: 194.99, max: 204.99, amount: 776 }
+        - { min: 204.99, max: 214.99, amount: 849 }
+        - { min: 214.99, max: 224.99, amount: 951 }
+        - { min: 224.99, max: 234.99, amount: 1088 }
+        - { min: 234.99, max: 244.99, amount: 1205 }
+        - { min: 244.99, max: 254.99, amount: 1326 }
+        - { min: 254.99, max: 259.99, amount: 1446 }
+        - { min: 259.99, max: 264.99, amount: 1576 }
+        - { min: 264.99, max: 269.99, amount: 1689 }
+        - { min: 269.99, max: 274.99, amount: 1815 }
+        - { min: 274.99, max: 279.99, amount: 1930 }
+        - { min: 279.99, max: 284.99, amount: 2052 }
+        - { min: 284.99, max: 289.99, amount: 2175 }
+        - { min: 289.99, max: 294.99, amount: 2291 }
+        - { min: 294.99, max: 299.99, amount: 2414 }
+        - { min: 299.99, max: 304.99, amount: 2502 }
+        - { min: 304.99, max: 309.99, amount: 2621 }
+        - { min: 309.99, max: 314.99, amount: 2743 }
+        - { min: 314.99, max: 319.99, amount: 2856 }
+        - { min: 319.99, max: 324.99, amount: 2980 }
+        - { min: 324.99, max: 329.99, amount: 3095 }
+        - { min: 329.99, max: 334.99, amount: 3219 }
+        - { min: 334.99, max: 339.99, amount: 3338 }
+        - { min: 339.99, max: 344.99, amount: 3455 }
+        # The last base band extends without upper bound: beyond 349.99 the
+        # document's increment ladder applies through the linear extension
+        # (the 345.00-349.99 base figure 3,576 plus +126 per commenced 5 m in
+        # excess of 350 - the band itself never stops matching, the ladder
+        # takes over, so no LOA above the base table renders nothing).
+        - { min: 344.99, max: null, amount: 3576 }
+      linear_extension:
+        from_basis: 350
+        per_basis_units: 5
+        amount: 126
+    source_reference:
+      document_name: "Tariffs of Third Parties 2026"
+      document_url: "docs/sources/netherlands/rotterdam/port-of-rotterdam/tariffs-of-third-parties-port-of-rotterdam-2026.pdf"
+      upstream_url: "https://www.portofrotterdam.com/sites/default/files/2026-01/tariffs-of-third-parties-port-of-rotterdam-2026.pdf"
+      document_issued: "2026-01-01"
+      page: "p. 4 (printed p. 7, the KRVE A1 table)"
+      clause: "KRVE A1 rates per sea-going vessel in the Rotterdam harbour-area; the increment line: for each additional 5 meters or part thereof +126/+117/+183 in excess of 350 meters"
+      verified_on: "2026-10-08"
+      verified_by: "vibe-session-rotterdam-expansion"
+  - id: rotterdam_unmooring
+    fee_family: mooring
+    biller: KRVE (Koninklijke Roeiers Vereeniging Eendracht)
+    name: 'Unmooring (KRVE, by LOA band - the A1 unmooring class)'
+    description: "R3 (Tariffs of Third Parties 2026), the KRVE A1 unmooring class by LOA band - the call's second compulsory boatmen service at the berth (the departing leg). The same A1 table as the mooring rule; the unmooring column figures, with the same increment semantics beyond 350 m (+117 per additional 5 meters or part thereof)."
+    rate_structure:
+      type: banded_flat
+      basis: loa
+      bands:
+        - { min: null, max: 99.99, amount: 186 }
+        - { min: 99.99, max: 114.99, amount: 245 }
+        - { min: 114.99, max: 124.99, amount: 261 }
+        - { min: 124.99, max: 134.99, amount: 304 }
+        - { min: 134.99, max: 144.99, amount: 331 }
+        - { min: 144.99, max: 154.99, amount: 372 }
+        - { min: 154.99, max: 164.99, amount: 428 }
+        - { min: 164.99, max: 174.99, amount: 565 }
+        - { min: 174.99, max: 184.99, amount: 606 }
+        - { min: 184.99, max: 194.99, amount: 659 }
+        - { min: 194.99, max: 204.99, amount: 722 }
+        - { min: 204.99, max: 214.99, amount: 790 }
+        - { min: 214.99, max: 224.99, amount: 884 }
+        - { min: 224.99, max: 234.99, amount: 1013 }
+        - { min: 234.99, max: 244.99, amount: 1121 }
+        - { min: 244.99, max: 254.99, amount: 1234 }
+        - { min: 254.99, max: 259.99, amount: 1346 }
+        - { min: 259.99, max: 264.99, amount: 1466 }
+        - { min: 264.99, max: 269.99, amount: 1571 }
+        - { min: 269.99, max: 274.99, amount: 1689 }
+        - { min: 274.99, max: 279.99, amount: 1795 }
+        - { min: 279.99, max: 284.99, amount: 1909 }
+        - { min: 284.99, max: 289.99, amount: 2023 }
+        - { min: 289.99, max: 294.99, amount: 2132 }
+        - { min: 294.99, max: 299.99, amount: 2245 }
+        - { min: 299.99, max: 304.99, amount: 2327 }
+        - { min: 304.99, max: 309.99, amount: 2438 }
+        - { min: 309.99, max: 314.99, amount: 2552 }
+        - { min: 314.99, max: 319.99, amount: 2656 }
+        - { min: 319.99, max: 324.99, amount: 2772 }
+        - { min: 324.99, max: 329.99, amount: 2879 }
+        - { min: 329.99, max: 334.99, amount: 2995 }
+        - { min: 334.99, max: 339.99, amount: 3105 }
+        - { min: 339.99, max: 344.99, amount: 3214 }
+        # The unmooring class's last base band extends the same way: the
+        # 3,327 base figure plus +117 per commenced 5 m in excess of 350.
+        - { min: 344.99, max: null, amount: 3327 }
+      linear_extension:
+        from_basis: 350
+        per_basis_units: 5
+        amount: 117
+    source_reference:
+      document_name: "Tariffs of Third Parties 2026"
+      document_url: "docs/sources/netherlands/rotterdam/port-of-rotterdam/tariffs-of-third-parties-port-of-rotterdam-2026.pdf"
+      upstream_url: "https://www.portofrotterdam.com/sites/default/files/2026-01/tariffs-of-third-parties-port-of-rotterdam-2026.pdf"
+      document_issued: "2026-01-01"
+      page: "p. 4 (printed p. 7, the KRVE A1 table)"
+      clause: "KRVE A1 unmooring column; the increment line +117 per additional 5 meters or part thereof in excess of 350 meters"
+      verified_on: "2026-10-08"
+      verified_by: "vibe-session-rotterdam-expansion"
+
+  # ==========================================================================
+  # TERMINAL HANDLING NOTICE (Unit 5) - the separately-billed surface with
+  # no published rate. The archived documents evidence the surface: R1's
+  # own scope statement (Article 3: these are the General Terms and
+  # Conditions for Port Dues, Inland Port Dues and the Waste fee - the port
+  # authority's tariff covers dues, waste and the quay fees, never the
+  # container terminal operators' handling), and R3 (the Tariffs of Third
+  # Parties 2026) prices towage, pilotage and the boatmen - no stevedoring
+  # tariff appears in any archived document. The deep-sea container
+  # terminal operators at Maasvlakte (the model's default berth area) bill
+  # handling separately from the port authority; no rate is published in
+  # the archived record. The notice follows the GOT mooring precedent: a
+  # zero-amount line with the service_gap_notice flag - never a zero
+  # rendered as a figure, never an invented rate, nothing added to any
+  # total.
+  # ==========================================================================
+  - id: rotterdam_handling_notice
+    fee_family: terminal_handling
+    biller: Container terminal operators (Maasvlakte) - separately billed
+    name: 'Terminal handling — separately billed, no published rate (notice)'
+    description: "Container handling at Rotterdam is performed by the deep-sea terminal operators at Maasvlakte and billed separately from Havenbedrijf Rotterdam N.V.'s tariff: R1's own scope statement (Article 3) limits these General Terms and Conditions to Port Dues, Inland Port Dues and the Waste fee, and R3 (the Tariffs of Third Parties 2026) prices towage, pilotage and the KRVE boatmen - no stevedoring rate appears anywhere in the archived record. This call's total EXCLUDES the handling cost; this line is a notice only and adds nothing to any total."
+    rate_structure:
+      type: flat
+      amount: 0
+    service_gap_notice:
+      description: "Terminal handling at Rotterdam is a separately-billed service with no published rate in the archived record: the deep-sea container terminal operators at Maasvlakte bill it separately from the port authority's tariff (R1 Article 3 scopes the General Terms and Conditions to port dues, inland port dues and the waste fee; R3's third-party schedules price towage, pilotage and mooring, never stevedoring). The call's total excludes it — no rate is estimated or invented; the cost, if any, is the operator's own quotation, never a tariff-derived figure."
+      severity: info
+    source_reference:
+      document_name: "General Terms and Conditions including Port Tariffs 2026; Tariffs of Third Parties 2026"
+      document_url: "docs/sources/netherlands/rotterdam/port-of-rotterdam/port-tariffs-and-conditions-port-of-rotterdam-2026.pdf"
+      upstream_url: "https://www.portofrotterdam.com/sites/default/files/2025-12/port-tariffs-and-conditions-port-of%20-rotterdam-2026.pdf"
+      document_issued: "2026-01-01"
+      page: "p. 3 (Article 3, the terms' own scope statement); R3 pp. 2-4 (the third-party schedules' coverage)"
+      clause: "Article 3: General Terms and Conditions for Port Dues, Inland Port Dues and the Waste fee; R3's schedules price towage, pilotage and the boatmen - no handling tariff exists in the archived record"
+      verified_on: "2026-10-08"
+      verified_by: "vibe-session-rotterdam-expansion"
+  # ==========================================================================
+  # PILOTAGE (Unit 3) - Nederlands Loodswezen (region Rotterdam-Rijnmond)
+  # The default route: Sea to tariff area J (2e Maasvlakte) = S-IN/OUT + TC5
+  # (route matrix, brochure p. 21, row J). A port call prices both compulsory
+  # voyages - inbound (Sea to J) and outbound (J to Sea); the IN/OUT table
+  # serves to and from the pilot station identically. Four rules: the S
+  # (start) tariff and the TC5 (route-dependent) tariff, each per direction.
+  # Every figure is the archived brochure's own; the tables end at 196 dm
+  # and above (no 239-dm band exists - extraction reference section 3).
+  # ==========================================================================
+  - id: rotterdam_pilotage_s_in
+    fee_family: pilotage
+    biller: Nederlands Loodswezen (region Rotterdam-Rijnmond)
+    name: 'Pilotage Start Tariff (S), inbound - Sea to 2e Maasvlakte'
+    description: "Pilotage tariff per the Loodswezen brochure (route matrix p. 21, row J, Sea cell: S-IN/OUT + TC5 - the default route Sea to tariff area J (2e Maasvlakte), the model's default berth area): the S (start) tariff component of the inbound (Sea to tariff area J) voyage, draught-banded per the IN/OUT S/TC table (brochure pp. 24-29; 170 bands: up to and including 27 dm, then 28-195 in one-dm bands, then 196 dm and above - no higher band exists; the table ends there). The draught basis is the vessel's actual draught in metres (the shared vessel draught input); a band covers more than its lower bound up to and including its upper bound, so an integer-decimetre draught prices its own row. Pilotage is compulsory for the model's vessel class (the pilotage_required call input, true on the default call - the comparability principle: the Swedish ports model pilotage as a default-fired public due and Rotterdam joins them on the same basis). The brochure's own worked example (p. 22, Sea to 1st Maasvlakte, 105 dm) carries the recorded TC4-label-with-TC5-amount internal defect; the matrix and the tables are the record, the example is not (extraction reference section 3, finding 3)."
+    applicable_conditions:
+      pilotage_required: true
+    rate_structure:
+      type: banded_flat
+      basis: draft
+      bands:
+        - { min: null, max: 2.7, amount: 345 }
+        - { min: 2.7, max: 2.8, amount: 368 }
+        - { min: 2.8, max: 2.9, amount: 392 }
+        - { min: 2.9, max: 3.0, amount: 415 }
+        - { min: 3.0, max: 3.1, amount: 427 }
+        - { min: 3.1, max: 3.2, amount: 436 }
+        - { min: 3.2, max: 3.3, amount: 448 }
+        - { min: 3.3, max: 3.4, amount: 460 }
+        - { min: 3.4, max: 3.5, amount: 471 }
+        - { min: 3.5, max: 3.6, amount: 485 }
+        - { min: 3.6, max: 3.7, amount: 514 }
+        - { min: 3.7, max: 3.8, amount: 542 }
+        - { min: 3.8, max: 3.9, amount: 572 }
+        - { min: 3.9, max: 4.0, amount: 599 }
+        - { min: 4.0, max: 4.1, amount: 628 }
+        - { min: 4.1, max: 4.2, amount: 659 }
+        - { min: 4.2, max: 4.3, amount: 712 }
+        - { min: 4.3, max: 4.4, amount: 762 }
+        - { min: 4.4, max: 4.5, amount: 816 }
+        - { min: 4.5, max: 4.6, amount: 869 }
+        - { min: 4.6, max: 4.7, amount: 920 }
+        - { min: 4.7, max: 4.8, amount: 970 }
+        - { min: 4.8, max: 4.9, amount: 1025 }
+        - { min: 4.9, max: 5.0, amount: 1086 }
+        - { min: 5.0, max: 5.1, amount: 1141 }
+        - { min: 5.1, max: 5.2, amount: 1198 }
+        - { min: 5.2, max: 5.3, amount: 1256 }
+        - { min: 5.3, max: 5.4, amount: 1317 }
+        - { min: 5.4, max: 5.5, amount: 1403 }
+        - { min: 5.5, max: 5.6, amount: 1487 }
+        - { min: 5.6, max: 5.7, amount: 1574 }
+        - { min: 5.7, max: 5.8, amount: 1661 }
+        - { min: 5.8, max: 5.9, amount: 1746 }
+        - { min: 5.9, max: 6.0, amount: 1835 }
+        - { min: 6.0, max: 6.1, amount: 1920 }
+        - { min: 6.1, max: 6.2, amount: 2008 }
+        - { min: 6.2, max: 6.3, amount: 2098 }
+        - { min: 6.3, max: 6.4, amount: 2183 }
+        - { min: 6.4, max: 6.5, amount: 2271 }
+        - { min: 6.5, max: 6.6, amount: 2356 }
+        - { min: 6.6, max: 6.7, amount: 2446 }
+        - { min: 6.7, max: 6.8, amount: 2540 }
+        - { min: 6.8, max: 6.9, amount: 2629 }
+        - { min: 6.9, max: 7.0, amount: 2722 }
+        - { min: 7.0, max: 7.1, amount: 2816 }
+        - { min: 7.1, max: 7.2, amount: 2907 }
+        - { min: 7.2, max: 7.3, amount: 2993 }
+        - { min: 7.3, max: 7.4, amount: 3081 }
+        - { min: 7.4, max: 7.5, amount: 3167 }
+        - { min: 7.5, max: 7.6, amount: 3254 }
+        - { min: 7.6, max: 7.7, amount: 3337 }
+        - { min: 7.7, max: 7.8, amount: 3427 }
+        - { min: 7.8, max: 7.9, amount: 3503 }
+        - { min: 7.9, max: 8.0, amount: 3577 }
+        - { min: 8.0, max: 8.1, amount: 3651 }
+        - { min: 8.1, max: 8.2, amount: 3724 }
+        - { min: 8.2, max: 8.3, amount: 3801 }
+        - { min: 8.3, max: 8.4, amount: 3878 }
+        - { min: 8.4, max: 8.5, amount: 3960 }
+        - { min: 8.5, max: 8.6, amount: 4039 }
+        - { min: 8.6, max: 8.7, amount: 4121 }
+        - { min: 8.7, max: 8.8, amount: 4203 }
+        - { min: 8.8, max: 8.9, amount: 4283 }
+        - { min: 8.9, max: 9.0, amount: 4364 }
+        - { min: 9.0, max: 9.1, amount: 4444 }
+        - { min: 9.1, max: 9.2, amount: 4526 }
+        - { min: 9.2, max: 9.3, amount: 4607 }
+        - { min: 9.3, max: 9.4, amount: 4687 }
+        - { min: 9.4, max: 9.5, amount: 4767 }
+        - { min: 9.5, max: 9.6, amount: 4849 }
+        - { min: 9.6, max: 9.7, amount: 4934 }
+        - { min: 9.7, max: 9.8, amount: 5020 }
+        - { min: 9.8, max: 9.9, amount: 5106 }
+        - { min: 9.9, max: 10.0, amount: 5191 }
+        - { min: 10.0, max: 10.1, amount: 5276 }
+        - { min: 10.1, max: 10.2, amount: 5367 }
+        - { min: 10.2, max: 10.3, amount: 5408 }
+        - { min: 10.3, max: 10.4, amount: 5447 }
+        - { min: 10.4, max: 10.5, amount: 5490 }
+        - { min: 10.5, max: 10.6, amount: 5532 }
+        - { min: 10.6, max: 10.7, amount: 5573 }
+        - { min: 10.7, max: 10.8, amount: 5611 }
+        - { min: 10.8, max: 10.9, amount: 5657 }
+        - { min: 10.9, max: 11.0, amount: 5702 }
+        - { min: 11.0, max: 11.1, amount: 5747 }
+        - { min: 11.1, max: 11.2, amount: 5792 }
+        - { min: 11.2, max: 11.3, amount: 5840 }
+        - { min: 11.3, max: 11.4, amount: 5887 }
+        - { min: 11.4, max: 11.5, amount: 5933 }
+        - { min: 11.5, max: 11.6, amount: 5979 }
+        - { min: 11.6, max: 11.7, amount: 6023 }
+        - { min: 11.7, max: 11.8, amount: 6072 }
+        - { min: 11.8, max: 11.9, amount: 6116 }
+        - { min: 11.9, max: 12.0, amount: 6162 }
+        - { min: 12.0, max: 12.1, amount: 6209 }
+        - { min: 12.1, max: 12.2, amount: 6256 }
+        - { min: 12.2, max: 12.3, amount: 6301 }
+        - { min: 12.3, max: 12.4, amount: 6348 }
+        - { min: 12.4, max: 12.5, amount: 6393 }
+        - { min: 12.5, max: 12.6, amount: 6439 }
+        - { min: 12.6, max: 12.7, amount: 6487 }
+        - { min: 12.7, max: 12.8, amount: 6534 }
+        - { min: 12.8, max: 12.9, amount: 6579 }
+        - { min: 12.9, max: 13.0, amount: 6626 }
+        - { min: 13.0, max: 13.1, amount: 6671 }
+        - { min: 13.1, max: 13.2, amount: 6717 }
+        - { min: 13.2, max: 13.3, amount: 6789 }
+        - { min: 13.3, max: 13.4, amount: 6857 }
+        - { min: 13.4, max: 13.5, amount: 6926 }
+        - { min: 13.5, max: 13.6, amount: 6997 }
+        - { min: 13.6, max: 13.7, amount: 7068 }
+        - { min: 13.7, max: 13.8, amount: 7133 }
+        - { min: 13.8, max: 13.9, amount: 7214 }
+        - { min: 13.9, max: 14.0, amount: 7294 }
+        - { min: 14.0, max: 14.1, amount: 7376 }
+        - { min: 14.1, max: 14.2, amount: 7455 }
+        - { min: 14.2, max: 14.3, amount: 7539 }
+        - { min: 14.3, max: 14.4, amount: 7616 }
+        - { min: 14.4, max: 14.5, amount: 7687 }
+        - { min: 14.5, max: 14.6, amount: 7756 }
+        - { min: 14.6, max: 14.7, amount: 7826 }
+        - { min: 14.7, max: 14.8, amount: 7896 }
+        - { min: 14.8, max: 14.9, amount: 7967 }
+        - { min: 14.9, max: 15.0, amount: 8032 }
+        - { min: 15.0, max: 15.1, amount: 8101 }
+        - { min: 15.1, max: 15.2, amount: 8170 }
+        - { min: 15.2, max: 15.3, amount: 8242 }
+        - { min: 15.3, max: 15.4, amount: 8311 }
+        - { min: 15.4, max: 15.5, amount: 8382 }
+        - { min: 15.5, max: 15.6, amount: 8447 }
+        - { min: 15.6, max: 15.7, amount: 8519 }
+        - { min: 15.7, max: 15.8, amount: 8587 }
+        - { min: 15.8, max: 15.9, amount: 8658 }
+        - { min: 15.9, max: 16.0, amount: 8728 }
+        - { min: 16.0, max: 16.1, amount: 8799 }
+        - { min: 16.1, max: 16.2, amount: 8862 }
+        - { min: 16.2, max: 16.3, amount: 8934 }
+        - { min: 16.3, max: 16.4, amount: 9003 }
+        - { min: 16.4, max: 16.5, amount: 9074 }
+        - { min: 16.5, max: 16.6, amount: 9143 }
+        - { min: 16.6, max: 16.7, amount: 9213 }
+        - { min: 16.7, max: 16.8, amount: 9279 }
+        - { min: 16.8, max: 16.9, amount: 9352 }
+        - { min: 16.9, max: 17.0, amount: 9420 }
+        - { min: 17.0, max: 17.1, amount: 9489 }
+        - { min: 17.1, max: 17.2, amount: 9558 }
+        - { min: 17.2, max: 17.3, amount: 9631 }
+        - { min: 17.3, max: 17.4, amount: 9695 }
+        - { min: 17.4, max: 17.5, amount: 9765 }
+        - { min: 17.5, max: 17.6, amount: 9835 }
+        - { min: 17.6, max: 17.7, amount: 9907 }
+        - { min: 17.7, max: 17.8, amount: 9974 }
+        - { min: 17.8, max: 17.9, amount: 10042 }
+        - { min: 17.9, max: 18.0, amount: 10108 }
+        - { min: 18.0, max: 18.1, amount: 10179 }
+        - { min: 18.1, max: 18.2, amount: 10250 }
+        - { min: 18.2, max: 18.3, amount: 10321 }
+        - { min: 18.3, max: 18.4, amount: 10388 }
+        - { min: 18.4, max: 18.5, amount: 10458 }
+        - { min: 18.5, max: 18.6, amount: 10526 }
+        - { min: 18.6, max: 18.7, amount: 10597 }
+        - { min: 18.7, max: 18.8, amount: 10666 }
+        - { min: 18.8, max: 18.9, amount: 10735 }
+        - { min: 18.9, max: 19.0, amount: 10806 }
+        - { min: 19.0, max: 19.1, amount: 10875 }
+        - { min: 19.1, max: 19.2, amount: 10941 }
+        - { min: 19.2, max: 19.3, amount: 11082 }
+        - { min: 19.3, max: 19.4, amount: 11217 }
+        - { min: 19.4, max: 19.5, amount: 11357 }
+        - { min: 19.5, max: null, amount: 11496 }
+    source_reference:
+      document_name: "Pilotage Tariffs 2026 Rotterdam-Rijnmond"
+      document_url: "docs/sources/netherlands/rotterdam/loodswezen/Pilotage-Tariffs-2026-RR-lr-1.pdf"
+      upstream_url: "https://loodswezen.nl/wp-content/uploads/2025/12/Pilotage-Tariffs-2026-RR-lr-1.pdf"
+      document_issued: "2026-01-01"
+      page: "p. 21 (route matrix); pp. 24-29 (IN/OUT S/TC table)"
+      clause: "Route matrix row J, Sea cell: S-IN/OUT + TC5; IN/OUT S-tariff and T-tariff TC5 column, draught-banded"
+      verified_on: "2026-10-08"
+      verified_by: "vibe-session-rotterdam-expansion"
+
+  - id: rotterdam_pilotage_tc5_in
+    fee_family: pilotage
+    biller: Nederlands Loodswezen (region Rotterdam-Rijnmond)
+    name: 'Pilotage Route-Dependent Tariff (TC5), inbound - Sea to 2e Maasvlakte'
+    description: "Pilotage tariff per the Loodswezen brochure (route matrix p. 21, row J, Sea cell: S-IN/OUT + TC5 - the default route Sea to tariff area J (2e Maasvlakte), the model's default berth area): the TC5 (route-dependent) tariff component of the inbound (Sea to tariff area J) voyage, draught-banded per the IN/OUT S/TC table (brochure pp. 24-29; 170 bands: up to and including 27 dm, then 28-195 in one-dm bands, then 196 dm and above - no higher band exists; the table ends there). The draught basis is the vessel's actual draught in metres (the shared vessel draught input); a band covers more than its lower bound up to and including its upper bound, so an integer-decimetre draught prices its own row. Pilotage is compulsory for the model's vessel class (the pilotage_required call input, true on the default call - the comparability principle: the Swedish ports model pilotage as a default-fired public due and Rotterdam joins them on the same basis). The brochure's own worked example (p. 22, Sea to 1st Maasvlakte, 105 dm) carries the recorded TC4-label-with-TC5-amount internal defect; the matrix and the tables are the record, the example is not (extraction reference section 3, finding 3)."
+    applicable_conditions:
+      pilotage_required: true
+    rate_structure:
+      type: banded_flat
+      basis: draft
+      bands:
+        - { min: null, max: 2.7, amount: 68 }
+        - { min: 2.7, max: 2.8, amount: 71 }
+        - { min: 2.8, max: 2.9, amount: 77 }
+        - { min: 2.9, max: 3.0, amount: 82 }
+        - { min: 3.0, max: 3.1, amount: 84 }
+        - { min: 3.1, max: 3.2, amount: 86 }
+        - { min: 3.2, max: 3.3, amount: 88 }
+        - { min: 3.3, max: 3.4, amount: 91 }
+        - { min: 3.4, max: 3.5, amount: 94 }
+        - { min: 3.5, max: 3.6, amount: 96 }
+        - { min: 3.6, max: 3.7, amount: 102 }
+        - { min: 3.7, max: 3.8, amount: 108 }
+        - { min: 3.8, max: 3.9, amount: 114 }
+        - { min: 3.9, max: 4.0, amount: 118 }
+        - { min: 4.0, max: 4.1, amount: 127 }
+        - { min: 4.1, max: 4.2, amount: 128 }
+        - { min: 4.2, max: 4.3, amount: 135 }
+        - { min: 4.3, max: 4.4, amount: 146 }
+        - { min: 4.4, max: 4.5, amount: 158 }
+        - { min: 4.5, max: 4.6, amount: 167 }
+        - { min: 4.6, max: 4.7, amount: 176 }
+        - { min: 4.7, max: 4.8, amount: 189 }
+        - { min: 4.8, max: 4.9, amount: 200 }
+        - { min: 4.9, max: 5.0, amount: 210 }
+        - { min: 5.0, max: 5.1, amount: 223 }
+        - { min: 5.1, max: 5.2, amount: 232 }
+        - { min: 5.2, max: 5.3, amount: 244 }
+        - { min: 5.3, max: 5.4, amount: 258 }
+        - { min: 5.4, max: 5.5, amount: 274 }
+        - { min: 5.5, max: 5.6, amount: 291 }
+        - { min: 5.6, max: 5.7, amount: 307 }
+        - { min: 5.7, max: 5.8, amount: 325 }
+        - { min: 5.8, max: 5.9, amount: 341 }
+        - { min: 5.9, max: 6.0, amount: 357 }
+        - { min: 6.0, max: 6.1, amount: 375 }
+        - { min: 6.1, max: 6.2, amount: 392 }
+        - { min: 6.2, max: 6.3, amount: 408 }
+        - { min: 6.3, max: 6.4, amount: 427 }
+        - { min: 6.4, max: 6.5, amount: 443 }
+        - { min: 6.5, max: 6.6, amount: 458 }
+        - { min: 6.6, max: 6.7, amount: 477 }
+        - { min: 6.7, max: 6.8, amount: 495 }
+        - { min: 6.8, max: 6.9, amount: 513 }
+        - { min: 6.9, max: 7.0, amount: 532 }
+        - { min: 7.0, max: 7.1, amount: 549 }
+        - { min: 7.1, max: 7.2, amount: 566 }
+        - { min: 7.2, max: 7.3, amount: 583 }
+        - { min: 7.3, max: 7.4, amount: 602 }
+        - { min: 7.4, max: 7.5, amount: 618 }
+        - { min: 7.5, max: 7.6, amount: 634 }
+        - { min: 7.6, max: 7.7, amount: 651 }
+        - { min: 7.7, max: 7.8, amount: 669 }
+        - { min: 7.8, max: 7.9, amount: 681 }
+        - { min: 7.9, max: 8.0, amount: 695 }
+        - { min: 8.0, max: 8.1, amount: 713 }
+        - { min: 8.1, max: 8.2, amount: 727 }
+        - { min: 8.2, max: 8.3, amount: 742 }
+        - { min: 8.3, max: 8.4, amount: 757 }
+        - { min: 8.4, max: 8.5, amount: 772 }
+        - { min: 8.5, max: 8.6, amount: 788 }
+        - { min: 8.6, max: 8.7, amount: 803 }
+        - { min: 8.7, max: 8.8, amount: 819 }
+        - { min: 8.8, max: 8.9, amount: 835 }
+        - { min: 8.9, max: 9.0, amount: 851 }
+        - { min: 9.0, max: 9.1, amount: 866 }
+        - { min: 9.1, max: 9.2, amount: 881 }
+        - { min: 9.2, max: 9.3, amount: 896 }
+        - { min: 9.3, max: 9.4, amount: 914 }
+        - { min: 9.4, max: 9.5, amount: 930 }
+        - { min: 9.5, max: 9.6, amount: 945 }
+        - { min: 9.6, max: 9.7, amount: 962 }
+        - { min: 9.7, max: 9.8, amount: 980 }
+        - { min: 9.8, max: 9.9, amount: 996 }
+        - { min: 9.9, max: 10.0, amount: 1013 }
+        - { min: 10.0, max: 10.1, amount: 1029 }
+        - { min: 10.1, max: 10.2, amount: 1047 }
+        - { min: 10.2, max: 10.3, amount: 1054 }
+        - { min: 10.3, max: 10.4, amount: 1064 }
+        - { min: 10.4, max: 10.5, amount: 1072 }
+        - { min: 10.5, max: 10.6, amount: 1079 }
+        - { min: 10.6, max: 10.7, amount: 1088 }
+        - { min: 10.7, max: 10.8, amount: 1093 }
+        - { min: 10.8, max: 10.9, amount: 1102 }
+        - { min: 10.9, max: 11.0, amount: 1111 }
+        - { min: 11.0, max: 11.1, amount: 1118 }
+        - { min: 11.1, max: 11.2, amount: 1127 }
+        - { min: 11.2, max: 11.3, amount: 1134 }
+        - { min: 11.3, max: 11.4, amount: 1146 }
+        - { min: 11.4, max: 11.5, amount: 1157 }
+        - { min: 11.5, max: 11.6, amount: 1167 }
+        - { min: 11.6, max: 11.7, amount: 1177 }
+        - { min: 11.7, max: 11.8, amount: 1186 }
+        - { min: 11.8, max: 11.9, amount: 1194 }
+        - { min: 11.9, max: 12.0, amount: 1202 }
+        - { min: 12.0, max: 12.1, amount: 1209 }
+        - { min: 12.1, max: 12.2, amount: 1218 }
+        - { min: 12.2, max: 12.3, amount: 1226 }
+        - { min: 12.3, max: 12.4, amount: 1235 }
+        - { min: 12.4, max: 12.5, amount: 1244 }
+        - { min: 12.5, max: 12.6, amount: 1256 }
+        - { min: 12.6, max: 12.7, amount: 1264 }
+        - { min: 12.7, max: 12.8, amount: 1275 }
+        - { min: 12.8, max: 12.9, amount: 1284 }
+        - { min: 12.9, max: 13.0, amount: 1294 }
+        - { min: 13.0, max: 13.1, amount: 1304 }
+        - { min: 13.1, max: 13.2, amount: 1309 }
+        - { min: 13.2, max: 13.3, amount: 1323 }
+        - { min: 13.3, max: 13.4, amount: 1336 }
+        - { min: 13.4, max: 13.5, amount: 1349 }
+        - { min: 13.5, max: 13.6, amount: 1364 }
+        - { min: 13.6, max: 13.7, amount: 1377 }
+        - { min: 13.7, max: 13.8, amount: 1390 }
+        - { min: 13.8, max: 13.9, amount: 1406 }
+        - { min: 13.9, max: 14.0, amount: 1421 }
+        - { min: 14.0, max: 14.1, amount: 1438 }
+        - { min: 14.1, max: 14.2, amount: 1453 }
+        - { min: 14.2, max: 14.3, amount: 1468 }
+        - { min: 14.3, max: 14.4, amount: 1485 }
+        - { min: 14.4, max: 14.5, amount: 1498 }
+        - { min: 14.5, max: 14.6, amount: 1511 }
+        - { min: 14.6, max: 14.7, amount: 1524 }
+        - { min: 14.7, max: 14.8, amount: 1537 }
+        - { min: 14.8, max: 14.9, amount: 1552 }
+        - { min: 14.9, max: 15.0, amount: 1565 }
+        - { min: 15.0, max: 15.1, amount: 1578 }
+        - { min: 15.1, max: 15.2, amount: 1592 }
+        - { min: 15.2, max: 15.3, amount: 1606 }
+        - { min: 15.3, max: 15.4, amount: 1618 }
+        - { min: 15.4, max: 15.5, amount: 1632 }
+        - { min: 15.5, max: 15.6, amount: 1646 }
+        - { min: 15.6, max: 15.7, amount: 1659 }
+        - { min: 15.7, max: 15.8, amount: 1674 }
+        - { min: 15.8, max: 15.9, amount: 1685 }
+        - { min: 15.9, max: 16.0, amount: 1700 }
+        - { min: 16.0, max: 16.1, amount: 1714 }
+        - { min: 16.1, max: 16.2, amount: 1728 }
+        - { min: 16.2, max: 16.3, amount: 1742 }
+        - { min: 16.3, max: 16.4, amount: 1755 }
+        - { min: 16.4, max: 16.5, amount: 1768 }
+        - { min: 16.5, max: 16.6, amount: 1780 }
+        - { min: 16.6, max: 16.7, amount: 1795 }
+        - { min: 16.7, max: 16.8, amount: 1809 }
+        - { min: 16.8, max: 16.9, amount: 1821 }
+        - { min: 16.9, max: 17.0, amount: 1835 }
+        - { min: 17.0, max: 17.1, amount: 1848 }
+        - { min: 17.1, max: 17.2, amount: 1862 }
+        - { min: 17.2, max: 17.3, amount: 1876 }
+        - { min: 17.3, max: 17.4, amount: 1890 }
+        - { min: 17.4, max: 17.5, amount: 1902 }
+        - { min: 17.5, max: 17.6, amount: 1916 }
+        - { min: 17.6, max: 17.7, amount: 1930 }
+        - { min: 17.7, max: 17.8, amount: 1942 }
+        - { min: 17.8, max: 17.9, amount: 1956 }
+        - { min: 17.9, max: 18.0, amount: 1969 }
+        - { min: 18.0, max: 18.1, amount: 1983 }
+        - { min: 18.1, max: 18.2, amount: 1996 }
+        - { min: 18.2, max: 18.3, amount: 2009 }
+        - { min: 18.3, max: 18.4, amount: 2024 }
+        - { min: 18.4, max: 18.5, amount: 2037 }
+        - { min: 18.5, max: 18.6, amount: 2052 }
+        - { min: 18.6, max: 18.7, amount: 2065 }
+        - { min: 18.7, max: 18.8, amount: 2078 }
+        - { min: 18.8, max: 18.9, amount: 2091 }
+        - { min: 18.9, max: 19.0, amount: 2105 }
+        - { min: 19.0, max: 19.1, amount: 2118 }
+        - { min: 19.1, max: 19.2, amount: 2131 }
+        - { min: 19.2, max: 19.3, amount: 2159 }
+        - { min: 19.3, max: 19.4, amount: 2187 }
+        - { min: 19.4, max: 19.5, amount: 2213 }
+        - { min: 19.5, max: null, amount: 2241 }
+    source_reference:
+      document_name: "Pilotage Tariffs 2026 Rotterdam-Rijnmond"
+      document_url: "docs/sources/netherlands/rotterdam/loodswezen/Pilotage-Tariffs-2026-RR-lr-1.pdf"
+      upstream_url: "https://loodswezen.nl/wp-content/uploads/2025/12/Pilotage-Tariffs-2026-RR-lr-1.pdf"
+      document_issued: "2026-01-01"
+      page: "p. 21 (route matrix); pp. 24-29 (IN/OUT S/TC table)"
+      clause: "Route matrix row J, Sea cell: S-IN/OUT + TC5; IN/OUT S-tariff and T-tariff TC5 column, draught-banded"
+      verified_on: "2026-10-08"
+      verified_by: "vibe-session-rotterdam-expansion"
+
+  - id: rotterdam_pilotage_s_out
+    fee_family: pilotage
+    biller: Nederlands Loodswezen (region Rotterdam-Rijnmond)
+    name: 'Pilotage Start Tariff (S), outbound - 2e Maasvlakte to Sea'
+    description: "Pilotage tariff per the Loodswezen brochure (route matrix p. 21, row J, Sea cell: S-IN/OUT + TC5 - the default route Sea to tariff area J (2e Maasvlakte), the model's default berth area): the S (start) tariff component of the outbound (tariff area J to Sea) voyage, draught-banded per the IN/OUT S/TC table (brochure pp. 24-29; 170 bands: up to and including 27 dm, then 28-195 in one-dm bands, then 196 dm and above - no higher band exists; the table ends there). The draught basis is the vessel's actual draught in metres (the shared vessel draught input); a band covers more than its lower bound up to and including its upper bound, so an integer-decimetre draught prices its own row. Pilotage is compulsory for the model's vessel class (the pilotage_required call input, true on the default call - the comparability principle: the Swedish ports model pilotage as a default-fired public due and Rotterdam joins them on the same basis). The brochure's own worked example (p. 22, Sea to 1st Maasvlakte, 105 dm) carries the recorded TC4-label-with-TC5-amount internal defect; the matrix and the tables are the record, the example is not (extraction reference section 3, finding 3)."
+    applicable_conditions:
+      pilotage_required: true
+    rate_structure:
+      type: banded_flat
+      basis: draft
+      bands:
+        - { min: null, max: 2.7, amount: 345 }
+        - { min: 2.7, max: 2.8, amount: 368 }
+        - { min: 2.8, max: 2.9, amount: 392 }
+        - { min: 2.9, max: 3.0, amount: 415 }
+        - { min: 3.0, max: 3.1, amount: 427 }
+        - { min: 3.1, max: 3.2, amount: 436 }
+        - { min: 3.2, max: 3.3, amount: 448 }
+        - { min: 3.3, max: 3.4, amount: 460 }
+        - { min: 3.4, max: 3.5, amount: 471 }
+        - { min: 3.5, max: 3.6, amount: 485 }
+        - { min: 3.6, max: 3.7, amount: 514 }
+        - { min: 3.7, max: 3.8, amount: 542 }
+        - { min: 3.8, max: 3.9, amount: 572 }
+        - { min: 3.9, max: 4.0, amount: 599 }
+        - { min: 4.0, max: 4.1, amount: 628 }
+        - { min: 4.1, max: 4.2, amount: 659 }
+        - { min: 4.2, max: 4.3, amount: 712 }
+        - { min: 4.3, max: 4.4, amount: 762 }
+        - { min: 4.4, max: 4.5, amount: 816 }
+        - { min: 4.5, max: 4.6, amount: 869 }
+        - { min: 4.6, max: 4.7, amount: 920 }
+        - { min: 4.7, max: 4.8, amount: 970 }
+        - { min: 4.8, max: 4.9, amount: 1025 }
+        - { min: 4.9, max: 5.0, amount: 1086 }
+        - { min: 5.0, max: 5.1, amount: 1141 }
+        - { min: 5.1, max: 5.2, amount: 1198 }
+        - { min: 5.2, max: 5.3, amount: 1256 }
+        - { min: 5.3, max: 5.4, amount: 1317 }
+        - { min: 5.4, max: 5.5, amount: 1403 }
+        - { min: 5.5, max: 5.6, amount: 1487 }
+        - { min: 5.6, max: 5.7, amount: 1574 }
+        - { min: 5.7, max: 5.8, amount: 1661 }
+        - { min: 5.8, max: 5.9, amount: 1746 }
+        - { min: 5.9, max: 6.0, amount: 1835 }
+        - { min: 6.0, max: 6.1, amount: 1920 }
+        - { min: 6.1, max: 6.2, amount: 2008 }
+        - { min: 6.2, max: 6.3, amount: 2098 }
+        - { min: 6.3, max: 6.4, amount: 2183 }
+        - { min: 6.4, max: 6.5, amount: 2271 }
+        - { min: 6.5, max: 6.6, amount: 2356 }
+        - { min: 6.6, max: 6.7, amount: 2446 }
+        - { min: 6.7, max: 6.8, amount: 2540 }
+        - { min: 6.8, max: 6.9, amount: 2629 }
+        - { min: 6.9, max: 7.0, amount: 2722 }
+        - { min: 7.0, max: 7.1, amount: 2816 }
+        - { min: 7.1, max: 7.2, amount: 2907 }
+        - { min: 7.2, max: 7.3, amount: 2993 }
+        - { min: 7.3, max: 7.4, amount: 3081 }
+        - { min: 7.4, max: 7.5, amount: 3167 }
+        - { min: 7.5, max: 7.6, amount: 3254 }
+        - { min: 7.6, max: 7.7, amount: 3337 }
+        - { min: 7.7, max: 7.8, amount: 3427 }
+        - { min: 7.8, max: 7.9, amount: 3503 }
+        - { min: 7.9, max: 8.0, amount: 3577 }
+        - { min: 8.0, max: 8.1, amount: 3651 }
+        - { min: 8.1, max: 8.2, amount: 3724 }
+        - { min: 8.2, max: 8.3, amount: 3801 }
+        - { min: 8.3, max: 8.4, amount: 3878 }
+        - { min: 8.4, max: 8.5, amount: 3960 }
+        - { min: 8.5, max: 8.6, amount: 4039 }
+        - { min: 8.6, max: 8.7, amount: 4121 }
+        - { min: 8.7, max: 8.8, amount: 4203 }
+        - { min: 8.8, max: 8.9, amount: 4283 }
+        - { min: 8.9, max: 9.0, amount: 4364 }
+        - { min: 9.0, max: 9.1, amount: 4444 }
+        - { min: 9.1, max: 9.2, amount: 4526 }
+        - { min: 9.2, max: 9.3, amount: 4607 }
+        - { min: 9.3, max: 9.4, amount: 4687 }
+        - { min: 9.4, max: 9.5, amount: 4767 }
+        - { min: 9.5, max: 9.6, amount: 4849 }
+        - { min: 9.6, max: 9.7, amount: 4934 }
+        - { min: 9.7, max: 9.8, amount: 5020 }
+        - { min: 9.8, max: 9.9, amount: 5106 }
+        - { min: 9.9, max: 10.0, amount: 5191 }
+        - { min: 10.0, max: 10.1, amount: 5276 }
+        - { min: 10.1, max: 10.2, amount: 5367 }
+        - { min: 10.2, max: 10.3, amount: 5408 }
+        - { min: 10.3, max: 10.4, amount: 5447 }
+        - { min: 10.4, max: 10.5, amount: 5490 }
+        - { min: 10.5, max: 10.6, amount: 5532 }
+        - { min: 10.6, max: 10.7, amount: 5573 }
+        - { min: 10.7, max: 10.8, amount: 5611 }
+        - { min: 10.8, max: 10.9, amount: 5657 }
+        - { min: 10.9, max: 11.0, amount: 5702 }
+        - { min: 11.0, max: 11.1, amount: 5747 }
+        - { min: 11.1, max: 11.2, amount: 5792 }
+        - { min: 11.2, max: 11.3, amount: 5840 }
+        - { min: 11.3, max: 11.4, amount: 5887 }
+        - { min: 11.4, max: 11.5, amount: 5933 }
+        - { min: 11.5, max: 11.6, amount: 5979 }
+        - { min: 11.6, max: 11.7, amount: 6023 }
+        - { min: 11.7, max: 11.8, amount: 6072 }
+        - { min: 11.8, max: 11.9, amount: 6116 }
+        - { min: 11.9, max: 12.0, amount: 6162 }
+        - { min: 12.0, max: 12.1, amount: 6209 }
+        - { min: 12.1, max: 12.2, amount: 6256 }
+        - { min: 12.2, max: 12.3, amount: 6301 }
+        - { min: 12.3, max: 12.4, amount: 6348 }
+        - { min: 12.4, max: 12.5, amount: 6393 }
+        - { min: 12.5, max: 12.6, amount: 6439 }
+        - { min: 12.6, max: 12.7, amount: 6487 }
+        - { min: 12.7, max: 12.8, amount: 6534 }
+        - { min: 12.8, max: 12.9, amount: 6579 }
+        - { min: 12.9, max: 13.0, amount: 6626 }
+        - { min: 13.0, max: 13.1, amount: 6671 }
+        - { min: 13.1, max: 13.2, amount: 6717 }
+        - { min: 13.2, max: 13.3, amount: 6789 }
+        - { min: 13.3, max: 13.4, amount: 6857 }
+        - { min: 13.4, max: 13.5, amount: 6926 }
+        - { min: 13.5, max: 13.6, amount: 6997 }
+        - { min: 13.6, max: 13.7, amount: 7068 }
+        - { min: 13.7, max: 13.8, amount: 7133 }
+        - { min: 13.8, max: 13.9, amount: 7214 }
+        - { min: 13.9, max: 14.0, amount: 7294 }
+        - { min: 14.0, max: 14.1, amount: 7376 }
+        - { min: 14.1, max: 14.2, amount: 7455 }
+        - { min: 14.2, max: 14.3, amount: 7539 }
+        - { min: 14.3, max: 14.4, amount: 7616 }
+        - { min: 14.4, max: 14.5, amount: 7687 }
+        - { min: 14.5, max: 14.6, amount: 7756 }
+        - { min: 14.6, max: 14.7, amount: 7826 }
+        - { min: 14.7, max: 14.8, amount: 7896 }
+        - { min: 14.8, max: 14.9, amount: 7967 }
+        - { min: 14.9, max: 15.0, amount: 8032 }
+        - { min: 15.0, max: 15.1, amount: 8101 }
+        - { min: 15.1, max: 15.2, amount: 8170 }
+        - { min: 15.2, max: 15.3, amount: 8242 }
+        - { min: 15.3, max: 15.4, amount: 8311 }
+        - { min: 15.4, max: 15.5, amount: 8382 }
+        - { min: 15.5, max: 15.6, amount: 8447 }
+        - { min: 15.6, max: 15.7, amount: 8519 }
+        - { min: 15.7, max: 15.8, amount: 8587 }
+        - { min: 15.8, max: 15.9, amount: 8658 }
+        - { min: 15.9, max: 16.0, amount: 8728 }
+        - { min: 16.0, max: 16.1, amount: 8799 }
+        - { min: 16.1, max: 16.2, amount: 8862 }
+        - { min: 16.2, max: 16.3, amount: 8934 }
+        - { min: 16.3, max: 16.4, amount: 9003 }
+        - { min: 16.4, max: 16.5, amount: 9074 }
+        - { min: 16.5, max: 16.6, amount: 9143 }
+        - { min: 16.6, max: 16.7, amount: 9213 }
+        - { min: 16.7, max: 16.8, amount: 9279 }
+        - { min: 16.8, max: 16.9, amount: 9352 }
+        - { min: 16.9, max: 17.0, amount: 9420 }
+        - { min: 17.0, max: 17.1, amount: 9489 }
+        - { min: 17.1, max: 17.2, amount: 9558 }
+        - { min: 17.2, max: 17.3, amount: 9631 }
+        - { min: 17.3, max: 17.4, amount: 9695 }
+        - { min: 17.4, max: 17.5, amount: 9765 }
+        - { min: 17.5, max: 17.6, amount: 9835 }
+        - { min: 17.6, max: 17.7, amount: 9907 }
+        - { min: 17.7, max: 17.8, amount: 9974 }
+        - { min: 17.8, max: 17.9, amount: 10042 }
+        - { min: 17.9, max: 18.0, amount: 10108 }
+        - { min: 18.0, max: 18.1, amount: 10179 }
+        - { min: 18.1, max: 18.2, amount: 10250 }
+        - { min: 18.2, max: 18.3, amount: 10321 }
+        - { min: 18.3, max: 18.4, amount: 10388 }
+        - { min: 18.4, max: 18.5, amount: 10458 }
+        - { min: 18.5, max: 18.6, amount: 10526 }
+        - { min: 18.6, max: 18.7, amount: 10597 }
+        - { min: 18.7, max: 18.8, amount: 10666 }
+        - { min: 18.8, max: 18.9, amount: 10735 }
+        - { min: 18.9, max: 19.0, amount: 10806 }
+        - { min: 19.0, max: 19.1, amount: 10875 }
+        - { min: 19.1, max: 19.2, amount: 10941 }
+        - { min: 19.2, max: 19.3, amount: 11082 }
+        - { min: 19.3, max: 19.4, amount: 11217 }
+        - { min: 19.4, max: 19.5, amount: 11357 }
+        - { min: 19.5, max: null, amount: 11496 }
+    source_reference:
+      document_name: "Pilotage Tariffs 2026 Rotterdam-Rijnmond"
+      document_url: "docs/sources/netherlands/rotterdam/loodswezen/Pilotage-Tariffs-2026-RR-lr-1.pdf"
+      upstream_url: "https://loodswezen.nl/wp-content/uploads/2025/12/Pilotage-Tariffs-2026-RR-lr-1.pdf"
+      document_issued: "2026-01-01"
+      page: "p. 21 (route matrix); pp. 24-29 (IN/OUT S/TC table)"
+      clause: "Route matrix row J, Sea cell: S-IN/OUT + TC5; IN/OUT S-tariff and T-tariff TC5 column, draught-banded"
+      verified_on: "2026-10-08"
+      verified_by: "vibe-session-rotterdam-expansion"
+
+  - id: rotterdam_pilotage_tc5_out
+    fee_family: pilotage
+    biller: Nederlands Loodswezen (region Rotterdam-Rijnmond)
+    name: 'Pilotage Route-Dependent Tariff (TC5), outbound - 2e Maasvlakte to Sea'
+    description: "Pilotage tariff per the Loodswezen brochure (route matrix p. 21, row J, Sea cell: S-IN/OUT + TC5 - the default route Sea to tariff area J (2e Maasvlakte), the model's default berth area): the TC5 (route-dependent) tariff component of the outbound (tariff area J to Sea) voyage, draught-banded per the IN/OUT S/TC table (brochure pp. 24-29; 170 bands: up to and including 27 dm, then 28-195 in one-dm bands, then 196 dm and above - no higher band exists; the table ends there). The draught basis is the vessel's actual draught in metres (the shared vessel draught input); a band covers more than its lower bound up to and including its upper bound, so an integer-decimetre draught prices its own row. Pilotage is compulsory for the model's vessel class (the pilotage_required call input, true on the default call - the comparability principle: the Swedish ports model pilotage as a default-fired public due and Rotterdam joins them on the same basis). The brochure's own worked example (p. 22, Sea to 1st Maasvlakte, 105 dm) carries the recorded TC4-label-with-TC5-amount internal defect; the matrix and the tables are the record, the example is not (extraction reference section 3, finding 3)."
+    applicable_conditions:
+      pilotage_required: true
+    rate_structure:
+      type: banded_flat
+      basis: draft
+      bands:
+        - { min: null, max: 2.7, amount: 68 }
+        - { min: 2.7, max: 2.8, amount: 71 }
+        - { min: 2.8, max: 2.9, amount: 77 }
+        - { min: 2.9, max: 3.0, amount: 82 }
+        - { min: 3.0, max: 3.1, amount: 84 }
+        - { min: 3.1, max: 3.2, amount: 86 }
+        - { min: 3.2, max: 3.3, amount: 88 }
+        - { min: 3.3, max: 3.4, amount: 91 }
+        - { min: 3.4, max: 3.5, amount: 94 }
+        - { min: 3.5, max: 3.6, amount: 96 }
+        - { min: 3.6, max: 3.7, amount: 102 }
+        - { min: 3.7, max: 3.8, amount: 108 }
+        - { min: 3.8, max: 3.9, amount: 114 }
+        - { min: 3.9, max: 4.0, amount: 118 }
+        - { min: 4.0, max: 4.1, amount: 127 }
+        - { min: 4.1, max: 4.2, amount: 128 }
+        - { min: 4.2, max: 4.3, amount: 135 }
+        - { min: 4.3, max: 4.4, amount: 146 }
+        - { min: 4.4, max: 4.5, amount: 158 }
+        - { min: 4.5, max: 4.6, amount: 167 }
+        - { min: 4.6, max: 4.7, amount: 176 }
+        - { min: 4.7, max: 4.8, amount: 189 }
+        - { min: 4.8, max: 4.9, amount: 200 }
+        - { min: 4.9, max: 5.0, amount: 210 }
+        - { min: 5.0, max: 5.1, amount: 223 }
+        - { min: 5.1, max: 5.2, amount: 232 }
+        - { min: 5.2, max: 5.3, amount: 244 }
+        - { min: 5.3, max: 5.4, amount: 258 }
+        - { min: 5.4, max: 5.5, amount: 274 }
+        - { min: 5.5, max: 5.6, amount: 291 }
+        - { min: 5.6, max: 5.7, amount: 307 }
+        - { min: 5.7, max: 5.8, amount: 325 }
+        - { min: 5.8, max: 5.9, amount: 341 }
+        - { min: 5.9, max: 6.0, amount: 357 }
+        - { min: 6.0, max: 6.1, amount: 375 }
+        - { min: 6.1, max: 6.2, amount: 392 }
+        - { min: 6.2, max: 6.3, amount: 408 }
+        - { min: 6.3, max: 6.4, amount: 427 }
+        - { min: 6.4, max: 6.5, amount: 443 }
+        - { min: 6.5, max: 6.6, amount: 458 }
+        - { min: 6.6, max: 6.7, amount: 477 }
+        - { min: 6.7, max: 6.8, amount: 495 }
+        - { min: 6.8, max: 6.9, amount: 513 }
+        - { min: 6.9, max: 7.0, amount: 532 }
+        - { min: 7.0, max: 7.1, amount: 549 }
+        - { min: 7.1, max: 7.2, amount: 566 }
+        - { min: 7.2, max: 7.3, amount: 583 }
+        - { min: 7.3, max: 7.4, amount: 602 }
+        - { min: 7.4, max: 7.5, amount: 618 }
+        - { min: 7.5, max: 7.6, amount: 634 }
+        - { min: 7.6, max: 7.7, amount: 651 }
+        - { min: 7.7, max: 7.8, amount: 669 }
+        - { min: 7.8, max: 7.9, amount: 681 }
+        - { min: 7.9, max: 8.0, amount: 695 }
+        - { min: 8.0, max: 8.1, amount: 713 }
+        - { min: 8.1, max: 8.2, amount: 727 }
+        - { min: 8.2, max: 8.3, amount: 742 }
+        - { min: 8.3, max: 8.4, amount: 757 }
+        - { min: 8.4, max: 8.5, amount: 772 }
+        - { min: 8.5, max: 8.6, amount: 788 }
+        - { min: 8.6, max: 8.7, amount: 803 }
+        - { min: 8.7, max: 8.8, amount: 819 }
+        - { min: 8.8, max: 8.9, amount: 835 }
+        - { min: 8.9, max: 9.0, amount: 851 }
+        - { min: 9.0, max: 9.1, amount: 866 }
+        - { min: 9.1, max: 9.2, amount: 881 }
+        - { min: 9.2, max: 9.3, amount: 896 }
+        - { min: 9.3, max: 9.4, amount: 914 }
+        - { min: 9.4, max: 9.5, amount: 930 }
+        - { min: 9.5, max: 9.6, amount: 945 }
+        - { min: 9.6, max: 9.7, amount: 962 }
+        - { min: 9.7, max: 9.8, amount: 980 }
+        - { min: 9.8, max: 9.9, amount: 996 }
+        - { min: 9.9, max: 10.0, amount: 1013 }
+        - { min: 10.0, max: 10.1, amount: 1029 }
+        - { min: 10.1, max: 10.2, amount: 1047 }
+        - { min: 10.2, max: 10.3, amount: 1054 }
+        - { min: 10.3, max: 10.4, amount: 1064 }
+        - { min: 10.4, max: 10.5, amount: 1072 }
+        - { min: 10.5, max: 10.6, amount: 1079 }
+        - { min: 10.6, max: 10.7, amount: 1088 }
+        - { min: 10.7, max: 10.8, amount: 1093 }
+        - { min: 10.8, max: 10.9, amount: 1102 }
+        - { min: 10.9, max: 11.0, amount: 1111 }
+        - { min: 11.0, max: 11.1, amount: 1118 }
+        - { min: 11.1, max: 11.2, amount: 1127 }
+        - { min: 11.2, max: 11.3, amount: 1134 }
+        - { min: 11.3, max: 11.4, amount: 1146 }
+        - { min: 11.4, max: 11.5, amount: 1157 }
+        - { min: 11.5, max: 11.6, amount: 1167 }
+        - { min: 11.6, max: 11.7, amount: 1177 }
+        - { min: 11.7, max: 11.8, amount: 1186 }
+        - { min: 11.8, max: 11.9, amount: 1194 }
+        - { min: 11.9, max: 12.0, amount: 1202 }
+        - { min: 12.0, max: 12.1, amount: 1209 }
+        - { min: 12.1, max: 12.2, amount: 1218 }
+        - { min: 12.2, max: 12.3, amount: 1226 }
+        - { min: 12.3, max: 12.4, amount: 1235 }
+        - { min: 12.4, max: 12.5, amount: 1244 }
+        - { min: 12.5, max: 12.6, amount: 1256 }
+        - { min: 12.6, max: 12.7, amount: 1264 }
+        - { min: 12.7, max: 12.8, amount: 1275 }
+        - { min: 12.8, max: 12.9, amount: 1284 }
+        - { min: 12.9, max: 13.0, amount: 1294 }
+        - { min: 13.0, max: 13.1, amount: 1304 }
+        - { min: 13.1, max: 13.2, amount: 1309 }
+        - { min: 13.2, max: 13.3, amount: 1323 }
+        - { min: 13.3, max: 13.4, amount: 1336 }
+        - { min: 13.4, max: 13.5, amount: 1349 }
+        - { min: 13.5, max: 13.6, amount: 1364 }
+        - { min: 13.6, max: 13.7, amount: 1377 }
+        - { min: 13.7, max: 13.8, amount: 1390 }
+        - { min: 13.8, max: 13.9, amount: 1406 }
+        - { min: 13.9, max: 14.0, amount: 1421 }
+        - { min: 14.0, max: 14.1, amount: 1438 }
+        - { min: 14.1, max: 14.2, amount: 1453 }
+        - { min: 14.2, max: 14.3, amount: 1468 }
+        - { min: 14.3, max: 14.4, amount: 1485 }
+        - { min: 14.4, max: 14.5, amount: 1498 }
+        - { min: 14.5, max: 14.6, amount: 1511 }
+        - { min: 14.6, max: 14.7, amount: 1524 }
+        - { min: 14.7, max: 14.8, amount: 1537 }
+        - { min: 14.8, max: 14.9, amount: 1552 }
+        - { min: 14.9, max: 15.0, amount: 1565 }
+        - { min: 15.0, max: 15.1, amount: 1578 }
+        - { min: 15.1, max: 15.2, amount: 1592 }
+        - { min: 15.2, max: 15.3, amount: 1606 }
+        - { min: 15.3, max: 15.4, amount: 1618 }
+        - { min: 15.4, max: 15.5, amount: 1632 }
+        - { min: 15.5, max: 15.6, amount: 1646 }
+        - { min: 15.6, max: 15.7, amount: 1659 }
+        - { min: 15.7, max: 15.8, amount: 1674 }
+        - { min: 15.8, max: 15.9, amount: 1685 }
+        - { min: 15.9, max: 16.0, amount: 1700 }
+        - { min: 16.0, max: 16.1, amount: 1714 }
+        - { min: 16.1, max: 16.2, amount: 1728 }
+        - { min: 16.2, max: 16.3, amount: 1742 }
+        - { min: 16.3, max: 16.4, amount: 1755 }
+        - { min: 16.4, max: 16.5, amount: 1768 }
+        - { min: 16.5, max: 16.6, amount: 1780 }
+        - { min: 16.6, max: 16.7, amount: 1795 }
+        - { min: 16.7, max: 16.8, amount: 1809 }
+        - { min: 16.8, max: 16.9, amount: 1821 }
+        - { min: 16.9, max: 17.0, amount: 1835 }
+        - { min: 17.0, max: 17.1, amount: 1848 }
+        - { min: 17.1, max: 17.2, amount: 1862 }
+        - { min: 17.2, max: 17.3, amount: 1876 }
+        - { min: 17.3, max: 17.4, amount: 1890 }
+        - { min: 17.4, max: 17.5, amount: 1902 }
+        - { min: 17.5, max: 17.6, amount: 1916 }
+        - { min: 17.6, max: 17.7, amount: 1930 }
+        - { min: 17.7, max: 17.8, amount: 1942 }
+        - { min: 17.8, max: 17.9, amount: 1956 }
+        - { min: 17.9, max: 18.0, amount: 1969 }
+        - { min: 18.0, max: 18.1, amount: 1983 }
+        - { min: 18.1, max: 18.2, amount: 1996 }
+        - { min: 18.2, max: 18.3, amount: 2009 }
+        - { min: 18.3, max: 18.4, amount: 2024 }
+        - { min: 18.4, max: 18.5, amount: 2037 }
+        - { min: 18.5, max: 18.6, amount: 2052 }
+        - { min: 18.6, max: 18.7, amount: 2065 }
+        - { min: 18.7, max: 18.8, amount: 2078 }
+        - { min: 18.8, max: 18.9, amount: 2091 }
+        - { min: 18.9, max: 19.0, amount: 2105 }
+        - { min: 19.0, max: 19.1, amount: 2118 }
+        - { min: 19.1, max: 19.2, amount: 2131 }
+        - { min: 19.2, max: 19.3, amount: 2159 }
+        - { min: 19.3, max: 19.4, amount: 2187 }
+        - { min: 19.4, max: 19.5, amount: 2213 }
+        - { min: 19.5, max: null, amount: 2241 }
+    source_reference:
+      document_name: "Pilotage Tariffs 2026 Rotterdam-Rijnmond"
+      document_url: "docs/sources/netherlands/rotterdam/loodswezen/Pilotage-Tariffs-2026-RR-lr-1.pdf"
+      upstream_url: "https://loodswezen.nl/wp-content/uploads/2025/12/Pilotage-Tariffs-2026-RR-lr-1.pdf"
+      document_issued: "2026-01-01"
+      page: "p. 21 (route matrix); pp. 24-29 (IN/OUT S/TC table)"
+      clause: "Route matrix row J, Sea cell: S-IN/OUT + TC5; IN/OUT S-tariff and T-tariff TC5 column, draught-banded"
+      verified_on: "2026-10-08"
+      verified_by: "vibe-session-rotterdam-expansion"
+  # ==========================================================================
+  # EU REGULATORY BLOCK (spec v0.2.69) — transcribed per the silo principle
+  # ==========================================================================
+  - id: rotterdam_eu_ets_allowances
+    fee_family: regulatory
+    biller: EU (European Union) - shipping company's administering authority
+    name: EU ETS Allowances (user-specified basis)
+    description: "EU ETS surrender obligation for this call's in-scope emissions (Directive (EU) 2023/959 amending Directive 2003/87/EC, Articles 3ga-3gb): cargo and passenger ships of or above 5,000 GT, regardless of flag. Scope: 100 percent of in-port emissions plus the voyage fraction - 50 percent of extra-EU leg emissions, 100 percent of intra-EU (the shared arrival-origin selector carries the leg). The entered emissions figure is the user's own in-scope tonnage for this call - no published per-call figure exists. Blank inputs render nothing (the blank-means-nothing contract)."
+    rate_structure:
+      type: flat
+      amount: 0
+      ets_product:
+        emissions_input: ets_emissions_tco2
+        price_input: ets_allowance_price
+        phase_in_fraction: 1.0
+        phase_in_pct: 100
+        basis_note: "ETS surrender for 2026-reported emissions at 100 percent (Directive 2003/87/EC Art. 3gb(1), inserted by Directive (EU) 2023/959); leg scope per the shared arrival-origin selector (extra-EU leg: 50 percent of voyage emissions + 100 percent in-port; intra-EU: 100 percent); allowances are surrendered in EUR (the EU-market instrument's own currency)"
+    applicable_conditions:
+      min_gt: 5000
+    estimated_parameter:
+      description: "derived from user-specified inputs - the emissions basis and the EUA price are the user's own (no published per-call emissions figure or allowance price exists; THETIS-MRV annual figures orient the entry, never default it)"
+      severity: info
+    source_reference:
+      document_name: "faq-maritime-ets.html.md (official Commission FAQ; Directive (EU) 2023/959 the instrument)"
+      document_url: "docs/sources/eu/ets/faq-maritime-ets.html.md"
+      upstream_url: "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32023L0959"
+      document_issued: "2023-05-10"
+      page: "Timing & scope"
+      clause: "Directive 2003/87/EC Art. 3ga-3gb as inserted by Directive (EU) 2023/959; surrender fractions 40/70/100 percent of 2024/2025/2026-reported emissions"
+      verified_on: "2026-10-08"
+      verified_by: "vibe-session-rotterdam-expansion"
+  - id: rotterdam_fueleu_notice
+    fee_family: regulatory
+    biller: EU (European Union) - FuelEU compliance balance
+    name: FuelEU Maritime - annual compliance balance (notice, no per-call charge)
+    description: "FuelEU Maritime (Regulation (EU) 2023/1805, Art. 4) applies to this vessel at this port (commercial ship above 5,000 GT): the yearly average GHG intensity of the energy used on board is limited against the 2020 reference value 91.16 gCO2e/MJ, reduced 2 percent for 2025-2029 (limit 89.34 gCO2e/MJ); in-scope energy is 100 percent intra-EU voyages and at berth, 50 percent on extra-EU legs. The compliance balance is assessed ANNUALLY per ship; a per-call FuelEU charge cannot be computed honestly - no per-call figure is rendered; this line is a notice only and adds nothing to any total."
+    rate_structure:
+      type: flat
+      amount: 0
+    regulatory_notice:
+      description: "FuelEU Maritime applies to this vessel at this port (commercial ship above 5,000 GT, Regulation (EU) 2023/1805 Art. 2/4): the yearly average GHG intensity of the energy used on board is limited against the 2020 reference value 91.16 gCO2e/MJ minus 2 percent for 2025-2029 (limit 89.34 gCO2e/MJ), well-to-wake; a compliance deficit is penalised at 2,400 EUR per tonne VLSFO-equivalent energy (Art. 23, Annex IV B). The compliance balance is ANNUAL per ship with pooling, banking, and borrowing across ships and years (Arts. 20-21) - a per-call FuelEU charge cannot be computed honestly, so no per-call figure is rendered; this notice adds nothing to any total."
+      severity: info
+    applicable_conditions:
+      min_gt: 5000
+    source_reference:
+      document_name: "fueleu-maritime.html.md + fueleu-qa.html.md (official Commission pages; Regulation (EU) 2023/1805 the instrument)"
+      document_url: "docs/sources/eu/fueleu/fueleu-maritime.html.md"
+      upstream_url: "https://eur-lex.europa.eu/eli/reg/2023/1805/oj/eng"
+      document_issued: "2023-09-13"
+      page: "Key facts"
+      clause: "Regulation (EU) 2023/1805 Art. 4 (91.16 reference, 2 percent 2025-2029), Arts. 20-21 (banking/borrowing/pooling), Art. 23 + Annex IV B (2,400 EUR/t VLSFO-eq penalty)"
+      verified_on: "2026-10-08"
+      verified_by: "vibe-session-rotterdam-expansion"
+
+# Per-port default call (spec v0.2.59): Rotterdam adds no port-specific
+# overlay beyond the shared worst-case core — the dues price the default
+# vessel at list, the quay fee is condition-gated (never default-fired), and
+# every environmental lever stays blank (never coerced).
+default_call: {}
+
+# OPS speculative component descriptor (spec v0.2.57, data-authored
+# v0.2.59): presence, currency, unit — configuration only, no rates. The
+# 2026 ToC publishes no shore-power price schedule; the least-defined public
+# posture, the Bremerhaven/Norrkoping pattern.
+ops_speculative:
+  electricity: { enabled: true, currency: EUR, unit: EUR/kWh }
+  demand: { enabled: true, currency: EUR, unit: EUR/call }
+  connection: { enabled: true, currency: EUR, unit: EUR/call }
+  per_gt: { enabled: false, currency: EUR, unit: EUR/GT }
+
+# Per-port input profile (spec v0.2.59): the input sections the workspace
+# renders for this port. UI configuration, never rates. The draught input
+# renders for Rotterdam (the call's berth-depth consideration, the shared
+# vessel draught input read by the port workspace); ESI stays a reset field
+# (the worst-case no-discount default until entered). The EU-regulatory
+# section renders as at every EU port (Rotterdam calls are in ETS scope).
+input_profile:
+  reset_fields:
+    - engine_tier
+    - engine_tier_estimated
+    - esi_score
+    - berth_type
+    - quay_hours
+    - ets_emissions_tco2
+    - ets_allowance_price
+  fields:
+    - build_year
+  sections:
+    - id: eu_regulatory
+      heading: EU Regulatory (ETS allowances - user-specified basis)

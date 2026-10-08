@@ -86,3 +86,23 @@ This document is standing from its creation. The next delivery pass records it i
 from that point docs/SPECIFICATION.md governs and this document serves as
 its concordance. The two record the same rules; any drift between them is
 a defect in the concordance, never a silent resolve in either direction.
+
+## 12. Branch-first session start (recorded v0.7.0)
+A session start lists branches first (`git branch -a`) and locates the
+pass tip before any checkout; a pass continues on its WIP branch, never
+from main while a WIP branch exists.
+
+## 13. node_modules is janitor-swept (recorded v0.7.0)
+
+A `node_modules` directory inside the repository working tree is wiped
+by the sandbox janitor within roughly one minute of its creation; an
+install there does not survive, and a build step that depends on it dies
+mid-pass (observed as the previous session's build-step death). The
+standing workaround for the remainder of the v0.7.0 pass:
+
+- Dependencies live under `/tmp` (fresh lockfile install in a `/tmp`
+  copy of the repository), never inside the repository tree.
+- Test and build runs execute from the `/tmp` copy, which is synced
+  from the repository working tree before each run.
+- Edits land in the repository tree, never only in the `/tmp` copy;
+  local binaries from the `/tmp` install are used rather than `npx`.

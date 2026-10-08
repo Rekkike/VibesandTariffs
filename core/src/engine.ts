@@ -546,6 +546,39 @@ export function evaluateFeeRule(
         });
         break;
       }
+      // flat_plus_per_gt (spec v0.7.0, Rotterdam waste fee): flat amount +
+      // GT x per_gt_rate, with per_gt_maximum capping the whole fee. The
+      // composition steps render both components and, when capped, the cap
+      // line. A missing GT renders nothing (blank-means-nothing), never a
+      // zero-GT charge.
+      if (flat.flat_plus_per_gt) {
+        const ext = flat.flat_plus_per_gt;
+        if (typeof ext.per_gt_rate !== 'number' || !isFinite(ext.per_gt_rate)) {
+          return null;
+        }
+        const flatPart = flat.amount;
+        const perGtPart = roundToCent(vessel.gt * ext.per_gt_rate);
+        const uncapped = roundToCent(flatPart + perGtPart);
+        const capped = ext.per_gt_maximum !== undefined && uncapped > ext.per_gt_maximum;
+        baseAmount = (capped && ext.per_gt_maximum !== undefined) ? ext.per_gt_maximum : uncapped;
+        rateApplied = `Flat ${flatPart} + ${vessel.gt} GT x ${ext.per_gt_rate}${capped ? ` (max applied: ${ext.per_gt_maximum})` : ''}`;
+        bandOrBasis = `flat=${flatPart}, gt=${vessel.gt}`;
+        pendingStructureLabel = 'Flat plus per-GT';
+        const steps: DerivationStep[] = [
+          { kind: 'composition', label: 'Flat component', detail: `flat ${flatPart}`, amount: roundToCent(flatPart) },
+          { kind: 'composition', label: 'Per-GT component', detail: `${vessel.gt} GT x ${ext.per_gt_rate}`, amount: perGtPart }
+        ];
+        if (capped) {
+          steps.push({
+            kind: 'composition',
+            label: 'Maximum applied',
+            detail: `uncapped ${uncapped} exceeds the maximum ${ext.per_gt_maximum}; the whole fee is capped`,
+            amount: roundToCent(baseAmount - uncapped)
+          });
+        }
+        pendingCompositionSteps = steps;
+        break;
+      }
       if (flat.amount_input) {
         const override = (call as any)[flat.amount_input];
         if (typeof override === 'number' && override >= 0) {
@@ -913,6 +946,34 @@ export function evaluateFeeRule(
         ruleUnitRate = effectiveRate;
         break;
       }
+      // LOA-banded per-unit flat amounts (v0.7.0 Rotterdam towage): the
+      // vessel's LOA selects the band; the band's flat amount prices each
+      // unit (tug). A vessel LOA outside every band renders nothing (never
+      // a silently unbanded rate). The unit-count path above is unchanged.
+      if (perUnit.banded_by_loa) {
+        if (vessel.loa_m === undefined) {
+          qualityFlags.push({ type: 'missing_optional_param', description: `Missing LOA for ${rule.id}`, severity: 'warning' });
+          return null;
+        }
+        const band = perUnit.banded_by_loa.bands.find(b =>
+          (b.min === null || vessel.loa_m! > b.min) && (b.max === null || vessel.loa_m! <= b.max)
+        );
+        if (!band) {
+          qualityFlags.push({
+            type: 'fallback_value',
+            description: `No LOA band found for ${vessel.loa_m} on ${rule.id}`,
+            severity: 'warning'
+          });
+          return null;
+        }
+        effectiveRate = band.amount;
+        rateApplied = `Banded per unit: ${unitCount} * ${band.amount} (LOA band ${band.min ?? '-\u221e'}-${band.max ?? '\u221e'})`;
+        bandOrBasis = `loa_m=${vessel.loa_m}, ${perUnit.unit_type}=${unitCount}`;
+        baseAmount = unitCount * effectiveRate;
+        ruleUnitCount = unitCount;
+        ruleUnitRate = effectiveRate;
+        break;
+      }
       if (perUnit.unit_rate_input) {
         const override = (call as any)[perUnit.unit_rate_input];
         if (typeof override === 'number' && override >= 0) {
@@ -927,6 +988,31 @@ export function evaluateFeeRule(
         }
       }
       baseAmount = unitCount * effectiveRate;
+      // GT efficiency cap (spec v0.7.0, Rotterdam cargo dues): the chargeable
+      // basis is capped by GT x cap_pct/100; charged = min(count x rate,
+      // GT-basis x rate). When the cap binds, the line shows the uncapped
+      // figure, the capped figure, and the delta as a discount (ceil on
+      // discounts) — never a silent reduction.
+      if (perUnit.gt_efficiency_cap) {
+        const cap = perUnit.gt_efficiency_cap;
+        if (typeof cap.cap_pct !== 'number' || !isFinite(cap.cap_pct)) {
+          return null;
+        }
+        const cappedCount = vessel.gt * (cap.cap_pct / 100);
+        const uncappedAmount = roundToCent(baseAmount);
+        const cappedAmount = roundToCent(cappedCount * effectiveRate);
+        if (cappedAmount < uncappedAmount) {
+          baseAmount = cappedAmount;
+          const delta = ceilToCent(uncappedAmount - cappedAmount);
+          rateApplied += `; GT efficiency cap: min(${uncappedAmount}, ${vessel.gt} GT x ${cap.cap_pct}% x ${effectiveRate} = ${cappedAmount})`;
+          pendingCompositionSteps = [{
+            kind: 'composition',
+            label: 'GT efficiency cap',
+            detail: `uncapped ${unitCount} x ${effectiveRate} = ${uncappedAmount}; capped at ${vessel.gt} GT x ${cap.cap_pct}% = ${roundToCent(cappedCount)} chargeable x ${effectiveRate} = ${cappedAmount}${cap.description ? `; ${cap.description}` : ''}`,
+            amount: -delta
+          }];
+        }
+      }
       rateApplied += `Per unit: ${unitCount} * ${effectiveRate}`;
       bandOrBasis = `${perUnit.unit_type}=${unitCount}`;
       ruleUnitCount = unitCount;

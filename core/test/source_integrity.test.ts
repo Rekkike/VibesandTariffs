@@ -56,7 +56,9 @@ describe('Source link integrity (spec v0.2.26)', () => {
 
   it('has port files loaded for every registered port', () => {
     expect(ports.length).toBeGreaterThanOrEqual(3);
-    expect(ports.map(p => p.port.metadata!.id).sort()).toEqual(['aarhus', 'bremerhaven', 'gavle', 'gothenburg', 'hamburg', 'helsingborg', 'norrkoping', 'norvik']);
+    // v0.7.0 re-baseline (in-test attribution): Rotterdam joins the silo
+    // set — the ninth silo, the first Dutch port.
+    expect(ports.map(p => p.port.metadata!.id).sort()).toEqual(['aarhus', 'bremerhaven', 'gavle', 'gothenburg', 'hamburg', 'helsingborg', 'norrkoping', 'norvik', 'rotterdam']);
   });
 
   it('every fee rule document_url path is archived or explicitly not-archived (a)', () => {
