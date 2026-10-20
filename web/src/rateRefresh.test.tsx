@@ -173,8 +173,9 @@ describe('rate-fetch removal (spec v0.4.0 rider — the v0.3.2/v0.3.5 reversal)'
       .find(r => (r.textContent ?? '').includes('Grand Total'));
     expect(totalRow).toBeDefined();
     const text = totalRow!.textContent ?? '';
-    expect(text).toContain('3');
-    expect(text).toContain('275');
+    // v0.8.0 re-baseline (in-test attribution): GOT gains the ordinary-time vessel-side lift, 4,000 moves x 1,029 = 4,116,000 SEK - the GOT native figure 3 275 851 -> 7 391 851.
+    expect(text).toContain('7');
+    expect(text).toContain('391');
     expect(text).toContain('851');
   });
 

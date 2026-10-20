@@ -30,6 +30,7 @@ import {
 import { resolveExchangeRate } from './conversion';
 import { comparisonBasisContext } from './portRegistry';
 import { opsFoldActive, opsFoldParts, opsPerGtLineFor, portDuesBanded } from './opsFold';
+import { chargeTypeForRule } from './chargeTypes';
 
 const LOADED_PORTS: PortDefinition[] = ((portsRegistry as any).ports ?? []).filter(
   (p: any) => p && p.fee_rules && Array.isArray(p.fee_rules)
@@ -87,9 +88,15 @@ describe('GOT per-GT OPS fold — the data-derived boundary (spec v0.2.70)', () 
 
   it('the decomposition arithmetic: (a) + (b) = (c), script-verified against the engine\'s own records', () => {
     const result = calculatePortCallCost(GOT, { vessel: DEFAULT_VESSEL, call: gotCallWithOps() });
+    // v0.8.0 filter alignment (in-test attribution, ruled at the Unit 5
+    // stop): this pin defined the tariff-only sum by family membership,
+    // which stopped being equivalent at the ruled Unit 2 family move (the
+    // GOT goods charge joined port_dues); the charge-type exclusion restores
+    // the intended definition to match the repaired machinery. The expected
+    // value is unchanged.
     const dues = result.billers
       .flatMap(b => b.fees)
-      .filter(f => f.fee_family === 'port_dues')
+      .filter(f => f.fee_family === 'port_dues' && chargeTypeForRule(f.fee_rule_id) === null)
       .reduce((s, f) => s + f.amount, 0);
     expect(dues).toBe(204279.2);
     const opsLine = opsPerGtLineFor(result)!;
@@ -256,17 +263,24 @@ describe('GOT per-GT OPS fold — zero-drift and no-double-count (spec v0.2.70)'
     expect(entered.total).toBe(Math.round((blank.total + entered.ops_speculative!.amount) * 100) / 100);
     expect(entered.ops_speculative!.amount).toBe(19484.9);
     // The family amount is the tariff-only sum in both states.
+    // v0.8.0 filter alignment (in-test attribution, ruled at the Unit 5
+    // stop): the tariff-only sum was defined by family membership, which
+    // stopped being equivalent at the ruled Unit 2 family move; the
+    // charge-type exclusion restores the intended definition to match the
+    // repaired machinery. The expected value is unchanged.
     const dues = (r: ReturnType<typeof calculatePortCallCost>) => r.billers
       .flatMap(b => b.fees)
-      .filter(f => f.fee_family === 'port_dues')
+      .filter(f => f.fee_family === 'port_dues' && chargeTypeForRule(f.fee_rule_id) === null)
       .reduce((s, f) => s + f.amount, 0);
     expect(dues(blank)).toBe(dues(entered));
     expect(dues(entered)).toBe(204279.2);
   });
 
-  it('the pre-existing baselines hold exactly with the fold surface present (pinned: GOT 3,275,851.15 / HAM 2,204,910.90 / HEL 8,750,057.40)', () => {
+  // v0.8.0 re-baseline (in-test attribution): GOT gains the ordinary-time vessel-side lift, 4,000 moves x 1,029 = 4,116,000 SEK - 3,275,851.15 -> 7,391,851.15, per-GT 16.81 -> 37.94; no other figure moves.
+  it('the pre-existing baselines hold exactly with the fold surface present (pinned: GOT 7,391,851.15 / HAM 2,204,910.90 / HEL 8,750,057.40)', () => {
     const pinned: Record<string, number> = {
-      gothenburg: 3275851.15,
+      // v0.8.0 re-baseline (in-test attribution): GOT gains the ordinary-time vessel-side lift, 4,000 moves x 1,029 = 4,116,000 SEK - 3,275,851.15 -> 7,391,851.15, per-GT 16.81 -> 37.94; no other figure moves.
+      gothenburg: 7391851.15,
       hamburg: 2204910.9,
       helsingborg: 8750057.4
     };

@@ -2383,11 +2383,18 @@ fee_rules:
 # ============================================================================
 
   # --- Terminal Charges on Goods ---
-  - id: apm_terminals_handling_le20ft
-    fee_family: terminal_handling
+  # v0.8.0: renamed at v0.8.0, formerly apm_terminals_handling_le20ft and
+  # apm_terminals_handling_gt20ft. The published §1 charge is a
+  # terminal-operator cargo due on goods, not the lift: the vessel-side lift
+  # is billed separately (apm_terminals_lift below). Family reclassified
+  # terminal_handling to port_dues at v0.8.0 per the Yilport precedent
+  # (gvh_yilport_cargo_due); the Cargo dues line placement is the
+  # charge-type mapping (web/src/chargeTypes.ts CARGO_RULE_IDS).
+  - id: apm_terminals_goods_charge_le20ft
+    fee_family: port_dues
     biller: APM Terminals Gothenburg
-    name: Terminal Handling - <=20ft Container
-    description: "Terminal handling charge per ISO unit <= 20ft"
+    name: Goods Charge - <=20ft Container
+    description: "Terminal charge on goods per ISO unit <= 20ft (tariff §1, Terminal Charges on goods): a terminal-operator cargo due, not the lift"
     rate_structure:
       type: per_unit
       unit_rate: 377
@@ -2405,11 +2412,11 @@ fee_rules:
       verified_on: "2025-12-15"
       verified_by: "Port Cost Analyzer Team"
 
-  - id: apm_terminals_handling_gt20ft
-    fee_family: terminal_handling
+  - id: apm_terminals_goods_charge_gt20ft
+    fee_family: port_dues
     biller: APM Terminals Gothenburg
-    name: Terminal Handling - >20ft Container
-    description: "Terminal handling charge per unit > 20ft"
+    name: Goods Charge - >20ft Container
+    description: "Terminal charge on goods per ISO unit > 20ft (tariff §1, Terminal Charges on goods): a terminal-operator cargo due, not the lift"
     rate_structure:
       type: per_unit
       unit_rate: 535
@@ -2445,6 +2452,36 @@ fee_rules:
       clause: "Terminal Charges"
       verified_on: "2025-12-15"
       verified_by: "Port Cost Analyzer Team"
+
+  # --- Vessel-side lift, ordinary time (v0.8.0) ---
+  # Confidential-source class: the rate is not published in any tariff. It
+  # is the repository owner's attestation from user-delivered commercial
+  # invoices, verified against those documents by the directive author (the
+  # builder has not seen them). Sanitized record: GOTHENBURG_EXTRACTION_
+  # REFERENCE.md §8. Never a list price. Ordinary time is the like-for-like
+  # basis; the overtime, OOG and premium variants are recorded, not encoded.
+  # Per unit per move on container_total (the ISPS rule's basis below): it
+  # fires on every move, discharging and loading alike.
+  - id: apm_terminals_lift
+    fee_family: terminal_handling
+    biller: APM Terminals Gothenburg
+    name: Terminal Handling - Lift (ordinary time)
+    description: "Vessel-side lift per unit per move, ordinary time, discharging and loading alike; user-delivered confidential commercial invoice — rates not published in any tariff; details withheld."
+    rate_structure:
+      type: per_unit
+      unit_rate: 1029
+      unit_type: container_total
+    contract_vs_published:
+      description: "user-delivered confidential commercial invoice — rates not published in any tariff; details withheld."
+      severity: 'info'
+    source_reference:
+      document_name: "GOTHENBURG_EXTRACTION_REFERENCE.md §8 (sanitized confidential-source record)"
+      document_url: "docs/sources/sweden/gothenburg/GOTHENBURG_EXTRACTION_REFERENCE.md"
+      document_issued: "2026-10-20"
+      page: "§8 Confidential-source rates"
+      clause: "user-delivered confidential commercial invoice — rates not published in any tariff; details withheld"
+      verified_on: "2026-10-20"
+      verified_by: "directive author (repository owner's attestation; not builder-verified)"
 
   # --- ISPS Security Charge ---
   - id: apm_terminals_isps

@@ -1114,20 +1114,27 @@ describe('Panamax Verification - Gothenburg 2026', () => {
     expect(readinessFee?.amount).toBe(51555);
   });
 
-  it('Terminal handling should be 684,000 SEK', () => {
+  it('Terminal handling should be 1,543,500 SEK (the lift); the goods charge 684,000 SEK (v0.8.0 re-baseline)', () => {
     const result = calculatePortCallCost(gothenburgPort, panamaxInput);
-    
+
     // 750 containers <= 20ft + 750 containers > 20ft discharged
-    // APM Terminal charges: 377 SEK/unit for <= 20ft, 535 SEK/unit for > 20ft
-    // 750 * 377 + 750 * 535 = 750 * (377 + 535) = 750 * 912 = 684,000
+    // v0.8.0 re-baseline (in-test attribution): the published 377/535 SEK
+    // per unit is the tariff section 1 goods charge, reclassified to the
+    // port_dues family at v0.8.0 (still 750 * 912 = 684,000, unchanged);
+    // the terminal_handling family is now the ordinary-time lift alone,
+    // 1,500 moves * 1,029 = 1,543,500.
     const apmBiller = result.billers.find(b => b.biller === 'APM Terminals Gothenburg');
-    
+
     const terminalHandlingFees = apmBiller?.fees.filter(f => f.fee_family === 'terminal_handling');
     const totalTerminalHandling = terminalHandlingFees?.reduce((sum, f) => sum + f.amount, 0);
-    
+
     expect(terminalHandlingFees).toBeDefined();
     expect(terminalHandlingFees?.length).toBeGreaterThan(0);
-    expect(totalTerminalHandling).toBe(684000);
+    expect(totalTerminalHandling).toBe(1543500);
+    const goodsCharge = apmBiller?.fees
+      .filter(f => f.fee_rule_id.startsWith('apm_terminals_goods_charge_'))
+      .reduce((sum, f) => sum + f.amount, 0);
+    expect(goodsCharge).toBe(684000);
   });
 
   it('Hatch cover should be 0 SEK when no hatch covers are handled', () => {

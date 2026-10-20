@@ -291,7 +291,8 @@ describe('Derivation transparency — zero figure drift (the exposure never chan
     // (2,313,489.31, still pinned as the variant below in the mechanics
     // suites) to the Eurogate default 2,204,910.90 (extraction reference
     // §17.5); GOT and HEL hold exactly.
-    expect(calculatePortCallCost(g, { vessel: DEFAULT_VESSEL, call: defaultCall('gothenburg') }).total).toBe(3275851.15);
+    // v0.8.0 re-baseline (in-test attribution): GOT gains the ordinary-time vessel-side lift, 4,000 moves x 1,029 = 4,116,000 SEK - 3,275,851.15 -> 7,391,851.15, per-GT 16.81 -> 37.94; no other figure moves.
+    expect(calculatePortCallCost(g, { vessel: DEFAULT_VESSEL, call: defaultCall('gothenburg') }).total).toBe(7391851.15);
     expect(calculatePortCallCost(h, { vessel: DEFAULT_VESSEL, call: defaultCall('hamburg') }).total).toBe(2204910.90);
     expect(calculatePortCallCost(x, { vessel: DEFAULT_VESSEL, call: defaultCall('helsingborg') }).total).toBe(8750057.40);
   });

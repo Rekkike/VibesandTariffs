@@ -98,29 +98,64 @@ describe('handling-basis annotations (spec v0.4.2, item 2) - a new annotation fa
     expect(handlingBasisAnnotationFor('norrkoping')!.text).toContain('855/1,051/1,249/1,283');
     expect(handlingBasisAnnotationFor('helsingborg')!.text).toContain("Place of rest");
   });
-  it('the GOT basis determination (v0.4.6, archived and verified): single per-unit charge, no modality distinction, scope not stated — the inference labeled as inference', () => {
-    // v0.4.6 re-baseline (the APMT operator-document pass, in-test
-    // attribution): the archives delivered by the product owner verified —
-    // the annotation becomes the evidence-based characterization of
-    // APMT Terminal Tariff 2026 §1.1. A stale "basis not stated in the
-    // document" without the verification status fails; a padded claim of
-    // the bundled reading as published fails the inference labeling.
+  it('the GOT basis (v0.8.0): full-cycle, leg-priced — the lift billed separately on top of the goods charge, the landside leg separately, the confidential-source class disclosed', () => {
+    // v0.8.0 re-baseline (in-test attribution, the S-c declared class): the
+    // v0.4.6 bundled reading ("labeled as inference pending wording from
+    // APMT") is disproven by the confidential-source evidence - the lift is
+    // billed separately at 1,029 on top of the section 1 goods charge. The
+    // annotation becomes the evidenced leg-priced basis; a residual
+    // inference wording fails.
     const text = handlingBasisAnnotationFor('gothenburg')!.text;
-    expect(text).toContain('Handling basis: single per-unit charge; no modality distinction and no separately priced legs published; scope of the charge not stated in the document');
-    expect(text).toContain('APMT Terminal Tariff 2026 (June revision, §1.1, per unit 377/535 SEK)');
-    expect(text).toContain('Terms of Business v31 March 2025');
-    expect(text).toContain('labeled as inference pending wording from APMT');
-    expect(text).not.toContain('not archived in-repo');
+    expect(text).toContain('Handling basis: full-cycle, leg-priced.');
+    expect(text).toContain('1,029 SEK per unit per move (ordinary time)');
+    expect(text).toContain('§1, Terminal Charges on goods, 377/535 SEK per unit, a cargo due carried on the Cargo dues line, not handling');
+    expect(text).toContain('453 SEK per unit');
+    expect(text).toContain('user-delivered confidential commercial invoice — rates not published in any tariff; details withheld');
+    expect(text).toContain('never a list price');
+    expect(text).not.toContain('inference');
     expect(text).not.toMatch(/bundled \(container-through\)/);
   });
-  it('the GOT toggle participation stays "not published" with the archived-document reason (a wording, never a zero)', () => {
-    const got = containerThroughParts('gothenburg', 'truck', LE_UNITS, GT_UNITS);
-    expect(got.addedAmount).toBeNull();
-    expect(got.note).toContain('Not published');
-    expect(got.note).toContain('archived APMT Terminal Tariff 2026');
-    expect(got.note).toContain('publish no separately priced landside leg');
-    expect(got.note).toContain('Not published is never rendered as a zero');
-    expect(got.note).not.toContain('not archived in-repo');
+  it('the GOT toggle participation (v0.8.0): the gated landside leg, 453 SEK per unit for either mode, cited to the confidential-source class', () => {
+    // v0.8.0 re-baseline (in-test attribution, the S-c declared class): the
+    // v0.4.6 "not published" participation is replaced by the evidenced
+    // receiving/delivering leg - 453 x 4,000 = 1,812,000 SEK at the default
+    // call, the same figure for truck and rail; bundled false.
+    for (const mode of ['truck', 'rail'] as const) {
+      const got = containerThroughParts('gothenburg', mode, LE_UNITS, GT_UNITS);
+      expect(got.addedAmount).toBe(453 * 4000);
+      expect(got.addedAmount).toBe(1812000);
+      expect(got.bundled).toBe(false);
+      expect(got.note).toContain('453 SEK; user-delivered confidential commercial invoice — rates not published in any tariff; details withheld');
+      expect(got.note).toContain('453 x 4000 = 1812000 SEK.');
+    }
+  });
+  it('the Aarhus basis and gate legs (v0.8.0 Unit 3c): the archived APMT Aarhus tariff §4.1 truck 338.00 and §4.2 rail 414.00 DKK replace the silent default', () => {
+    const text = handlingBasisAnnotationFor('aarhus')!.text;
+    expect(text).toContain('Handling basis: vessel move with separately priced gate legs.');
+    expect(text).toContain('§2.1 "Load or Discharge Move", full/empty per container 1,105.00 DKK');
+    expect(text).toContain('§4.1 "Gate Move Truck"');
+    expect(text).toContain('§4.2 "Gate Move Rail"');
+    const truck = containerThroughParts('aarhus', 'truck', LE_UNITS, GT_UNITS);
+    expect(truck.addedAmount).toBe(338 * 4000); // 1,352,000 DKK
+    expect(truck.bundled).toBe(false);
+    expect(truck.note).toContain('APMT Aarhus 2026 tariff §4.1');
+    const rail = containerThroughParts('aarhus', 'rail', LE_UNITS, GT_UNITS);
+    expect(rail.addedAmount).toBe(414 * 4000); // 1,656,000 DKK
+    expect(rail.note).toContain('APMT Aarhus 2026 tariff §4.2');
+    expect(truck.note).not.toContain('Not published at this port');
+  });
+  it('the Bremerhaven basis and leg (v0.8.0 Unit 3d): the default terminal EUROGATE CTB 152.00 EUR for both modes; the NTB variant’s 145.00 EUR recorded as not reflected', () => {
+    const text = handlingBasisAnnotationFor('bremerhaven')!.text;
+    expect(text).toContain('Handling basis: vessel-to-quay only at the default terminal, EUROGATE CTB.');
+    expect(text).toContain('152.00 EUR per movement (ch. 6.1.1)');
+    expect(text).toContain('145.00 EUR per container (ch. 6.1.1), published but not reflected');
+    for (const mode of ['truck', 'rail'] as const) {
+      const brv = containerThroughParts('bremerhaven', mode, LE_UNITS, GT_UNITS);
+      expect(brv.addedAmount).toBe(152 * 4000); // 608,000 EUR
+      expect(brv.bundled).toBe(false);
+      expect(brv.note).toContain('at the default terminal, EUROGATE CTB');
+      expect(brv.note).toContain('the NTB variant’s published 145.00 EUR (reference tariff ch. 6.1.1) is not reflected');
+    }
   });
   it('the Rotterdam annotation (v0.7.0 Unit 5) states the not-published handling basis with the archived-document reason - never a zero, never an invented rate', () => {
     const text = handlingBasisAnnotationFor('rotterdam')!.text;
@@ -231,10 +266,13 @@ describe('compare container-through ON (spec v0.4.2, item 3) - published legs, p
     const gle = containerThroughParts('gavle', 'rail', LE_UNITS, GT_UNITS);
     expect(gle.addedAmount).toBeNull();
   });
-  it('"not published" renders as a wording, never a zero: GOT in both modes, Norvik truck (export road)', () => {
+  it('"not published" renders as a wording, never a zero: Norvik truck (export road); GOT is leg-priced since v0.8.0', () => {
+    // v0.8.0 re-baseline (in-test attribution, the S-c declared class):
+    // Gothenburg leaves the not-published set - its landside leg is the
+    // evidenced 453 SEK per unit (pinned above); the wording rule holds on
+    // the remaining not-published leg.
     const got = containerThroughParts('gothenburg', 'truck', LE_UNITS, GT_UNITS);
-    expect(got.addedAmount).toBeNull();
-    expect(got.note).toContain('Not published');
+    expect(got.addedAmount).toBe(1812000);
     const nvkTruck = containerThroughParts('norvik', 'truck', LE_UNITS, GT_UNITS);
     expect(nvkTruck.addedAmount).toBeNull();
     expect(nvkTruck.note).toContain('not published in the document');

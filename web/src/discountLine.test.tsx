@@ -32,12 +32,15 @@ import {
 } from '@port-cost/core';
 import type { CallInput, PortDefinition } from '@port-cost/core/types';
 import portsRegistry from './data/ports.json';
+import { LOADED_PORTS as RENDERED_PORTS } from './portRegistry';
 import { ComparisonView, __setMobileQueryForTests } from './App';
 import { buildDiscountLine } from './discountLine';
 
-const LOADED_PORTS: PortDefinition[] = ((portsRegistry as any).ports ?? []).filter(
-  (p: any) => p && p.fee_rules && Array.isArray(p.fee_rules)
-);
+// v0.8.0 re-baseline (in-test attribution): the suite pins the rendered
+// port set - the app's LOADED_PORTS (portRegistry), Rotterdam hidden by
+// HIDDEN_PORT_IDS per the user ruling of 2026-10-20 (eight rendered ports;
+// the Rotterdam engine values stay pinned core-side).
+const LOADED_PORTS: PortDefinition[] = RENDERED_PORTS;
 const portById = (id: string) => LOADED_PORTS.find(p => p.metadata.id === id)!;
 
 const OPS_ENTERED: Pick<CallInput, 'ops_kwh_consumption' | 'ops_electricity_price' | 'ops_demand_charge' | 'ops_connection_charge' | 'ops_per_gt_charge'> = {
@@ -88,7 +91,8 @@ describe('comparison-legibility zero-drift pins (spec v0.2.64)', () => {
     // v0.2.66 promotion re-baseline: HAM 2,313,489.31 -> 2,204,910.90
     // (the Eurogate terminal layer; §17.5); GOT/HEL byte-identical.
     for (const [portId, expected] of [
-      ['gothenburg', 3275851.15],
+      // v0.8.0 re-baseline (in-test attribution): GOT gains the ordinary-time vessel-side lift, 4,000 moves x 1,029 = 4,116,000 SEK - 3,275,851.15 -> 7,391,851.15, per-GT 16.81 -> 37.94; no other figure moves.
+      ['gothenburg', 7391851.15],
       ['hamburg', 2204910.90],
       ['helsingborg', 8750057.40]
     ] as const) {
@@ -122,8 +126,12 @@ describe('comparison-legibility zero-drift pins (spec v0.2.64)', () => {
       // full-call figure is 133,470.88 EUR -> rendered 133 471 €,
       // converted 1,498,077 kr; per-GT 133,470.88 x 11.224 / 194,849 =
       // 7.6912 -> 7.69 SEK/GT effective. Still the cheapest-first column.
-      '133\u00a0471\u00a0\u20ac\u2248 1\u00a0498\u00a0077\u00a0kr converted \u2014 at 11.224 kr/EUR, 2026-10-077.69 SEK/GT effective \u2014 derived, not a published rate; converted at the exchange-rate input (at 11.224 kr/EUR, 2026-10-07)',
-      '3\u00a0275\u00a0851\u00a0kr16.81 SEK/GT effective \u2014 derived, not a published rate',
+      // v0.8.0 re-baseline (in-test attribution): Rotterdam is hidden from
+      // view (HIDDEN_PORT_IDS, the user ruling of 2026-10-20) - its column
+      // (133 471 € / 1 498 077 kr) no longer renders; the engine value
+      // stays pinned core-side. Gothenburg is the first column.
+      // v0.8.0 re-baseline (in-test attribution): GOT gains the ordinary-time vessel-side lift, 4,000 moves x 1,029 = 4,116,000 SEK - 3,275,851.15 -> 7,391,851.15, per-GT 16.81 -> 37.94; no other figure moves.
+      '7\u00a0391\u00a0851\u00a0kr37.94 SEK/GT effective \u2014 derived, not a published rate',
       // v0.4.1 re-baseline (the storage-default convention correction,
       // in-test attribution): Norrköping's Grand Total loses the seeded
       // one chargeable export day (−328,400 kr → 8,297,772.50; per-GT
@@ -210,7 +218,9 @@ describe('comparison-legibility zero-drift pins (spec v0.2.64)', () => {
       // reach-berth stage too (the same segment derivation) - 65,333.08
       // + 29,811.00 (towage 20,478 + mooring 4,836 + unmooring 4,497) =
       // 95,144.08 EUR, rendered rounded 95 144 €.
-      .toBe('To reach the berth95\u00a0144\u00a0\u20ac1\u00a0068\u00a0651\u00a0kr2\u00a0199\u00a0088\u00a0kr2\u00a0378\u00a0057\u00a0kr966\u00a0161\u00a0Dkr1\u00a0370\u00a0979\u00a0kr2\u00a0081\u00a0124\u00a0kr114\u00a0506\u00a0\u20ac119\u00a0740\u00a0\u20ac');
+      // v0.8.0 re-baseline (in-test attribution): Rotterdam hidden - its
+      // first-column cells (95 144 € / 0 € / 38 327 €) no longer render.
+      .toBe('To reach the berth1\u00a0068\u00a0651\u00a0kr2\u00a0199\u00a0088\u00a0kr2\u00a0378\u00a0057\u00a0kr966\u00a0161\u00a0Dkr1\u00a0370\u00a0979\u00a0kr2\u00a0081\u00a0124\u00a0kr114\u00a0506\u00a0\u20ac119\u00a0740\u00a0\u20ac');
     expect((stageRows[1].textContent ?? '').trim())
       // v0.5.1: Bremerhaven's at-berth stage - the Eurogate CTB berthing
       // charge 553,371.16 EUR, between the Swedish zeros and HAM's cell.
@@ -219,7 +229,7 @@ describe('comparison-legibility zero-drift pins (spec v0.2.64)', () => {
       // the Swedish zeros and Bremerhaven's cell.
       // v0.7.0 re-baseline (the Rotterdam expansion): Rotterdam levies
       // no at-berth charge - the honest zero in EUR, the first column.
-      .toBe('At the berth0\u00a0\u20ac0\u00a0kr0\u00a0kr0\u00a0kr0\u00a0Dkr0\u00a0kr0\u00a0kr553\u00a0371\u00a0\u20ac553\u00a0371\u00a0\u20ac');
+      .toBe('At the berth0\u00a0kr0\u00a0kr0\u00a0kr0\u00a0Dkr0\u00a0kr0\u00a0kr553\u00a0371\u00a0\u20ac553\u00a0371\u00a0\u20ac');
     expect((stageRows[2].textContent ?? '').trim())
       // v0.4.1 re-baseline (in-test attribution): Norrköping's quayside
       // stage loses the seeded 328,400 kr storage charge (4,797,485 →
@@ -245,7 +255,8 @@ describe('comparison-legibility zero-drift pins (spec v0.2.64)', () => {
       // v0.7.0 re-baseline (the Rotterdam expansion): Rotterdam's
       // quayside stage - the capped cargo due 38,326.80 EUR, rendered
       // rounded 38 327 €, the first column.
-      .toBe('Quayside operations38\u00a0327\u00a0\u20ac2\u00a0207\u00a0200\u00a0kr6\u00a0098\u00a0685\u00a0kr6\u00a0372\u00a0000\u00a0kr5\u00a0382\u00a0200\u00a0Dkr8\u00a0936\u00a0000\u00a0kr9\u00a0871\u00a0200\u00a0kr1\u00a0531\u00a0800\u00a0\u20ac1\u00a0531\u00a0800\u00a0\u20ac');
+      // v0.8.0 re-baseline (in-test attribution): GOT gains the ordinary-time vessel-side lift, 4,000 moves x 1,029 = 4,116,000 SEK - GOT's quayside stage 2,207,200 -> 6,323,200 SEK.
+      .toBe('Quayside operations6\u00a0323\u00a0200\u00a0kr6\u00a0098\u00a0685\u00a0kr6\u00a0372\u00a0000\u00a0kr5\u00a0382\u00a0200\u00a0Dkr8\u00a0936\u00a0000\u00a0kr9\u00a0871\u00a0200\u00a0kr1\u00a0531\u00a0800\u00a0\u20ac1\u00a0531\u00a0800\u00a0\u20ac');
   });
 });
 
@@ -287,11 +298,15 @@ describe('discounts received — the model (spec v0.2.64, item 2)', () => {
     // G1 archived - the citation renders the archived .txt filename, never
     // the never-existed repository .pdf path.
     expect(line.components[0].citation).toContain('port-tariff-2026.txt');
-    // Arithmetic: gross = net + discounts = 3,173,711.55 + 102,139.60
-    // = 3,275,851.15; percentage = 102,139.60 / 3,275,851.15 = 3.1180...%
-    expect(line.grossCharges).toBe(3275851.15);
-    expect(line.percentage).toBeCloseTo(3.1180, 3);
-    expect(line.percentage.toFixed(2)).toBe('3.12');
+    // Arithmetic: gross = net + discounts = 7,289,711.55 + 102,139.60
+    // = 7,391,851.15; percentage = 102,139.60 / 7,391,851.15 = 1.3818...%
+    // v0.8.0 re-baseline (in-test attribution): GOT gains the ordinary-time
+    // vessel-side lift, 4,000 moves x 1,029 = 4,116,000 SEK - gross
+    // 3,275,851.15 -> 7,391,851.15 (net 3,173,711.55 -> 7,289,711.55); the
+    // discount amount is unchanged, so its share of gross moves 3.12% -> 1.38%.
+    expect(line.grossCharges).toBe(7391851.15);
+    expect(line.percentage).toBeCloseTo(1.3818, 3);
+    expect(line.percentage.toFixed(2)).toBe('1.38');
     // The itemization sum matches the rendered sum.
     expect(roundToCent(line.components.reduce((s, c) => s + c.amount, 0))).toBe(line.sum);
   });
@@ -313,8 +328,12 @@ describe('discounts received — the model (spec v0.2.64, item 2)', () => {
     expect(line.components.length).toBe(2);
     // Port-dues second-call 50% (102,139.60) + Sjöfartsverket 75% payable (65,543.75)
     expect(line.components.map(c => c.amount)).toEqual([102139.60, 65543.75]);
-    expect(line.grossCharges).toBe(3275851.15);
-    expect(line.percentage.toFixed(2)).toBe('5.12');
+    // v0.8.0 re-baseline (in-test attribution): GOT gains the ordinary-time vessel-side lift, 4,000 moves x 1,029 = 4,116,000 SEK - 3,275,851.15 -> 7,391,851.15, per-GT 16.81 -> 37.94; no other figure moves.
+    expect(line.grossCharges).toBe(7391851.15);
+    // v0.8.0 re-baseline (in-test attribution): the discount sum is unchanged;
+    // its share of the lift-raised gross moves 5.12% -> 2.27%
+    // (167,683.35 / 7,391,851.15).
+    expect(line.percentage.toFixed(2)).toBe('2.27');
   });
 
   it('the GOT environmental discount fires at ESI 50: 20,427.92 SEK, 0.62% of gross', () => {
@@ -326,7 +345,10 @@ describe('discounts received — the model (spec v0.2.64, item 2)', () => {
     expect(line.sum).toBe(20427.92);
     expect(line.components.length).toBe(1);
     expect(line.components[0].label).toContain('Additive discounts');
-    expect(line.percentage.toFixed(2)).toBe('0.62');
+    // v0.8.0 re-baseline (in-test attribution): the discount sum is unchanged;
+    // its share of the lift-raised gross moves 0.62% -> 0.28%
+    // (20,427.92 / 7,391,851.15).
+    expect(line.percentage.toFixed(2)).toBe('0.28');
   });
 
   it('the HAM quantum discount fires at 2m prior-year GT: 1,228.25 EUR, 0.06% of gross (v0.2.66 re-baseline: the gross moved)', () => {
@@ -426,7 +448,9 @@ describe('discounts received — the rendering (spec v0.2.64, item 2)', () => {
     } as CallInput));
     const discountRow = container!.querySelector('.comparison-discount-row')!;
     expect(discountRow.textContent).toContain('102\u00a0140');
-    expect(discountRow.textContent).toContain('3.12% of gross (pre-discount) charges');
+    // v0.8.0 re-baseline (in-test attribution): the unchanged 102,139.60 SEK
+    // discount is 1.38% of the lift-raised gross (was 3.12%).
+    expect(discountRow.textContent).toContain('1.38% of gross (pre-discount) charges');
     expect(discountRow.textContent).toContain('Frequency discount');
     expect(discountRow.textContent).toContain('port-tariff-2026.txt');
     // The honest zero still renders for the ports that fired nothing.
@@ -435,7 +459,9 @@ describe('discounts received — the rendering (spec v0.2.64, item 2)', () => {
     // minus the one that fired). v0.6.0: eight ports minus the one that
     // fired - seven honest zeros. v0.7.0 (the Rotterdam expansion): nine
     // ports minus the one that fired - eight honest zeros.
-    expect(noDiscount.length).toBe(8);
+    // v0.8.0 re-baseline (in-test attribution): eight rendered ports
+    // (Rotterdam hidden) minus the one that fired - seven honest zeros.
+    expect(noDiscount.length).toBe(7);
   });
 
   it('desktop: the discount sum follows the conversion disclosure machinery (Hamburg native EUR with the converted secondary)', async () => {
@@ -470,7 +496,9 @@ describe('discounts received — the rendering (spec v0.2.64, item 2)', () => {
       .find(c => (c.textContent ?? '').includes('Gothenburg'))!;
     const line = got.querySelector('.comparison-card-discount')!;
     expect(line.textContent).toContain('102\u00a0140');
-    expect(line.textContent).toContain('3.12% of gross (pre-discount) charges');
+    // v0.8.0 re-baseline (in-test attribution): the unchanged discount is
+    // 1.38% of the lift-raised gross (was 3.12%).
+    expect(line.textContent).toContain('1.38% of gross (pre-discount) charges');
     // Placement: after the stage blocks, before the estimated-parameters
     // subtotal (the card's Grand Total leads; the discount line sits among
     // the closing lines, included in the total).
@@ -560,7 +588,9 @@ describe('the derived per-GT metric\u2019s per-GT-OPS disclosure (spec v0.2.64, 
     const perGtCells = totalRow.querySelectorAll('.comparison-total-pergt');
     // v0.5.1: seven loaded ports. v0.6.0: eight loaded ports. v0.7.0
     // (the Rotterdam expansion): nine loaded ports.
-    expect(perGtCells.length).toBe(9);
+    // v0.8.0 re-baseline (in-test attribution): eight rendered ports
+    // (Rotterdam hidden), eight per-GT cells.
+    expect(perGtCells.length).toBe(8);
     // GOT and HEL (per-GT descriptor enabled + value entered) carry the
     // disclosure; HAM (no per-GT component) carries only the inclusion note.
     const texts = Array.from(perGtCells).map(c => c.textContent ?? '');
@@ -577,17 +607,19 @@ describe('the derived per-GT metric\u2019s per-GT-OPS disclosure (spec v0.2.64, 
     // (index 0) is an EUR port with no per-GT OPS component - the
     // inclusion note only, like AAR (index 4) and HAM (index 8); the
     // five SEK ports are indices 1, 2, 3, 5 and 6.
-    expect(texts[0]).not.toContain('per-GT OPS charge uses the same GT basis');
+    // v0.8.0 re-baseline (in-test attribution): Rotterdam hidden - eight
+    // per-GT cells in the order GOT, NRK, HEL, AAR, GLE, NVK, BRV, HAM; the
+    // five SEK ports are indices 0, 1, 2, 4 and 5; AAR (3) carries the
+    // inclusion note only (the pre-pass assertions, shifted one column).
     expect(texts[0]).toContain('includes user-specified OPS');
-    expect(texts[1]).toContain('includes user-specified OPS');
+    expect(texts[0]).toContain('per-GT OPS charge uses the same GT basis as the port dues');
+    expect(texts[0]).toContain('flows into this derived metric');
     expect(texts[1]).toContain('per-GT OPS charge uses the same GT basis as the port dues');
-    expect(texts[1]).toContain('flows into this derived metric');
     expect(texts[2]).toContain('per-GT OPS charge uses the same GT basis as the port dues');
-    expect(texts[3]).toContain('per-GT OPS charge uses the same GT basis as the port dues');
-    expect(texts[4]).not.toContain('per-GT OPS charge uses the same GT basis');
-    expect(texts[4]).toContain('includes user-specified OPS');
+    expect(texts[3]).not.toContain('per-GT OPS charge uses the same GT basis');
+    expect(texts[3]).toContain('includes user-specified OPS');
+    expect(texts[4]).toContain('per-GT OPS charge uses the same GT basis as the port dues');
     expect(texts[5]).toContain('per-GT OPS charge uses the same GT basis as the port dues');
-    expect(texts[6]).toContain('per-GT OPS charge uses the same GT basis as the port dues');
   });
 
   it('without OPS the note carries no disclosure (the plain derived note only, unchanged)', async () => {

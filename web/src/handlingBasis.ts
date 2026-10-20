@@ -27,7 +27,7 @@ export interface HandlingBasisAnnotation {
 export const HANDLING_BASIS_ANNOTATIONS: Record<string, HandlingBasisAnnotation> = {
   gothenburg: {
     text:
-      'Handling basis: single per-unit charge; no modality distinction and no separately priced legs published; scope of the charge not stated in the document. Verified against the archived APMT Terminal Tariff 2026 (June revision, §1.1, per unit 377/535 SEK) and its Terms of Business v31 March 2025 (the legal wrapper the tariff’s own §8 incorporates): the tariff’s export/import entries are storage-clock calculation rules, not leg prices, and its §4.1 538 SEK figure is a dangerous-goods receipt/delivery surcharge. The bundled reading (one figure covering the lift regardless of modality) is a reasonable inference, labeled as inference pending wording from APMT — the document itself states no scope.'
+      'Handling basis: full-cycle, leg-priced. The vessel-side lift is billed separately at 1,029 SEK per unit per move (ordinary time), on top of the published goods charge — the archived APMT Terminal Tariff 2026 (June revision) §1, Terminal Charges on goods, 377/535 SEK per unit, a cargo due carried on the Cargo dues line, not handling. The landside receiving/delivering leg is billed separately at 453 SEK per unit (the container-through toggle). The lift and landside rates: user-delivered confidential commercial invoice — rates not published in any tariff; details withheld; never a list price.'
   },
   hamburg: {
     text:
@@ -48,6 +48,14 @@ export const HANDLING_BASIS_ANNOTATIONS: Record<string, HandlingBasisAnnotation>
   norvik: {
     text:
       'Handling basis: asymmetric. Export: "ISO containers receiving container to stack including single lift to vessel" 2,012 kr - vessel-side, no road leg. Import: "lifted from vessel, received into stack, and loaded to road transport" 2,012 kr - the road leg is bundled on the import side only. Rail separately priced: container loaded to/from rail stack including receiving, lifts and transfer to train 1,300 kr (trailer 1,575 kr).'
+  },
+  bremerhaven: {
+    text:
+      'Handling basis: vessel-to-quay only at the default terminal, EUROGATE CTB. Eurogate Prices and Conditions ch. 5.1 "Loading/discharging from/to main vessel, feeder vessel or barge" (5.1.1, 358.00 EUR per container); receiving and delivery from/to rail/truck is a separate 152.00 EUR per movement (ch. 6.1.1). The NTB variant’s reference tariff prices receipt/delivery at 145.00 EUR per container (ch. 6.1.1), published but not reflected in the container-through figure, which carries the default terminal’s leg.'
+  },
+  aarhus: {
+    text:
+      'Handling basis: vessel move with separately priced gate legs. APMT Aarhus 2026 tariff §2.1 "Load or Discharge Move", full/empty per container 1,105.00 DKK (vessel side); the landside legs are separately published: §4.1 "Gate Move Truck" ("Full or empty including horizontal move from truck to yard/stack or vice versa") 338.00 DKK and §4.2 "Gate Move Rail" ("Loading/unloading of railway wagons") 414.00 DKK per container.'
   },
   rotterdam: {
     text:
@@ -98,6 +106,10 @@ export function containerThroughParts(
           'Yilport\'s throughput rate is bundled - "lift off vessel, train or truck into terminal and lift to vessel, train or truck out of terminal" (section 4.1) - it was always the through figure; nothing is added (never double-counted).'
       };
     case 'norrkoping': {
+      // Size convention (verified v0.8.0 against tariff pp.14-15): the
+      // over-20-foot class takes the 40-foot figure; the 30-foot (truck 509,
+      // rail 453) and 45-foot (truck 546, rail 573) variants are
+      // unrepresentable in the two-size model.
       if (mode === 'truck') {
         const added = 479 * le20ftUnits + 546 * gt20ftUnits;
         return {
@@ -157,7 +169,7 @@ export function containerThroughParts(
         addedAmount: added,
         bundled: false,
         note:
-          'Rail handling added per container (1,300 kr; Hutchison price list p.6 "Container loaded to/from rail stack including Receiving, Lifts and transfer to train 1300 kr"; the trailer line 1,575 kr has no trailer-unit input in the container model): ' +
+          'Rail handling added per container (1,300 kr; Hutchison price list p.4 "Container loaded to/from rail stack including Receiving, Lifts and transfer to train 1300 kr"; the trailer line 1,575 kr has no trailer-unit input in the container model): ' +
           `1 300 x ${le20ftUnits + gt20ftUnits} = ${added} kr.`
       };
     }
@@ -174,14 +186,56 @@ export function containerThroughParts(
           `152 x ${le20ftUnits + gt20ftUnits} = ${added} EUR (converted at the pinned rate in this view).`
       };
     }
-    case 'gothenburg':
+    case 'bremerhaven': {
+      // v0.8.0 (Unit 3d, the Hamburg precedent per the ruling): the default
+      // terminal's leg, EUROGATE CTB 152.00 EUR per movement (Eurogate P&C
+      // ch. 6.1.1), for both modes. The NTB variant's 145.00 EUR (reference
+      // tariff ch. 6.1.1) is published but not reflected: this function
+      // receives no terminal operator (terminal-aware legs are queued).
+      const added = 152 * (le20ftUnits + gt20ftUnits);
       return {
         portId,
-        addedAmount: null,
+        addedAmount: added,
         bundled: false,
         note:
-          'Not published: the archived APMT Terminal Tariff 2026 (June revision) and its Terms of Business publish no separately priced landside leg — the tariff’s export/import entries are storage-clock calculation rules, not leg prices, and its §4.1 538 SEK figure is a dangerous-goods receipt/delivery surcharge — and the handling basis itself is not stated in the document. Not published is never rendered as a zero.'
+          'Receiving and delivery from/to rail/truck added per movement at the default terminal, EUROGATE CTB (152.00 EUR; Eurogate Prices and Conditions ch. 6.1.1); the NTB variant’s published 145.00 EUR (reference tariff ch. 6.1.1) is not reflected: ' +
+          `152 x ${le20ftUnits + gt20ftUnits} = ${added} EUR.`
       };
+    }
+    case 'aarhus': {
+      // v0.8.0 (Unit 3c): the published gate legs replace the silent default
+      // (APMT Aarhus 2026 tariff §4.1 truck 338.00, §4.2 rail 414.00 DKK per
+      // container). Native DKK, rendered in the port's own currency like
+      // Hamburg's EUR leg.
+      const rate = mode === 'truck' ? 338 : 414;
+      const added = rate * (le20ftUnits + gt20ftUnits);
+      return {
+        portId,
+        addedAmount: added,
+        bundled: false,
+        note:
+          (mode === 'truck'
+            ? 'Gate move truck added per container (338.00 DKK; APMT Aarhus 2026 tariff §4.1 "Full or empty including horizontal move from truck to yard/stack or vice versa"): '
+            : 'Gate move rail added per container (414.00 DKK; APMT Aarhus 2026 tariff §4.2 "Loading/unloading of railway wagons"): ') +
+          `${rate} x ${le20ftUnits + gt20ftUnits} = ${added} DKK.`
+      };
+    }
+    case 'gothenburg': {
+      // v0.8.0: the gated landside leg (receiving/delivering, the same
+      // figure for truck and rail) - the confidential-source class
+      // (GOTHENBURG_EXTRACTION_REFERENCE.md section 8). A published-tariff
+      // citation may replace it later as a mechanical swap, never a figure
+      // change.
+      const added = 453 * (le20ftUnits + gt20ftUnits);
+      return {
+        portId,
+        addedAmount: added,
+        bundled: false,
+        note:
+          'Receiving/delivering added per unit (453 SEK; user-delivered confidential commercial invoice — rates not published in any tariff; details withheld): ' +
+          `453 x ${le20ftUnits + gt20ftUnits} = ${added} SEK.`
+      };
+    }
     case 'rotterdam':
       return {
         portId,

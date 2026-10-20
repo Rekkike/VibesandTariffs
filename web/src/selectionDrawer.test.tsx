@@ -38,10 +38,13 @@ import {
 } from './portDrawer';
 import type { PortDefinition } from '@port-cost/core/types';
 import portsRegistry from './data/ports.json';
+import { LOADED_PORTS as RENDERED_PORTS } from './portRegistry';
 
-const LOADED_PORTS: PortDefinition[] = ((portsRegistry as any).ports ?? []).filter(
-  (p: any) => p && p.fee_rules && Array.isArray(p.fee_rules)
-);
+// v0.8.0 re-baseline (in-test attribution): the suite pins the rendered
+// port set - the app's LOADED_PORTS (portRegistry), Rotterdam hidden by
+// HIDDEN_PORT_IDS per the user ruling of 2026-10-20 (eight rendered ports;
+// the Rotterdam engine values stay pinned core-side).
+const LOADED_PORTS: PortDefinition[] = RENDERED_PORTS;
 
 // The synthetic new-country port (test-only, never a silo): cloned from
 // an existing silo's real shape with its identity fields re-pointed. At
@@ -143,24 +146,30 @@ describe('port drawer (spec v0.5.0) - structure and grouping', () => {
     // from metadata.country, never enumerated in code; the registry's
     // alphabetical order puts Aarhus first, so Denmark is the first
     // group; the Netherlands group renders last, after Sweden.
-    expect(headers).toEqual(['Denmark', 'Germany', 'Sweden', 'Netherlands']);
+    // v0.8.0 re-baseline (in-test attribution): Rotterdam is hidden from
+    // view (HIDDEN_PORT_IDS, the user ruling of 2026-10-20) and the
+    // Netherlands group disappears entirely with it - three groups render.
+    expect(headers).toEqual(['Denmark', 'Germany', 'Sweden']);
+    expect(headers).not.toContain('Netherlands');
     const groups = groupPortsByCountry(LOADED_PORTS);
     // v0.6.0 re-baseline: the Aarhus silo founds the Denmark group - the
     // fixture's v0.5.1 synthetic-Denmark role is retired; Denmark is now
     // the real first group (registry order: aarhus first).
     // v0.7.0 re-baseline: the Rotterdam silo founds the Netherlands group,
     // rendering last, after Sweden.
-    expect(groups.map(g => g.country)).toEqual(['Denmark', 'Germany', 'Sweden', 'Netherlands']);
+    // v0.8.0 re-baseline (in-test attribution): no Netherlands group on the
+    // rendered set (Rotterdam hidden; it stays registered, never deleted).
+    expect(groups.map(g => g.country)).toEqual(['Denmark', 'Germany', 'Sweden']);
     expect(groups.find(g => g.country === 'Sweden')!.ports).toHaveLength(5);
     expect(groups.find(g => g.country === 'Germany')!.ports).toHaveLength(2);
     expect(groups.find(g => g.country === 'Denmark')!.ports).toHaveLength(1);
-    expect(groups.find(g => g.country === 'Netherlands')!.ports).toHaveLength(1);
+    expect(groups.find(g => g.country === 'Netherlands')).toBeUndefined();
     // No code-side country enumeration: the grouping helper reads the
     // field exactly as carried (a new country appears the day its port
     // exists - pinned by the fixture grouping below; the synthetic
     // fixture's country is Finland, a country no real silo carries).
     const withEighth = groupPortsByCountry([...LOADED_PORTS, buildSeventhPort()]);
-    expect(withEighth.map(g => g.country)).toEqual(['Denmark', 'Germany', 'Sweden', 'Netherlands', 'Finland']);
+    expect(withEighth.map(g => g.country)).toEqual(['Denmark', 'Germany', 'Sweden', 'Finland']);
     act(() => { root.unmount(); });
     container.remove();
   });
@@ -347,9 +356,12 @@ describe('port drawer (spec v0.5.0) - the comparison cap (6, the 140 px floor ar
     const boxes = Array.from(
       container.querySelectorAll('.port-drawer-body input[type="checkbox"]')
     ) as HTMLInputElement[];
-    expect(boxes).toHaveLength(9);
+    // v0.8.0 re-baseline (in-test attribution): eight rendered ports
+    // (Rotterdam hidden) - the cap still binds, with two unchecked rows
+    // disabled at cap instead of three.
+    expect(boxes).toHaveLength(8);
     const unchecked = boxes.filter(b => !b.checked);
-    expect(unchecked).toHaveLength(3);
+    expect(unchecked).toHaveLength(2);
     expect(unchecked.every(b => b.disabled)).toBe(true);
     const checkedBoxes = boxes.filter(b => b.checked);
     expect(checkedBoxes).toHaveLength(6);

@@ -75,7 +75,8 @@ describe('Godsavgift — the Swedish national cargo-based fairway due (spec v0.2
     }
   });
 
-  it('the Grand Totals reconcile to the new baselines: GOT 3,275,851.15 / HAM 2,313,489.31 / HEL 8,750,057.40', () => {
+  // v0.8.0 re-baseline (in-test attribution): GOT gains the ordinary-time vessel-side lift, 4,000 moves x 1,029 = 4,116,000 SEK - 3,275,851.15 -> 7,391,851.15, per-GT 16.81 -> 37.94; no other figure moves.
+  it('the Grand Totals reconcile to the new baselines: GOT 7,391,851.15 / HAM 2,313,489.31 / HEL 8,750,057.40', () => {
     const got = calculatePortCallCost(loadPort('gothenburg_2026.yaml'), { vessel: DEFAULT_VESSEL, call: defaultCall('gothenburg') });
     const ham = calculatePortCallCost(loadPort('hamburg_2026.yaml'), { vessel: DEFAULT_VESSEL, call: defaultCall('hamburg') });
     const hel = calculatePortCallCost(loadPort('helsingborg_2026.yaml'), { vessel: DEFAULT_VESSEL, call: defaultCall('helsingborg') });
@@ -85,10 +86,13 @@ describe('Godsavgift — the Swedish national cargo-based fairway due (spec v0.2
     // reconciliation (Eurogate terminal promotion): HAM re-baselines from
     // 2,313,489.31 (the HHLA variant, still switchable) to the Eurogate
     // default 2,204,910.90 (extraction reference §17.5); GOT/HEL hold.
-    expect(got.total).toBe(3007051.15 + 268800.00);
+    // v0.8.0 re-baseline (in-test attribution): GOT's pre-godsavgift base
+    // gains the ordinary-time lift, 3,007,051.15 + 4,116,000 = 7,123,051.15.
+    expect(got.total).toBe(7123051.15 + 268800.00);
     expect(hel.total).toBe(8481257.40 + 268800.00);
     expect(ham.total).toBe(2204910.90);
-    expect(got.total).toBe(3275851.15);
+    // v0.8.0 re-baseline (in-test attribution): GOT gains the ordinary-time vessel-side lift, 4,000 moves x 1,029 = 4,116,000 SEK - 3,275,851.15 -> 7,391,851.15, per-GT 16.81 -> 37.94; no other figure moves.
+    expect(got.total).toBe(7391851.15);
     expect(hel.total).toBe(8750057.40);
   });
 

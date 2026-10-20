@@ -22,13 +22,16 @@ import fs from 'fs';
 import path from 'path';
 import { ComparisonView, __setMobileQueryForTests } from './App';
 import portsRegistry from './data/ports.json';
+import { LOADED_PORTS as RENDERED_PORTS } from './portRegistry';
 import { DEFAULT_VESSEL, defaultCall, calculatePortCallCost } from '@port-cost/core';
 import type { CallInput, PortDefinition, VesselInput } from '@port-cost/core/types';
 import { readDecomposedAppSource } from './appSource';
 
-const LOADED_PORTS: PortDefinition[] = ((portsRegistry as any).ports ?? []).filter(
-  (p: any) => p && p.fee_rules && Array.isArray(p.fee_rules)
-);
+// v0.8.0 re-baseline (in-test attribution): the suite pins the rendered
+// port set - the app's LOADED_PORTS (portRegistry), Rotterdam hidden by
+// HIDDEN_PORT_IDS per the user ruling of 2026-10-20 (eight rendered ports;
+// the Rotterdam engine values stay pinned core-side).
+const LOADED_PORTS: PortDefinition[] = RENDERED_PORTS;
 const portById = (id: string) => LOADED_PORTS.find(p => p.metadata.id === id)!;
 
 const OPS_ENTERED: Partial<CallInput> = {
@@ -82,21 +85,26 @@ describe('Grand Total derived per-GT — desktop comparison (spec v0.2.58)', () 
     // v0.5.1: seven loaded ports. v0.6.0: eight loaded ports, eight per-GT
     // cells. v0.7.0 (the Rotterdam expansion): nine loaded ports, nine
     // per-GT cells.
-    expect(perGtCells.length).toBe(9);
+    // v0.8.0 re-baseline (in-test attribution): eight rendered ports
+    // (Rotterdam hidden), eight per-GT cells.
+    expect(perGtCells.length).toBe(8);
     for (const cell of Array.from(perGtCells)) {
       expect(cell.textContent).toContain('SEK/GT effective — derived, not a published rate');
     }
   });
 
-  it('GOT and HEL are pure division against the pinned baselines: 16.81 and 44.91 SEK/GT (re-pinned v0.2.61)', async () => {
+  // v0.8.0 re-baseline (in-test attribution): GOT gains the ordinary-time vessel-side lift, 4,000 moves x 1,029 = 4,116,000 SEK - 3,275,851.15 -> 7,391,851.15, per-GT 16.81 -> 37.94; no other figure moves.
+  it('GOT and HEL are pure division against the pinned baselines: 37.94 and 44.91 SEK/GT (re-pinned v0.2.61)', async () => {
     ({ container, root } = await renderComparison(false, defaultCall('gothenburg')));
     const totalRow = Array.from(container!.querySelectorAll('.comparison-total-row'))
       .find(r => (r.textContent ?? '').includes('Grand Total'))!;
     const text = totalRow.textContent ?? '';
     // v0.2.61 drift re-pin (godsavgift promotion, expected per the
-    // directive): 3,275,851.15 ÷ 194,849 = 16.8123 → 16.81;
+    // directive): 3,275,851.15 ÷ 194,849 = 16.8123 → 16.81; v0.8.0:
+    // 7,391,851.15 ÷ 194,849 = 37.9363 → 37.94;
     // 8,750,057.40 ÷ 194,849 = 44.9069 → 44.91.
-    expect(text).toContain('16.81 SEK/GT');
+    // v0.8.0 re-baseline (in-test attribution): GOT gains the ordinary-time vessel-side lift, 4,000 moves x 1,029 = 4,116,000 SEK - 3,275,851.15 -> 7,391,851.15, per-GT 16.81 -> 37.94; no other figure moves.
+    expect(text).toContain('37.94 SEK/GT');
     expect(text).toContain('44.91 SEK/GT');
     // v0.4.0 Swedish domestic expansion: the three new ports' pure-division
     // figures; v0.4.1 re-baseline (the storage-default convention
@@ -123,8 +131,12 @@ describe('Grand Total derived per-GT — desktop comparison (spec v0.2.58)', () 
     // cross-check runs through 133,470.88 EUR -> rendered 133 471 €;
     // converted 1,498,077 kr at 11.224; / 194,849 GT = 7.6912 ->
     // 7.69 SEK/GT effective.
-    expect(text).toContain('133\u00a0471\u00a0\u20ac');
-    expect(text).toContain('7.69 SEK/GT');
+    // v0.8.0 re-baseline (in-test attribution): the Rotterdam cross-check
+    // retires to an exclusion assertion - Rotterdam is hidden from view
+    // (HIDDEN_PORT_IDS, the user ruling of 2026-10-20), so its figure never
+    // renders; the engine value stays pinned core-side.
+    expect(text).not.toContain('133\u00a0471\u00a0\u20ac');
+    expect(text).not.toContain('7.69 SEK/GT');
   });
 
   it('HAM converts through the rate input: 127.01 SEK/GT at the default 11.224, with the derived-and-converted disclosure naming the rate dependency (v0.6.6 ritual re-baseline)', async () => {
@@ -161,7 +173,8 @@ describe('Grand Total derived per-GT — desktop comparison (spec v0.2.58)', () 
       vessel: smallVessel, call: defaultCall('gothenburg')
     });
     const expected = (gotResult.total / 100000).toFixed(2);
-    expect(expected).not.toBe('16.81');
+    // v0.8.0 re-baseline (in-test attribution): GOT gains the ordinary-time vessel-side lift, 4,000 moves x 1,029 = 4,116,000 SEK - 3,275,851.15 -> 7,391,851.15, per-GT 16.81 -> 37.94; no other figure moves.
+    expect(expected).not.toBe('37.94');
     ({ container, root } = await renderComparison(false, defaultCall('gothenburg'), smallVessel));
     const totalRow = Array.from(container!.querySelectorAll('.comparison-total-row'))
       .find(r => (r.textContent ?? '').includes('Grand Total'))!;
@@ -197,7 +210,8 @@ describe('Grand Total derived per-GT — mobile comparison cards (spec v0.2.58)'
     }
     // GOT card carries the exact figure
     const got = Array.from(cards).find(c => (c.textContent ?? '').includes('Gothenburg'))!;
-    expect(got.querySelector('.comparison-card-total')!.textContent).toContain('16.81 SEK/GT');
+    // v0.8.0 re-baseline (in-test attribution): GOT gains the ordinary-time vessel-side lift, 4,000 moves x 1,029 = 4,116,000 SEK - 3,275,851.15 -> 7,391,851.15, per-GT 16.81 -> 37.94; no other figure moves.
+    expect(got.querySelector('.comparison-card-total')!.textContent).toContain('37.94 SEK/GT');
   });
 
   it('the mobile converted collapse (spec v0.2.39) hides the converted Hamburg per-GT behind the disclosure', async () => {
@@ -223,15 +237,18 @@ describe('Grand Total derived per-GT — OPS honesty (spec v0.2.58)', () => {
     // v0.5.1: seven loaded ports. v0.6.0: eight loaded ports, eight per-GT
     // cells. v0.7.0 (the Rotterdam expansion): nine loaded ports, nine
     // per-GT cells.
-    expect(perGtCells.length).toBe(9);
+    // v0.8.0 re-baseline (in-test attribution): eight rendered ports
+    // (Rotterdam hidden), eight per-GT cells.
+    expect(perGtCells.length).toBe(8);
     for (const cell of Array.from(perGtCells)) {
       expect(cell.textContent).toContain('includes user-specified OPS');
       expect(cell.textContent).toContain('derived, not a published rate');
     }
     // and the arithmetic holds against the presented (OPS-inclusive) totals:
-    // GOT (3,275,851.15 + 32,609.90) ÷ 194,849 = 16.98 SEK/GT
-    // (v0.2.61 drift re-pin: the godsavgift moves the base to 3,275,851.15)
-    const gotCell = Array.from(perGtCells).find(c => (c.textContent ?? '').startsWith('16.98'))!;
+    // GOT (7,391,851.15 + 32,609.90) ÷ 194,849 = 38.10 SEK/GT
+    // (v0.2.61 drift re-pin: the godsavgift moved the base to 3,275,851.15;
+    // v0.8.0 re-baseline (in-test attribution): GOT gains the ordinary-time vessel-side lift, 4,000 moves x 1,029 = 4,116,000 SEK - the base 3,275,851.15 -> 7,391,851.15, so 16.98 -> 38.10)
+    const gotCell = Array.from(perGtCells).find(c => (c.textContent ?? '').startsWith('38.10'))!;
     expect(gotCell).toBeDefined();
   });
 

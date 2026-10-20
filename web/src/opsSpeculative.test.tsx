@@ -55,7 +55,8 @@ describe('OPS speculative inputs — zero-drift baseline (spec v0.2.57)', () => 
       // v0.2.61 drift re-pin (godsavgift promotion, expected per the
       // directive): GOT and HEL each gain the 268,800.00 godsavgift line;
       // HAM is untouched.
-      gothenburg: 3275851.15,
+      // v0.8.0 re-baseline (in-test attribution): GOT gains the ordinary-time vessel-side lift, 4,000 moves x 1,029 = 4,116,000 SEK - 3,275,851.15 -> 7,391,851.15, per-GT 16.81 -> 37.94; no other figure moves.
+      gothenburg: 7391851.15,
       hamburg: 2204910.9,
       helsingborg: 8750057.4
     };
@@ -321,7 +322,8 @@ describe('OPS speculative inputs — web surfaces (spec v0.2.57)', () => {
     await renderComparison(defaultCall('gothenburg'), false);
     const grandTotalRow = Array.from(container!.querySelectorAll('.comparison-total-row'))
       .find(r => (r.textContent ?? '').includes('Grand Total'))!;
-    expect(grandTotalRow.textContent).toContain('3\u00A0275\u00A0851');
+    // v0.8.0 re-baseline (in-test attribution): GOT gains the ordinary-time vessel-side lift, 4,000 moves x 1,029 = 4,116,000 SEK - 3,275,851 -> 7,391,851.
+    expect(grandTotalRow.textContent).toContain('7\u00A0391\u00A0851');
     expect(grandTotalRow.textContent).toContain('8\u00A0750\u00A0057');
     // v0.2.66 promotion re-baseline: 2,313,489.31 -> 2,204,910.90 (the
     // Eurogate terminal layer; §17.5).

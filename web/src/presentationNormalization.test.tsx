@@ -20,8 +20,13 @@ import { calculatePortCallCost, classifyRule } from '@port-cost/core';
 import { DEFAULT_VESSEL, defaultCall } from '@port-cost/core';
 import type { CallInput, PortDefinition } from '@port-cost/core';
 import portsRegistry from './data/ports.json';
+import { LOADED_PORTS as RENDERED_PORTS } from './portRegistry';
 
-const LOADED_PORTS: PortDefinition[] = ((portsRegistry as any).ports ?? []);
+// v0.8.0 re-baseline (in-test attribution): the suite pins the rendered
+// port set - the app's LOADED_PORTS (portRegistry), Rotterdam hidden by
+// HIDDEN_PORT_IDS per the user ruling of 2026-10-20 (eight rendered ports;
+// the Rotterdam engine values stay pinned core-side).
+const LOADED_PORTS: PortDefinition[] = RENDERED_PORTS;
 const SWEDISH_PORTS = ['gothenburg', 'helsingborg', 'gavle', 'norrkoping', 'norvik'];
 const PORT_PREFIX: Record<string, string> = {
   gothenburg: 'sjofartsverket_',

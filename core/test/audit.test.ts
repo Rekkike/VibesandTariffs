@@ -122,8 +122,10 @@ describe('audit d/f: contract-vs-published caveat carries onto APMT handling lin
   } as any;
   it('both handling rules carry the contract_vs_published flag', () => {
     const result = calculatePortCallCost(gothenburg, { vessel, call });
-    expect(hasFlag(result, 'apm_terminals_handling_le20ft', 'contract_vs_published')).toBe(true);
-    expect(hasFlag(result, 'apm_terminals_handling_gt20ft', 'contract_vs_published')).toBe(true);
+    // v0.8.0 rename (in-test attribution): renamed at v0.8.0, formerly
+    // apm_terminals_handling_le20ft and apm_terminals_handling_gt20ft.
+    expect(hasFlag(result, 'apm_terminals_goods_charge_le20ft', 'contract_vs_published')).toBe(true);
+    expect(hasFlag(result, 'apm_terminals_goods_charge_gt20ft', 'contract_vs_published')).toBe(true);
   });
   it('non-contract rules do not carry it', () => {
     const result = calculatePortCallCost(gothenburg, { vessel, call });
@@ -269,9 +271,14 @@ describe('tri-port sanity check: Gothenburg decomposition (computed fresh, pinne
     // Waste non-EU: solid 0.24 x 21,979 = 5,274.96; sludge 0.31 x 21,979 = 6,813.49
     expect(feeAmount(result, 'port_gothenburg_waste_solid_non_eu')).toBeCloseTo(5274.96, 2);
     expect(feeAmount(result, 'port_gothenburg_waste_sludge_non_eu')).toBeCloseTo(6813.49, 2);
-    // APM handling: 200 x 377 + 200 x 535 = 214,400 (list price, contract caveat flagged)
-    expect(feeAmount(result, 'apm_terminals_handling_le20ft')).toBe(75400);
-    expect(feeAmount(result, 'apm_terminals_handling_gt20ft')).toBe(107000);
+    // APM goods charge: 200 x 377 + 200 x 535 = 182,400 (list price, contract caveat flagged).
+    // v0.8.0 prose correction (adjudicated in-pass): this comment formerly read
+    // 214,400, which folded the ISPS line (400 units x 80 = 32,000) into the
+    // handling sum; the asserted pins 75,400 and 107,000 are unchanged.
+    // v0.8.0 rename (in-test attribution): renamed at v0.8.0, formerly
+    // apm_terminals_handling_le20ft and apm_terminals_handling_gt20ft; amounts unchanged.
+    expect(feeAmount(result, 'apm_terminals_goods_charge_le20ft')).toBe(75400);
+    expect(feeAmount(result, 'apm_terminals_goods_charge_gt20ft')).toBe(107000);
     // Sjoefartsverket class 5 / E: vessel fee 80,755; readiness 24,165;
     // pilotage start 19,305 + 6 half-hours x 4,400 = 26,400; ordering 1,880
     expect(feeAmount(result, 'sjofartsverket_vessel_fee_class5_csi_e')).toBe(80755);
@@ -286,7 +293,8 @@ describe('tri-port sanity check: Gothenburg decomposition (computed fresh, pinne
 
   it('Gothenburg totals per vessel (class E) match the independently computed expectation', () => {
     // MSC Kyungmin at class E: dues 42,584.09 + waste 12,088.45 + cargo side
-    // 214,400 + ISPS 32,000 + vessel fee 80,755 + readiness 24,165 + pilotage
+    // 182,400 (v0.8.0 prose correction: formerly 214,400, which folded the
+    // ISPS 32,000 in and so double-counted it here) + ISPS 32,000 + vessel fee 80,755 + readiness 24,165 + pilotage
     // 47,585... computed via engine below; the pin is the sum of
     // the pinned components above plus ISPS (400 x 80), plus towage
     // (60,000 SEK: LOA 171.92 m -> 1 tug by the LOA-class default, spec v0.2.33
@@ -295,9 +303,12 @@ describe('tri-port sanity check: Gothenburg decomposition (computed fresh, pinne
     const call = { ...triPortCall(gothenburg, 'MSC KYUNGMIN'), flag_state: 'non-EU' };
     const result = calculatePortCallCost(gothenburg, { vessel, call });
     const isps = feeAmount(result, 'apm_terminals_isps');
+    // v0.8.0 re-baseline (in-test attribution): the ordinary-time vessel-side
+    // lift joins the expectation, 400 moves x 1,029 = 411,600 SEK.
+    expect(feeAmount(result, 'apm_terminals_lift')).toBe(411600);
     const expected =
       42584.09 + 5274.96 + 6813.49 + 75400 + 107000 + isps +
-      80755 + 24165 + 19305 + 26400 + 1880 + 60000;
+      80755 + 24165 + 19305 + 26400 + 1880 + 60000 + 411600;
     expect(result.total).toBeCloseTo(expected, 0);
     // The towage addition is estimate-flagged and excluded from the verified total
     expect(result.total_estimated_parameters).toBe(60000);

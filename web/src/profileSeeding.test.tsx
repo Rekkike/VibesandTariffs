@@ -370,7 +370,8 @@ describe('default-call figures at all three ports (spec v0.2.48, deliberate cont
         // v0.2.61 drift re-pin (godsavgift promotion, expected per the
         // directive): the Swedish national cargo-based fairway due adds
         // 268,800.00 (80,000 t × 3.36 kr/t) → 3,275,851.15.
-        expect(total).toBeCloseTo(3275851.15, 2);
+        // v0.8.0 re-baseline (in-test attribution): GOT gains the ordinary-time vessel-side lift, 4,000 moves x 1,029 = 4,116,000 SEK - 3,275,851.15 -> 7,391,851.15, per-GT 16.81 -> 37.94; no other figure moves.
+        expect(total).toBeCloseTo(7391851.15, 2);
       } else {
         // v0.2.66 promotion re-baseline: 2,313,489.31 -> 2,204,910.90
         // (the Eurogate terminal layer; §17.5).

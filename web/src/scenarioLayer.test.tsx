@@ -104,7 +104,8 @@ describe('Scenario-adjustment layer — data and persistence pins (spec v0.3.3)'
 describe('Scenario-adjustment layer — zero-drift and arithmetic pins (spec v0.3.3)', () => {
   it('scenario-off is byte-identical at all three ports (the zero-drift contract, pinned)', () => {
     for (const [port, expected] of [
-      [GOTHENBURG, 3275851.15],
+      // v0.8.0 re-baseline (in-test attribution): GOT gains the ordinary-time vessel-side lift, 4,000 moves x 1,029 = 4,116,000 SEK - 3,275,851.15 -> 7,391,851.15, per-GT 16.81 -> 37.94; no other figure moves.
+      [GOTHENBURG, 7391851.15],
       [HAMBURG, 2204910.90],
       [HELSINGBORG, 8750057.40]
     ] as [PortDefinition, number][]) {
@@ -164,7 +165,8 @@ describe('Scenario-adjustment layer — zero-drift and arithmetic pins (spec v0.
 
   it('red proof base: a scenario input leaking into a non-Eurogate port fails — the Swedish baselines hold with the same inputs', () => {
     for (const [port, expected] of [
-      [GOTHENBURG, 3275851.15],
+      // v0.8.0 re-baseline (in-test attribution): GOT gains the ordinary-time vessel-side lift, 4,000 moves x 1,029 = 4,116,000 SEK - 3,275,851.15 -> 7,391,851.15, per-GT 16.81 -> 37.94; no other figure moves.
+      [GOTHENBURG, 7391851.15],
       [HELSINGBORG, 8750057.40]
     ] as [PortDefinition, number][]) {
       const call = {

@@ -37,6 +37,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { ComparisonView, __setMobileQueryForTests } from './App';
 import portsRegistry from './data/ports.json';
+import { LOADED_PORTS as RENDERED_PORTS } from './portRegistry';
 import {
   DEFAULT_VESSEL,
   defaultCall,
@@ -51,9 +52,11 @@ import { readDecomposedAppSource } from './appSource';
 
 const appSource = readDecomposedAppSource();
 const cssSource = fs.readFileSync(path.join(__dirname, 'index.css'), 'utf8');
-const LOADED_PORTS: PortDefinition[] = ((portsRegistry as any).ports ?? []).filter(
-  (p: any) => p && p.fee_rules && Array.isArray(p.fee_rules)
-);
+// v0.8.0 re-baseline (in-test attribution): the suite pins the rendered
+// port set - the app's LOADED_PORTS (portRegistry), Rotterdam hidden by
+// HIDDEN_PORT_IDS per the user ruling of 2026-10-20 (eight rendered ports;
+// the Rotterdam engine values stay pinned core-side).
+const LOADED_PORTS: PortDefinition[] = RENDERED_PORTS;
 
 // The merged-call contract the ComparisonView now implements (spec
 // v0.2.53): per-port defaults under an explicitly entered shared call.
@@ -207,7 +210,8 @@ describe('comparison shared-call per-port defaults (spec v0.2.53 defect fix)', (
       // v0.2.61 drift re-pin (godsavgift promotion, expected per the
       // directive): GOT and HEL each gain the 268,800.00 godsavgift line;
       // HAM is untouched.
-      gothenburg: 3275851.15,
+      // v0.8.0 re-baseline (in-test attribution): GOT gains the ordinary-time vessel-side lift, 4,000 moves x 1,029 = 4,116,000 SEK - 3,275,851.15 -> 7,391,851.15, per-GT 16.81 -> 37.94; no other figure moves.
+      gothenburg: 7391851.15,
       hamburg: 2204910.9,
       helsingborg: 8750057.4,
       // v0.4.0 Swedish domestic expansion: the three new ports' own

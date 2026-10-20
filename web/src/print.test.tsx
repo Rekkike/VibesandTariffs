@@ -22,15 +22,18 @@ import { buildRuleNamesByPort, buildRuleAttributesByPort, buildRowsBySegment } f
 import { PrintComparisonPages, printRateBasisNote } from './printComparisonPages';
 import { PRINT_COLUMNS_PER_PAGE, printContinuationNote, printPagesFor } from './printPages';
 import portsRegistry from './data/ports.json';
+import { LOADED_PORTS as RENDERED_PORTS } from './portRegistry';
 import { DEFAULT_VESSEL, defaultCall, calculatePortCallCost } from '@port-cost/core';
 import { APP_VERSION } from './version';
 import type { CallInput, PortDefinition, VesselInput } from '@port-cost/core/types';
 
 const cssSource = fs.readFileSync(path.join(__dirname, 'index.css'), 'utf8');
 const printPagesSource = fs.readFileSync(path.join(__dirname, 'printPages.ts'), 'utf8');
-const LOADED_PORTS: PortDefinition[] = ((portsRegistry as any).ports ?? []).filter(
-  (p: any) => p && p.fee_rules && Array.isArray(p.fee_rules)
-);
+// v0.8.0 re-baseline (in-test attribution): the suite pins the rendered
+// port set - the app's LOADED_PORTS (portRegistry), Rotterdam hidden by
+// HIDDEN_PORT_IDS per the user ruling of 2026-10-20 (eight rendered ports;
+// the Rotterdam engine values stay pinned core-side).
+const LOADED_PORTS: PortDefinition[] = RENDERED_PORTS;
 const DECLARED_ROWS = ((portsRegistry as any).exchange_rates ?? []) as {
   from_currency: string; to_currency: string; rate: number; as_of: string; source: string;
 }[];
@@ -40,7 +43,11 @@ const DECLARED_ROWS = ((portsRegistry as any).exchange_rates ?? []) as {
 // full page set, no synthetic filler). The synthetic ninth fixture
 // retires from composition duty (the Finland precedent it embodied is
 // pinned in the portGeneralization suite, where it belongs).
-const ninePorts = LOADED_PORTS.map(p => ({ id: p.metadata.id, name: p.metadata.name }));
+// v0.8.0 re-baseline (in-test attribution): Rotterdam is hidden from view
+// (HIDDEN_PORT_IDS, the user ruling of 2026-10-20) - the rendered registry
+// returns to eight ports, ninePorts returns to eightPorts, and the
+// composition on the real rendered registry is 3+3+2.
+const eightPorts = LOADED_PORTS.map(p => ({ id: p.metadata.id, name: p.metadata.name }));
 
 jest.setTimeout(30000);
 
@@ -55,11 +62,11 @@ describe('print page composition — the settled 3+3+3 constant (spec v0.6.2)', 
     expect(printPagesSource).toMatch(/never derived/);
   });
 
-  it('nine ports compose 3 + 3 + 3 — the current registry slices into three full pages (v0.7.0 re-baseline: Rotterdam makes the ninth column)', () => {
-    expect(LOADED_PORTS.length).toBe(9);
-    const pages = printPagesFor(ninePorts);
+  it('eight rendered ports compose 3 + 3 + 2 — the rendered registry slices into two full pages and a two-column third (v0.8.0 re-baseline: Rotterdam hidden from view)', () => {
+    expect(LOADED_PORTS.length).toBe(8);
+    const pages = printPagesFor(eightPorts);
     expect(pages.length).toBe(3);
-    expect(pages.map(p => p.ports.length)).toEqual([3, 3, 3]);
+    expect(pages.map(p => p.ports.length)).toEqual([3, 3, 2]);
     expect(pages[0].ports.map(p => p.id)).toEqual(
       ['aarhus', 'bremerhaven', 'gavle']
     );
@@ -67,25 +74,25 @@ describe('print page composition — the settled 3+3+3 constant (spec v0.6.2)', 
       ['gothenburg', 'hamburg', 'helsingborg']
     );
     expect(pages[2].ports.map(p => p.id)).toEqual(
-      ['norrkoping', 'norvik', 'rotterdam']
+      ['norrkoping', 'norvik']
     );
     expect(pages.map(p => p.pageNumber)).toEqual([1, 2, 3]);
     expect(pages.every(p => p.totalPages === 3)).toBe(true);
   });
 
-  it('the synthetic ninth fixture is retired from composition duty: the real nine-port registry composes 3+3+3 with no synthetic filler (v0.7.0)', () => {
-    // The fixture's retirement pin: the composition the synthetic port
-    // used to enable now holds on the real registry (Rotterdam is the
-    // ninth column), and no synthetic id appears in any page's columns.
-    const pages = printPagesFor(ninePorts);
-    expect(pages.map(p => p.ports.length)).toEqual([3, 3, 3]);
+  it('the hidden port never prints: the rendered eight-port registry composes 3+3+2 with no Rotterdam column and no synthetic filler (v0.8.0)', () => {
+    // v0.8.0 re-baseline (in-test attribution): the v0.7.0 pin held
+    // Rotterdam as the ninth column; Rotterdam is hidden from view by the
+    // exclusion constant, so no page carries it.
+    const pages = printPagesFor(eightPorts);
+    expect(pages.map(p => p.ports.length)).toEqual([3, 3, 2]);
     const ids = pages.flatMap(p => p.ports.map(pp => pp.id));
-    expect(ids).toContain('rotterdam');
+    expect(ids).not.toContain('rotterdam');
     expect(ids.filter(id => id.startsWith('synthetic'))).toEqual([]);
   });
 
   it('a comparison of six or fewer ports stays on one page (the cap means a single printed page at the drawer cap)', () => {
-    const six = printPagesFor(ninePorts.slice(0, 6));
+    const six = printPagesFor(eightPorts.slice(0, 6));
     expect(six.length).toBe(2);
     expect(six[0].ports.length).toBe(3);
     expect(six[1].ports.length).toBe(3);
@@ -94,11 +101,13 @@ describe('print page composition — the settled 3+3+3 constant (spec v0.6.2)', 
     expect(printContinuationNote(six[1], 6)).toBe('continued \u2014 ports 4\u20136 of 6');
   });
 
-  it('the continuation note: blank on page 1, "continued — ports 4–6 of 9" on page 2, "continued — ports 7–9 of 9" on page 3 (v0.7.0: the real nine-port registry)', () => {
-    const pages = printPagesFor(ninePorts);
-    expect(printContinuationNote(pages[0], 9)).toBe('');
-    expect(printContinuationNote(pages[1], 9)).toBe('continued \u2014 ports 4\u20136 of 9');
-    expect(printContinuationNote(pages[2], 9)).toBe('continued \u2014 ports 7\u20139 of 9');
+  it('the continuation note: blank on page 1, "continued — ports 4–6 of 8" on page 2, "continued — ports 7–8 of 8" on page 3 (v0.8.0: the rendered eight-port registry)', () => {
+    // v0.8.0 re-baseline (in-test attribution): eight rendered ports
+    // (Rotterdam hidden) - the v0.7.0 notes "of 9" become "of 8".
+    const pages = printPagesFor(eightPorts);
+    expect(printContinuationNote(pages[0], 8)).toBe('');
+    expect(printContinuationNote(pages[1], 8)).toBe('continued \u2014 ports 4\u20136 of 8');
+    expect(printContinuationNote(pages[2], 8)).toBe('continued \u2014 ports 7\u20138 of 8');
   });
 });
 
@@ -163,7 +172,9 @@ describe('print header content — the unfalsifiability rule (spec v0.6.2)', () 
         expect(text).toContain(`Version: ${APP_VERSION}`);
         // v0.7.1 re-baseline (in-test attribution): the documentation-only
         // patch bump moves the version constant v0.7.0 -> v0.7.1; no figure moved.
-        expect(APP_VERSION).toBe('v0.7.1');
+        // v0.8.0 re-baseline (in-test attribution): the minor bump moves the
+        // version constant v0.7.1 -> v0.8.0.
+        expect(APP_VERSION).toBe('v0.8.0');
         expect(text).toContain('Tariff year: 2026');
         expect(text).toContain('Vessel profile: MAREN MAERSK (IMO 9632129)');
         expect(text).toContain('ESI:');
@@ -283,9 +294,11 @@ describe('print header content — the unfalsifiability rule (spec v0.6.2)', () 
     try {
       expect(document.body.querySelector('[data-testid="print-continuation-1"]')).toBeNull();
       const c2 = document.body.querySelector('[data-testid="print-continuation-2"]');
-      expect(c2?.textContent).toBe('continued \u2014 ports 4\u20136 of 9');
+      // v0.8.0 re-baseline (in-test attribution): eight rendered ports
+      // (Rotterdam hidden) - "of 9" becomes "of 8"; page 3 carries 7-8.
+      expect(c2?.textContent).toBe('continued \u2014 ports 4\u20136 of 8');
       const c3 = document.body.querySelector('[data-testid="print-continuation-3"]');
-      expect(c3?.textContent).toBe('continued \u2014 ports 7\u20139 of 9');
+      expect(c3?.textContent).toBe('continued \u2014 ports 7\u20138 of 8');
     } finally {
       await act(async () => { root!.unmount(); });
       container.remove();

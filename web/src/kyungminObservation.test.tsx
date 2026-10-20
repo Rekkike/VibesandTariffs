@@ -121,8 +121,10 @@ describe('MSC KYUNGMIN NT promotion (spec v0.3.4; the v0.3.3 observation pins su
       vessel: DEFAULT_VESSEL as any,
       call: defaultCall('gothenburg') as CallInput
     });
-    expect(got.total).toBe(3275851.15);
-    expect(got.total / 194849).toBeCloseTo(16.81, 2);
+    // v0.8.0 re-baseline (in-test attribution): GOT gains the ordinary-time vessel-side lift, 4,000 moves x 1,029 = 4,116,000 SEK - 3,275,851.15 -> 7,391,851.15, per-GT 16.81 -> 37.94; no other figure moves.
+    expect(got.total).toBe(7391851.15);
+    // v0.8.0 re-baseline (in-test attribution): GOT gains the ordinary-time vessel-side lift, 4,000 moves x 1,029 = 4,116,000 SEK - 3,275,851.15 -> 7,391,851.15, per-GT 16.81 -> 37.94; no other figure moves.
+    expect(got.total / 194849).toBeCloseTo(37.94, 2);
     const ham = calculatePortCallCost(HAMBURG, {
       vessel: DEFAULT_VESSEL as any,
       call: defaultCall('hamburg') as CallInput

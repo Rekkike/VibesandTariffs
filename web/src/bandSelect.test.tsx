@@ -56,7 +56,8 @@ describe('banded-input zero drift (spec v0.2.65; HAM re-baselined v0.2.66)', () 
     // converted per-GT 133.87 -> 127.59 (terminal layer replaced; GOT/HEL
     // byte-identical — the isolation contract, pinned).
     for (const [port, total, perGt] of [
-      [GOTHENBURG, '3275851.15', '16.81'],
+      // v0.8.0 re-baseline (in-test attribution): GOT gains the ordinary-time vessel-side lift, 4,000 moves x 1,029 = 4,116,000 SEK - 3,275,851.15 -> 7,391,851.15, per-GT 16.81 -> 37.94; no other figure moves.
+      [GOTHENBURG, '7391851.15', '37.94'],
       [HAMBURG, '2204910.90', '127.59'],
       [HELSINGBORG, '8750057.40', '44.91']
     ] as [PortDefinition, string, string][]) {

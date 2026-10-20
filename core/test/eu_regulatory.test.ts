@@ -228,9 +228,11 @@ describe('EU regulatory block — the FuelEU notice pins (spec v0.2.69)', () => 
 });
 
 describe('EU regulatory block — isolation and zero-drift pins (spec v0.2.69)', () => {
-  it('the pre-existing baselines hold byte-identically with the block present: GOT 3,275,851.15 / HAM 2,204,910.90 / HEL 8,750,057.40 (the block is additive; blank inputs add nothing)', () => {
+  // v0.8.0 re-baseline (in-test attribution): GOT gains the ordinary-time vessel-side lift, 4,000 moves x 1,029 = 4,116,000 SEK - 3,275,851.15 -> 7,391,851.15, per-GT 16.81 -> 37.94; no other figure moves.
+  it('the pre-existing baselines hold byte-identically with the block present: GOT 7,391,851.15 / HAM 2,204,910.90 / HEL 8,750,057.40 (the block is additive; blank inputs add nothing)', () => {
     for (const [file, id, expected] of [
-      ['gothenburg_2026.yaml', 'gothenburg', 3275851.15],
+      // v0.8.0 re-baseline (in-test attribution): GOT gains the ordinary-time vessel-side lift, 4,000 moves x 1,029 = 4,116,000 SEK - 3,275,851.15 -> 7,391,851.15, per-GT 16.81 -> 37.94; no other figure moves.
+      ['gothenburg_2026.yaml', 'gothenburg', 7391851.15],
       ['hamburg_2026.yaml', 'hamburg', 2204910.90],
       ['helsingborg_2026.yaml', 'helsingborg', 8750057.40]
     ] as [string, string, number][]) {

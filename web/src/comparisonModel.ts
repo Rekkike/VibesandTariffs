@@ -308,7 +308,10 @@ export const buildRowsBySegment = (
             ? record.fees.filter(f => chargeTypeForRule(f.fee_rule_id) === null)
             : [];
           remainingFamilies.get(family)!.set(portId, {
-            amount: entry.amount - chargeLines.reduce((s, l) => s + l.amount, 0),
+            // v0.8.0 repair: the remaining lines summed in integer cents (the
+            // subtraction drifted in floating point - 204,279.19999999995 for
+            // GOT's port dues once its goods charge joined the family).
+            amount: remainingLines.reduce((s, l) => s + Math.round(l.amount * 100), 0) / 100,
             currency: entry.currency,
             flags: entry.flags - chargeLines.reduce((s, l) => s + l.flags, 0),
             published_per_gt: record

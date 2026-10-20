@@ -39,6 +39,7 @@ import {
 import type { SeededProfile } from '@port-cost/core';
 import { partitionFees } from './zeroCollapse';
 import { opsFoldActive, opsFoldParts, opsPerGtLineFor } from './opsFold';
+import { chargeTypeForRule } from './chargeTypes';
 import { badgesForFlags } from './flagBadges';
 import { DerivationDetail } from './derivation';
 import { makeComputer, guideFor, leversForPort } from './envGuidance';
@@ -439,9 +440,12 @@ export const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call
     if (!state.result) return null;
     const opsLine = opsPerGtLineFor(state.result);
     if (!opsLine || !opsFoldActive(port, state.result)) return null;
+    // v0.8.0 repair: charge-type members never enter the family (the
+    // comparison view's own rule) - a port_dues-family cargo due is not the
+    // port dues tariff portion.
     const duesAmount = state.result.billers
       .flatMap(b => b.fees)
-      .filter(f => f.fee_family === 'port_dues')
+      .filter(f => f.fee_family === 'port_dues' && chargeTypeForRule(f.fee_rule_id) === null)
       .reduce((s, f) => s + f.amount, 0);
     return opsFoldParts(duesAmount, opsLine.amount, state.result.vessel_summary.gt);
   }, [state.result, port]);
@@ -896,7 +900,7 @@ export const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call
                                                             discount-derived), the user-specified flat
                                                             OPS rate (unbanded), and their sum — each
                                                             labeled; presentation only, no figure moves. */}
-                                                        {opsFold && fee.fee_family === 'port_dues' && (
+                                                        {opsFold && fee.fee_family === 'port_dues' && chargeTypeForRule(fee.fee_rule_id) === null && (
                                                           <Typography variant="body2" sx={{ mb: 1 }} className="ops-fold-decomposition">
                                                             <strong>Per-GT decomposition with the user-specified OPS charge</strong>:
                                                             (a) tariff portion <span className="ops-fold-part ops-fold-tariff">{opsFold.tariffPortionPerGt.toFixed(2)} {fee.currency}/GT</span> (banded rate applied to GT, discounts reflected — derived);

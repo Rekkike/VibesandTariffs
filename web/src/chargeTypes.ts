@@ -34,6 +34,13 @@
 //   Norrköping's cargo dues (S1 p.10), and Norvik's container cargo dues
 //   (S1 3.2.3) join Helsingborg's line (spec v0.4.4 presentation
 //   normalization; placement only - no fee family and no figure change).
+//   Since v0.8.0 Gothenburg's APMT goods charge joins the line (tariff
+//   section 1, Terminal Charges on goods: 377/535 SEK per ISO unit
+//   <=20 ft/>20 ft) - a terminal-operator cargo due, not handling; renamed
+//   at v0.8.0, formerly apm_terminals_handling_le20ft and
+//   apm_terminals_handling_gt20ft. Family reclassified terminal_handling
+//   to port_dues at v0.8.0 per the Yilport precedent; the placement is
+//   this mapping, as for every member.
 //   The Swedish
 //   Sjofartsverket godsavgift (spec v0.2.61: cargo-based component of
 //   the national farledsavgift, Foreskrift 2025:6) is a *fairway* due by
@@ -68,7 +75,7 @@ export const CHARGE_TYPE_LINES: ChargeTypeLine[] = [
     id: 'cargo_dues',
     label: 'Cargo dues',
     description:
-      'Per unit/tonne of cargo handled: the Swedish ports\' cargo-side dues (Helsingborg tariff p.6, Gävle Yilport S2 §5.1, Norrköping S1 p.10, Norvik S1 3.2.3) + Aarhus wharfage (ToC §8: 225.00 DKK per loaded container)'
+      'Per unit/tonne of cargo handled: the Swedish ports\' cargo-side dues (Helsingborg tariff p.6, Gävle Yilport S2 §5.1, Norrköping S1 p.10, Norvik S1 3.2.3, Gothenburg APMT goods charge §1 Terminal Charges on goods) + Aarhus wharfage (ToC §8: 225.00 DKK per loaded container)'
   }
 ];
 
@@ -99,6 +106,8 @@ const CARGO_RULE_IDS = new Set([
   'pon_cargo_due_gt20ft',
   'snv_pos_cargo_due_le20ft',
   'snv_pos_cargo_due_gt20ft',
+  'apm_terminals_goods_charge_le20ft',
+  'apm_terminals_goods_charge_gt20ft',
   'aarhus_wharfage'
 ]);
 

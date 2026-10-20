@@ -25,13 +25,16 @@ import { ComparisonView, __setMobileQueryForTests } from './App';
 import { DEFAULT_VESSEL, allPortResetFields, defaultCall, portInputProfile, portResetFields } from '@port-cost/core';
 import type { CallInput, PortDefinition, VesselInput } from '@port-cost/core/types';
 import portsRegistry from './data/ports.json';
+import { LOADED_PORTS as RENDERED_PORTS } from './portRegistry';
 import * as fs from 'fs';
 import * as path from 'path';
 import { readDecomposedAppSource } from './appSource';
 
-const LOADED_PORTS: PortDefinition[] = ((portsRegistry as any).ports ?? []).filter(
-  (p: any) => p && p.fee_rules && Array.isArray(p.fee_rules)
-);
+// v0.8.0 re-baseline (in-test attribution): the suite pins the rendered
+// port set - the app's LOADED_PORTS (portRegistry), Rotterdam hidden by
+// HIDDEN_PORT_IDS per the user ruling of 2026-10-20 (eight rendered ports;
+// the Rotterdam engine values stay pinned core-side).
+const LOADED_PORTS: PortDefinition[] = RENDERED_PORTS;
 
 const rate = (r: number, isDefault = false): ExchangeRateInfo => ({
   rate: r,
@@ -191,16 +194,21 @@ describe('comparison scalability controls (spec v0.2.59)', () => {
     // ranks cheapest of all nine, so Rotterdam takes the first column and
     // every other port shifts one column right. The single ranking rule
     // is unchanged.
+    // v0.8.0 re-baseline (in-test attribution): Rotterdam is hidden from
+    // view (HIDDEN_PORT_IDS) - no Rotterdam column; Gothenburg (7,391,851.15
+    // with the lift) ranks first of the eight rendered ports, the order of
+    // record GOT, NRK, HEL, AAR, GLE, NVK, BRV, HAM. The rule is unchanged.
     expect(headerCells).toHaveLength(LOADED_PORTS.length + 1);
-    expect(headerCells[1]).toContain('Rotterdam');
-    expect(headerCells[2]).toContain('Gothenburg');
-    expect(headerCells[3]).toContain('Norrköping');
-    expect(headerCells[4]).toContain('Helsingborg');
-    expect(headerCells[5]).toContain('Aarhus');
-    expect(headerCells[6]).toContain('Gävle');
-    expect(headerCells[7]).toContain('Norvik');
-    expect(headerCells[8]).toContain('Bremerhaven');
-    expect(headerCells[9]).toContain('Hamburg');
+    expect(headerCells).toHaveLength(9);
+    expect(headerCells.join('|')).not.toContain('Rotterdam');
+    expect(headerCells[1]).toContain('Gothenburg');
+    expect(headerCells[2]).toContain('Norrköping');
+    expect(headerCells[3]).toContain('Helsingborg');
+    expect(headerCells[4]).toContain('Aarhus');
+    expect(headerCells[5]).toContain('Gävle');
+    expect(headerCells[6]).toContain('Norvik');
+    expect(headerCells[7]).toContain('Bremerhaven');
+    expect(headerCells[8]).toContain('Hamburg');
   });
 
   it('the cheapest/most-expensive markers are consistent with the column order (same single ranking rule)', async () => {
@@ -211,7 +219,9 @@ describe('comparison scalability controls (spec v0.2.59)', () => {
     expect(mostExpensive.length).toBe(1);
     // v0.4.2 re-baseline (the Yilport terminal layer): Gothenburg ranks cheapest.
     // v0.7.0 re-baseline (the Rotterdam expansion): Rotterdam ranks cheapest.
-    expect((cheapest[0].closest('th')?.textContent ?? '')).toContain('Rotterdam');
+    // v0.8.0 re-baseline (in-test attribution): Rotterdam is hidden from
+    // view; the marker ranks over rendered ports only - Gothenburg.
+    expect((cheapest[0].closest('th')?.textContent ?? '')).toContain('Gothenburg');
     expect((mostExpensive[0].closest('th')?.textContent ?? '')).toContain('Hamburg');
   });
 
@@ -226,15 +236,18 @@ describe('comparison scalability controls (spec v0.2.59)', () => {
     // derived-cross total ranks fourth, between Helsingborg and Gävle.
     // v0.7.0 re-baseline (the Rotterdam expansion): same order — Rotterdam's
     // converted total 929,391 kr ranks first, cheapest of all nine.
-    expect(cards[0]).toContain('Rotterdam');
-    expect(cards[1]).toContain('Gothenburg');
-    expect(cards[2]).toContain('Norrköping');
-    expect(cards[3]).toContain('Helsingborg');
-    expect(cards[4]).toContain('Aarhus');
-    expect(cards[5]).toContain('Gävle');
-    expect(cards[6]).toContain('Norvik');
-    expect(cards[7]).toContain('Bremerhaven');
-    expect(cards[8]).toContain('Hamburg');
+    // v0.8.0 re-baseline (in-test attribution): eight rendered cards
+    // (Rotterdam hidden), Gothenburg first, the same order as desktop.
+    expect(cards.length).toBe(8);
+    expect(cards.join('|')).not.toContain('Rotterdam');
+    expect(cards[0]).toContain('Gothenburg');
+    expect(cards[1]).toContain('Norrköping');
+    expect(cards[2]).toContain('Helsingborg');
+    expect(cards[3]).toContain('Aarhus');
+    expect(cards[4]).toContain('Gävle');
+    expect(cards[5]).toContain('Norvik');
+    expect(cards[6]).toContain('Bremerhaven');
+    expect(cards[7]).toContain('Hamburg');
   });
 
   it('a subset selection renders only the selected ports - the bounded fresh-load default does not render unselected ports', async () => {

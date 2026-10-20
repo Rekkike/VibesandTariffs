@@ -184,7 +184,8 @@ describe('per-port total strip leads with the Grand Total (spec v0.2.54)', () =>
     expect((main!.textContent ?? '')).toContain('Grand Total');
     // v0.2.61 drift re-pin (godsavgift promotion, expected per the
     // directive): GOT 3,007,051.15 + 268,800.00 = 3,275,851.15.
-    expect((main!.textContent ?? '')).toContain('3\u00a0275\u00a0851');
+    // v0.8.0 re-baseline (in-test attribution): GOT gains the ordinary-time vessel-side lift, 4,000 moves x 1,029 = 4,116,000 SEK - 3,275,851.15 -> 7,391,851.15, per-GT 16.81 -> 37.94; no other figure moves.
+    expect((main!.textContent ?? '')).toContain('7\u00a0391\u00a0851');
     const firstSegment = strip!.querySelector('.total-strip-segment');
     expect(firstSegment).not.toBeNull();
     expect(
@@ -200,7 +201,8 @@ describe('default-call totals against the pinned baselines (spec v0.2.50; re-pin
     // 8,750,057.40. v0.2.66 promotion re-baseline: HAM 2,313,489.31 ->
     // 2,204,910.90 (the Eurogate terminal layer replaces HHLA's; §17.5);
     // GOT/HEL byte-identical.
-    expect(engineTotal('gothenburg')).toBe(3275851.15);
+    // v0.8.0 re-baseline (in-test attribution): GOT gains the ordinary-time vessel-side lift, 4,000 moves x 1,029 = 4,116,000 SEK - 3,275,851.15 -> 7,391,851.15, per-GT 16.81 -> 37.94; no other figure moves.
+    expect(engineTotal('gothenburg')).toBe(7391851.15);
     expect(engineTotal('hamburg')).toBe(2204910.9);
     expect(engineTotal('helsingborg')).toBe(8750057.4);
   });

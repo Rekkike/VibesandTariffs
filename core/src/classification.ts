@@ -65,7 +65,9 @@ export interface FunctionalClassInfo {
 // Gothenburg 2026 (sources: Port of Gothenburg Port Tariff 2026 §2.1
 // municipal port dues; Sjöfartsverket price list 2026 — fartygsavgift p.3,
 // beredskapsavgift p.4, godsavgift p.5, pilotage p.4, ordering fee p.4;
-// APMT Terminal Tariff 2026 §4 handling, §3 security).
+// APMT Terminal Tariff 2026 §1 Terminal Charges on goods, §1.4 ISPS; the
+// v0.8.0 vessel-side lift from the confidential-source record,
+// GOTHENBURG_EXTRACTION_REFERENCE.md §8).
 const got: Record<string, FunctionalClassInfo> = {
   gothenburg_mooring_notice: {
     functional_class: 'purchased_service',
@@ -147,15 +149,24 @@ const got: Record<string, FunctionalClassInfo> = {
     basis_note: 'Godsavgift — private-vehicle component (Sjöfartsverket price list 2026 p.5)',
     source: 'prislista-farleds-lotsavgifter-2026.pdf p.5'
   },
-  apm_terminals_handling_le20ft: {
+  // v0.8.0: renamed at v0.8.0, formerly apm_terminals_handling_le20ft and
+  // apm_terminals_handling_gt20ft; family reclassified terminal_handling
+  // to port_dues at v0.8.0 per the Yilport precedent; the basis_note
+  // corrected from the disproven "container handling lift charge" reading.
+  apm_terminals_goods_charge_le20ft: {
     functional_class: 'cargo_throughput_levy',
-    basis_note: 'Container handling lift charge (APMT Terminal Tariff 2026 §4)',
-    source: 'apm-terminal-tariff-2026.pdf §4'
+    basis_note: 'Goods charge per ISO unit <= 20 ft — a cargo-side terminal due, not the lift (APMT Terminal Tariff 2026 §1, Terminal Charges on goods)',
+    source: 'apm-terminal-tariff-2026.pdf §1'
   },
-  apm_terminals_handling_gt20ft: {
+  apm_terminals_goods_charge_gt20ft: {
     functional_class: 'cargo_throughput_levy',
-    basis_note: 'Container handling lift charge (APMT Terminal Tariff 2026 §4)',
-    source: 'apm-terminal-tariff-2026.pdf §4'
+    basis_note: 'Goods charge per ISO unit > 20 ft — a cargo-side terminal due, not the lift (APMT Terminal Tariff 2026 §1, Terminal Charges on goods)',
+    source: 'apm-terminal-tariff-2026.pdf §1'
+  },
+  apm_terminals_lift: {
+    functional_class: 'cargo_throughput_levy',
+    basis_note: 'Vessel-side container lift per unit per move, ordinary time (the like-for-like basis; overtime, OOG and premium variants recorded, not encoded); user-delivered confidential commercial invoice — rates not published in any tariff; details withheld',
+    source: 'GOTHENBURG_EXTRACTION_REFERENCE.md §8 (sanitized confidential-source record)'
   },
   apm_terminals_handling_break_bulk: {
     functional_class: 'cargo_throughput_levy',

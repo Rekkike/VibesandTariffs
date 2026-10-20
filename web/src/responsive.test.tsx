@@ -28,15 +28,18 @@ import {
 } from './responsive';
 import { ComparisonView, __setMobileQueryForTests } from './App';
 import portsRegistry from './data/ports.json';
+import { LOADED_PORTS as RENDERED_PORTS } from './portRegistry';
 import type { PortDefinition, VesselInput, CallInput } from '@port-cost/core/types';
 import { readDecomposedAppSource } from './appSource';
 
 const appSource = readDecomposedAppSource();
 const cssSource = fs.readFileSync(path.join(__dirname, 'index.css'), 'utf8');
 
-const LOADED_PORTS: PortDefinition[] = ((portsRegistry as any).ports ?? []).filter(
-  (p: any) => p && p.fee_rules && Array.isArray(p.fee_rules)
-);
+// v0.8.0 re-baseline (in-test attribution): the suite pins the rendered
+// port set - the app's LOADED_PORTS (portRegistry), Rotterdam hidden by
+// HIDDEN_PORT_IDS per the user ruling of 2026-10-20 (eight rendered ports;
+// the Rotterdam engine values stay pinned core-side).
+const LOADED_PORTS: PortDefinition[] = RENDERED_PORTS;
 
 const vessel: VesselInput = {
   gt: 12000,
@@ -235,8 +238,11 @@ describe('comparison view responsive rendering paths', () => {
     // ranks cheapest at this suite's 12,000-GT call - the badge moves from
     // Gothenburg's header to Rotterdam's. The single ranking rule is
     // unchanged.
+    // v0.8.0 re-baseline (in-test attribution): Rotterdam is hidden from
+    // view (HIDDEN_PORT_IDS); the cheapest marker ranks over rendered ports
+    // only and returns to Gothenburg's header. The rule is unchanged.
     const cheapestHeader = cheapest[0].closest('th') ?? cheapest[0].closest('.comparison-port-card');
-    expect((cheapestHeader?.textContent ?? '')).toContain('Port of Rotterdam 2026');
+    expect((cheapestHeader?.textContent ?? '')).toContain('Port of Gothenburg 2026');
     const mostExpensiveHeader = mostExpensive[0].closest('th') ?? mostExpensive[0].closest('.comparison-port-card');
     // v0.5.1 re-baseline (the Bremerhaven expansion): at this suite's
     // 12,000-GT call Bremerhaven's converted total overtakes Hamburg's -
