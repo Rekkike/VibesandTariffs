@@ -146,7 +146,11 @@ describe('comparison-legibility zero-drift pins (spec v0.2.64)', () => {
       // unchanged) - 6,348,361 x 11.224/7.4745 = 9,532,946 kr; per-GT
       // 48.92 (was 9,557,152 kr / 49.05 at 11.2525, 2026-10-05); ranks
       // between Helsingborg and G\u00e4vle (cheapest-first; unchanged).
-      '6\u00a0348\u00a0361\u00a0Dkr\u2248 9\u00a0532\u00a0946\u00a0kr converted \u2014 at 11.224 kr/EUR, 2026-10-0748.92 SEK/GT effective \u2014 derived, not a published rate; converted at the exchange-rate input (at 11.224 kr/EUR, 2026-10-07)',
+      // v0.8.1 ritual re-baseline (in-test attribution, the dedicated rate
+      // pass): 11.123 / 7.4746 as of 2026-10-20 (was 11.224 / 7.4745,
+      // 2026-10-07) - 6,348,361 x 11.123/7.4746 = 9,447,037 kr; per-GT
+      // 48.48 (was 9,532,946 kr / 48.92); the native DKK total untouched.
+      '6\u00a0348\u00a0361\u00a0Dkr\u2248 9\u00a0447\u00a0037\u00a0kr converted \u2014 at 11.123 kr/EUR, 2026-10-2048.48 SEK/GT effective \u2014 derived, not a published rate; converted at the exchange-rate input (at 11.123 kr/EUR, 2026-10-20)',
       // v0.4.2 re-baseline (the Yilport terminal layer, in-test attribution):
       // G\u00e4vle 1,370,979.35 + 8,936,000 = 10,306,979.35; per-GT
       // 10,306,979.35 / 194,849 = 52.8973 -> 52.90 (was 7.04); the column
@@ -161,7 +165,10 @@ describe('comparison-legibility zero-drift pins (spec v0.2.64)', () => {
       // 11.224 = 24,689,178 kr; per-GT 126.71 (was 24,751,868 kr / 127.03
       // at 11.2525, 2026-10-05; the rate moved per the observed 2026-10-07
       // ECB publication); the native EUR figure untouched.
-      '2\u00a0199\u00a0677\u00a0\u20ac\u2248 24\u00a0689\u00a0178\u00a0kr converted \u2014 at 11.224 kr/EUR, 2026-10-07126.71 SEK/GT effective \u2014 derived, not a published rate; converted at the exchange-rate input (at 11.224 kr/EUR, 2026-10-07)',
+      // v0.8.1 ritual re-baseline (in-test attribution): 2,199,677.26 x
+      // 11.123 = 24,467,010 kr; per-GT 125.57 (was 24,689,178 kr / 126.71 at
+      // 11.224, 2026-10-07); the native EUR figure untouched.
+      '2\u00a0199\u00a0677\u00a0\u20ac\u2248 24\u00a0467\u00a0010\u00a0kr converted \u2014 at 11.123 kr/EUR, 2026-10-20125.57 SEK/GT effective \u2014 derived, not a published rate; converted at the exchange-rate input (at 11.123 kr/EUR, 2026-10-20)',
       // v0.6.6 ritual re-baseline (the only movement): the conversion-only
       // figure moves with the standing rate re-verification — 11.224 as of
       // 2026-10-07 (was 11.2525, 2026-10-05; the ECB TARGET publication
@@ -169,7 +176,10 @@ describe('comparison-legibility zero-drift pins (spec v0.2.64)', () => {
       // ÷ 194,849 GT = 127.01 SEK/GT (was 24,810,760 kr / 127.33). The native
       // totals (3,275,851 kr / 2,204,911 € / 8,750,057 kr) and per-GT 16.81 /
       // 44.91 are untouched.
-      '2\u00a0204\u00a0911\u00a0\u20ac\u2248 24\u00a0747\u00a0920\u00a0kr converted \u2014 at 11.224 kr/EUR, 2026-10-07127.01 SEK/GT effective \u2014 derived, not a published rate; converted at the exchange-rate input (at 11.224 kr/EUR, 2026-10-07)'
+      // v0.8.1 ritual re-baseline (in-test attribution): 2,204,910.90 x
+      // 11.123 = 24,525,224 kr; per-GT 125.87 (was 24,747,920 kr / 127.01 at
+      // 11.224, 2026-10-07); the native EUR figure untouched.
+      '2\u00a0204\u00a0911\u00a0\u20ac\u2248 24\u00a0525\u00a0224\u00a0kr converted \u2014 at 11.123 kr/EUR, 2026-10-20125.87 SEK/GT effective \u2014 derived, not a published rate; converted at the exchange-rate input (at 11.123 kr/EUR, 2026-10-20)'
     ]);
   });
 
@@ -644,7 +654,10 @@ describe('the derived per-GT metric\u2019s per-GT-OPS disclosure (spec v0.2.64, 
       // 11.224 (the observed 2026-10-07 ECB publication; was 11.2525,
       // 2026-10-05) — 2,213,035.90 EUR × 11.224 ÷ 194,849 = 127.48 SEK/GT
       // (was 127.80).
-      .find(c => (c.textContent ?? '').includes('127.48'))!;
+      // v0.8.1 ritual re-baseline (in-test attribution): at 11.123 (the
+      // observed 2026-10-20 ECB publication; was 11.224) - 2,213,035.90 EUR
+      // x 11.123 / 194,849 = 126.33 SEK/GT (was 127.48).
+      .find(c => (c.textContent ?? '').includes('126.33'))!;
     expect(hamCell.textContent).toContain('includes user-specified OPS');
     expect(hamCell.textContent).not.toContain('per-GT OPS charge uses the same GT basis');
   });

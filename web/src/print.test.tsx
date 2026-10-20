@@ -131,7 +131,11 @@ describe('print header content — the unfalsifiability rule (spec v0.6.2)', () 
     // observed at pass start; DKK 7.4745 unchanged at the same
     // publication). Every rateInfo fixture in this suite and every
     // printed rate-basis string moves together.
-    const rateInfo = { rate: 11.224, date: '2026-10-07', source: 'ECB euro reference rate (SEK per EUR)', is_default: true };
+    // v0.8.1 ritual re-baseline (in-test attribution, the dedicated rate
+    // pass): 11.123 as of 2026-10-20 and DKK 7.4746, the observed ECB TARGET
+    // publication (was 11.224 / 7.4745, 2026-10-07) - every injected
+    // rateInfo fixture and rate-basis string in this suite follows the pin.
+    const rateInfo = { rate: 11.123, date: '2026-10-20', source: 'ECB euro reference rate (SEK per EUR)', is_default: true };
     await act(async () => {
       root!.render(
         <PrintComparisonPages
@@ -174,13 +178,15 @@ describe('print header content — the unfalsifiability rule (spec v0.6.2)', () 
         // patch bump moves the version constant v0.7.0 -> v0.7.1; no figure moved.
         // v0.8.0 re-baseline (in-test attribution): the minor bump moves the
         // version constant v0.7.1 -> v0.8.0.
-        expect(APP_VERSION).toBe('v0.8.0');
+        // v0.8.1 re-baseline (in-test attribution): the patch bump moves the
+        // version constant v0.8.0 -> v0.8.1 (the dedicated rate pass).
+        expect(APP_VERSION).toBe('v0.8.1');
         expect(text).toContain('Tariff year: 2026');
         expect(text).toContain('Vessel profile: MAREN MAERSK (IMO 9632129)');
         expect(text).toContain('ESI:');
         // Both published pairs render with their as_of.
-        expect(text).toContain('EUR\u2192SEK 11.224 (2026-10-07)');
-        expect(text).toContain('EUR\u2192DKK 7.4745 (2026-10-07)');
+        expect(text).toContain('EUR\u2192SEK 11.123 (2026-10-20)');
+        expect(text).toContain('EUR\u2192DKK 7.4746 (2026-10-20)');
         expect(text).toContain('Rate basis:');
       });
     } finally {
@@ -253,7 +259,7 @@ describe('print header content — the unfalsifiability rule (spec v0.6.2)', () 
       });
       document.body.querySelectorAll('[data-testid="print-header-line-4"]').forEach(l => {
         const text = l.textContent ?? '';
-        expect(text).toContain('Rate basis: EUR\u2192SEK 11.224 (2026-10-07); EUR\u2192DKK 7.4745 (2026-10-07)');
+        expect(text).toContain('Rate basis: EUR\u2192SEK 11.123 (2026-10-20); EUR\u2192DKK 7.4746 (2026-10-20)');
         expect(text).toContain('Comparison basis:');
         // The JSX-escape trap: the printed text carries the real arrow
         // character, never a literal backslash-u sequence.
@@ -272,7 +278,7 @@ describe('print header content — the unfalsifiability rule (spec v0.6.2)', () 
 
   it('the rate-basis note names both published pairs with their as_of dates', () => {
     const note = printRateBasisNote(DECLARED_ROWS);
-    expect(note).toBe('Rate basis: EUR\u2192SEK 11.224 (2026-10-07); EUR\u2192DKK 7.4745 (2026-10-07)');
+    expect(note).toBe('Rate basis: EUR\u2192SEK 11.123 (2026-10-20); EUR\u2192DKK 7.4746 (2026-10-20)');
   });
 
   it('every page carries the N-of-M footer', async () => {
@@ -459,7 +465,7 @@ describe('currency, annotations, and figures on paper (spec v0.6.2, unit 4)', ()
       const merged = { ...defaultCall(port.metadata.id), ...call, port_id: port.metadata.id } as CallInput;
       return { port, result: calculatePortCallCost(port, { vessel: DEFAULT_VESSEL, call: merged }) };
     });
-    const rateInfo = { rate: 11.224, date: '2026-10-07', source: 'ECB euro reference rate (SEK per EUR)', is_default: true };
+    const rateInfo = { rate: 11.123, date: '2026-10-20', source: 'ECB euro reference rate (SEK per EUR)', is_default: true };
     await act(async () => {
       root!.render(
         <PrintComparisonPages
@@ -487,7 +493,9 @@ describe('currency, annotations, and figures on paper (spec v0.6.2, unit 4)', ()
       const text = document.body.textContent ?? '';
       // Native first, converted second — the screen convention, printed.
       expect(text).toContain('6\u00a0348\u00a0361');
-      expect(text).toContain('\u2248 9\u00a0532\u00a0946');
+      // v0.8.1 ritual re-baseline (in-test attribution): 6,348,361 DKK x
+      // 11.123 / 7.4746 = 9,447,037 kr (was 9,532,946 at 11.224 / 7.4745).
+      expect(text).toContain('\u2248 9\u00a0447\u00a0037');
       // The per-GT disclosure prints (the self-contained page contract).
       expect(text).toContain('32.58 DKK/GT effective');
     } finally {
@@ -509,7 +517,7 @@ describe('currency, annotations, and figures on paper (spec v0.6.2, unit 4)', ()
     // Ports that carry flags on screen (the assumed-tug default fires at
     // these ports) still print a table with no flag surfaces at all.
     expect(portResults.some(pr => (pr.result?.quality_flags ?? []).length > 0)).toBe(true);
-    const rateInfo = { rate: 11.224, date: '2026-10-07', source: 'ECB euro reference rate (SEK per EUR)', is_default: true };
+    const rateInfo = { rate: 11.123, date: '2026-10-20', source: 'ECB euro reference rate (SEK per EUR)', is_default: true };
     await act(async () => {
       root!.render(
         <PrintComparisonPages
@@ -583,7 +591,7 @@ describe('fee-derivation toggle follow-through on paper (spec v0.6.3, unit 1)', 
     const container = document.createElement('div');
     document.body.appendChild(container);
     const root = createRoot(container);
-    const rateInfo = { rate: 11.224, date: '2026-10-07', source: 'ECB euro reference rate (SEK per EUR)', is_default: true };
+    const rateInfo = { rate: 11.123, date: '2026-10-20', source: 'ECB euro reference rate (SEK per EUR)', is_default: true };
     await act(async () => {
       root!.render(
         <PrintComparisonPages
@@ -683,7 +691,7 @@ describe('printed call parameters as set (spec v0.6.3, unit 1)', () => {
     const container = document.createElement('div');
     document.body.appendChild(container);
     const root = createRoot(container);
-    const rateInfo = { rate: 11.224, date: '2026-10-07', source: 'ECB euro reference rate (SEK per EUR)', is_default: true };
+    const rateInfo = { rate: 11.123, date: '2026-10-20', source: 'ECB euro reference rate (SEK per EUR)', is_default: true };
     await act(async () => {
       root!.render(
         <PrintComparisonPages
@@ -752,7 +760,7 @@ describe('port-group completeness on paper (spec v0.6.4, unit 1)', () => {
     const container = document.createElement('div');
     document.body.appendChild(container);
     const root = createRoot(container);
-    const rateInfo = { rate: 11.224, date: '2026-10-07', source: 'ECB euro reference rate (SEK per EUR)', is_default: true };
+    const rateInfo = { rate: 11.123, date: '2026-10-20', source: 'ECB euro reference rate (SEK per EUR)', is_default: true };
     await act(async () => {
       root.render(
         <PrintComparisonPages
@@ -873,7 +881,7 @@ describe('break-integrity for the tallest detail rows (spec v0.6.4, unit 2)', ()
     const container = document.createElement('div');
     document.body.appendChild(container);
     const root = createRoot(container);
-    const rateInfo = { rate: 11.224, date: '2026-10-07', source: 'ECB euro reference rate (SEK per EUR)', is_default: true };
+    const rateInfo = { rate: 11.123, date: '2026-10-20', source: 'ECB euro reference rate (SEK per EUR)', is_default: true };
     await act(async () => {
       root.render(
         <PrintComparisonPages
@@ -941,7 +949,7 @@ describe('derived/converted sums toggle follow-through on paper (spec v0.6.4, un
     const container = document.createElement('div');
     document.body.appendChild(container);
     const root = createRoot(container);
-    const rateInfo = { rate: 11.224, date: '2026-10-07', source: 'ECB euro reference rate (SEK per EUR)', is_default: true };
+    const rateInfo = { rate: 11.123, date: '2026-10-20', source: 'ECB euro reference rate (SEK per EUR)', is_default: true };
     await act(async () => {
       root.render(
         <PrintComparisonPages
@@ -975,7 +983,9 @@ describe('derived/converted sums toggle follow-through on paper (spec v0.6.4, un
       // exactly the screen's ON state (native primary, converted secondary).
       expect(totalRow!.textContent).toContain('6\u00a0348\u00a0361');
       expect(totalRow!.textContent).toContain('\u2248');
-      expect(totalRow!.textContent).toContain('9\u00a0532\u00a0946');
+      // v0.8.1 ritual re-baseline (in-test attribution): 9,447,037 kr (was
+      // 9,532,946 at 11.224 / 7.4745).
+      expect(totalRow!.textContent).toContain('9\u00a0447\u00a0037');
     } finally {
       await act(async () => { root.unmount(); });
       container.remove();
@@ -990,7 +1000,10 @@ describe('derived/converted sums toggle follow-through on paper (spec v0.6.4, un
       // The native figure prints; the converted secondary does not.
       expect(totalRow!.textContent).toContain('6\u00a0348\u00a0361');
       expect(totalRow!.textContent).not.toContain('\u2248');
-      expect(totalRow!.textContent).not.toContain('9\u00a0532\u00a0946');
+      // v0.8.1 ritual re-baseline (in-test attribution): the absence pin
+      // follows the converted figure (9,447,037 kr; was 9,532,946), so it
+      // keeps asserting the converted secondary is not printed.
+      expect(totalRow!.textContent).not.toContain('9\u00a0447\u00a0037');
       // No converted figure anywhere on the printed page (the toggle is a
       // class, not a single pin: the whole page inherits the OFF state).
       expect(document.body.textContent ?? '').not.toContain('converted \u2014');
@@ -1015,7 +1028,7 @@ describe('compare container-through follow-through on paper (spec v0.6.4, unit 3
     const container = document.createElement('div');
     document.body.appendChild(container);
     const root = createRoot(container);
-    const rateInfo = { rate: 11.224, date: '2026-10-07', source: 'ECB euro reference rate (SEK per EUR)', is_default: true };
+    const rateInfo = { rate: 11.123, date: '2026-10-20', source: 'ECB euro reference rate (SEK per EUR)', is_default: true };
     await act(async () => {
       root.render(
         <PrintComparisonPages

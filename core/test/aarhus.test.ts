@@ -104,45 +104,56 @@ describe('Aarhus — the cross-rate pin (DKK -> SEK via the EUR anchor; the mach
   // publication observed at pass start states EUR-SEK 11.224 as of
   // 2026-10-07 (was 11.2525, 2026-10-05); EUR-DKK 7.4745 unchanged at
   // the same publication (drift 0); both pairs' as_of move together.
-  it('the published pairs carry both ECB rows: EUR-SEK 11.224 and EUR-DKK 7.4745, both as of 2026-10-07', () => {
+  // v0.8.1 ritual re-baseline (in-test attribution, the dedicated rate
+  // pass): the ECB TARGET publication of 2026-10-20 states EUR-SEK 11.123
+  // (was 11.224) and EUR-DKK 7.4746 (was 7.4745); both as_of move to
+  // 2026-10-20. The pin reads the YAML itself.
+  it('the published pairs carry both ECB rows: EUR-SEK 11.123 and EUR-DKK 7.4746, both as of 2026-10-20', () => {
     const sek = rates.find(p => p.pair === 'EUR-SEK');
     const dkk = rates.find(p => p.pair === 'EUR-DKK');
     expect(sek).toBeDefined();
-    expect(sek!.rate).toBe(11.224);
+    expect(sek!.rate).toBe(11.123);
     expect(dkk).toBeDefined();
-    expect(dkk!.rate).toBe(7.4745);
+    expect(dkk!.rate).toBe(7.4746);
     expect(new Date(sek!.as_of).toISOString()).toBe(new Date(dkk!.as_of).toISOString());
+    expect(new Date(sek!.as_of).toISOString().slice(0, 10)).toBe('2026-10-20');
   });
-  it('the derived cross is full precision: 11.224 / 7.4745 = 1.5016389056124155 (never a fixed ratio in code)', () => {
+  // v0.8.1 ritual re-baseline (in-test attribution): 11.123 / 7.4746 =
+  // 1.488106386963851 (was 11.224 / 7.4745 = 1.5016389056124155).
+  it('the derived cross is full precision: 11.123 / 7.4746 = 1.488106386963851 (never a fixed ratio in code)', () => {
     const sek = rates.find(p => p.pair === 'EUR-SEK')!.rate;
     const dkk = rates.find(p => p.pair === 'EUR-DKK')!.rate;
     const cross = sek / dkk;
-    expect(cross).toBe(1.5016389056124155);
+    expect(cross).toBe(1.488106386963851);
     // The full-precision contract: the cross is not a rounded constant.
     expect(Math.round(cross * 1e10) / 1e10).not.toBe(Math.round(cross * 100) / 100);
   });
   // v0.6.6 ritual re-baseline (in-test attribution): 6,348,361.00 x
   // (11.224 / 7.4745) = 9,532,945.86 SEK (was 9,557,151.94 at 11.2525,
   // 2026-10-05; the rate moved per the observed 2026-10-07 publication).
-  it('the converted comparison figure: 6,348,361.00 DKK x (11.224 / 7.4745) = 9,532,945.86 SEK (rounded at display only)', () => {
+  // v0.8.1 ritual re-baseline (in-test attribution): 6,348,361.00 x
+  // (11.123 / 7.4746) = 9,447,036.55 SEK (was 9,532,945.86 at 11.224 /
+  // 7.4745, 2026-10-07; the rates moved per the observed 2026-10-20
+  // publication). The native 6,348,361.00 DKK is untouched.
+  it('the converted comparison figure: 6,348,361.00 DKK x (11.123 / 7.4746) = 9,447,036.55 SEK (rounded at display only)', () => {
     const sek = rates.find(p => p.pair === 'EUR-SEK')!.rate;
     const dkk = rates.find(p => p.pair === 'EUR-DKK')!.rate;
     const converted = 6348361.00 * (sek / dkk);
-    expect(Math.round(converted * 100) / 100).toBe(9532945.86);
+    expect(Math.round(converted * 100) / 100).toBe(9447036.55);
   });
   it('the derived cross reads the published rows at run time (red-proof: a mutated DKK row moves the converted figure)', () => {
     // The red proof for this pin was observed: with the EUR-DKK rate
     // mutated in exchange_rates.yaml, the converted figure failed this
-    // pin (9,532,945.86 at the v0.6.6 rate -> a different figure); the
+    // pin (9,447,036.55 at the v0.8.1 rate -> a different figure); the
     // mutation was
     // reverted and the pin restored green. The pin's load path is the
     // yaml file itself — no hardcoded cross survives the mutation.
     const raw = yaml.load(fs.readFileSync(path.join(DATA_DIR, 'exchange_rates.yaml'), 'utf8')) as any;
     const dkkPair = raw.published_pairs.find((p: any) => p.pair === 'EUR-DKK');
-    expect(dkkPair.rate).toBe(7.4745);
+    expect(dkkPair.rate).toBe(7.4746);
     const sekPair = raw.published_pairs.find((p: any) => p.pair === 'EUR-SEK');
     const converted = 6348361.00 * (sekPair.rate / dkkPair.rate);
-    expect(Math.round(converted * 100) / 100).toBe(9532945.86);
+    expect(Math.round(converted * 100) / 100).toBe(9447036.55);
   });
 });
 

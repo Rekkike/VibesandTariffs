@@ -139,7 +139,7 @@ describe('Grand Total derived per-GT — desktop comparison (spec v0.2.58)', () 
     expect(text).not.toContain('7.69 SEK/GT');
   });
 
-  it('HAM converts through the rate input: 127.01 SEK/GT at the default 11.224, with the derived-and-converted disclosure naming the rate dependency (v0.6.6 ritual re-baseline)', async () => {
+  it('HAM converts through the rate input: 125.87 SEK/GT at the default 11.123, with the derived-and-converted disclosure naming the rate dependency (v0.8.1 ritual re-baseline)', async () => {
     ({ container, root } = await renderComparison(false, defaultCall('gothenburg')));
     const totalRow = Array.from(container!.querySelectorAll('.comparison-total-row'))
       .find(r => (r.textContent ?? '').includes('Grand Total'))!;
@@ -147,21 +147,25 @@ describe('Grand Total derived per-GT — desktop comparison (spec v0.2.58)', () 
     // beside HAM), so the HAM cell is found by its own figure, not by the
     // disclosure text alone.
     const hamCell = Array.from(totalRow.querySelectorAll('.comparison-total-pergt'))
-      .find(c => (c.textContent ?? '').includes('127.01 SEK/GT'))!;
+      .find(c => (c.textContent ?? '').includes('125.87 SEK/GT'))!;
     expect(hamCell).toBeDefined();
+    // v0.8.1 ritual re-baseline (in-test attribution): 11.123 as of
+    // 2026-10-20 (was 11.224, 2026-10-07) - 2,204,910.90 x 11.123 / 194,849
+    // = 125.87 SEK/GT (was 127.01); Bremerhaven 2,199,677.26 x 11.123 /
+    // 194,849 = 125.57 SEK/GT (was 126.71).
     // v0.6.6 ritual re-baseline (in-test attribution): 11.224 as of
     // 2026-10-07, the observed ECB TARGET publication (was 11.2525,
     // 2026-10-05) - 2,204,910.90 × 11.224 ÷ 194,849 = 127.01 SEK/GT
     // (was 127.33; the Eurogate terminal layer; §17.5).
-    expect(hamCell.textContent).toContain('127.01 SEK/GT');
-    expect(hamCell.textContent).toContain('11.224 kr/EUR');
+    expect(hamCell.textContent).toContain('125.87 SEK/GT');
+    expect(hamCell.textContent).toContain('11.123 kr/EUR');
     // The Bremerhaven per-GT renders with the same converted disclosure:
     // 2,199,272.49 × 11.224 ÷ 194,849 = 126.71 SEK/GT (v0.5.1 baseline;
     // v0.6.6 ritual re-baseline at 11.224, 2026-10-07; was 127.03).
     const brvCell = Array.from(totalRow.querySelectorAll('.comparison-total-pergt'))
-      .find(c => (c.textContent ?? '').includes('126.71 SEK/GT'))!;
+      .find(c => (c.textContent ?? '').includes('125.57 SEK/GT'))!;
     expect(brvCell).toBeDefined();
-    expect(brvCell.textContent).toContain('11.224 kr/EUR');
+    expect(brvCell.textContent).toContain('11.123 kr/EUR');
   });
 
   it('the figure changes when GT changes (a different vessel re-derives it)', async () => {

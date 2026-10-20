@@ -57,8 +57,11 @@ describe('currency declaration is data (spec v0.2.59)', () => {
       // (previously 11.2525, 2026-10-05; the ECB TARGET publication
       // observed at pass start) — conversion-only expectations move with
       // the ritual.
-      rate: 11.224,
-      as_of: '2026-10-07',
+      // v0.8.1 ritual pin (in-test attribution): 11.123 as of 2026-10-20
+      // (was 11.224, 2026-10-07; the ECB TARGET publication observed at
+      // execution of the dedicated rate pass).
+      rate: 11.123,
+      as_of: '2026-10-20',
       source: 'ECB euro reference rate (SEK per EUR)'
     });
     // v0.6.0 Aarhus expansion: the second EUR-anchored published pair
@@ -71,8 +74,10 @@ describe('currency declaration is data (spec v0.2.59)', () => {
     expect(ctx.rows[1]).toEqual({
       from_currency: 'EUR',
       to_currency: 'DKK',
-      rate: 7.4745,
-      as_of: '2026-10-07',
+      // v0.8.1 ritual pin (in-test attribution): the DKK rate moves
+      // 7.4745 -> 7.4746 and the as_of to 2026-10-20, the same publication.
+      rate: 7.4746,
+      as_of: '2026-10-20',
       source: 'ECB euro reference rate (DKK per EUR)'
     });
   });

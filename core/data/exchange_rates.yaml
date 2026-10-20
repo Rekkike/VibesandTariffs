@@ -4,7 +4,7 @@
 # The comparison basis is SEK: the Swedish ports bill in SEK and Hamburg in
 # EUR, so the single conversion needed is EUR->SEK. The pinned default is
 # static, versioned data: the pinned rates below are the values of record,
-# currently the 2026-10-07 ECB observation, and they move only in dedicated
+# currently the 2026-10-20 ECB observation, and they move only in dedicated
 # rate passes, never mid-pass. The comparison view renders the pinned rate
 # beside every converted figure; display conversions are presentation-only.
 # The rate-refresh button (v0.3.2) was removed at v0.4.0. The manual
@@ -41,21 +41,24 @@
 #   https://api.frankfurter.app/latest?from=EUR&to=SEK,DKK
 #   Previous observed (v0.6.0 ritual, verified 2026-10-06):
 #   { "base": "EUR", "date": "2026-10-05", "rates": { "DKK": 7.4745, "SEK": 11.2525 } }
-#   Current  pin (v0.6.6 ritual, verified 2026-10-07):
+#   Previous pin (v0.6.6 ritual, verified 2026-10-07):
 #   { "base": "EUR", "date": "2026-10-07", "rates": { "DKK": 7.4745, "SEK": 11.224 } }
-#   SEK drift declared: 11.2525 -> 11.224, as_of 2026-10-05 -> 2026-10-07;
-#   DKK drift 0 (7.4745, the same publication's DKK figure; the pair's
-#   as_of moves with the observed publication date).
+#   Current  pin (v0.8.1 ritual, verified 2026-10-20):
+#   { "base": "EUR", "date": "2026-10-20", "rates": { "DKK": 7.4746, "SEK": 11.123 } }
+#   SEK drift declared: 11.224 -> 11.123, as_of 2026-10-07 -> 2026-10-20;
+#   DKK drift declared: 7.4745 -> 7.4746, as_of 2026-10-07 -> 2026-10-20
+#   (the ECB TARGET publication of 2026-10-20, observed at execution; read
+#   from the ECB daily XML and cross-checked against the mirror above).
 published_pairs:
   - pair: EUR-SEK
     from_currency: EUR
     to_currency: SEK
-    rate: 11.224
-    as_of: 2026-10-07
+    rate: 11.123
+    as_of: 2026-10-20
     source: ECB euro reference rate (SEK per EUR)
   - pair: EUR-DKK
     from_currency: EUR
     to_currency: DKK
-    rate: 7.4745
-    as_of: 2026-10-07
+    rate: 7.4746
+    as_of: 2026-10-20
     source: ECB euro reference rate (DKK per EUR)
