@@ -3,11 +3,14 @@
 #
 # The comparison basis is SEK: the Swedish ports bill in SEK and Hamburg in
 # EUR, so the single conversion needed is EUR->SEK. The pinned default is
-# static, versioned data. The comparison view renders it beside every
-# converted figure, the user may override it at the UI, and the
-# rate-refresh button (v0.3.2) fetches the latest published rate on demand
-# — a fetched value is an override at the UI layer only; the pinned default
-# below remains the model's rate in every default rendering.
+# static, versioned data: the pinned rates below are the values of record,
+# currently the 2026-10-07 ECB observation, and they move only in dedicated
+# rate passes, never mid-pass. The comparison view renders the pinned rate
+# beside every converted figure; display conversions are presentation-only.
+# The rate-refresh button (v0.3.2) was removed at v0.4.0. The manual
+# override input remains: it is a user-side display adjustment at the UI
+# layer only and never writes this file; the pinned default below remains
+# the model's rate in every default rendering.
 #
 # Published-pairs structure (v0.3.2): each entry is one published,
 # EUR-anchored pair — a rate actually published by the ECB, never a
@@ -26,10 +29,11 @@
 # as_of date below is the publication date of the recorded rate.
 #
 # Standing verification ritual (effective v0.3.2, permanent; extended to
-# BOTH published pairs at v0.6.0): every pass re-verifies the EUR->SEK and
-# EUR->DKK rates against the latest TARGET-business-day publication and
-# updates the rates and as_of below. Each pair's drift is declared
-# independently.
+# BOTH published pairs at v0.6.0; restated v0.7.1): every pass observes the
+# EUR->SEK and EUR->DKK rates against the latest TARGET-business-day
+# publication and records any drift. Observation is continuous; the pinned
+# rates and as_of below move only in a dedicated rate pass, never mid-pass.
+# Each pair's drift is declared independently.
 #   Previous pin (v0.3.2 ritual, verified 2026-10-01): 11.331 as of 2026-09-30.
 #   Previous pin (v0.4.6 ritual, verified 2026-10-02): 11.29 as of 2026-10-02.
 #   Previous pin (v0.5.2 ritual, verified 2026-10-05): 11.2525 as of 2026-10-05.
