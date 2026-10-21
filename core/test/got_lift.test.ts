@@ -65,6 +65,15 @@ describe('GOT lift and delivery user inputs (spec v0.11.0)', () => {
     expect(r.vessel_access!.amount).toBe(735254.2);
   });
 
+  it('the lift line basis is the entered-rate disclosure: marker, entered rate and the arithmetic on the call\'s moves (GOT lift and delivery presentation patch, user ruling 2026-10-21)', () => {
+    const lift = fee(run({ got_lift_cost: 1029 }), 'apm_terminals_lift')!;
+    expect(lift.band_or_basis).toBe('user-specified Cost per lift, 1,029 SEK per unit per move (entered) — 1,029 x 4,000 = 4,116,000 SEK');
+    expect(fee(run({ got_lift_cost: 1000.5 }), 'apm_terminals_lift')!.band_or_basis)
+      .toBe('user-specified Cost per lift, 1,000.5 SEK per unit per move (entered) — 1,000.5 x 4,000 = 4,002,000 SEK');
+    // presentation only: the amount is unchanged
+    expect(lift.amount).toBe(4116000);
+  });
+
   it('a zero entry is a valid value that fires nothing', () => {
     const r = run({ got_lift_cost: 0 });
     expect(userSpecifiedRate({ got_lift_cost: 0 }, 'got_lift_cost', 'Cost per lift').state).toBe('valid');

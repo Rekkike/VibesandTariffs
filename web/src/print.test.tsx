@@ -186,7 +186,10 @@ describe('print header content — the unfalsifiability rule (spec v0.6.2)', () 
         // v0.11.0 re-baseline (in-test attribution): GOT lift and delivery
         // user inputs (user ruling 2026-10-21) - the minor bump moves the
         // version constant v0.10.1 -> v0.11.0.
-        expect(APP_VERSION).toBe('v0.11.0');
+        // v0.11.1 re-baseline (in-test attribution): GOT lift and delivery
+        // presentation patch (user ruling 2026-10-21) - the patch bump moves
+        // the version constant v0.11.0 -> v0.11.1; no figure moved.
+        expect(APP_VERSION).toBe('v0.11.1');
         expect(text).toContain('Tariff year: 2026');
         expect(text).toContain('Vessel profile: MAREN MAERSK (IMO 9632129)');
         expect(text).toContain('ESI:');

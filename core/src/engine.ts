@@ -2032,7 +2032,12 @@ export function calculatePortCallCost(
       amount,
       currency: (billerDef?.currency ?? port.metadata.currency) as Currency,
       rate_applied: `${rateText} ${spec.currency} per unit per move (user-specified, not a tariff rate)`,
-      band_or_basis: `${moves.toLocaleString('en-US')} moves (loaded + discharged)`,
+      // GOT lift and delivery presentation patch (user ruling 2026-10-21,
+      // v0.11.1): the basis text is the entered-rate disclosure, in the
+      // pattern of the container-through Delivery note - the user-specified
+      // marker, the purpose, the entered rate, and the arithmetic on the
+      // call's moves (loaded + discharged).
+      band_or_basis: `user-specified ${spec.label}, ${rateText} ${spec.unit} (entered) — ${rateText} x ${moves.toLocaleString('en-US')} = ${amount.toLocaleString('en-US', { maximumFractionDigits: 2 })} ${spec.currency}`,
       source_reference: {
         document_name: `User-specified call input: ${spec.label}`,
         document_url: '',
