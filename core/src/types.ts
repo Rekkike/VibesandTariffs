@@ -555,6 +555,11 @@ export interface OpsComponentSpec {
   enabled: boolean;
   currency: Currency;
   unit: string;
+  // Bounds presence (spec v0.9.1): a per-GT descriptor that declares
+  // bounds: true offers user-specified minimum and maximum inputs and the
+  // engine clamps the per-GT line between them. Configuration only - no
+  // figures; absent or false leaves the line unbounded and byte-identical.
+  bounds?: boolean;
 }
 
 export interface OpsComponentsSpec {
@@ -769,6 +774,12 @@ export interface CallInput {
   ops_demand_charge?: number;     // user's assumed demand charge, flat per call (SEK; Sweden only)
   ops_connection_charge?: number; // user's assumed service/connection charge, flat per call (SEK Sweden; EUR Hamburg)
   ops_per_gt_charge?: number;     // user's assumed additional per-GT charge (optional; blank disables)
+  // Per-GT bounds (spec v0.9.1): user-specified minimum and maximum for the
+  // per-GT line at ports whose descriptor declares bounds; a blank bound is
+  // unbounded in that direction; a blank rate prices no line whatever the
+  // bounds.
+  ops_per_gt_min?: number;
+  ops_per_gt_max?: number;
   // Per-unit OPS charges (spec v0.9.0): the user's own amounts per non-empty
   // unit, 20 ft and 40 ft separate; blank renders nothing, never a default
   // amount. The non-empty counts are configuration only (never rates):

@@ -81,6 +81,9 @@ export function registerPortData(
       throw new Error(`registerPortData('${portId}'): ops_speculative.${component} descriptor malformed (needs enabled/currency/unit; spec v0.2.59)`);
     }
   }
+  if (opsSpeculative.per_gt.bounds !== undefined && typeof opsSpeculative.per_gt.bounds !== 'boolean') {
+    throw new Error(`registerPortData('${portId}'): ops_speculative.per_gt.bounds malformed (must be a boolean; spec v0.9.1)`);
+  }
   const perUnit = opsSpeculative.per_unit;
   if (perUnit !== undefined
     && (!perUnit || typeof perUnit !== 'object'

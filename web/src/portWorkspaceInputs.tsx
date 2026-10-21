@@ -1452,11 +1452,33 @@ export const WorkspaceInputs: React.FC<WorkspaceInputsProps> = (props) => {
                       onChange={(e) => handleCallChange('ops_per_gt_charge', e.target.value === '' ? undefined : parseFloat(e.target.value))}
                       fullWidth
                       InputLabelProps={{ shrink: true }}
-                      helperText={opsFoldAppliesHere
+                      helperText={opsComponents.per_gt.bounds
+                        ? `User-specified, not a tariff rate; the amount uses the GT basis and is bounded by the minimum and maximum below when they are entered. Blank disables.`
+                        : opsFoldAppliesHere
                         ? `User-specified, not a tariff rate — no published tariff prices container-terminal OPS per GT (Gothenburg's only published OPS due is the flat tanker-jetty connection fee); this port's port dues tariff is banded, so the entered flat rate renders as part of the port dues family's per-GT decomposition ((a) tariff portion + (b) this flat rate = (c) combined), and its amount still adds to the Grand Total under the user-specified label. Blank disables.`
                         : `User-specified, not a tariff rate — no published tariff prices container-terminal OPS per GT (Gothenburg's only published OPS due is the flat tanker-jetty connection fee); the amount uses the same GT basis as the port dues and flows into the derived SEK/GT metric. Blank disables.`}
                     />
                   </Grid>
+                )}
+                {opsComponents.per_gt.enabled && opsComponents.per_gt.bounds && (
+                  <>
+                    {([
+                      { field: 'ops_per_gt_min', label: 'OPS per-GT minimum' },
+                      { field: 'ops_per_gt_max', label: 'OPS per-GT maximum' }
+                    ] as const).map(({ field, label }) => (
+                      <Grid item xs={12} sm={6} key={field}>
+                        <TextField
+                          label={`${label} (${opsComponents.per_gt.currency})`}
+                          type="number"
+                          value={state.call[field] ?? ''}
+                          onChange={(e) => handleCallChange(field, e.target.value === '' ? undefined : parseFloat(e.target.value))}
+                          fullWidth
+                          InputLabelProps={{ shrink: true }}
+                          helperText={`User-specified ${opsComponents.per_gt.currency} bound on the per-GT line, not a tariff figure; blank = unbounded in that direction`}
+                        />
+                      </Grid>
+                    ))}
+                  </>
                 )}
                 {opsComponents.per_unit?.enabled && (
                   <>

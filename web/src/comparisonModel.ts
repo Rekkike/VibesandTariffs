@@ -96,6 +96,71 @@ export const containerThroughLegFor = (
 
 const addCents = (a: number, b: number) => Math.round((a + b) * 100) / 100;
 
+// Comparison OPS segment (spec v0.9.1, user ruling 2026-10-21): the OPS
+// group is its own segment after all stage rows. The model is read straight
+// from the engine's ops_speculative record - the segment subtotal is the
+// block's own amount, each line carries the engine's own amount and basis
+// string; nothing is recomputed here. Rows follow the engine's own line
+// order (the order the engine emits the lines in); an unknown future line id
+// is appended in order of first appearance. A port without a given line has
+// no entry for it.
+export interface OpsSegmentCell {
+  amount: number;
+  basis: string;
+  currency: string;
+}
+export interface OpsSegmentRow {
+  id: string;
+  heading: string;
+  perPort: Map<string, OpsSegmentCell>;
+}
+export interface OpsSegment {
+  subtotals: Map<string, { amount: number; currency: string }>;
+  rows: OpsSegmentRow[];
+}
+const OPS_ENGINE_LINE_ORDER = [
+  'ops_spec_electricity',
+  'ops_spec_demand',
+  'ops_spec_connection',
+  'ops_spec_per_gt',
+  'ops_spec_unit_20ft',
+  'ops_spec_unit_40ft'
+];
+// The row heading is the engine's own label without the per-port currency
+// parenthetical (the cell's basis string carries the unit and currency).
+const opsRowHeading = (label: string) => label.replace(/\s*\(user-specified[^)]*\)/, '') + ' (user-specified)';
+export const buildOpsSegment = (
+  portResults: {
+    port: PortDefinition;
+    result: {
+      currency: string;
+      ops_speculative?: { amount: number; lines: { id: string; label: string; amount: number; basis: string }[] } | null;
+    } | null;
+  }[]
+): OpsSegment => {
+  const subtotals = new Map<string, { amount: number; currency: string }>();
+  const rowsById = new Map<string, OpsSegmentRow>();
+  const appearance: string[] = [];
+  for (const { port, result } of portResults) {
+    const ops = result?.ops_speculative;
+    if (!result || !ops) continue;
+    const id = port.metadata.id;
+    subtotals.set(id, { amount: ops.amount, currency: result.currency });
+    for (const line of ops.lines) {
+      let row = rowsById.get(line.id);
+      if (!row) {
+        row = { id: line.id, heading: opsRowHeading(line.label), perPort: new Map() };
+        rowsById.set(line.id, row);
+        appearance.push(line.id);
+      }
+      row.perPort.set(id, { amount: line.amount, basis: line.basis, currency: result.currency });
+    }
+  }
+  const known = OPS_ENGINE_LINE_ORDER.filter(lineId => rowsById.has(lineId));
+  const extra = appearance.filter(lineId => !OPS_ENGINE_LINE_ORDER.includes(lineId));
+  return { subtotals, rows: [...known, ...extra].map(lineId => rowsById.get(lineId)!) };
+};
+
 export const computePortResults = (
   selectedPorts: PortDefinition[],
   vessel: VesselInput,

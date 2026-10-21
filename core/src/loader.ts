@@ -906,6 +906,14 @@ export function validatePort(port: PortDefinition): PortValidationResult {
         });
       }
     }
+    const perGtBounds = ((port.ops_speculative as unknown as Record<string, Record<string, unknown> | undefined>).per_gt ?? {}).bounds;
+    if (perGtBounds !== undefined && typeof perGtBounds !== 'boolean') {
+      errors.push({
+        message: 'Port ops_speculative.per_gt.bounds malformed (must be a boolean, spec v0.9.1)',
+        severity: 'error',
+        path: 'ops_speculative.per_gt.bounds'
+      });
+    }
     const perUnit = (port.ops_speculative as unknown as Record<string, unknown>).per_unit;
     if (perUnit !== undefined
       && (!perUnit || typeof perUnit !== 'object'

@@ -152,7 +152,9 @@ describe('card-surface OPS isolation (spec v0.2.62)', () => {
     const card = Array.from(container!.querySelectorAll('.comparison-port-card'))
       .find(c => (c.textContent ?? '').includes(cardName));
     if (!card) return null;
-    return card.querySelector('.comparison-card-ops')?.textContent ?? null;
+    // OPS segment design (user ruling 2026-10-21) re-baseline: the card's OPS figure is the segment
+    // header's subtotal (the merged at-berth line is retired)
+    return card.querySelector('.comparison-card-ops-segment')?.textContent ?? null;
   };
 
   const cardTotal = (cardName: string): string | null => {
@@ -241,19 +243,21 @@ describe('card-surface OPS isolation (spec v0.2.62)', () => {
       await settle();
     }
     await settle();
-    const opsRow = container!.querySelector('.comparison-ops-row');
+    // OPS segment design (user ruling 2026-10-21) re-baseline: the segment header row carries each
+    // column's OPS subtotal (the merged row is retired)
+    const opsRow = container!.querySelector('[data-testid="comparison-ops-segment"]');
     expect(opsRow).not.toBeNull();
     const cells = Array.from(opsRow!.querySelectorAll('td'));
     const selectedCount = Array.from(boxes).filter(b => b.checked).length;
     expect(cells.length).toBe(selectedCount + 1);
     expect(selectedCount).toBe(6); // the cap: 6 of the 7 ports selected
-    // GOT's cell prices its own entry; every other port's cell renders the
-    // em dash — no absence wording, and never GOT's figure.
+    // GOT's cell prices its own entry; every other port's cell renders
+    // nothing - no absence wording, and never GOT's figure.
     const cellTexts = cells.map(c => c.textContent ?? '');
     expect(cellTexts.filter(t => t.includes('29\u00A0485')).length).toBe(1);
-    // Every non-GOT priced cell renders the em dash (the label cell may
-    // also carry one; the pin counts at least the non-pricing ports).
-    expect(cellTexts.filter(t => t.includes('—')).length).toBeGreaterThanOrEqual(6 - 1);
+    // OPS segment design (user ruling 2026-10-21) re-baseline: the em dash is retired; every non-GOT
+    // cell is empty (the label cell is the only other text).
+    expect(cellTexts.slice(1).filter(t => t === '').length).toBe(selectedCount - 1);
     expect(opsRow!.textContent).not.toContain('not levied at this port');
   });
 

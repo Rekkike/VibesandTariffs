@@ -222,7 +222,13 @@ describe('OPS component descriptor — per-port shape (spec v0.2.57)', () => {
       expect(ops).toBeDefined();
       for (const component of ['electricity', 'demand', 'connection', 'per_gt']) {
         expect(ops[component]).toBeDefined();
-        expect(Object.keys(ops[component]).sort()).toEqual(['currency', 'enabled', 'unit']);
+        // Aarhus per-GT OPS input (user ruling 2026-10-21) re-baseline: a per-GT descriptor may declare
+        // bounds presence (a boolean flag, no figures) beside enabled/currency/unit.
+        expect(Object.keys(ops[component]).sort()).toEqual(
+          component === 'per_gt' && ops[component].bounds !== undefined
+            ? ['bounds', 'currency', 'enabled', 'unit']
+            : ['currency', 'enabled', 'unit']
+        );
       }
     }
   });
@@ -267,12 +273,14 @@ describe('OPS speculative inputs — web surfaces (spec v0.2.57)', () => {
     // The shared call enters every component; each port's column prices only
     // its descriptor-enabled components (GOT three lines, HAM two, HEL four).
     await renderComparison({ ...defaultCall('gothenburg'), ...OPS_ENTERED } as CallInput, false);
-    const opsRow = container!.querySelector('.comparison-ops-row');
+    // OPS segment design (user ruling 2026-10-21) re-baseline: the merged row is retired; the OPS
+    // segment header row carries each port's OPS subtotal, the line rows
+    // follow (opsSegment.test.tsx pins the granularity).
+    const opsRow = container!.querySelector('[data-testid="comparison-ops-segment"]');
     expect(opsRow).not.toBeNull();
     expect(opsRow!.textContent).toContain('user-specified, not tariff-derived');
     // No absence wording in any OPS cell (no user value is not a tariff
-    // assertion) — the row renders only for ports with values here, all
-    // three have values, and no cell says "not levied at this port".
+    // assertion) - no cell says "not levied at this port".
     expect(opsRow!.textContent).not.toContain('not levied at this port');
     // Per-port figures (sv-SE grouping is the non-breaking space U+00A0,
     // whole-kr rounding): GOT 3,125+10,000+19,484.90 = 32,609.90 SEK;
@@ -284,7 +292,7 @@ describe('OPS speculative inputs — web surfaces (spec v0.2.57)', () => {
 
   it('blank OPS renders no OPS row and no spurious structure in the comparison', async () => {
     await renderComparison(defaultCall('gothenburg'), false);
-    expect(container!.querySelector('.comparison-ops-row')).toBeNull();
+    expect(container!.querySelector('[data-testid="comparison-ops-segment"]')).toBeNull();
   });
 
   it('the mobile card carries the per-port OPS line under the Grand Total, absent when blank', async () => {
@@ -292,10 +300,11 @@ describe('OPS speculative inputs — web surfaces (spec v0.2.57)', () => {
     const cards = container!.querySelectorAll('.comparison-port-card');
     expect(cards.length).toBe(LOADED_PORTS.length);
     for (const card of Array.from(cards)) {
-      const opsLine = card.querySelector('.comparison-card-ops');
+      // OPS segment design (user ruling 2026-10-21) re-baseline: the card carries the OPS segment header.
+      const opsLine = card.querySelector('.comparison-card-ops-segment');
       expect(opsLine).not.toBeNull();
       expect(opsLine!.textContent).toContain('user-specified, not tariff-derived');
-      // the OPS line renders beneath the card's Grand Total lead
+      // the OPS segment renders beneath the card's Grand Total lead
       const total = card.querySelector('.comparison-card-total')!;
       expect(
         total.compareDocumentPosition(opsLine!) & Node.DOCUMENT_POSITION_FOLLOWING

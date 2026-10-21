@@ -522,66 +522,63 @@ describe('discounts received — the rendering (spec v0.2.64, item 2)', () => {
 });
 
 // ---- Item 3: OPS stage placement ----------------------------------------
-describe('OPS placement into the at-berth stage (spec v0.2.64, item 3)', () => {
-  it('desktop: with OPS entered, the OPS row renders inside the At-the-berth stage block, before the Grand Total, labeled as included', async () => {
+describe('OPS segment placement (spec v0.2.64, item 3; re-baselined at v0.9.1)', () => {
+  // OPS segment design (user ruling 2026-10-21) re-baseline: the v0.2.64 pins asserted the merged OPS row
+  // inside the At-the-berth stage block; the OPS group is now its own
+  // segment after every stage row and before Discounts received and the
+  // Grand Total. Granularity and per-line pins live in opsSegment.test.tsx.
+  it('desktop: with OPS entered, the OPS segment renders after all stage rows, before Discounts received and the Grand Total, labeled as included', async () => {
     ({ container, root } = await renderComparison(false, {
       ...defaultCall('gothenburg'),
       ...OPS_ENTERED
     } as CallInput));
-    const opsRow = container!.querySelector('.comparison-ops-row');
+    const opsRow = container!.querySelector('[data-testid="comparison-ops-segment"]');
     expect(opsRow).not.toBeNull();
     expect(opsRow!.textContent).toContain('user-specified, not tariff-derived');
     expect(opsRow!.textContent).toContain('included in the Grand Total');
-    // Inside the at-berth stage: the stage row precedes it and no other
-    // stage row sits between them.
     const rows = Array.from(opsRow!.closest('table')!.querySelectorAll('tr')) as HTMLElement[];
     const opsIdx = rows.indexOf(opsRow! as HTMLElement);
     const stageIdxs = rows
       .map((r, i) => ({ r, i }))
       .filter(({ r }) => r.classList.contains('comparison-stage-row'));
-    const atBerth = stageIdxs.find(({ r }) => (r.textContent ?? '').includes('At the berth'))!;
-    const quayside = stageIdxs.find(({ r }) => (r.textContent ?? '').includes('Quayside operations'))!;
-    expect(opsIdx).toBeGreaterThan(atBerth.i);
-    expect(opsIdx).toBeLessThan(quayside.i);
-    // Before the Grand Total.
+    for (const s of stageIdxs) expect(opsIdx).toBeGreaterThan(s.i);
+    const discounts = container!.querySelector('.comparison-discount-row')!;
+    expect(opsRow!.compareDocumentPosition(discounts) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     const totalRow = Array.from(container!.querySelectorAll('.comparison-total-row'))
       .find(r => (r.textContent ?? '').includes('Grand Total'))!;
     expect(
       opsRow!.compareDocumentPosition(totalRow) & Node.DOCUMENT_POSITION_FOLLOWING
     ).toBeTruthy();
-    // The figures render per port (GOT 32,609.90; HAM 8,125 EUR; HEL 37,609.90).
+    // The subtotals render per port (GOT 32,609.90; HAM 8,125 EUR; HEL 37,609.90).
     expect(opsRow!.textContent).toContain('32\u00a0610');
     expect(opsRow!.textContent).toContain('8\u00a0125');
     expect(opsRow!.textContent).toContain('37\u00a0610');
   });
 
-  it('desktop: blank OPS renders no OPS row (the blank contract holds in the new position)', async () => {
+  it('desktop: blank OPS renders no OPS segment (the blank contract holds in the new position)', async () => {
     ({ container, root } = await renderComparison(false, defaultCall('gothenburg') as CallInput));
-    expect(container!.querySelector('.comparison-ops-row')).toBeNull();
+    expect(container!.querySelector('[data-testid="comparison-ops-segment"]')).toBeNull();
   });
 
-  it('mobile: the card OPS line renders inside the at-berth stage block, before the estimated-parameters subtotal', async () => {
+  it('mobile: the card OPS segment renders after all stage segments and before Discounts received', async () => {
     ({ container, root } = await renderComparison(true, {
       ...defaultCall('gothenburg'),
       ...OPS_ENTERED
     } as CallInput));
     const cards = container!.querySelectorAll('.comparison-port-card');
     for (const card of Array.from(cards)) {
-      const opsLine = card.querySelector('.comparison-card-ops');
+      const opsLine = card.querySelector('.comparison-card-ops-segment');
       expect(opsLine).not.toBeNull();
       expect(opsLine!.textContent).toContain('included in the Grand Total');
-      // Inside the at-berth stage block: the stage label precedes the OPS
-      // line and the quayside stage label follows it.
       const list = card.querySelector('.comparison-card-list')!;
       const children = Array.from(list.children);
       const opsIdx = children.indexOf(opsLine! as Element);
       const stageIdxs = children
         .map((el, i) => ({ el, i }))
         .filter(({ el }) => el.className.includes('comparison-card-segment'));
-      const atBerth = stageIdxs.find(({ el }) => (el.textContent ?? '').includes('At the berth'))!;
-      const quayside = stageIdxs.find(({ el }) => (el.textContent ?? '').includes('Quayside operations'))!;
-      expect(opsIdx).toBeGreaterThan(atBerth.i);
-      expect(opsIdx).toBeLessThan(quayside.i);
+      for (const s of stageIdxs) expect(opsIdx).toBeGreaterThan(s.i);
+      const discountIdx = children.findIndex(el => el.className.includes('comparison-card-discount'));
+      expect(opsIdx).toBeLessThan(discountIdx);
     }
   });
 });
@@ -626,7 +623,9 @@ describe('the derived per-GT metric\u2019s per-GT-OPS disclosure (spec v0.2.64, 
     expect(texts[0]).toContain('flows into this derived metric');
     expect(texts[1]).toContain('per-GT OPS charge uses the same GT basis as the port dues');
     expect(texts[2]).toContain('per-GT OPS charge uses the same GT basis as the port dues');
-    expect(texts[3]).not.toContain('per-GT OPS charge uses the same GT basis');
+    // Aarhus per-GT OPS input (user ruling 2026-10-21) re-baseline: Aarhus now offers the per-GT component, so
+    // with the shared per-GT value entered it carries the same disclosure.
+    expect(texts[3]).toContain('per-GT OPS charge uses the same GT basis');
     expect(texts[3]).toContain('includes user-specified OPS');
     expect(texts[4]).toContain('per-GT OPS charge uses the same GT basis as the port dues');
     expect(texts[5]).toContain('per-GT OPS charge uses the same GT basis as the port dues');

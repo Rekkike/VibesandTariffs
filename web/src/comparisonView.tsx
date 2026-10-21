@@ -29,6 +29,7 @@ import {
   buildRuleNamesByPort,
   buildRuleAttributesByPort,
   buildRowsBySegment,
+  buildOpsSegment,
   computeRanking
 } from './comparisonModel';
 import { equivalenceNoteForFamily, equivalenceNoteForRule, EQUIVALENCE_ANNOTATED_PORTS } from './equivalenceNotes';
@@ -184,6 +185,9 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
     () => buildRowsBySegment(portResults, ruleNameByPortAndId, ruleAttributesByPortAndId, vessel.gt),
     [portResults, ruleNameByPortAndId, ruleAttributesByPortAndId, vessel.gt]
   );
+  // Comparison OPS segment (spec v0.9.1): read from the engine's own
+  // ops_speculative records, never recomputed.
+  const opsSegment = useMemo(() => buildOpsSegment(portResults), [portResults]);
   // Print model (spec v0.9.0): the paper follows the print selection, not the
   // screen toggle - the dialog path carries its own container-through choice,
   // the live-state Ctrl+P path inherits the screen toggle. The Grand Total,
@@ -428,24 +432,37 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
                                   : <span className="comparison-not-levied">not levied at this port</span>}
                               </Box>
                             ))}
-                            {/* OPS placement (spec v0.2.64, item 3): the
-                                user-specified OPS block renders inside the
-                                "At the berth" stage block on the card,
-                                before the Grand Total, labeled as included
-                                in it — comparison-surface presentation
-                                only; the input-side speculation notices
-                                stay on the workspace inputs. Blank renders
-                                nothing, and no absence wording renders
-                                for ports without values (no user value is
-                                not a tariff assertion). */}
-                            {result.ops_speculative && stage.id === 'at_berth' && (
-                              <Box component="dd" className="comparison-card-family comparison-card-ops">
-                                <span className="comparison-card-family-name">OPS (user-specified, not tariff-derived) — included in the Grand Total</span>
-                                {convCell(result.ops_speculative.amount, result.currency)}
-                              </Box>
-                            )}
                           </React.Fragment>
                         ))}
+                        {/* OPS segment on the card (spec v0.9.1, user ruling
+                            2026-10-21; supersedes the v0.2.64 merged amount
+                            inside the at-berth block): the segment header
+                            carries the port's OPS subtotal (the engine's own
+                            ops_speculative amount), then one row per engine
+                            line with its own amount and basis string, after
+                            all stage rows and before Discounts received.
+                            Blank renders nothing; no absence wording. */}
+                        {result.ops_speculative && (
+                          <>
+                            <Box component="dt" className="comparison-card-ops-segment" data-testid="comparison-card-ops-segment">
+                              OPS (user-specified, not tariff-derived) — included in the Grand Total: {convCell(result.ops_speculative.amount, result.currency)}
+                            </Box>
+                            {opsSegment.rows
+                              .filter(row => row.perPort.has(port.metadata.id))
+                              .map(row => {
+                                const cell = row.perPort.get(port.metadata.id)!;
+                                return (
+                                  <Box component="dd" key={row.id} className="comparison-card-family comparison-card-ops-line" data-testid={`comparison-card-ops-line-${row.id}`}>
+                                    <span className="comparison-card-family-name">{row.heading}</span>
+                                    <Box sx={{ textAlign: 'right' }}>
+                                      {convCell(cell.amount, cell.currency)}
+                                      <Box sx={{ fontSize: '0.75rem' }} className="comparison-secondary">{cell.basis}</Box>
+                                    </Box>
+                                  </Box>
+                                );
+                              })}
+                          </>
+                        )}
                         {/* Discounts received on the card (spec v0.2.64,
                             item 2): the tariff-derived discount sum before
                             the Grand Total, clearly labeled as included in
@@ -688,37 +705,55 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
                         })}
                       </TableRow>
                     )}
-                    {/* OPS placement (spec v0.2.64, item 3): the
-                        user-specified OPS block renders inside the
-                        "At the berth" stage block, before the Grand Total,
-                        labeled as included in it — comparison-surface
-                        presentation only; the input-side speculation
-                        notices stay on the workspace inputs. Never
-                        interleaved with tariff lines, and never with
-                        absence wording in other ports' columns (no user
-                        value is not a tariff assertion; blank simply
-                        renders nothing). */}
-                    {portResults.some(({ result }) => result?.ops_speculative) && stage.id === 'at_berth' && (
-                      <TableRow className="comparison-ops-row">
-                        <TableCell>
-                          <strong>OPS (user-specified, not tariff-derived) — included in the Grand Total</strong>
-                        </TableCell>
-                        {portResults.map(({ port, result }) => (
-                          <TableCell key={port.metadata.id} align="right" className="comparison-subtotal">
-                            {result?.ops_speculative
-                              ? <Box sx={{ textAlign: 'right' }}>
-                                  <span className="comparison-figure">{formatCurrency(result.ops_speculative.amount, result.currency)}</span>
-                                  <Box sx={{ fontSize: '0.75rem' }} className="comparison-secondary">
-                                    {result.ops_speculative.lines.map(l => l.label).join('; ')}
-                                  </Box>
-                                </Box>
-                              : <span className="comparison-ops-absent">—</span>}
-                          </TableCell>
-                        ))}
-                      </TableRow>
-                    )}
                   </React.Fragment>
                 ))}
+                {/* OPS segment (spec v0.9.1, user ruling 2026-10-21;
+                    supersedes the v0.2.64 merged row inside the at-berth
+                    block): its own segment in the stage-row pattern, after
+                    all stage rows and before Discounts received. The header
+                    cells carry each port's OPS subtotal (the engine's own
+                    ops_speculative amount); below it one row per engine
+                    line, each cell the port's own line amount with the
+                    line's own basis string. A port without a value renders
+                    nothing (no absence wording: no user value is not a
+                    tariff assertion). Stage subtotals never included OPS. */}
+                {opsSegment.rows.length > 0 && (
+                  <>
+                    <TableRow className="comparison-ops-segment-row" data-testid="comparison-ops-segment">
+                      <TableCell>
+                        <strong>OPS (user-specified, not tariff-derived) — included in the Grand Total</strong>
+                      </TableCell>
+                      {portResults.map(({ port }) => {
+                        const subtotal = opsSegment.subtotals.get(port.metadata.id);
+                        return (
+                          <TableCell key={port.metadata.id} align="right" className="comparison-subtotal">
+                            {subtotal && <span className="comparison-figure">{formatCurrency(subtotal.amount, subtotal.currency)}</span>}
+                          </TableCell>
+                        );
+                      })}
+                    </TableRow>
+                    {opsSegment.rows.map(row => (
+                      <TableRow key={row.id} className="comparison-ops-line-row" data-testid={`comparison-ops-line-${row.id}`}>
+                        <TableCell className="comparison-family-cell">
+                          <span className="comparison-chargetype-label">{row.heading}</span>
+                        </TableCell>
+                        {portResults.map(({ port }) => {
+                          const cell = row.perPort.get(port.metadata.id);
+                          return (
+                            <TableCell key={port.metadata.id} align="right" className="amount">
+                              {cell && (
+                                <Box sx={{ textAlign: 'right' }}>
+                                  <span className="comparison-figure">{formatCurrency(cell.amount, cell.currency)}</span>
+                                  <Box sx={{ fontSize: '0.75rem' }} className="comparison-secondary">{cell.basis}</Box>
+                                </Box>
+                              )}
+                            </TableCell>
+                          );
+                        })}
+                      </TableRow>
+                    ))}
+                  </>
+                )}
                 {/* Discounts received (spec v0.2.64, item 2): the
                     tariff-derived discount inventory per port, before the
                     Grand Total, clearly labeled as included in it (not
