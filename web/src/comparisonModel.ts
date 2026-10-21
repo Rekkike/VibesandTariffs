@@ -18,6 +18,8 @@ import {
 import type { ChargeTypeId } from './chargeTypes';
 import { partitionFees } from './zeroCollapse';
 import { opsFoldActive, opsFoldParts, opsPerGtLineFor } from './opsFold';
+import { containerThroughParts } from './handlingBasis';
+import type { HinterlandMode } from './handlingBasis';
 
 export interface PortResultEntry {
   port: PortDefinition;
@@ -75,6 +77,25 @@ export type RuleNamesByPortAndId = Map<string, Map<string, string>>;
 // comparison's memo bodies as pure functions - the view composes them in
 // useMemo with the same dependencies as before; behavior is identical.
 
+// Container-through Grand Total (spec v0.9.0, design reversal - user ruling
+// 2026-10-21): with the comparison's container-through toggle ON, each
+// port's published landside leg (containerThroughParts, native currency) is
+// added to that port's Grand Total and to its total-without-estimates at
+// the view/model layer. The engine is never fed. The unit counts are the
+// same shared-call counts the container-through row uses. OFF (no mode)
+// returns the engine result untouched.
+export const containerThroughLegFor = (
+  portId: string,
+  mode: HinterlandMode,
+  call: CallInput
+): number => {
+  const le = (call.containers_loaded_le20ft || 0) + (call.containers_discharged_le20ft || 0);
+  const gt = (call.containers_loaded_gt20ft || 0) + (call.containers_discharged_gt20ft || 0);
+  return containerThroughParts(portId, mode, le, gt).addedAmount ?? 0;
+};
+
+const addCents = (a: number, b: number) => Math.round((a + b) * 100) / 100;
+
 export const computePortResults = (
   selectedPorts: PortDefinition[],
   vessel: VesselInput,
@@ -86,7 +107,10 @@ export const computePortResults = (
   // none: the merge is the v0.2.53 contract exactly — per-port defaults
   // under the shared call — with the port's own entries layered last, so
   // a port's column consumes only what was entered at that port.
-  perPortCallOverrides?: Record<string, Record<string, unknown>>
+  perPortCallOverrides?: Record<string, Record<string, unknown>>,
+  // Container-through hinterland mode (spec v0.9.0): present exactly when
+  // the toggle is ON; absent leaves every result untouched.
+  containerThroughMode?: HinterlandMode
 ): PortResultEntry[] => {
     const results = selectedPorts.map(port => {
       try {
@@ -97,7 +121,15 @@ export const computePortResults = (
           ...(perPortCallOverrides?.[port.metadata.id] ?? {}),
           port_id: port.metadata.id
         };
-        const result = calculatePortCallCost(port, { vessel, call: merged as unknown as CallInput });
+        const engineResult = calculatePortCallCost(port, { vessel, call: merged as unknown as CallInput });
+        const leg = containerThroughMode ? containerThroughLegFor(port.metadata.id, containerThroughMode, call) : 0;
+        const result: CostCalculationResult = leg > 0
+          ? {
+              ...engineResult,
+              total: addCents(engineResult.total, leg),
+              total_without_estimates: addCents(engineResult.total_without_estimates, leg)
+            }
+          : engineResult;
         return { port, result, error: null as string | null };
       } catch (err) {
         return { port, result: null, error: `Calculation failed: ${err}` };

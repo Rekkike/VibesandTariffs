@@ -81,6 +81,14 @@ export function registerPortData(
       throw new Error(`registerPortData('${portId}'): ops_speculative.${component} descriptor malformed (needs enabled/currency/unit; spec v0.2.59)`);
     }
   }
+  const perUnit = opsSpeculative.per_unit;
+  if (perUnit !== undefined
+    && (!perUnit || typeof perUnit !== 'object'
+      || typeof perUnit.enabled !== 'boolean'
+      || typeof perUnit.currency !== 'string'
+      || typeof perUnit.unit !== 'string')) {
+    throw new Error(`registerPortData('${portId}'): ops_speculative.per_unit descriptor malformed (needs enabled/currency/unit; spec v0.9.0)`);
+  }
   if (!inputProfile || !Array.isArray(inputProfile.sections)) {
     throw new Error(`registerPortData('${portId}'): input_profile section missing - every port must declare the input sections its workspace renders (spec v0.2.59)`);
   }

@@ -562,6 +562,10 @@ export interface OpsComponentsSpec {
   demand: OpsComponentSpec;
   connection: OpsComponentSpec;
   per_gt: OpsComponentSpec;
+  // Per-unit charges by size (spec v0.9.0): optional configuration - a port
+  // that omits it offers no per-unit inputs. Presence, currency, unit only;
+  // the user-specified amounts live in the call input.
+  per_unit?: OpsComponentSpec;
 }
 
 // Per-port input profile (spec v0.2.59): which input sections and operator
@@ -765,6 +769,14 @@ export interface CallInput {
   ops_demand_charge?: number;     // user's assumed demand charge, flat per call (SEK; Sweden only)
   ops_connection_charge?: number; // user's assumed service/connection charge, flat per call (SEK Sweden; EUR Hamburg)
   ops_per_gt_charge?: number;     // user's assumed additional per-GT charge (optional; blank disables)
+  // Per-unit OPS charges (spec v0.9.0): the user's own amounts per non-empty
+  // unit, 20 ft and 40 ft separate; blank renders nothing, never a default
+  // amount. The non-empty counts are configuration only (never rates):
+  // blank defaults to the call's handled per-size container counts.
+  ops_unit_charge_20ft?: number;
+  ops_unit_charge_40ft?: number;
+  ops_nonempty_units_20ft?: number;
+  ops_nonempty_units_40ft?: number;
   // EU ETS regulatory inputs (spec v0.2.69, the regulatory block): both are
   // user-specified, blank by default — never seeded, never tariff data. The
   // emissions basis is the call's in-scope CO2 tonnage (the user states the
