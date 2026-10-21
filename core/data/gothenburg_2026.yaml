@@ -1483,6 +1483,7 @@ fee_rules:
   # limitation is disclosed in the basis string.
   - id: sjofartsverket_godsavgift
     fee_family: fairway_dues
+    container_basis: laden_basis
     biller: Sjöfartsverket
     name: Cargo Fee (Godsavgift)
     description: "National cargo-based fairway due: 3.36 kr/tonne high-value, 1.67 kr/tonne low-value; transit cargo exempt."
@@ -2479,6 +2480,7 @@ fee_rules:
   # --- ISPS Security Charge ---
   - id: apm_terminals_isps
     fee_family: security
+    container_basis: laden_basis
     biller: APM Terminals Gothenburg
     name: ISPS Security Charge
     description: "ISPS security charge per container unit"

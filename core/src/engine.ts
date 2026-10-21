@@ -36,6 +36,7 @@ import {
 } from './types';
 import { classifyRule } from './classification';
 import { portOpsComponents } from './port_data';
+import { containerSplit } from './container_split';
 
 // Round half-up to the cent (tariff-line precision). The toPrecision(12) guard
 // strips binary-float noise (e.g. 8890 * 0.0135 = 120.01499999999999) so exact
@@ -847,8 +848,14 @@ export function evaluateFeeRule(
             const w40 = (call as any)[weights.weight_40_input];
             const weight20 = typeof w20 === 'number' && w20 >= 0 ? w20 : 0;
             const weight40 = typeof w40 === 'number' && w40 >= 0 ? w40 : 0;
-            const boxes20 = call.containers_loaded_le20ft + call.containers_discharged_le20ft;
-            const boxes40 = call.containers_loaded_gt20ft + call.containers_discharged_gt20ft;
+            // Empty/full split (spec v0.10.0): a rule carrying the
+            // laden_basis marker keys on the derived laden counts - empties
+            // carry no goods - under a valid pair; the weights and rates
+            // are unchanged, and a blank or invalid pair leaves the
+            // all-loaded counts untouched.
+            const split = rule.container_basis === 'laden_basis' ? containerSplit(call) : null;
+            const boxes20 = split?.state === 'valid' ? split.le20.laden : call.containers_loaded_le20ft + call.containers_discharged_le20ft;
+            const boxes40 = split?.state === 'valid' ? split.gt20.laden : call.containers_loaded_gt20ft + call.containers_discharged_gt20ft;
             const rawTonnes = boxes20 * weight20 + boxes40 * weight40;
             const rounded = weights.round_to_whole_tonnes ? Math.round(rawTonnes) : rawTonnes;
             cargoTonnes = { rawTonnes, roundedTonnes: rounded, weight20, weight40, boxes20, boxes40 };
@@ -860,6 +867,25 @@ export function evaluateFeeRule(
           unitCount = (call as any)[perUnit.unit_type] ?? 0;
       }
       
+      // Empty/full split (spec v0.10.0): a rule carrying a data-authored
+      // basis marker prices on the derived counts under a valid pair. Under
+      // a blank or invalid pair a laden_basis rule is untouched (the
+      // all-loaded convention) and an empty_basis rule renders nothing.
+      if (rule.container_basis && perUnit.unit_type !== 'cargo_tonnage_from_containers') {
+        const split = containerSplit(call);
+        if (split.state === 'valid') {
+          const pick = (s: { laden: number; empty: number }) => (rule.container_basis === 'laden_basis' ? s.laden : s.empty);
+          switch (perUnit.unit_type) {
+            case 'container_le20ft': unitCount = pick(split.le20); break;
+            case 'container_gt20ft': unitCount = pick(split.gt20); break;
+            case 'container_total':
+            case 'move': unitCount = pick(split.le20) + pick(split.gt20); break;
+          }
+        } else if (rule.container_basis === 'empty_basis') {
+          return null;
+        }
+      }
+
       // Explicit count input overrides the derived unit-type count (e.g.
       // Helsingborg ancillaries with dedicated unit-count fields).
       if (perUnit.count_input) {
@@ -2207,14 +2233,18 @@ export function calculatePortCallCost(
   // renders nothing: there is no default amount.
   if (opsComponents.per_unit?.enabled) {
     const unitCurrency = opsComponents.per_unit.currency;
+    // The basis count defaults to the call's handled count at that size, or
+    // under a valid empty/full pair (spec v0.10.0) to the derived laden
+    // count at that size; an entered count always wins.
+    const opsSplit = containerSplit(call);
     const sizes = [
       { id: 'ops_spec_unit_20ft', size: '20 ft', rate: call.ops_unit_charge_20ft, entered: call.ops_nonempty_units_20ft,
-        handled: (call.containers_loaded_le20ft || 0) + (call.containers_discharged_le20ft || 0) },
+        derived: opsSplit.le20.laden },
       { id: 'ops_spec_unit_40ft', size: '40 ft', rate: call.ops_unit_charge_40ft, entered: call.ops_nonempty_units_40ft,
-        handled: (call.containers_loaded_gt20ft || 0) + (call.containers_discharged_gt20ft || 0) }
+        derived: opsSplit.gt20.laden }
     ];
     for (const s of sizes) {
-      const units = typeof s.entered === 'number' && s.entered >= 0 ? s.entered : s.handled;
+      const units = typeof s.entered === 'number' && s.entered >= 0 ? s.entered : s.derived;
       if (typeof s.rate === 'number' && s.rate > 0 && units > 0) {
         opsLines.push({
           id: s.id,

@@ -17,6 +17,7 @@ import React from 'react';
 import { createPortal } from 'react-dom';
 import { Box, Table, TableBody, TableCell, TableHead, TableRow } from '@mui/material';
 import type { CallInput, PortDefinition, QualityFlag, VesselInput } from '@port-cost/core';
+import { containerSplit } from '@port-cost/core';
 import { formatRate } from './conversion';
 import type { ComparisonBasisContext, ExchangeRateInfo } from './conversion';
 import { printContinuationNote, printPagesFor } from './printPages';
@@ -188,6 +189,20 @@ export const PrintComparisonPages: React.FC<PrintComparisonPagesProps> = ({
           (call.containers_discharged_le20ft || 0) + (call.containers_discharged_gt20ft || 0)).toLocaleString('en-US')} (loaded + discharged) · Lay time:{' '}
         {call.lay_time_hours != null ? `${call.lay_time_hours} h at berth` : 'not entered'}
       </p>
+      {/* Empty/full split (spec v0.10.0): the entered pair and the derived
+          counts print as call facts; blank prints nothing; an invalid pair
+          prints that it was not applied. */}
+      {containerSplit(call).state !== 'blank' && (() => {
+        const split = containerSplit(call);
+        return (
+          <p className="print-header-line" data-testid="print-header-line-split">
+            Empty/full split:{' '}
+            {split.state === 'valid'
+              ? `${split.emptyPct}% empty / ${split.fullPct}% full (entered) · derived, whole call, round-half-up: 20 ft ${split.le20.laden.toLocaleString('en-US')} full + ${split.le20.empty.toLocaleString('en-US')} empty; 40 ft ${split.gt20.laden.toLocaleString('en-US')} full + ${split.gt20.empty.toLocaleString('en-US')} empty`
+              : `not applied — ${split.error}`}
+          </p>
+        );
+      })()}
       <p className="print-header-line" data-testid="print-header-line-4">
         {printRateBasisNote(declaredRows)} · Comparison basis: {formatRate(rateInfo)}
       </p>

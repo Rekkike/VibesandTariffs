@@ -208,6 +208,7 @@ fee_rules:
       verified_by: "vibe-session-aarhus-expansion"
   - id: aarhus_isps
     fee_family: security
+    container_basis: laden_basis
     biller: Port of Aarhus A/S
     name: ISPS Fee (per loaded container)
     description: "ToC §3.3: the Port of Aarhus charges a separate ISPS fee of 9.65 DKK per loaded container (also per self-propelled unit and wind turbine blade — out of the container scope). The 0.25 DKK/ton surface for goods at ISPS-secured quays is recorded in the extraction reference (the per-container line prices the container call); transit goods: the incoming leg only (recorded)."
@@ -242,6 +243,7 @@ fee_rules:
       verified_by: "vibe-session-aarhus-expansion"
   - id: aarhus_wharfage
     fee_family: cargo_fee
+    container_basis: laden_basis
     biller: Port of Aarhus A/S
     name: Wharfage (cargo side, per loaded container)
     description: "ToC §8: wharfage is paid to the Port of Aarhus for all goods unloaded, loaded, or otherwise discharged by sea or land — 225 DKK per container with goods; empty containers 0. Payment of the wharfage is the responsibility of the recipient or sender of the goods — the CARGO SIDE (the GOT/HEL cargo-side analogue; rendered and attributed, never silently dropped). Ro-ro 210 DKK/unit, wind-turbine blades 485 DKK/unit, passenger fees — out of the container scope (recorded)."

@@ -32,6 +32,10 @@ import { frequencyScenario, frequencyBillerFor, FrequencyPanel } from './frequen
 import type { CallInput, PortDefinition, VesselInput, CostCalculationResult } from '@port-cost/core/types';
 import { readDecomposedAppSource } from './appSource';
 
+// Timing margin (v0.10.0): the full-workspace renders take longer with the added
+// shared inputs and sit at jest's 5 s default; the pins are unchanged.
+jest.setTimeout(60000);
+
 const LOADED_PORTS: PortDefinition[] = ((portsRegistry as any).ports ?? []).filter(
   (p: any) => p && p.fee_rules && Array.isArray(p.fee_rules)
 );

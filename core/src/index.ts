@@ -2,6 +2,7 @@
 // Main exports for the core engine
 export * from './types';
 export * from './engine';
+export * from './container_split';
 // Default form state (spec v0.2.28 default-call contract: worst-case
 // published-rate call; environmental levers blank = not entered)
 export * from './defaults';

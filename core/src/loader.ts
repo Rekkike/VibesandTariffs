@@ -661,6 +661,32 @@ export function validateFeeRule(rule: FeeRule): ValidationError[] {
     });
   }
   
+  if (rule.container_basis !== undefined) {
+    const unitType = (rule.rate_structure as { unit_type?: string } | undefined)?.unit_type;
+    if (rule.container_basis !== 'laden_basis' && rule.container_basis !== 'empty_basis') {
+      errors.push({
+        rule_id: rule.id,
+        message: `Unknown container_basis marker: ${String(rule.container_basis)} (must be laden_basis or empty_basis, spec v0.10.0)`,
+        severity: 'error',
+        path: 'container_basis'
+      });
+    } else if (!['container_le20ft', 'container_gt20ft', 'container_total', 'move', 'cargo_tonnage_from_containers'].includes(unitType ?? '')) {
+      errors.push({
+        rule_id: rule.id,
+        message: `container_basis marker needs a container-count or cargo-tonnage unit_type (found ${String(unitType)}, spec v0.10.0)`,
+        severity: 'error',
+        path: 'container_basis'
+      });
+    } else if (rule.container_basis === 'empty_basis' && unitType === 'cargo_tonnage_from_containers') {
+      errors.push({
+        rule_id: rule.id,
+        message: 'empty_basis cannot key a cargo-tonnage rule (empties carry no goods, spec v0.10.0)',
+        severity: 'error',
+        path: 'container_basis'
+      });
+    }
+  }
+
   if (!rule.fee_family) {
     errors.push({
       rule_id: rule.id,

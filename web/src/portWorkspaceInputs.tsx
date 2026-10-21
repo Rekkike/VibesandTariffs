@@ -26,7 +26,7 @@ import type {
   PortInputProfileSection,
   VesselInput
 } from '@port-cost/core';
-import { getNetTonnageClass } from '@port-cost/core';
+import { getNetTonnageClass, containerSplit } from '@port-cost/core';
 import { tierEffectLine } from './envGuidance';
 import type { InputGuide } from './envGuidance';
 import { LOADED_VESSELS, VESSEL_PRESETS, vesselOptions, vesselOptionId, vesselOptionLabel } from './vesselOptions';
@@ -387,6 +387,57 @@ export const WorkspaceInputs: React.FC<WorkspaceInputsProps> = (props) => {
                     helperText={assumedFields.includes('containers_discharged_gt20ft') ? PROFILE_ASSUMPTION_TEXT.containers_discharged_gt20ft : undefined}
                     FormHelperTextProps={{ className: 'profile-assumption-helper' }}
                   />
+                </Box>
+                {/* Empty/full percentage split (spec v0.10.0): one shared pair
+                    for the whole call, beside the container counts. Blank is
+                    the all-loaded convention; the pair must sum to exactly
+                    100; any other combination is fail-closed (no charge
+                    responds) and the defect is named here. The derived
+                    laden and empty counts per size are disclosed, never
+                    silent. */}
+                <Box className="container-split-group" component="section" aria-label="Empty and full container percentages" data-testid="container-split-group">
+                  <Box className="box-counts-row">
+                    <TextField
+                      className="box-count-field"
+                      label="Empty containers %"
+                      type="number"
+                      value={state.call.container_empty_pct ?? ''}
+                      onChange={(e) => handleCallChange('container_empty_pct', e.target.value === '' ? undefined : parseFloat(e.target.value))}
+                      InputLabelProps={{ shrink: true }}
+                      inputProps={{ min: 0, max: 100, step: 1 }}
+                    />
+                    <TextField
+                      className="box-count-field"
+                      label="Full containers %"
+                      type="number"
+                      value={state.call.container_full_pct ?? ''}
+                      onChange={(e) => handleCallChange('container_full_pct', e.target.value === '' ? undefined : parseFloat(e.target.value))}
+                      InputLabelProps={{ shrink: true }}
+                      inputProps={{ min: 0, max: 100, step: 1 }}
+                    />
+                  </Box>
+                  {(() => {
+                    const split = containerSplit(state.call);
+                    if (split.state === 'blank') {
+                      return (
+                        <Typography variant="caption" className="container-split-note" display="block" data-testid="container-split-note">
+                          Optional, whole call, shared by every port. Blank: every handled unit is charged as a full (laden) unit.
+                        </Typography>
+                      );
+                    }
+                    if (split.state === 'invalid') {
+                      return (
+                        <Typography variant="caption" color="error" role="alert" className="container-split-error" display="block" data-testid="container-split-error">
+                          {split.error} No charge responds to the split until it is corrected.
+                        </Typography>
+                      );
+                    }
+                    return (
+                      <Typography variant="caption" className="container-split-derived" display="block" data-testid="container-split-derived">
+                        Derived counts (whole call, round-half-up): 20 ft — {split.le20.laden.toLocaleString('en-US')} full, {split.le20.empty.toLocaleString('en-US')} empty of {split.le20.handled.toLocaleString('en-US')} handled; 40 ft — {split.gt20.laden.toLocaleString('en-US')} full, {split.gt20.empty.toLocaleString('en-US')} empty of {split.gt20.handled.toLocaleString('en-US')} handled.
+                      </Typography>
+                    );
+                  })()}
                 </Box>
               </Box>
                 {profileSections.has('godsavgift_parameters') && (

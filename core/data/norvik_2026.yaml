@@ -215,6 +215,7 @@ fee_rules:
   # --- Container cargo dues (S1 section 3.2.3, p.8) ---
   - id: snv_pos_cargo_due_le20ft
     fee_family: port_dues
+    container_basis: laden_basis
     biller: Ports of Stockholm (Stockholms Hamnar)
     name: Container Cargo Dues (Loaded < 40')
     description: 'Stockholm Norvik cargo due for each loaded container being loaded or discharged (footnote *5): loaded container < 40'' = 331 SEK/unit. The model''s le20ft bucket. The Stockholm/Nynäshamn/Kapellskär 505 SEK/cont row is out of scope for this port entry (the silo discipline).'
@@ -233,6 +234,7 @@ fee_rules:
 
   - id: snv_pos_cargo_due_gt20ft
     fee_family: port_dues
+    container_basis: laden_basis
     biller: Ports of Stockholm (Stockholms Hamnar)
     name: Container Cargo Dues (Loaded >= 40')
     description: 'Stockholm Norvik cargo due for each loaded container being loaded or discharged: loaded container >= 40'' = 424 SEK/unit. The model''s gt20ft bucket (40'' and 45'' boxes).'
@@ -445,6 +447,7 @@ fee_rules:
   # --- ISPS security charge (S2 p.10) ---
   - id: snv_hutchison_isps
     fee_family: security
+    container_basis: laden_basis
     biller: Hutchison Ports Sweden AB
     name: ISPS Security Charge
     description: 'ISPS security charge, applying for full units only: 69 kr per unit.'
@@ -2597,6 +2600,7 @@ fee_rules:
   # string. Stacks with the port's own cargo due: separate charges, both fire.
   - id: snv_sfv_godsavgift
     fee_family: fairway_dues
+    container_basis: laden_basis
     biller: Sjöfartsverket
     name: Cargo Fee (Godsavgift)
     description: "National cargo-based fairway due: 3.36 kr/tonne high-value, 1.67 kr/tonne low-value; transit cargo exempt."
