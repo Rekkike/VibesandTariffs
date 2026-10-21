@@ -18,6 +18,7 @@ import type {
   QualityFlag,
   VesselInput
 } from '@port-cost/core';
+import { containerSplit } from '@port-cost/core';
 import { DEFAULT_EXCHANGE_RATE, conversionLabel, formatRate, resolveExchangeRate, toComparisonBasis } from './conversion';
 import portsRegistry from './data/ports.json';
 import { useIsMobile } from './appTheme';
@@ -298,6 +299,20 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
                 assumedCallFields.includes('lay_time_hours')) &&
                 ' (assumed from vessel class — adjust for your actual call)'}
             </span>
+            {/* Empty/full split (spec v0.10.0): one shared pair, a call fact
+                stated once. Rendered only when a pair is entered (blank
+                leaves the strip untouched); invalid names the defect. */}
+            {containerSplit(call).state !== 'blank' && (() => {
+              const split = containerSplit(call);
+              return (
+                <span className="comparison-context-item" data-testid="comparison-context-split">
+                  <span className="comparison-context-label">Empty/full split:</span>{' '}
+                  {split.state === 'valid'
+                    ? `${split.emptyPct}% empty / ${split.fullPct}% full (entered) - derived, whole call, round-half-up: 20 ft ${split.le20.laden.toLocaleString('en-US')} full + ${split.le20.empty.toLocaleString('en-US')} empty; 40 ft ${split.gt20.laden.toLocaleString('en-US')} full + ${split.gt20.empty.toLocaleString('en-US')} empty`
+                    : `not applied - ${split.error}`}
+                </span>
+              );
+            })()}
             <span className="comparison-context-item">
               <span className="comparison-context-label">Lay time:</span>{' '}
               {call.lay_time_hours != null ? `${call.lay_time_hours} h at berth` : 'not entered'}

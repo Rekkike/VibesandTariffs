@@ -406,12 +406,16 @@ describe('Yilport terminal layer (spec v0.4.2) - the archived operator tariff pr
     const storageLines = feesOf(result).filter(f => f.fee_rule_id.startsWith('gvh_yilport_storage'));
     expect(storageLines).toEqual([]);
   });
-  it('Gävle: the recorded-not-encoded surfaces stay out of the model (the credit, the EDI fee, the empty rate)', () => {
+  it('Gävle: the recorded-not-encoded surfaces stay out of the model (the credit, the EDI fee); the empty rate is encoded', () => {
     const raw = yaml.load(fs.readFileSync(path.join(DATA_DIR, 'gavle_2026.yaml'), 'utf8')) as PortDefinition;
     const ids = raw.fee_rules.map(r => r.id);
     expect(ids).not.toContain('gvh_yilport_compensation_credit');
     expect(ids).not.toContain('gvh_yilport_coprar_fee');
-    expect(ids).not.toContain('gvh_yilport_handling_empty');
+    // Empty/full percentage split (user rulings 2026-10-19 and 2026-10-21)
+    // re-baseline: the empty rate is now encoded (empty_basis marker) and
+    // renders only under an entered empty/full pair.
+    expect(ids).toContain('gvh_yilport_handling_empty');
+    expect(raw.fee_rules.find(r => r.id === 'gvh_yilport_handling_empty')!.container_basis).toBe('empty_basis');
     // The credit's figure is documented in the handling rule's description - never an unconditional credit line
     const handling = raw.fee_rules.find(r => r.id === 'gvh_yilport_handling_full')!;
     expect(handling.description).toContain('1,235');

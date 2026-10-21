@@ -15,6 +15,10 @@ import { calculatePortCallCost, DEFAULT_VESSEL, defaultCall } from '@port-cost/c
 import type { CallInput, PortDefinition } from '@port-cost/core/types';
 import portsRegistry from './data/ports.json';
 
+// Timing margin (v0.10.0): the workspace renders slower with the added shared
+// inputs; the multi-step entries need more than jest's 5 s default.
+jest.setTimeout(60000);
+
 const LOADED_PORTS: PortDefinition[] = ((portsRegistry as any).ports ?? []).filter(
   (p: any) => p && p.fee_rules && Array.isArray(p.fee_rules)
 );

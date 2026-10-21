@@ -297,9 +297,10 @@ separately from, and on top of, the §1 goods charge:
 
 **Recorded, not encoded.** The weekday overtime surcharge at 90 percent of
 the lift (above); the OOG variants of the lift and of receiving, 2,061 and
-906 per unit; weekend and holiday premiums; and the security charge's
-full-units-only pattern (the ISPS 80 line applies to full units only; the
-encoded rule is unchanged).
+906 per unit; and weekend and holiday premiums. The security charge's
+full-units-only pattern (the ISPS 80 line applies to full units only) is
+encoded at v0.10.0 as the laden_basis marker on apm_terminals_isps; the 80
+SEK rate is unchanged.
 
 **The goods charge, reclassified.** The §1 Terminal Charges on goods (377 /
 535 SEK per ISO unit <= 20 ft / > 20 ft, the archived G2 figures and

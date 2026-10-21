@@ -402,6 +402,12 @@ export interface FeeRule {
   description?: string;
   rate_structure: RateStructure;
   source_reference: SourceReference;
+  // Empty/full split basis marker (spec v0.10.0), data-authored: a rule whose
+  // own published tariff basis distinguishes empties. laden_basis: the charge
+  // applies to laden (loaded/full) units only; empty_basis: it applies to
+  // empty units only (the rule renders only under a valid split). Rules
+  // without the marker are never split.
+  container_basis?: 'laden_basis' | 'empty_basis';
   adjustments?: Adjustment[]; // optional adjustments
   minimum?: number; // minimum amount
   maximum?: number; // maximum amount
@@ -631,6 +637,12 @@ export interface CallInput {
   port_id: string;
   date: string; // ISO date
   vessel_type?: string; // e.g. 'container', 'tanker' - gates segment-specific rules (e.g. Energy Port OPS)
+  // Empty/full percentage split (spec v0.10.0): one shared pair for the whole
+  // call, whole numbers 0-100 summing to exactly 100 when both are entered;
+  // both blank is the all-loaded convention; any other combination is
+  // fail-closed (see container_split.ts).
+  container_empty_pct?: number;
+  container_full_pct?: number;
   containers_loaded_le20ft: number;
   containers_loaded_gt20ft: number;
   containers_discharged_le20ft: number;

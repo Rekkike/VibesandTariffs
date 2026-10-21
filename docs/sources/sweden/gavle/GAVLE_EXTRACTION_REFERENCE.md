@@ -362,6 +362,10 @@ user-entered days at the verbatim free time and bands. The v0.4.0 gap
 notices for terminal handling and the container cargo due are replaced by
 these rules, re-baselined with attribution.
 
-Not encoded (recorded): §4.2 empty handling 1 235/unit — the call model
-carries no empty-unit count input (an input-less rule would be dead data;
-a future pass adding the input prices it); every §11.5 item above.
+Encoded at v0.10.0: §4.2 empty handling 1 235/unit as
+gvh_yilport_handling_empty (container_total basis, marker empty_basis: it
+prices the derived empty count when the empty/full percentage pair is
+entered and renders nothing otherwise); §4.1 full handling, §5.1 cargo due
+and §5.2 ISPS carry the laden_basis marker (they apply per full container).
+
+Not encoded (recorded): every §11.5 item above.

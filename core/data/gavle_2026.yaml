@@ -353,9 +353,10 @@ fee_rules:
   # replaces the v0.4.0 terminal-handling gap notice with its verified rule) ---
   - id: gvh_yilport_handling_full
     fee_family: terminal_handling
+    container_basis: laden_basis
     biller: Yilport Gävle (container terminal)
     name: Container Throughput Rate - Full Container
-    description: 'Yilport Gävle throughput rate, full container: 1,679 SEK per unit. Bundled basis (S2 section 4.1 verbatim): "Includes lift off vessel, train or truck into terminal and lift to vessel, train or truck out of terminal. Hatch covers and twist-lock handling is included" - one rate both directions, the through figure. The empty-container rate (1,235 SEK per unit, section 4.2, the same bundled basis) is recorded, not encoded: the call model carries no empty-unit count input (extraction reference section 11.6).'
+    description: 'Yilport Gävle throughput rate, full container: 1,679 SEK per unit. Bundled basis (S2 section 4.1 verbatim): "Includes lift off vessel, train or truck into terminal and lift to vessel, train or truck out of terminal. Hatch covers and twist-lock handling is included" - one rate both directions, the through figure. The full-container basis prices the laden units; the empty-container rate (1,235 SEK per unit, section 4.2) is encoded as gvh_yilport_handling_empty and prices the derived empty units when the empty/full percentage pair is entered.'
     rate_structure:
       type: per_unit
       unit_type: container_total
@@ -368,6 +369,25 @@ fee_rules:
       clause: '4.1 Full container SEK 1 679 (Includes lift off vessel, train or truck into terminal and lift to vessel, train or truck out of terminal. Hatch covers and twist-lock handling is included)'
       verified_on: '2026-10-01'
       verified_by: vibe-session-terminal-basis
+      document_issued: '2026-01-01'
+  - id: gvh_yilport_handling_empty
+    fee_family: terminal_handling
+    container_basis: empty_basis
+    biller: Yilport Gävle (container terminal)
+    name: Container Throughput Rate - Empty Container
+    description: 'Yilport Gävle throughput rate, empty container: 1,235 SEK per unit (S2 section 4.2). Same bundled basis as the full-container rate, plus lifts to and from the inspection area, inspection and dry sweeping. Renders only when the empty/full percentage pair is entered: the unit count is the derived empty count (handled units minus the round-half-up laden units, whole call).'
+    rate_structure:
+      type: per_unit
+      unit_type: container_total
+      unit_rate: 1235
+    source_reference:
+      document_name: yilport-container-terminal-tariff-2026.pdf
+      document_url: docs/sources/sweden/gavle/yilport-container-terminal-tariff-2026.pdf
+      upstream_url: "https://yilport.com/en/images/PartDocuments/2026_yilport_ga_vle_container_terminal_general_tariff.pdf"
+      page: 3
+      clause: '4.2 Empty container SEK 1 235 (Includes lift off vessel, train or truck into terminal and lift to vessel, train or truck out of terminal, lifts to and from inspection area, inspection and dry sweeping. Includes removal of nails, hazardous placards and other minor tasks)'
+      verified_on: '2026-10-21'
+      verified_by: Port Cost Analyzer Team
       document_issued: '2026-01-01'
   - id: gvh_yilport_oog_surcharge
     fee_family: terminal_handling
@@ -391,6 +411,7 @@ fee_rules:
   # the v0.4.0 container-cargo-due gap notice with its verified operator rule) ---
   - id: gvh_yilport_cargo_due
     fee_family: port_dues
+    container_basis: laden_basis
     biller: Yilport Gävle (container terminal)
     name: Cargo Due (per full container)
     description: 'Yilport Gävle cargo due: 482 SEK per full container (S2 section 5.1). The port-authority varuhamnsavgift table publishes no container rate (its scope is outside the Yilport concession); the operator''s cargo due is the container cargo-side figure at this port - the v0.4.0 gap notice is superseded by this verified rule (re-baselined with attribution, the v0.4.2 pass).'
@@ -409,6 +430,7 @@ fee_rules:
       document_issued: '2026-01-01'
   - id: gvh_yilport_isps
     fee_family: security
+    container_basis: laden_basis
     biller: Yilport Gävle (container terminal)
     name: ISPS (per full container)
     description: 'Yilport Gävle ISPS: 73 SEK per full container (S2 section 5.2).'
@@ -2461,6 +2483,7 @@ fee_rules:
   # string. Stacks with the port's own cargo due: separate charges, both fire.
   - id: gvh_sfv_godsavgift
     fee_family: fairway_dues
+    container_basis: laden_basis
     biller: Sjöfartsverket
     name: Cargo Fee (Godsavgift)
     description: "National cargo-based fairway due: 3.36 kr/tonne high-value, 1.67 kr/tonne low-value; transit cargo exempt."
