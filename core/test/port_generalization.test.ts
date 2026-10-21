@@ -328,6 +328,10 @@ describe('port-specific reset fields (spec v0.2.60)', () => {
       'pilotage_ordering_lead_time_hours', 'hatch_cover_count',
       'gearbox_count', 'lay_up_days', 'ops_electricity_price',
       'ops_demand_charge', 'ops_connection_charge', 'ops_per_gt_charge',
+      // v0.9.0 re-baseline (in-test attribution, design reversal / user
+      // commission 2026-10-21): the Gothenburg OPS per-unit fields.
+      'ops_unit_charge_20ft', 'ops_unit_charge_40ft',
+      'ops_nonempty_units_20ft', 'ops_nonempty_units_40ft',
       'ets_emissions_tco2', 'ets_allowance_price', 'mooring_charge'
     ],
     hamburg: [
@@ -405,6 +409,11 @@ describe('port-specific reset fields (spec v0.2.60)', () => {
       // v0.3.1 GOT mooring input: the union grows by exactly the one new
       // data-authored field (Gothenburg only).
       'mooring_charge',
+      // v0.9.0 re-baseline (in-test attribution, user commission
+      // 2026-10-21): the union grows by exactly the four Gothenburg OPS
+      // per-unit fields (data-authored, Gothenburg only).
+      'ops_unit_charge_20ft', 'ops_unit_charge_40ft',
+      'ops_nonempty_units_20ft', 'ops_nonempty_units_40ft',
       // v0.3.3 scenario-adjustment layer (Hamburg, spec v0.3.3): the union
       // grows by exactly the 29 new data-authored scenario fields (the
       // Eurogate ch. 7 storage and ch. 3-4 shift/equipment inputs).

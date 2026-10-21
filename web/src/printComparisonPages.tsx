@@ -82,7 +82,8 @@ export interface PrintComparisonPagesProps {
   // Compare container-through surface (spec v0.6.4, unit 3): the toggle
   // and its hinterland-mode selector follow through to print the same way
   // - ON prints the landside-legs row (the screen's own row, its mode
-  // stated, presentation-only amounts never in the Grand Total); OFF
+  // stated, and the printed Grand Total, column order and per-GT annotation
+  // carry the leg - design reversal, spec v0.9.0); OFF
   // prints nothing of it, the screen's default-off state.
   containerThroughVisible: boolean;
   hinterlandMode: HinterlandMode;
@@ -282,7 +283,7 @@ export const PrintComparisonPages: React.FC<PrintComparisonPagesProps> = ({
                 {containerThroughVisible && stage.id === 'quayside_operations' && (
                   <TableRow className="comparison-container-through-row print-container-through-row" data-testid="print-container-through-row">
                     <TableCell>
-                      <strong>Container-through addition (user-selected comparison surface)</strong>
+                      <strong>Container-through addition (user-selected comparison surface) — included in the Grand Total</strong>
                       <span className="comparison-handling-basis-note" style={{ display: 'block', fontSize: '0.75rem' }}>
                         Hinterland mode: {hinterlandMode === 'truck' ? 'truck gate' : 'rail stack'} (comparison-scoped selector; never a call input)
                       </span>

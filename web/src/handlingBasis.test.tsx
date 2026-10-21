@@ -294,13 +294,18 @@ describe('compare container-through ON (spec v0.4.2, item 3) - published legs, p
     expect(asArray.some(t => t.includes('not published'))).toBe(true);
     expect(asArray.some(t => /\+0( |$)/.test(t))).toBe(false);
   });
-  it('the toggle never changes any Grand Total (presentation-only): the per-port totals render identically before and after the toggle', async () => {
+  it('the toggle adds each published leg to its Grand Total: the off totals are unchanged by the pin below, the on totals differ', async () => {
+    // Design reversal (user ruling 2026-10-21): this pin asserted the v0.4.2
+    // presentation-only contract (the totals render identically before and
+    // after the toggle); it now asserts the reversed contract - ON moves the
+    // totals, OFF is the unchanged baseline. The exact per-port arithmetic is
+    // pinned in containerThroughTotal.test.tsx.
     ({ container, root } = await renderComparison(defaultCall('gothenburg')));
     const beforeTotals = Array.from((container ?? document).querySelectorAll('.comparison-total-row .comparison-figure')).map(e => (e.textContent ?? ''));
     const checkbox = (container ?? document).querySelector('[data-testid="container-through-checkbox"]') as HTMLInputElement;
     await act(async () => { checkbox.click(); });
     const afterTotals = Array.from((container ?? document).querySelectorAll('.comparison-total-row .comparison-figure')).map(e => (e.textContent ?? ''));
-    expect(beforeTotals).toEqual(afterTotals);
+    expect(afterTotals).not.toEqual(beforeTotals);
     expect(beforeTotals.join('|')).toContain('10\u00a0306\u00a0979');
   });
   it('the naming decision holds: "door to door" appears nowhere on the surface', async () => {

@@ -1458,6 +1458,42 @@ export const WorkspaceInputs: React.FC<WorkspaceInputsProps> = (props) => {
                     />
                   </Grid>
                 )}
+                {opsComponents.per_unit?.enabled && (
+                  <>
+                    {([
+                      { field: 'ops_unit_charge_20ft', label: 'OPS charge per non-empty 20 ft unit' },
+                      { field: 'ops_unit_charge_40ft', label: 'OPS charge per non-empty 40 ft unit' }
+                    ] as const).map(({ field, label }) => (
+                      <Grid item xs={12} sm={6} key={field}>
+                        <TextField
+                          label={`${label} (${opsComponents.per_unit!.currency})`}
+                          type="number"
+                          value={state.call[field] ?? ''}
+                          onChange={(e) => handleCallChange(field, e.target.value === '' ? undefined : parseFloat(e.target.value))}
+                          fullWidth
+                          InputLabelProps={{ shrink: true }}
+                          helperText={`User-specified ${opsComponents.per_unit!.currency} per non-empty unit — not a tariff rate; blank = none`}
+                        />
+                      </Grid>
+                    ))}
+                    {([
+                      { field: 'ops_nonempty_units_20ft', label: 'Non-empty 20 ft units', handled: (state.call.containers_loaded_le20ft || 0) + (state.call.containers_discharged_le20ft || 0) },
+                      { field: 'ops_nonempty_units_40ft', label: 'Non-empty 40 ft units', handled: (state.call.containers_loaded_gt20ft || 0) + (state.call.containers_discharged_gt20ft || 0) }
+                    ] as const).map(({ field, label, handled }) => (
+                      <Grid item xs={12} sm={6} key={field}>
+                        <TextField
+                          label={label}
+                          type="number"
+                          value={state.call[field] ?? ''}
+                          onChange={(e) => handleCallChange(field, e.target.value === '' ? undefined : parseFloat(e.target.value))}
+                          fullWidth
+                          InputLabelProps={{ shrink: true }}
+                          helperText={`Basis count for the per-unit charge (configuration, not a rate). Blank = the call's handled count (${handled}); enter a lower figure when the call carries empties`}
+                        />
+                      </Grid>
+                    ))}
+                  </>
+                )}
               </Grid>
 
               {/* ============ TERMINAL AND YARD SEGMENT INPUTS ============ */}

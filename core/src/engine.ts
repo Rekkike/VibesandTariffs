@@ -2185,6 +2185,32 @@ export function calculatePortCallCost(
       basis: `${input.vessel.gt.toLocaleString('en-US')} GT × ${call.ops_per_gt_charge.toLocaleString('en-US', { maximumFractionDigits: 4 })} ${opsComponents.per_gt.currency}/GT (user-specified, not tariff-derived)`
     });
   }
+  // Per-unit charges (spec v0.9.0): the user's own amount per non-empty
+  // unit, one line per size. The basis count defaults to the call's handled
+  // container count at that size (the worst-case assumption that every
+  // handled unit is a charged unit) and is overridable for calls with
+  // empties; the counts are configuration, never rates. A blank amount
+  // renders nothing: there is no default amount.
+  if (opsComponents.per_unit?.enabled) {
+    const unitCurrency = opsComponents.per_unit.currency;
+    const sizes = [
+      { id: 'ops_spec_unit_20ft', size: '20 ft', rate: call.ops_unit_charge_20ft, entered: call.ops_nonempty_units_20ft,
+        handled: (call.containers_loaded_le20ft || 0) + (call.containers_discharged_le20ft || 0) },
+      { id: 'ops_spec_unit_40ft', size: '40 ft', rate: call.ops_unit_charge_40ft, entered: call.ops_nonempty_units_40ft,
+        handled: (call.containers_loaded_gt20ft || 0) + (call.containers_discharged_gt20ft || 0) }
+    ];
+    for (const s of sizes) {
+      const units = typeof s.entered === 'number' && s.entered >= 0 ? s.entered : s.handled;
+      if (typeof s.rate === 'number' && s.rate > 0 && units > 0) {
+        opsLines.push({
+          id: s.id,
+          label: `OPS charge per non-empty ${s.size} unit (user-specified)`,
+          amount: roundToCent(s.rate * units),
+          basis: `${units.toLocaleString('en-US')} non-empty ${s.size} units × ${s.rate.toLocaleString('en-US', { maximumFractionDigits: 4 })} ${unitCurrency}/unit (user-specified, not tariff-derived)`
+        });
+      }
+    }
+  }
   const opsSpeculative: OpsSpeculativeBlock | undefined = opsLines.length > 0 ? {
     lines: opsLines,
     amount: roundToCent(opsLines.reduce((s, l) => s + l.amount, 0)),

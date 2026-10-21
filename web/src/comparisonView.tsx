@@ -86,8 +86,11 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
   // the off state is byte-identical to the pre-toggle view (pinned). ON
   // adds the published landside legs to the unbundled ports; the
   // hinterland mode rides a comparison-scoped selector (default truck; no
-  // truck/rail call input exists on the call surface). Presentation-only:
-  // never feeds the engine, never changes any Grand Total.
+  // truck/rail call input exists on the call surface). Design reversal
+  // (spec v0.9.0, user ruling 2026-10-21; supersedes the v0.4.2
+  // presentation-only contract): ON adds each port's published landside leg
+  // to its Grand Total and the ranking follows the through totals; the
+  // legs are added at the model layer, the engine is never fed.
   const [containerThroughVisible, setContainerThroughVisible] = useState(false);
   const [hinterlandMode, setHinterlandMode] = useState<HinterlandMode>('truck');
   const [rateInput, setRateInput] = useState<string>('');
@@ -165,8 +168,8 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
     [rateInput, dataRate]
   );
   const portResults = useMemo(
-    () => computePortResults(selectedPorts, vessel, call, rateInfo, comparisonBasisContext, perPortCallOverrides),
-    [selectedPorts, vessel, call, rateInfo, perPortCallOverrides]
+    () => computePortResults(selectedPorts, vessel, call, rateInfo, comparisonBasisContext, perPortCallOverrides, containerThroughVisible ? hinterlandMode : undefined),
+    [selectedPorts, vessel, call, rateInfo, perPortCallOverrides, containerThroughVisible, hinterlandMode]
   );
   const formatCurrency = (amount: number, currency: string) =>
     new Intl.NumberFormat('sv-SE', {
@@ -181,6 +184,22 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
     () => buildRowsBySegment(portResults, ruleNameByPortAndId, ruleAttributesByPortAndId, vessel.gt),
     [portResults, ruleNameByPortAndId, ruleAttributesByPortAndId, vessel.gt]
   );
+  // Print model (spec v0.9.0): the paper follows the print selection, not the
+  // screen toggle - the dialog path carries its own container-through choice,
+  // the live-state Ctrl+P path inherits the screen toggle. The Grand Total,
+  // the column order and the per-GT annotation on paper therefore follow the
+  // printed selection exactly; when the selection equals the screen state
+  // the screen model is reused unchanged.
+  const printThrough = printSelectionOverride ? printSelectionOverride.containerThrough : containerThroughVisible;
+  const printModel = useMemo(() => {
+    if (!printActive) return null;
+    if (printThrough === containerThroughVisible) return { portResults, rowsBySegment };
+    const pr = computePortResults(selectedPorts, vessel, call, rateInfo, comparisonBasisContext, perPortCallOverrides, printThrough ? hinterlandMode : undefined);
+    return {
+      portResults: pr,
+      rowsBySegment: buildRowsBySegment(pr, ruleNameByPortAndId, ruleAttributesByPortAndId, vessel.gt)
+    };
+  }, [printActive, printThrough, containerThroughVisible, portResults, rowsBySegment, selectedPorts, vessel, call, rateInfo, perPortCallOverrides, hinterlandMode, ruleNameByPortAndId, ruleAttributesByPortAndId]);
   const ranking = useMemo(
     () => computeRanking(portResults, rateInfo, comparisonBasisContext),
     [portResults, rateInfo]
@@ -482,7 +501,8 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
               default OFF - the off state is byte-identical to the
               pre-toggle view (pinned). ON adds the published landside legs
               to the unbundled ports per the selected hinterland mode;
-              presentation-only, never in any Grand Total. The naming
+              included in each Grand Total from v0.9.0 (design reversal,
+              user ruling 2026-10-21). The naming
               decision is recorded in the spec: the industry term "door to
               door" appears nowhere - it covers first/last-mile road
               haulage, which no figure here includes. */}
@@ -494,7 +514,7 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
                 onChange={(e) => setContainerThroughVisible(e.target.checked)}
                 data-testid="container-through-checkbox"
               />
-              {' '}Compare container-through (adds published landside legs; never in the Grand Total)
+              {' '}Compare container-through (adds each port's published landside leg to the Grand Total)
             </label>
             {containerThroughVisible && (
               <Box sx={{ fontSize: '0.75rem' }} className="comparison-container-through-mode">
@@ -642,12 +662,13 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
                     ))}
                     {/* Compare container-through row (spec v0.4.2, item 3):
                         renders only when the toggle is ON (default-off,
-                        off-state byte-identity pinned). Presentation-only:
-                        the added landside legs never enter the Grand Total. */}
+                        off-state byte-identity pinned). Design reversal
+                        (spec v0.9.0): the added landside legs are included
+                        in the Grand Total. */}
                     {containerThroughVisible && stage.id === 'quayside_operations' && (
                       <TableRow className="comparison-container-through-row" data-testid="container-through-row">
                         <TableCell>
-                          <strong>Container-through addition (user-selected comparison surface)</strong>
+                          <strong>Container-through addition (user-selected comparison surface) — included in the Grand Total</strong>
                           <span className="comparison-handling-basis-note" style={{ display: 'block', fontSize: '0.75rem' }}>
                             Hinterland mode: {hinterlandMode === 'truck' ? 'truck gate' : 'rail stack'} (comparison-scoped selector; never a call input)
                           </span>
@@ -979,8 +1000,8 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
             {' '}Container through
             <Typography variant="caption" className="print-dialog-hint">
               {printDialogSelections.containerThrough
-                ? 'The landside legs row prints with the session hinterland mode.'
-                : 'No container-through row on paper.'}
+                ? 'The landside legs row prints with the session hinterland mode, and the printed Grand Totals include the legs.'
+                : 'No container-through row on paper; the printed Grand Totals exclude the legs.'}
             </Typography>
           </label>
           <Box className="print-dialog-actions">
@@ -1014,8 +1035,8 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
       {selectedPorts.length > 0 && printActive && (
         <PrintComparisonPages
           ports={selectedPorts}
-          portResults={portResults as never}
-          rowsByStage={rowsBySegment.rowsByStage as never}
+          portResults={(printModel ?? { portResults, rowsBySegment }).portResults as never}
+          rowsByStage={(printModel ?? { portResults, rowsBySegment }).rowsBySegment.rowsByStage as never}
           vessel={vessel}
           call={call}
           rateInfo={rateInfo}
@@ -1025,7 +1046,7 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
           formatCurrency={formatCurrency}
           derivationsVisible={printSelectionOverride ? printSelectionOverride.derivations : derivationsVisible}
           conversionsVisible={printSelectionOverride ? printSelectionOverride.conversions : conversionsVisible}
-          containerThroughVisible={printSelectionOverride ? printSelectionOverride.containerThrough : containerThroughVisible}
+          containerThroughVisible={printThrough}
           hinterlandMode={hinterlandMode}
         />
       )}

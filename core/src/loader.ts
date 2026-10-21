@@ -906,6 +906,18 @@ export function validatePort(port: PortDefinition): PortValidationResult {
         });
       }
     }
+    const perUnit = (port.ops_speculative as unknown as Record<string, unknown>).per_unit;
+    if (perUnit !== undefined
+      && (!perUnit || typeof perUnit !== 'object'
+        || typeof (perUnit as Record<string, unknown>).enabled !== 'boolean'
+        || typeof (perUnit as Record<string, unknown>).currency !== 'string'
+        || typeof (perUnit as Record<string, unknown>).unit !== 'string')) {
+      errors.push({
+        message: 'Port ops_speculative.per_unit descriptor malformed (needs enabled/currency/unit, spec v0.9.0)',
+        severity: 'error',
+        path: 'ops_speculative.per_unit'
+      });
+    }
   }
   if (!port.input_profile || !Array.isArray(port.input_profile.sections) || port.input_profile.sections.length === 0) {
     errors.push({

@@ -2895,6 +2895,8 @@ ops_speculative:
   demand: { enabled: true, currency: SEK, unit: SEK/call }
   connection: { enabled: false, currency: SEK, unit: SEK/call }
   per_gt: { enabled: true, currency: SEK, unit: SEK/GT }
+  # Per-unit charges by size (spec v0.9.0): presence, currency, unit only.
+  per_unit: { enabled: true, currency: SEK, unit: SEK/unit }
 # Per-port input profile (spec v0.2.59): the input sections the workspace
 # renders for this port. UI configuration, never rates.
 input_profile:
@@ -2919,6 +2921,10 @@ input_profile:
     - ops_demand_charge
     - ops_connection_charge
     - ops_per_gt_charge
+    - ops_unit_charge_20ft
+    - ops_unit_charge_40ft
+    - ops_nonempty_units_20ft
+    - ops_nonempty_units_40ft
     - ets_emissions_tco2
     - ets_allowance_price
     - mooring_charge

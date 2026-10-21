@@ -9,10 +9,13 @@
 // table is itself a verified artifact; future terminal-operator documents,
 // APMT for GOT included, enter against it).
 //
-// The basis wording is presentation-only: no figure moves, no label
-// changes, and the default view renders byte-identically (the annotations
-// ride the terminal-handling cells; the container-through toggle is
-// default-off and adds nothing when off).
+// The basis wording is presentation-only: no label changes, and the default
+// view renders byte-identically (the annotations ride the terminal-handling
+// cells; the container-through toggle is default-off and adds nothing when
+// off). Design reversal (spec v0.9.0, user ruling 2026-10-21; supersedes the
+// v0.4.2 presentation-only contract for the toggle): with the toggle ON each
+// port's published landside leg is added to its Grand Total at the
+// view/model layer.
 
 export type HinterlandMode = 'truck' | 'rail';
 
@@ -257,6 +260,6 @@ export function containerThroughParts(
 // nowhere - it covers first/last-mile road haulage, which no figure here
 // includes; the surface states exactly what it adds instead.
 export const CONTAINER_THROUGH_DISCLOSURE =
-  'Includes terminal handling plus the published leg to truck gate or rail stack where the port\'s documents publish it; last-mile road haulage is not included at any port.';
+  'Includes terminal handling plus the published leg to truck gate or rail stack where the port\'s documents publish it; last-mile road haulage is not included at any port. With this comparison on, each port\'s published landside leg is included in its Grand Total and the ranking follows the through totals.';
 export const CONTAINER_THROUGH_BILLING_FOOTNOTE =
   'At some terminals the landside leg is billed to the landside party rather than the carrier; it is included here because the cost of moving the container through the port is real regardless of which party pays.';
