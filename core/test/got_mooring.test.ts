@@ -163,16 +163,19 @@ describe('GOT mooring disclosure — the input pins (spec v0.3.1)', () => {
     expect(charge.amount).toBe(0);
     expect(charge.quality_flags).toEqual([]);
     // v0.8.0 re-baseline (in-test attribution): GOT gains the ordinary-time vessel-side lift, 4,000 moves x 1,029 = 4,116,000 SEK - 3,275,851.15 -> 7,391,851.15, per-GT 16.81 -> 37.94; no other figure moves.
-    expect(r.total).toBe(7391851.15);
+    // v0.11.0 re-baseline (in-test attribution): GOT lift and delivery user inputs (user ruling 2026-10-21) - the lift and the landside leg are user-specified, blank by default: the GOT default call 7,391,851.15 -> 3,275,851.15, per-GT 37.94 -> 16.81 (the 4,116,000 SEK lift no longer fires); no other figure moves.
+    expect(r.total).toBe(3275851.15);
   });
 });
 
 describe('GOT mooring disclosure — isolation and zero-drift pins (spec v0.3.1)', () => {
   // v0.8.0 re-baseline (in-test attribution): GOT gains the ordinary-time vessel-side lift, 4,000 moves x 1,029 = 4,116,000 SEK - 3,275,851.15 -> 7,391,851.15, per-GT 16.81 -> 37.94; no other figure moves.
-  it('the pre-existing baselines hold byte-identically with the mooring block present: GOT 7,391,851.15 / HAM 2,204,910.90 / HEL 8,750,057.40 (blank input, both states pinned)', () => {
+  // v0.11.0 re-baseline (in-test attribution): GOT lift and delivery user inputs (user ruling 2026-10-21) - the lift and the landside leg are user-specified, blank by default: the GOT default call 7,391,851.15 -> 3,275,851.15, per-GT 37.94 -> 16.81 (the 4,116,000 SEK lift no longer fires); no other figure moves.
+  it('the pre-existing baselines hold byte-identically with the mooring block present: GOT 3,275,851.15 / HAM 2,204,910.90 / HEL 8,750,057.40 (blank input, both states pinned)', () => {
     for (const [file, id, expected] of [
       // v0.8.0 re-baseline (in-test attribution): GOT gains the ordinary-time vessel-side lift, 4,000 moves x 1,029 = 4,116,000 SEK - 3,275,851.15 -> 7,391,851.15, per-GT 16.81 -> 37.94; no other figure moves.
-      ['gothenburg_2026.yaml', 'gothenburg', 7391851.15],
+      // v0.11.0 re-baseline (in-test attribution): GOT lift and delivery user inputs (user ruling 2026-10-21) - the lift and the landside leg are user-specified, blank by default: the GOT default call 7,391,851.15 -> 3,275,851.15, per-GT 37.94 -> 16.81 (the 4,116,000 SEK lift no longer fires); no other figure moves.
+      ['gothenburg_2026.yaml', 'gothenburg', 3275851.15],
       ['hamburg_2026.yaml', 'hamburg', 2204910.90],
       ['helsingborg_2026.yaml', 'helsingborg', 8750057.40]
     ] as [string, string, number][]) {

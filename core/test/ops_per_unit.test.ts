@@ -43,7 +43,8 @@ describe('Gothenburg OPS per-unit charges (spec v0.9.0)', () => {
 
   it('blank rates render nothing: no line, no block, no flag, no movement (never a default amount)', () => {
     expect(base.ops_speculative).toBeUndefined();
-    expect(base.total).toBe(7391851.15);
+    // v0.11.0 re-baseline (in-test attribution): GOT lift and delivery user inputs (user ruling 2026-10-21) - the lift and the landside leg are user-specified, blank by default: the GOT default call 7,391,851.15 -> 3,275,851.15, per-GT 37.94 -> 16.81 (the 4,116,000 SEK lift no longer fires); no other figure moves.
+    expect(base.total).toBe(3275851.15);
     expect(lines(base).some(l => l.id.startsWith('ops_spec_unit'))).toBe(false);
     // counts alone, with no amount entered, still price nothing
     const countsOnly = priced(gothenburg, { ops_nonempty_units_20ft: 500, ops_nonempty_units_40ft: 700 });

@@ -285,15 +285,20 @@ per the SJÖFS commodity-code annex).
 separately from, and on top of, the §1 goods charge:
 
 - Lift, ordinary time: **1,029 SEK per unit per move**, discharging and
-  loading alike. Encoded as `apm_terminals_lift` (per_unit on
-  container_total, fee_family terminal_handling, functional class
-  cargo_throughput_levy with its container-handling peers). Ordinary time
-  is the like-for-like basis.
+  loading alike. Recorded, not encoded (v0.11.0, user ruling 2026-10-21):
+  the rate is no longer a data rule; it is the user-specified Cost per lift
+  input (blank by default), which prices one line per unit per move on the
+  call's moves (fee_family terminal_handling, rule id `apm_terminals_lift`,
+  functional class cargo_throughput_levy with its container-handling
+  peers). Ordinary time is the like-for-like basis.
 - Weekday overtime surcharge: 90 percent of the lift, a call-scheduling
   artifact, recorded, not encoded.
 - Receiving and delivering (the landside leg): **453 SEK per unit**,
-  entering the container-through surface as the gated landside leg (v0.8.0
-  Unit 3a), never the default call.
+  recorded, not encoded (v0.11.0, user ruling 2026-10-21): the rate is the
+  user-specified Delivery input (blank by default), which feeds the
+  container-through surface as the gated landside leg, firing per unit only
+  with the container-through toggle ON, under the session's hinterland
+  mode, never the default call.
 
 **Recorded, not encoded.** The weekday overtime surcharge at 90 percent of
 the lift (above); the OOG variants of the lift and of receiving, 2,061 and
@@ -313,8 +318,9 @@ the historical v0.4.6 audit (docs/GOT_APMT_OPERATOR_ARCHIVE_AUDIT.md) is
 left as written and cites the former IDs. Family reclassified
 terminal_handling to port_dues at v0.8.0 per the Yilport precedent (the
 token every Swedish peer's cargo due carries); the comparison renders them
-on the Cargo dues line by the charge-type mapping, and the lift is the sole
-line under the terminal handling header in the per-port view.
+on the Cargo dues line by the charge-type mapping, and the user-specified lift (when a Cost per lift is
+entered, v0.11.0) is the sole line under the terminal handling header in the
+per-port view.
 
 **The handling basis, re-framed.** Gothenburg is a full-cycle, leg-priced
 handling basis: the goods charge (a cargo due), the separately billed

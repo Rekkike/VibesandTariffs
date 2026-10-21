@@ -83,12 +83,12 @@ const printLive = async (): Promise<Printed> => {
   await act(async () => { window.dispatchEvent(new Event('afterprint')); });
   return p;
 };
-const printViaDialog = async (opts: { through?: boolean; conversions?: boolean }): Promise<Printed> => {
+const printViaDialog = async (opts: { through?: boolean; conversions?: boolean }, viewCall: CallInput = DISCOUNT_CALL): Promise<Printed> => {
   const printSpy = jest.spyOn(window, 'print').mockImplementation(() => {});
   try {
     await act(async () => {
       root!.render(
-        <ComparisonView ports={LOADED_PORTS} vessel={DEFAULT_VESSEL} call={DISCOUNT_CALL} selectedPortIds={SELECTED} activeVessel="TEST" printRequest={1} />
+        <ComparisonView ports={LOADED_PORTS} vessel={DEFAULT_VESSEL} call={viewCall} selectedPortIds={SELECTED} activeVessel="TEST" printRequest={1} />
       );
     });
     const dialog = container!.querySelector('[data-testid="print-dialog"]')!;
@@ -233,11 +233,16 @@ describe('print reconciliation rows (spec v0.10.1) - the rows after the Grand To
 
 describe('print reconciliation rows (spec v0.10.1) - the printed model, not the screen model', () => {
   it('10. a dialog container-through selection that differs from the screen toggle: the reconciliation rows follow the printed model', async () => {
-    await render(DISCOUNT_CALL);
+    // v0.11.0 re-baseline (in-test attribution): GOT lift and delivery user
+    // inputs (user ruling 2026-10-21) - the Gothenburg landside leg is the
+    // user-specified Delivery input, blank by default, so the fixture enters
+    // 453 for the printed through total to differ from the OFF total.
+    const THROUGH_CALL = { ...DISCOUNT_CALL, got_delivery_cost: 453 } as CallInput;
+    await render(THROUGH_CALL);
     // screen toggle OFF; the dialog turns container-through ON
-    const p = await printViaDialog({ through: true });
-    const through = model(DISCOUNT_CALL, 'truck');
-    const off = model(DISCOUNT_CALL);
+    const p = await printViaDialog({ through: true }, THROUGH_CALL);
+    const through = model(THROUGH_CALL, 'truck');
+    const off = model(THROUGH_CALL);
     const without = rowBy(p, '[data-testid^="print-without-estimates-row-"]');
     const gotOn = through.find(r => r.port.metadata.id === 'gothenburg')!.result!;
     const gotOff = off.find(r => r.port.metadata.id === 'gothenburg')!.result!;

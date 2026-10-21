@@ -94,7 +94,8 @@ describe('Grand Total derived per-GT — desktop comparison (spec v0.2.58)', () 
   });
 
   // v0.8.0 re-baseline (in-test attribution): GOT gains the ordinary-time vessel-side lift, 4,000 moves x 1,029 = 4,116,000 SEK - 3,275,851.15 -> 7,391,851.15, per-GT 16.81 -> 37.94; no other figure moves.
-  it('GOT and HEL are pure division against the pinned baselines: 37.94 and 44.91 SEK/GT (re-pinned v0.2.61)', async () => {
+  // v0.11.0 re-baseline (in-test attribution): GOT lift and delivery user inputs (user ruling 2026-10-21) - the lift and the landside leg are user-specified, blank by default: the GOT default call 7,391,851.15 -> 3,275,851.15, per-GT 37.94 -> 16.81 (the 4,116,000 SEK lift no longer fires); no other figure moves.
+  it('GOT and HEL are pure division against the pinned baselines: 16.81 and 44.91 SEK/GT (re-pinned v0.2.61)', async () => {
     ({ container, root } = await renderComparison(false, defaultCall('gothenburg')));
     const totalRow = Array.from(container!.querySelectorAll('.comparison-total-row'))
       .find(r => (r.textContent ?? '').includes('Grand Total'))!;
@@ -104,7 +105,8 @@ describe('Grand Total derived per-GT — desktop comparison (spec v0.2.58)', () 
     // 7,391,851.15 ÷ 194,849 = 37.9363 → 37.94;
     // 8,750,057.40 ÷ 194,849 = 44.9069 → 44.91.
     // v0.8.0 re-baseline (in-test attribution): GOT gains the ordinary-time vessel-side lift, 4,000 moves x 1,029 = 4,116,000 SEK - 3,275,851.15 -> 7,391,851.15, per-GT 16.81 -> 37.94; no other figure moves.
-    expect(text).toContain('37.94 SEK/GT');
+    // v0.11.0 re-baseline (in-test attribution): GOT lift and delivery user inputs (user ruling 2026-10-21) - the lift and the landside leg are user-specified, blank by default: the GOT default call 7,391,851.15 -> 3,275,851.15, per-GT 37.94 -> 16.81 (the 4,116,000 SEK lift no longer fires); no other figure moves.
+    expect(text).toContain('16.81 SEK/GT');
     expect(text).toContain('44.91 SEK/GT');
     // v0.4.0 Swedish domestic expansion: the three new ports' pure-division
     // figures; v0.4.1 re-baseline (the storage-default convention
@@ -178,7 +180,8 @@ describe('Grand Total derived per-GT — desktop comparison (spec v0.2.58)', () 
     });
     const expected = (gotResult.total / 100000).toFixed(2);
     // v0.8.0 re-baseline (in-test attribution): GOT gains the ordinary-time vessel-side lift, 4,000 moves x 1,029 = 4,116,000 SEK - 3,275,851.15 -> 7,391,851.15, per-GT 16.81 -> 37.94; no other figure moves.
-    expect(expected).not.toBe('37.94');
+    // v0.11.0 re-baseline (in-test attribution): GOT lift and delivery user inputs (user ruling 2026-10-21) - the lift and the landside leg are user-specified, blank by default: the GOT default call 7,391,851.15 -> 3,275,851.15, per-GT 37.94 -> 16.81 (the 4,116,000 SEK lift no longer fires); no other figure moves.
+    expect(expected).not.toBe('16.81');
     ({ container, root } = await renderComparison(false, defaultCall('gothenburg'), smallVessel));
     const totalRow = Array.from(container!.querySelectorAll('.comparison-total-row'))
       .find(r => (r.textContent ?? '').includes('Grand Total'))!;
@@ -215,7 +218,8 @@ describe('Grand Total derived per-GT — mobile comparison cards (spec v0.2.58)'
     // GOT card carries the exact figure
     const got = Array.from(cards).find(c => (c.textContent ?? '').includes('Gothenburg'))!;
     // v0.8.0 re-baseline (in-test attribution): GOT gains the ordinary-time vessel-side lift, 4,000 moves x 1,029 = 4,116,000 SEK - 3,275,851.15 -> 7,391,851.15, per-GT 16.81 -> 37.94; no other figure moves.
-    expect(got.querySelector('.comparison-card-total')!.textContent).toContain('37.94 SEK/GT');
+    // v0.11.0 re-baseline (in-test attribution): GOT lift and delivery user inputs (user ruling 2026-10-21) - the lift and the landside leg are user-specified, blank by default: the GOT default call 7,391,851.15 -> 3,275,851.15, per-GT 37.94 -> 16.81 (the 4,116,000 SEK lift no longer fires); no other figure moves.
+    expect(got.querySelector('.comparison-card-total')!.textContent).toContain('16.81 SEK/GT');
   });
 
   it('the mobile converted collapse (spec v0.2.39) hides the converted Hamburg per-GT behind the disclosure', async () => {
@@ -252,7 +256,10 @@ describe('Grand Total derived per-GT — OPS honesty (spec v0.2.58)', () => {
     // GOT (7,391,851.15 + 32,609.90) ÷ 194,849 = 38.10 SEK/GT
     // (v0.2.61 drift re-pin: the godsavgift moved the base to 3,275,851.15;
     // v0.8.0 re-baseline (in-test attribution): GOT gains the ordinary-time vessel-side lift, 4,000 moves x 1,029 = 4,116,000 SEK - the base 3,275,851.15 -> 7,391,851.15, so 16.98 -> 38.10)
-    const gotCell = Array.from(perGtCells).find(c => (c.textContent ?? '').startsWith('38.10'))!;
+    // v0.11.0 re-baseline (in-test attribution): GOT lift and delivery user
+    // inputs (user ruling 2026-10-21) - the lift is user-specified and blank
+    // by default: (3,275,851.15 + 32,609.90) / 194,849 = 16.98 SEK/GT again.
+    const gotCell = Array.from(perGtCells).find(c => (c.textContent ?? '').startsWith('16.98'))!;
     expect(gotCell).toBeDefined();
   });
 

@@ -27,6 +27,7 @@ import { buildOpsSegment } from './comparisonModel';
 import { buildDiscountLine } from './discountLine';
 import type { PrintPage } from './printPages';
 import { APP_VERSION } from './version';
+import { userSpecifiedDisclosures } from './userSpecifiedDisclosure';
 
 // One printed fee line (the comparison model's own line record, carried
 // into print as-is): the charge-line name, its biller, its amount, and the
@@ -96,6 +97,10 @@ export interface PrintComparisonPagesProps {
   // prints nothing of it, the screen's default-off state.
   containerThroughVisible: boolean;
   hinterlandMode: HinterlandMode;
+  // Per-port call overrides (spec v0.11.0): the Gothenburg lift and delivery
+  // inputs are per-port entries; the paper header and the printed leg cell
+  // read them exactly as the screen does.
+  perPortCallOverrides?: Record<string, Record<string, unknown>>;
 }
 
 // The rate-basis note (the unfalsifiability rule's currency line): every
@@ -120,7 +125,8 @@ export const PrintComparisonPages: React.FC<PrintComparisonPagesProps> = ({
   derivationsVisible,
   conversionsVisible,
   containerThroughVisible,
-  hinterlandMode
+  hinterlandMode,
+  perPortCallOverrides
 }) => {
   const pages = printPagesFor(ports.map(p => ({ id: p.metadata.id, name: p.metadata.name })));
   const totalPorts = ports.length;
@@ -232,6 +238,14 @@ export const PrintComparisonPages: React.FC<PrintComparisonPagesProps> = ({
           </p>
         );
       })()}
+      {/* User-specified inputs (spec v0.11.0): entered values print as call
+          parameters (not estimates); blank prints nothing; an invalid entry
+          prints that it was not applied. */}
+      {userSpecifiedDisclosures(ports, call as unknown as Record<string, unknown>, perPortCallOverrides).map(item => (
+        <p className="print-header-line" key={`${item.portId}-${item.input}`} data-testid={`print-header-user-${item.input}`}>
+          {item.portName} {item.label}: {item.text}
+        </p>
+      ))}
       <p className="print-header-line" data-testid="print-header-line-4">
         {printRateBasisNote(declaredRows)} · Comparison basis: {formatRate(rateInfo)}
       </p>
@@ -339,13 +353,13 @@ export const PrintComparisonPages: React.FC<PrintComparisonPagesProps> = ({
                       const port = portById.get(id)!;
                       const le = (call.containers_loaded_le20ft || 0) + (call.containers_discharged_le20ft || 0);
                       const gt = (call.containers_loaded_gt20ft || 0) + (call.containers_discharged_gt20ft || 0);
-                      const part = containerThroughParts(id, hinterlandMode, le, gt);
+                      const part = containerThroughParts(id, hinterlandMode, le, gt, perPortCallOverrides?.[id]?.got_delivery_cost ?? call.got_delivery_cost);
                       return (
                         <TableCell key={id} align="right" className="amount" data-testid={`print-container-through-${id}`}>
                           <Box component="span" sx={{ fontSize: '0.75rem', display: 'block' }}>{part.note}</Box>
                           {part.addedAmount !== null
                             ? <span className="comparison-figure">+{formatCurrency(part.addedAmount, port.metadata.currency)}</span>
-                            : <span className="comparison-not-levied">{part.bundled ? 'bundled rate unchanged' : 'not published'}</span>}
+                            : <span className="comparison-not-levied">{part.status === 'not_entered' ? 'not entered' : part.status === 'invalid' ? 'not applied' : part.bundled ? 'bundled rate unchanged' : 'not published'}</span>}
                         </TableCell>
                       );
                     })}

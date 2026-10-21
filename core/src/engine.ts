@@ -37,6 +37,7 @@ import {
 import { classifyRule } from './classification';
 import { portOpsComponents } from './port_data';
 import { containerSplit } from './container_split';
+import { userSpecifiedRate } from './user_specified_rates';
 
 // Round half-up to the cent (tariff-line precision). The toPrecision(12) guard
 // strips binary-float noise (e.g. 8890 * 0.0135 = 120.01499999999999) so exact
@@ -2006,7 +2007,61 @@ export function calculatePortCallCost(
       qualityFlags.push(...ruleFlags);
     }
   }
-  
+
+  // User-specified rate lines (spec v0.11.0, user ruling 2026-10-21): a
+  // data-authored descriptor names a call input holding the user's own rate;
+  // the engine emits one fee line per unit per move on the call's moves
+  // (loaded + discharged, both sizes). Blank prices nothing (the honest
+  // "not entered" state); an invalid entry is fail-closed (nothing fires and
+  // the surfaces name the defect through userSpecifiedRate). The line is a
+  // user-specified call parameter, never an estimated parameter: it carries
+  // no quality flag and never moves the estimated-parameters subtotal.
+  for (const spec of port.user_specified_inputs?.lines ?? []) {
+    const rate = userSpecifiedRate(call, spec.input, spec.label);
+    if (rate.state !== 'valid' || !(rate.value! > 0)) continue;
+    const moves = call.containers_loaded_le20ft + call.containers_loaded_gt20ft
+      + call.containers_discharged_le20ft + call.containers_discharged_gt20ft;
+    if (!(moves > 0)) continue;
+    const billerDef = port.billers?.find(b => b.id === spec.biller || b.name === spec.biller);
+    const amount = roundToCent(rate.value! * moves);
+    const rateText = rate.value!.toLocaleString('en-US', { maximumFractionDigits: 4 });
+    feeResults.push({
+      fee_rule_id: spec.id,
+      fee_family: spec.fee_family,
+      biller: spec.biller,
+      amount,
+      currency: (billerDef?.currency ?? port.metadata.currency) as Currency,
+      rate_applied: `${rateText} ${spec.currency} per unit per move (user-specified, not a tariff rate)`,
+      band_or_basis: `${moves.toLocaleString('en-US')} moves (loaded + discharged)`,
+      source_reference: {
+        document_name: `User-specified call input: ${spec.label}`,
+        document_url: '',
+        document_issued: call.date,
+        page: 'n/a',
+        clause: 'entered by the user for this call; not a tariff rate',
+        verified_on: call.date,
+        verified_by: 'user-specified'
+      },
+      adjustments_applied: [],
+      quality_flags: [],
+      derivation: {
+        structure_label: 'User-specified rate',
+        steps: [
+          {
+            kind: 'components',
+            label: `${spec.label} (user-specified)`,
+            detail: `${moves.toLocaleString('en-US')} moves × ${rateText} ${spec.currency}/move`,
+            amount
+          },
+          { kind: 'composition', label: 'Fee total', amount }
+        ]
+      },
+      functional_class: classifyRule(spec.id)?.functional_class,
+      functional_basis_note: classifyRule(spec.id)?.basis_note
+    });
+    matchedFeeFamilies.add(spec.fee_family);
+  }
+
   // Check for unmatched expected fee families (section 4.3 validation)
   for (const family of allExpectedFamilies) {
     if (!matchedFeeFamilies.has(family)) {

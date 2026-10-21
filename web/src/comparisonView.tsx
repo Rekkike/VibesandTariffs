@@ -44,6 +44,7 @@ import {
 import type { HinterlandMode } from './handlingBasis';
 import { buildDiscountLine } from './discountLine';
 import { PrintComparisonPages } from './printComparisonPages';
+import { userSpecifiedDisclosures } from './userSpecifiedDisclosure';
 
 interface ComparisonViewProps {
   ports: PortDefinition[];
@@ -313,6 +314,15 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
                 </span>
               );
             })()}
+            {/* User-specified inputs (spec v0.11.0): the entered values are
+                stated once as call parameters (not estimates); blank states
+                nothing; an invalid entry names the defect. */}
+            {userSpecifiedDisclosures(selectedPorts, call as unknown as Record<string, unknown>, perPortCallOverrides).map(item => (
+              <span className="comparison-context-item" key={`${item.portId}-${item.input}`} data-testid={`comparison-context-user-${item.input}`}>
+                <span className="comparison-context-label">{item.portName} {item.label}:</span>{' '}
+                {item.text}
+              </span>
+            ))}
             <span className="comparison-context-item">
               <span className="comparison-context-label">Lay time:</span>{' '}
               {call.lay_time_hours != null ? `${call.lay_time_hours} h at berth` : 'not entered'}
@@ -708,13 +718,13 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
                         {portResults.map(({ port }) => {
                           const le = (call.containers_loaded_le20ft || 0) + (call.containers_discharged_le20ft || 0);
                           const gt = (call.containers_loaded_gt20ft || 0) + (call.containers_discharged_gt20ft || 0);
-                          const part = containerThroughParts(port.metadata.id, hinterlandMode, le, gt);
+                          const part = containerThroughParts(port.metadata.id, hinterlandMode, le, gt, perPortCallOverrides?.[port.metadata.id]?.got_delivery_cost ?? call.got_delivery_cost);
                           return (
                             <TableCell key={port.metadata.id} align="right" className="amount" data-testid={`container-through-${port.metadata.id}`}>
                               <Box component="span" sx={{ fontSize: '0.75rem', display: 'block' }}>{part.note}</Box>
                               {part.addedAmount !== null
                                 ? <span className="comparison-figure">+{formatCurrency(part.addedAmount, port.metadata.currency)}</span>
-                                : <span className="comparison-not-levied">{part.bundled ? 'bundled rate unchanged' : 'not published'}</span>}
+                                : <span className="comparison-not-levied">{part.status === 'not_entered' ? 'not entered' : part.status === 'invalid' ? 'not applied' : part.bundled ? 'bundled rate unchanged' : 'not published'}</span>}
                             </TableCell>
                           );
                         })}
@@ -1098,6 +1108,7 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
           conversionsVisible={printSelectionOverride ? printSelectionOverride.conversions : conversionsVisible}
           containerThroughVisible={printThrough}
           hinterlandMode={hinterlandMode}
+          perPortCallOverrides={perPortCallOverrides}
         />
       )}
     </Box>

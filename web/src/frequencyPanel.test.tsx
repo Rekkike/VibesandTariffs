@@ -54,7 +54,8 @@ describe('call frequency what-if — zero-drift pins (spec v0.2.63)', () => {
     // (the Eurogate terminal layer; §17.5); GOT/HEL byte-identical.
     const cases: [PortDefinition, number][] = [
       // v0.8.0 re-baseline (in-test attribution): GOT gains the ordinary-time vessel-side lift, 4,000 moves x 1,029 = 4,116,000 SEK - 3,275,851.15 -> 7,391,851.15, per-GT 16.81 -> 37.94; no other figure moves.
-      [GOTHENBURG, 7391851.15],
+      // v0.11.0 re-baseline (in-test attribution): GOT lift and delivery user inputs (user ruling 2026-10-21) - the lift and the landside leg are user-specified, blank by default: the GOT default call 7,391,851.15 -> 3,275,851.15, per-GT 37.94 -> 16.81 (the 4,116,000 SEK lift no longer fires); no other figure moves.
+      [GOTHENBURG, 3275851.15],
       [HAMBURG, 2204910.90],
       [HELSINGBORG, 8750057.40]
     ];
@@ -111,10 +112,12 @@ describe('call frequency what-if — Swedish panel arithmetic (script-computed)'
     expect(s.waivedTotal).toBe(R2(BASE * 0.75));
     expect(s.waivedTotal).toBe(196631.25);
     // v0.8.0 re-baseline (in-test attribution): GOT gains the ordinary-time vessel-side lift, 4,000 moves x 1,029 = 4,116,000 SEK - 3,275,851.15 -> 7,391,851.15, per-GT 16.81 -> 37.94; no other figure moves.
-    expect(s.scenarioPerCallTotal).toBe(R2(7391851.15 - 196631.25));
+    // v0.11.0 re-baseline (in-test attribution): GOT lift and delivery user inputs (user ruling 2026-10-21) - the lift and the landside leg are user-specified, blank by default: the GOT default call 7,391,851.15 -> 3,275,851.15, per-GT 37.94 -> 16.81 (the 4,116,000 SEK lift no longer fires); no other figure moves.
+    expect(s.scenarioPerCallTotal).toBe(R2(3275851.15 - 196631.25));
     expect(s.deltaVsCurrent).toBe(-196631.25);
     // v0.8.0 re-baseline (in-test attribution): GOT gains the ordinary-time vessel-side lift, 4,000 moves x 1,029 = 4,116,000 SEK - 3,275,851.15 -> 7,391,851.15, per-GT 16.81 -> 37.94; no other figure moves.
-    expect(s.pctOfCurrentTotal).toBe(R2(196631.25 / 7391851.15 * 10000) / 100);
+    // v0.11.0 re-baseline (in-test attribution): GOT lift and delivery user inputs (user ruling 2026-10-21) - the lift and the landside leg are user-specified, blank by default: the GOT default call 7,391,851.15 -> 3,275,851.15, per-GT 37.94 -> 16.81 (the 4,116,000 SEK lift no longer fires); no other figure moves.
+    expect(s.pctOfCurrentTotal).toBe(R2(196631.25 / 3275851.15 * 10000) / 100);
   });
   it('at 6+ calls: the full waiver with exact arithmetic, godsavgift continues', () => {
     for (const calls of [6, 8]) {
@@ -132,10 +135,12 @@ describe('call frequency what-if — Swedish panel arithmetic (script-computed)'
       expect(gods!.amount).toBe(268800.00);
       // Per-call total, delta, percentage — all derived.
       // v0.8.0 re-baseline (in-test attribution): GOT gains the ordinary-time vessel-side lift, 4,000 moves x 1,029 = 4,116,000 SEK - 3,275,851.15 -> 7,391,851.15, per-GT 16.81 -> 37.94; no other figure moves.
-      expect(s.scenarioPerCallTotal).toBe(R2(7391851.15 - BASE));
+      // v0.11.0 re-baseline (in-test attribution): GOT lift and delivery user inputs (user ruling 2026-10-21) - the lift and the landside leg are user-specified, blank by default: the GOT default call 7,391,851.15 -> 3,275,851.15, per-GT 37.94 -> 16.81 (the 4,116,000 SEK lift no longer fires); no other figure moves.
+      expect(s.scenarioPerCallTotal).toBe(R2(3275851.15 - BASE));
       expect(s.deltaVsCurrent).toBe(-262175.00);
       // v0.8.0 re-baseline (in-test attribution): GOT gains the ordinary-time vessel-side lift, 4,000 moves x 1,029 = 4,116,000 SEK - 3,275,851.15 -> 7,391,851.15, per-GT 16.81 -> 37.94; no other figure moves.
-      expect(s.pctOfCurrentTotal).toBe(R2(BASE / 7391851.15 * 10000) / 100);
+      // v0.11.0 re-baseline (in-test attribution): GOT lift and delivery user inputs (user ruling 2026-10-21) - the lift and the landside leg are user-specified, blank by default: the GOT default call 7,391,851.15 -> 3,275,851.15, per-GT 37.94 -> 16.81 (the 4,116,000 SEK lift no longer fires); no other figure moves.
+      expect(s.pctOfCurrentTotal).toBe(R2(BASE / 3275851.15 * 10000) / 100);
     }
   });
   it('Helsingborg prices the same scale against its own total (8,750,057.40)', () => {
@@ -256,7 +261,8 @@ describe('call frequency what-if — red proofs (mutations must fail)', () => {
     // The zero-drift pin above (totals hold exactly) is the second failure
     // surface: any engine-path mutation moving totals fails it.
     // v0.8.0 re-baseline (in-test attribution): GOT gains the ordinary-time vessel-side lift, 4,000 moves x 1,029 = 4,116,000 SEK - 3,275,851.15 -> 7,391,851.15, per-GT 16.81 -> 37.94; no other figure moves.
-    expect(R2(result().total)).toBe(7391851.15);
+    // v0.11.0 re-baseline (in-test attribution): GOT lift and delivery user inputs (user ruling 2026-10-21) - the lift and the landside leg are user-specified, blank by default: the GOT default call 7,391,851.15 -> 3,275,851.15, per-GT 37.94 -> 16.81 (the 4,116,000 SEK lift no longer fires); no other figure moves.
+    expect(R2(result().total)).toBe(3275851.15);
   });
   it('mutation B (Swedish waiver applied to HAM) cannot produce a HAM scenario', () => {
     const hamResult = calculatePortCallCost(HAMBURG, {
@@ -282,7 +288,8 @@ describe('call frequency what-if — red proofs (mutations must fail)', () => {
     }), 6)!;
     expect(got.pctOfCurrentTotal).not.toBe(hel.pctOfCurrentTotal);
     // v0.8.0 re-baseline (in-test attribution): GOT gains the ordinary-time vessel-side lift, 4,000 moves x 1,029 = 4,116,000 SEK - 3,275,851.15 -> 7,391,851.15, per-GT 16.81 -> 37.94; no other figure moves.
-    expect(got.pctOfCurrentTotal).toBe(R2(262175.00 / 7391851.15 * 10000) / 100);
+    // v0.11.0 re-baseline (in-test attribution): GOT lift and delivery user inputs (user ruling 2026-10-21) - the lift and the landside leg are user-specified, blank by default: the GOT default call 7,391,851.15 -> 3,275,851.15, per-GT 37.94 -> 16.81 (the 4,116,000 SEK lift no longer fires); no other figure moves.
+    expect(got.pctOfCurrentTotal).toBe(R2(262175.00 / 3275851.15 * 10000) / 100);
     expect(hel.pctOfCurrentTotal).toBe(R2(262175.00 / 8750057.40 * 10000) / 100);
   });
 });

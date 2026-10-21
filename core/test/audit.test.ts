@@ -300,7 +300,11 @@ describe('tri-port sanity check: Gothenburg decomposition (computed fresh, pinne
     // (60,000 SEK: LOA 171.92 m -> 1 tug by the LOA-class default, spec v0.2.33
     // towage-symmetry pass — a flagged estimate line, not verified data).
     const vessel = { ...LIBRARY_VESSELS['MSC KYUNGMIN'], vessel_type: 'container' } as any;
-    const call = { ...triPortCall(gothenburg, 'MSC KYUNGMIN'), flag_state: 'non-EU' };
+    // v0.11.0 re-baseline (in-test attribution): GOT lift and delivery user
+    // inputs (user ruling 2026-10-21) - the lift is a user-specified input,
+    // blank by default; the continuity bridge enters 1,029 so the
+    // decomposition below holds unchanged.
+    const call = { ...triPortCall(gothenburg, 'MSC KYUNGMIN'), flag_state: 'non-EU', got_lift_cost: 1029 };
     const result = calculatePortCallCost(gothenburg, { vessel, call });
     const isps = feeAmount(result, 'apm_terminals_isps');
     // v0.8.0 re-baseline (in-test attribution): the ordinary-time vessel-side

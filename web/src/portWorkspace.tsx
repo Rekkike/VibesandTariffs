@@ -429,6 +429,10 @@ export const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call
     for (const rule of port.fee_rules) {
       map.set(rule.id, rule.name);
     }
+    // User-specified lines (spec v0.11.0) carry their descriptor's name.
+    for (const line of port.user_specified_inputs?.lines ?? []) {
+      map.set(line.id, line.line_name);
+    }
     return map;
   }, [port]);
   // GOT per-GT OPS fold (spec v0.2.70): the three-part decomposition of the

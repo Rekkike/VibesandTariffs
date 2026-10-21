@@ -1115,7 +1115,14 @@ describe('Panamax Verification - Gothenburg 2026', () => {
   });
 
   it('Terminal handling should be 1,543,500 SEK (the lift); the goods charge 684,000 SEK (v0.8.0 re-baseline)', () => {
-    const result = calculatePortCallCost(gothenburgPort, panamaxInput);
+    // v0.11.0 re-baseline (in-test attribution): GOT lift and delivery user
+    // inputs (user ruling 2026-10-21) - the lift is a user-specified input,
+    // blank by default; the continuity bridge enters 1,029 so the
+    // 1,500 moves * 1,029 = 1,543,500 holds unchanged.
+    const result = calculatePortCallCost(gothenburgPort, {
+      ...panamaxInput,
+      call: { ...panamaxInput.call, got_lift_cost: 1029 }
+    });
 
     // 750 containers <= 20ft + 750 containers > 20ft discharged
     // v0.8.0 re-baseline (in-test attribution): the published 377/535 SEK

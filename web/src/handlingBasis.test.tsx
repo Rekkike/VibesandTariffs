@@ -107,11 +107,17 @@ describe('handling-basis annotations (spec v0.4.2, item 2) - a new annotation fa
     // inference wording fails.
     const text = handlingBasisAnnotationFor('gothenburg')!.text;
     expect(text).toContain('Handling basis: full-cycle, leg-priced.');
-    expect(text).toContain('1,029 SEK per unit per move (ordinary time)');
+    // v0.11.0 re-baseline (in-test attribution): GOT lift and delivery user
+    // inputs (user ruling 2026-10-21) - the lift and the landside leg are
+    // user-specified inputs; the annotation no longer states an encoded
+    // rate (the published rates stay recorded in the extraction reference
+    // section 8, never encoded).
+    expect(text).toContain('billed separately, per unit per move (ordinary time)');
+    expect(text).toContain('user-specified Cost per lift input (blank = not priced)');
+    expect(text).not.toContain('1,029');
+    expect(text).not.toContain('453');
     expect(text).toContain('§1, Terminal Charges on goods, 377/535 SEK per unit, a cargo due carried on the Cargo dues line, not handling');
-    expect(text).toContain('453 SEK per unit');
-    // Re-baselined at v0.8.3 origin-wording scrub (user ruling 2026-10-21): structure only, no origin narrative.
-    expect(text.endsWith('(the container-through toggle).')).toBe(true);
+    expect(text.endsWith('user-specified Delivery input (blank = not added).')).toBe(true);
     expect(text).not.toContain('inference');
     expect(text).not.toMatch(/bundled \(container-through\)/);
   });
@@ -120,14 +126,27 @@ describe('handling-basis annotations (spec v0.4.2, item 2) - a new annotation fa
     // v0.4.6 "not published" participation is replaced by the evidenced
     // receiving/delivering leg - 453 x 4,000 = 1,812,000 SEK at the default
     // call, the same figure for truck and rail; bundled false.
+    // v0.11.0 re-baseline (in-test attribution): GOT lift and delivery user
+    // inputs (user ruling 2026-10-21) - the leg is the user-specified
+    // Delivery input: an entered 453 reproduces the v0.10.1 figure exactly
+    // (the continuity bridge); blank adds nothing (not entered, never "not
+    // published", never a zero); an invalid entry is fail-closed.
     for (const mode of ['truck', 'rail'] as const) {
-      const got = containerThroughParts('gothenburg', mode, LE_UNITS, GT_UNITS);
+      const got = containerThroughParts('gothenburg', mode, LE_UNITS, GT_UNITS, 453);
       expect(got.addedAmount).toBe(453 * 4000);
       expect(got.addedAmount).toBe(1812000);
       expect(got.bundled).toBe(false);
-      expect(got.note).toContain('(453 SEK): ');  // re-baselined at v0.8.3 origin-wording scrub (user ruling 2026-10-21): the bare figure note
-      expect(got.note.startsWith('Receiving/delivering added per unit (453 SEK): ')).toBe(true);
-      expect(got.note).toContain('453 x 4000 = 1812000 SEK.');
+      expect(got.status).toBeUndefined();
+      expect(got.note.startsWith('Delivery added per unit (user-specified, 453 SEK): ')).toBe(true);
+      expect(got.note).toContain('453 x 4000 = 1,812,000 SEK.');
+      const blank = containerThroughParts('gothenburg', mode, LE_UNITS, GT_UNITS);
+      expect(blank.addedAmount).toBeNull();
+      expect(blank.status).toBe('not_entered');
+      expect(blank.note).toContain('Delivery not entered');
+      const invalid = containerThroughParts('gothenburg', mode, LE_UNITS, GT_UNITS, -1);
+      expect(invalid.addedAmount).toBeNull();
+      expect(invalid.status).toBe('invalid');
+      expect(invalid.note).toContain('Delivery not applied');
     }
   });
   it('the Aarhus basis and gate legs (v0.8.0 Unit 3c): the archived APMT Aarhus tariff §4.1 truck 338.00 and §4.2 rail 414.00 DKK replace the silent default', () => {
@@ -272,7 +291,9 @@ describe('compare container-through ON (spec v0.4.2, item 3) - published legs, p
     // Gothenburg leaves the not-published set - its landside leg is the
     // evidenced 453 SEK per unit (pinned above); the wording rule holds on
     // the remaining not-published leg.
-    const got = containerThroughParts('gothenburg', 'truck', LE_UNITS, GT_UNITS);
+    // v0.11.0 re-baseline (in-test attribution): GOT lift and delivery user
+    // inputs (user ruling 2026-10-21) - the entered Delivery 453 bridge.
+    const got = containerThroughParts('gothenburg', 'truck', LE_UNITS, GT_UNITS, 453);
     expect(got.addedAmount).toBe(1812000);
     const nvkTruck = containerThroughParts('norvik', 'truck', LE_UNITS, GT_UNITS);
     expect(nvkTruck.addedAmount).toBeNull();

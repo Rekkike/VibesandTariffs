@@ -92,7 +92,8 @@ describe('comparison-legibility zero-drift pins (spec v0.2.64)', () => {
     // (the Eurogate terminal layer; §17.5); GOT/HEL byte-identical.
     for (const [portId, expected] of [
       // v0.8.0 re-baseline (in-test attribution): GOT gains the ordinary-time vessel-side lift, 4,000 moves x 1,029 = 4,116,000 SEK - 3,275,851.15 -> 7,391,851.15, per-GT 16.81 -> 37.94; no other figure moves.
-      ['gothenburg', 7391851.15],
+      // v0.11.0 re-baseline (in-test attribution): GOT lift and delivery user inputs (user ruling 2026-10-21) - the lift and the landside leg are user-specified, blank by default: the GOT default call 7,391,851.15 -> 3,275,851.15, per-GT 37.94 -> 16.81 (the 4,116,000 SEK lift no longer fires); no other figure moves.
+      ['gothenburg', 3275851.15],
       ['hamburg', 2204910.90],
       ['helsingborg', 8750057.40]
     ] as const) {
@@ -131,7 +132,8 @@ describe('comparison-legibility zero-drift pins (spec v0.2.64)', () => {
       // (133 471 € / 1 498 077 kr) no longer renders; the engine value
       // stays pinned core-side. Gothenburg is the first column.
       // v0.8.0 re-baseline (in-test attribution): GOT gains the ordinary-time vessel-side lift, 4,000 moves x 1,029 = 4,116,000 SEK - 3,275,851.15 -> 7,391,851.15, per-GT 16.81 -> 37.94; no other figure moves.
-      '7\u00a0391\u00a0851\u00a0kr37.94 SEK/GT effective \u2014 derived, not a published rate',
+      // v0.11.0 re-baseline (in-test attribution): GOT lift and delivery user inputs (user ruling 2026-10-21) - the lift and the landside leg are user-specified, blank by default: the GOT default call 7,391,851.15 -> 3,275,851.15, per-GT 37.94 -> 16.81 (the 4,116,000 SEK lift no longer fires); no other figure moves.
+      '3\u00a0275\u00a0851\u00a0kr16.81 SEK/GT effective \u2014 derived, not a published rate',
       // v0.4.1 re-baseline (the storage-default convention correction,
       // in-test attribution): Norrköping's Grand Total loses the seeded
       // one chargeable export day (−328,400 kr → 8,297,772.50; per-GT
@@ -266,7 +268,8 @@ describe('comparison-legibility zero-drift pins (spec v0.2.64)', () => {
       // quayside stage - the capped cargo due 38,326.80 EUR, rendered
       // rounded 38 327 €, the first column.
       // v0.8.0 re-baseline (in-test attribution): GOT gains the ordinary-time vessel-side lift, 4,000 moves x 1,029 = 4,116,000 SEK - GOT's quayside stage 2,207,200 -> 6,323,200 SEK.
-      .toBe('Quayside operations6\u00a0323\u00a0200\u00a0kr6\u00a0098\u00a0685\u00a0kr6\u00a0372\u00a0000\u00a0kr5\u00a0382\u00a0200\u00a0Dkr8\u00a0936\u00a0000\u00a0kr9\u00a0871\u00a0200\u00a0kr1\u00a0531\u00a0800\u00a0\u20ac1\u00a0531\u00a0800\u00a0\u20ac');
+      // v0.11.0 re-baseline (in-test attribution): GOT lift and delivery user inputs (user ruling 2026-10-21) - the lift is user-specified and blank by default, so the GOT gross returns to its pre-lift base and the derived shares and the quayside stage return to their pre-v0.8.0 values (no figure other than the lift moves).
+      .toBe('Quayside operations2\u00a0207\u00a0200\u00a0kr6\u00a0098\u00a0685\u00a0kr6\u00a0372\u00a0000\u00a0kr5\u00a0382\u00a0200\u00a0Dkr8\u00a0936\u00a0000\u00a0kr9\u00a0871\u00a0200\u00a0kr1\u00a0531\u00a0800\u00a0\u20ac1\u00a0531\u00a0800\u00a0\u20ac');
   });
 });
 
@@ -314,9 +317,12 @@ describe('discounts received — the model (spec v0.2.64, item 2)', () => {
     // vessel-side lift, 4,000 moves x 1,029 = 4,116,000 SEK - gross
     // 3,275,851.15 -> 7,391,851.15 (net 3,173,711.55 -> 7,289,711.55); the
     // discount amount is unchanged, so its share of gross moves 3.12% -> 1.38%.
-    expect(line.grossCharges).toBe(7391851.15);
-    expect(line.percentage).toBeCloseTo(1.3818, 3);
-    expect(line.percentage.toFixed(2)).toBe('1.38');
+    // v0.11.0 re-baseline (in-test attribution): GOT lift and delivery user inputs (user ruling 2026-10-21) - the lift and the landside leg are user-specified, blank by default: the GOT default call 7,391,851.15 -> 3,275,851.15, per-GT 37.94 -> 16.81 (the 4,116,000 SEK lift no longer fires); no other figure moves.
+    expect(line.grossCharges).toBe(3275851.15);
+    // v0.11.0 re-baseline (in-test attribution): GOT lift and delivery user inputs (user ruling 2026-10-21) - the lift is user-specified and blank by default, so the GOT gross returns to its pre-lift base and the derived shares and the quayside stage return to their pre-v0.8.0 values (no figure other than the lift moves).
+    expect(line.percentage).toBeCloseTo(3.118, 3);
+    // v0.11.0 re-baseline (in-test attribution): GOT lift and delivery user inputs (user ruling 2026-10-21) - the lift is user-specified and blank by default, so the GOT gross returns to its pre-lift base and the derived shares and the quayside stage return to their pre-v0.8.0 values (no figure other than the lift moves).
+    expect(line.percentage.toFixed(2)).toBe('3.12');
     // The itemization sum matches the rendered sum.
     expect(roundToCent(line.components.reduce((s, c) => s + c.amount, 0))).toBe(line.sum);
   });
@@ -339,11 +345,13 @@ describe('discounts received — the model (spec v0.2.64, item 2)', () => {
     // Port-dues second-call 50% (102,139.60) + Sjöfartsverket 75% payable (65,543.75)
     expect(line.components.map(c => c.amount)).toEqual([102139.60, 65543.75]);
     // v0.8.0 re-baseline (in-test attribution): GOT gains the ordinary-time vessel-side lift, 4,000 moves x 1,029 = 4,116,000 SEK - 3,275,851.15 -> 7,391,851.15, per-GT 16.81 -> 37.94; no other figure moves.
-    expect(line.grossCharges).toBe(7391851.15);
+    // v0.11.0 re-baseline (in-test attribution): GOT lift and delivery user inputs (user ruling 2026-10-21) - the lift and the landside leg are user-specified, blank by default: the GOT default call 7,391,851.15 -> 3,275,851.15, per-GT 37.94 -> 16.81 (the 4,116,000 SEK lift no longer fires); no other figure moves.
+    expect(line.grossCharges).toBe(3275851.15);
     // v0.8.0 re-baseline (in-test attribution): the discount sum is unchanged;
     // its share of the lift-raised gross moves 5.12% -> 2.27%
     // (167,683.35 / 7,391,851.15).
-    expect(line.percentage.toFixed(2)).toBe('2.27');
+    // v0.11.0 re-baseline (in-test attribution): GOT lift and delivery user inputs (user ruling 2026-10-21) - the lift is user-specified and blank by default, so the GOT gross returns to its pre-lift base and the derived shares and the quayside stage return to their pre-v0.8.0 values (no figure other than the lift moves).
+    expect(line.percentage.toFixed(2)).toBe('5.12');
   });
 
   it('the GOT environmental discount fires at ESI 50: 20,427.92 SEK, 0.62% of gross', () => {
@@ -358,7 +366,8 @@ describe('discounts received — the model (spec v0.2.64, item 2)', () => {
     // v0.8.0 re-baseline (in-test attribution): the discount sum is unchanged;
     // its share of the lift-raised gross moves 0.62% -> 0.28%
     // (20,427.92 / 7,391,851.15).
-    expect(line.percentage.toFixed(2)).toBe('0.28');
+    // v0.11.0 re-baseline (in-test attribution): GOT lift and delivery user inputs (user ruling 2026-10-21) - the lift is user-specified and blank by default, so the GOT gross returns to its pre-lift base and the derived shares and the quayside stage return to their pre-v0.8.0 values (no figure other than the lift moves).
+    expect(line.percentage.toFixed(2)).toBe('0.62');
   });
 
   it('the HAM quantum discount fires at 2m prior-year GT: 1,228.25 EUR, 0.06% of gross (v0.2.66 re-baseline: the gross moved)', () => {
@@ -460,7 +469,8 @@ describe('discounts received — the rendering (spec v0.2.64, item 2)', () => {
     expect(discountRow.textContent).toContain('102\u00a0140');
     // v0.8.0 re-baseline (in-test attribution): the unchanged 102,139.60 SEK
     // discount is 1.38% of the lift-raised gross (was 3.12%).
-    expect(discountRow.textContent).toContain('1.38% of gross (pre-discount) charges');
+    // v0.11.0 re-baseline (in-test attribution): GOT lift and delivery user inputs (user ruling 2026-10-21) - the lift is user-specified and blank by default, so the GOT gross returns to its pre-lift base and the derived shares and the quayside stage return to their pre-v0.8.0 values (no figure other than the lift moves).
+    expect(discountRow.textContent).toContain('3.12% of gross (pre-discount) charges');
     expect(discountRow.textContent).toContain('Frequency discount');
     expect(discountRow.textContent).toContain('port-tariff-2026.txt');
     // The honest zero still renders for the ports that fired nothing.
@@ -508,7 +518,8 @@ describe('discounts received — the rendering (spec v0.2.64, item 2)', () => {
     expect(line.textContent).toContain('102\u00a0140');
     // v0.8.0 re-baseline (in-test attribution): the unchanged discount is
     // 1.38% of the lift-raised gross (was 3.12%).
-    expect(line.textContent).toContain('1.38% of gross (pre-discount) charges');
+    // v0.11.0 re-baseline (in-test attribution): GOT lift and delivery user inputs (user ruling 2026-10-21) - the lift is user-specified and blank by default, so the GOT gross returns to its pre-lift base and the derived shares and the quayside stage return to their pre-v0.8.0 values (no figure other than the lift moves).
+    expect(line.textContent).toContain('3.12% of gross (pre-discount) charges');
     // Placement: after the stage blocks, before the estimated-parameters
     // subtotal (the card's Grand Total leads; the discount line sits among
     // the closing lines, included in the total).

@@ -579,6 +579,34 @@ export interface OpsComponentsSpec {
   per_unit?: OpsComponentSpec;
 }
 
+// User-specified inputs descriptor (spec v0.11.0): configuration only - no
+// rate is ever encoded here. A line descriptor makes the engine emit one fee
+// line from a user-entered rate (per unit per move on the call's moves); a
+// leg descriptor names a user-entered landside leg consumed by the
+// container-through machinery. Blank is the honest "not entered" state.
+export interface UserSpecifiedLineSpec {
+  id: string;           // fee rule id the line carries (classification and charge-type keys)
+  input: string;        // CallInput field holding the user's rate
+  label: string;        // input label of record
+  line_name: string;    // fee line name
+  biller: string;
+  fee_family: FeeFamily;
+  currency: string;
+  unit: string;         // input unit wording, e.g. 'SEK per unit per move'
+}
+
+export interface UserSpecifiedLegSpec {
+  input: string;
+  label: string;
+  currency: string;
+  unit: string;
+}
+
+export interface UserSpecifiedInputsSpec {
+  lines?: UserSpecifiedLineSpec[];
+  legs?: UserSpecifiedLegSpec[];
+}
+
 // Per-port input profile (spec v0.2.59): which input sections and operator
 // lists a port's workspace renders - UI configuration data, never rates.
 // Section ids name the workspace's port-gated input blocks; terminal
@@ -617,6 +645,7 @@ export interface PortDefinition {
   default_call?: PortDefaultCallSection;
   ops_speculative?: OpsComponentsSpec;
   input_profile?: PortInputProfile;
+  user_specified_inputs?: UserSpecifiedInputsSpec;
 }
 
 // Vessel input model
@@ -643,6 +672,13 @@ export interface CallInput {
   // fail-closed (see container_split.ts).
   container_empty_pct?: number;
   container_full_pct?: number;
+  // User-specified Gothenburg inputs (spec v0.11.0, user ruling 2026-10-21):
+  // the vessel-side cost per lift (SEK per unit per move) and the landside
+  // delivery leg (SEK per unit, container-through only). Blank by default
+  // and fail-closed (see user_specified_rates.ts); never a tariff rate, never
+  // estimated parameters.
+  got_lift_cost?: number;
+  got_delivery_cost?: number;
   containers_loaded_le20ft: number;
   containers_loaded_gt20ft: number;
   containers_discharged_le20ft: number;

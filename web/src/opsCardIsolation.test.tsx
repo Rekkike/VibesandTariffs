@@ -195,7 +195,8 @@ describe('card-surface OPS isolation (spec v0.2.62)', () => {
     expect(cardOpsAmount('Helsingborg')).toContain('63\u00A0970');
     expect(cardOpsAmount('Gothenburg')).toBeNull();
     // v0.8.0 re-baseline (in-test attribution): GOT gains the ordinary-time vessel-side lift, 4,000 moves x 1,029 = 4,116,000 SEK - 3,275,851 -> 7,391,851.
-    expect(cardTotal('Gothenburg')).toContain('7\u00A0391\u00A0851');
+    // v0.11.0 re-baseline (in-test attribution): GOT lift and delivery user inputs (user ruling 2026-10-21) - the lift is user-specified and blank by default: the GOT native figure 7 391 851 -> 3 275 851 (the 4,116,000 SEK lift no longer fires).
+    expect(cardTotal('Gothenburg')).toContain('3\u00A0275\u00A0851');
   });
 
   it('the isolation holds with both ports loaded at once — each card prices only its own entries', async () => {
@@ -213,7 +214,8 @@ describe('card-surface OPS isolation (spec v0.2.62)', () => {
     expect(cardOpsAmount('Helsingborg')).toContain('63\u00A0970');
     // The totals carry exactly the two ports' own OPS amounts.
     // v0.8.0 re-baseline (in-test attribution): GOT gains the ordinary-time vessel-side lift, 4,000 moves x 1,029 = 4,116,000 SEK - with its own OPS entries 3,305,336 -> 7,421,336.
-    expect(cardTotal('Gothenburg')).toContain('7\u00A0421\u00A0336');
+    // v0.11.0 re-baseline (in-test attribution): GOT lift and delivery user inputs (user ruling 2026-10-21) - the lift is user-specified and blank by default: the GOT native figure 7 391 851 -> 3 275 851 (the 4,116,000 SEK lift no longer fires).
+    expect(cardTotal('Gothenburg')).toContain('3\u00A0305\u00A0336');
     expect(cardTotal('Helsingborg')).toContain('8\u00A0814\u00A0027');
   });
 

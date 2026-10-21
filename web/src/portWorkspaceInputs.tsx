@@ -26,7 +26,8 @@ import type {
   PortInputProfileSection,
   VesselInput
 } from '@port-cost/core';
-import { getNetTonnageClass, containerSplit } from '@port-cost/core';
+import { getNetTonnageClass, containerSplit, userSpecifiedRate } from '@port-cost/core';
+import { userSpecifiedHint } from './userSpecifiedDisclosure';
 import { tierEffectLine } from './envGuidance';
 import type { InputGuide } from './envGuidance';
 import { LOADED_VESSELS, VESSEL_PRESETS, vesselOptions, vesselOptionId, vesselOptionLabel } from './vesselOptions';
@@ -1568,6 +1569,41 @@ export const WorkspaceInputs: React.FC<WorkspaceInputsProps> = (props) => {
                   </>
                 )}
               </Grid>
+
+              {/* User-specified terminal inputs (spec v0.11.0, user ruling
+                  2026-10-21): the descriptor-driven Cost per lift and Delivery
+                  inputs, rendered beside the other user-specified inputs.
+                  Blank = not entered; invalid is fail-closed and named here. */}
+              {(port.user_specified_inputs?.lines?.length || port.user_specified_inputs?.legs?.length) ? (
+                <>
+                  <Typography variant="body2" className="segment-description" data-testid="user-specified-inputs-heading">
+                    Terminal handling inputs (user-specified, not tariff rates)
+                  </Typography>
+                  <Grid container spacing={2}>
+                    {[
+                      ...(port.user_specified_inputs?.lines ?? []),
+                      ...(port.user_specified_inputs?.legs ?? [])
+                    ].map(spec => {
+                      const rate = userSpecifiedRate(state.call as unknown as Record<string, unknown>, spec.input, spec.label);
+                      return (
+                        <Grid item xs={12} sm={6} key={spec.input}>
+                          <TextField
+                            label={`${spec.label} (${spec.unit})`}
+                            type="number"
+                            value={(state.call as unknown as Record<string, unknown>)[spec.input] as number | string ?? ''}
+                            onChange={(e) => handleCallChange(spec.input as keyof CallInput, e.target.value === '' ? undefined : parseFloat(e.target.value))}
+                            fullWidth
+                            InputLabelProps={{ shrink: true }}
+                            error={rate.state === 'invalid'}
+                            inputProps={{ 'data-testid': `user-specified-${spec.input}` }}
+                            helperText={rate.state === 'invalid' ? rate.error : userSpecifiedHint(spec.input)}
+                          />
+                        </Grid>
+                      );
+                    })}
+                  </Grid>
+                </>
+              ) : null}
 
               {/* ============ TERMINAL AND YARD SEGMENT INPUTS ============ */}
               <Typography variant="h6" component="h3" className="segment-heading terminal-heading">

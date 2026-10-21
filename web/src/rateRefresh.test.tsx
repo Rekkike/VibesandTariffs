@@ -174,8 +174,10 @@ describe('rate-fetch removal (spec v0.4.0 rider — the v0.3.2/v0.3.5 reversal)'
     expect(totalRow).toBeDefined();
     const text = totalRow!.textContent ?? '';
     // v0.8.0 re-baseline (in-test attribution): GOT gains the ordinary-time vessel-side lift, 4,000 moves x 1,029 = 4,116,000 SEK - the GOT native figure 3 275 851 -> 7 391 851.
-    expect(text).toContain('7');
-    expect(text).toContain('391');
+    // v0.11.0 re-baseline (in-test attribution): GOT lift and delivery user inputs (user ruling 2026-10-21) - the lift is user-specified and blank by default: the GOT native figure 7 391 851 -> 3 275 851 (the 4,116,000 SEK lift no longer fires).
+    expect(text).toContain('3');
+    // v0.11.0 re-baseline (in-test attribution): GOT lift and delivery user inputs (user ruling 2026-10-21) - the lift is user-specified and blank by default: the GOT native figure 7 391 851 -> 3 275 851 (the 4,116,000 SEK lift no longer fires).
+    expect(text).toContain('275');
     expect(text).toContain('851');
   });
 

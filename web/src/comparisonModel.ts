@@ -87,11 +87,14 @@ export type RuleNamesByPortAndId = Map<string, Map<string, string>>;
 export const containerThroughLegFor = (
   portId: string,
   mode: HinterlandMode,
-  call: CallInput
+  call: CallInput,
+  // The port's own merged call (spec v0.11.0): the Gothenburg Delivery input
+  // is a per-port entry, so the leg reads it from the merged call.
+  portCall?: Partial<CallInput>
 ): number => {
   const le = (call.containers_loaded_le20ft || 0) + (call.containers_discharged_le20ft || 0);
   const gt = (call.containers_loaded_gt20ft || 0) + (call.containers_discharged_gt20ft || 0);
-  return containerThroughParts(portId, mode, le, gt).addedAmount ?? 0;
+  return containerThroughParts(portId, mode, le, gt, (portCall ?? call).got_delivery_cost).addedAmount ?? 0;
 };
 
 const addCents = (a: number, b: number) => Math.round((a + b) * 100) / 100;
@@ -187,7 +190,7 @@ export const computePortResults = (
           port_id: port.metadata.id
         };
         const engineResult = calculatePortCallCost(port, { vessel, call: merged as unknown as CallInput });
-        const leg = containerThroughMode ? containerThroughLegFor(port.metadata.id, containerThroughMode, call) : 0;
+        const leg = containerThroughMode ? containerThroughLegFor(port.metadata.id, containerThroughMode, call, merged as unknown as CallInput) : 0;
         const result: CostCalculationResult = leg > 0
           ? {
               ...engineResult,
@@ -220,6 +223,8 @@ export const buildRuleNamesByPort = (ports: PortDefinition[]): RuleNamesByPortAn
     for (const port of ports) {
       const inner = new Map<string, string>();
       for (const rule of port.fee_rules) inner.set(rule.id, rule.name);
+      // User-specified lines (spec v0.11.0) carry their descriptor's name.
+      for (const line of port.user_specified_inputs?.lines ?? []) inner.set(line.id, line.line_name);
       map.set(port.metadata.id, inner);
     }
     return map;

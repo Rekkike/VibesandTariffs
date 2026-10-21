@@ -277,10 +277,12 @@ describe('GOT per-GT OPS fold — zero-drift and no-double-count (spec v0.2.70)'
   });
 
   // v0.8.0 re-baseline (in-test attribution): GOT gains the ordinary-time vessel-side lift, 4,000 moves x 1,029 = 4,116,000 SEK - 3,275,851.15 -> 7,391,851.15, per-GT 16.81 -> 37.94; no other figure moves.
-  it('the pre-existing baselines hold exactly with the fold surface present (pinned: GOT 7,391,851.15 / HAM 2,204,910.90 / HEL 8,750,057.40)', () => {
+  // v0.11.0 re-baseline (in-test attribution): GOT lift and delivery user inputs (user ruling 2026-10-21) - the lift and the landside leg are user-specified, blank by default: the GOT default call 7,391,851.15 -> 3,275,851.15, per-GT 37.94 -> 16.81 (the 4,116,000 SEK lift no longer fires); no other figure moves.
+  it('the pre-existing baselines hold exactly with the fold surface present (pinned: GOT 3,275,851.15 / HAM 2,204,910.90 / HEL 8,750,057.40)', () => {
     const pinned: Record<string, number> = {
       // v0.8.0 re-baseline (in-test attribution): GOT gains the ordinary-time vessel-side lift, 4,000 moves x 1,029 = 4,116,000 SEK - 3,275,851.15 -> 7,391,851.15, per-GT 16.81 -> 37.94; no other figure moves.
-      gothenburg: 7391851.15,
+      // v0.11.0 re-baseline (in-test attribution): GOT lift and delivery user inputs (user ruling 2026-10-21) - the lift and the landside leg are user-specified, blank by default: the GOT default call 7,391,851.15 -> 3,275,851.15, per-GT 37.94 -> 16.81 (the 4,116,000 SEK lift no longer fires); no other figure moves.
+      gothenburg: 3275851.15,
       hamburg: 2204910.9,
       helsingborg: 8750057.4
     };

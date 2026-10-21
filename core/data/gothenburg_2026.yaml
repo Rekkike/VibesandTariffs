@@ -2387,7 +2387,7 @@ fee_rules:
   # v0.8.0: renamed at v0.8.0, formerly apm_terminals_handling_le20ft and
   # apm_terminals_handling_gt20ft. The published §1 charge is a
   # terminal-operator cargo due on goods, not the lift: the vessel-side lift
-  # is billed separately (apm_terminals_lift below). Family reclassified
+  # is billed separately (the user-specified Cost per lift line, v0.11.0). Family reclassified
   # terminal_handling to port_dues at v0.8.0 per the Yilport precedent
   # (gvh_yilport_cargo_due); the Cargo dues line placement is the
   # charge-type mapping (web/src/chargeTypes.ts CARGO_RULE_IDS).
@@ -2454,28 +2454,12 @@ fee_rules:
       verified_on: "2025-12-15"
       verified_by: "Port Cost Analyzer Team"
 
-  # --- Vessel-side lift, ordinary time (v0.8.0) ---
-  # Ordinary time is the like-for-like basis; the overtime, OOG and premium
-  # variants are recorded, not encoded. Per unit per move on container_total
-  # (the ISPS rule's basis below): it fires on every move, discharging and
-  # loading alike.
-  - id: apm_terminals_lift
-    fee_family: terminal_handling
-    biller: APM Terminals Gothenburg
-    name: Terminal Handling - Lift (ordinary time)
-    description: "Vessel-side lift per unit per move, ordinary time, discharging and loading alike"
-    rate_structure:
-      type: per_unit
-      unit_rate: 1029
-      unit_type: container_total
-    source_reference:
-      document_name: "GOTHENBURG_EXTRACTION_REFERENCE.md §8 (handling rates of record)"
-      document_url: "docs/sources/sweden/gothenburg/GOTHENBURG_EXTRACTION_REFERENCE.md"
-      document_issued: "2026-10-20"
-      page: "§8 Handling rates of record"
-      clause: "Vessel-side lift, ordinary time"
-      verified_on: "2026-10-20"
-      verified_by: "Port Cost Analyzer Team"
+  # --- Vessel-side lift (v0.11.0) ---
+  # The lift is no longer an encoded rule: it is a user-specified call input
+  # (user_specified_inputs.lines at the end of this file, the Cost per lift
+  # input). The published ordinary-time rate stays recorded in
+  # docs/sources/sweden/gothenburg/GOTHENBURG_EXTRACTION_REFERENCE.md section 8,
+  # recorded, never encoded.
 
   # --- ISPS Security Charge ---
   - id: apm_terminals_isps
@@ -2899,6 +2883,28 @@ ops_speculative:
   per_gt: { enabled: true, currency: SEK, unit: SEK/GT }
   # Per-unit charges by size (spec v0.9.0): presence, currency, unit only.
   per_unit: { enabled: true, currency: SEK, unit: SEK/unit }
+# User-specified inputs descriptor (spec v0.11.0, user ruling 2026-10-21):
+# configuration only - no rate is encoded here. The Cost per lift input drives
+# one fee line per unit per move on the call's moves; the Delivery input is the
+# container-through landside leg (per unit, fires only with the toggle ON under
+# the session hinterland mode). Both are blank by default and fail-closed. The
+# published rates stay recorded in GOTHENBURG_EXTRACTION_REFERENCE.md section 8,
+# recorded, never encoded (the input hints, suggestions only, live in the web).
+user_specified_inputs:
+  lines:
+    - id: apm_terminals_lift
+      input: got_lift_cost
+      label: Cost per lift
+      line_name: Terminal Handling - Lift (user-specified)
+      biller: APM Terminals Gothenburg
+      fee_family: terminal_handling
+      currency: SEK
+      unit: SEK per unit per move
+  legs:
+    - input: got_delivery_cost
+      label: Delivery
+      currency: SEK
+      unit: SEK per unit
 # Per-port input profile (spec v0.2.59): the input sections the workspace
 # renders for this port. UI configuration, never rates.
 input_profile:
@@ -2927,6 +2933,8 @@ input_profile:
     - ops_unit_charge_40ft
     - ops_nonempty_units_20ft
     - ops_nonempty_units_40ft
+    - got_lift_cost
+    - got_delivery_cost
     - ets_emissions_tco2
     - ets_allowance_price
     - mooring_charge

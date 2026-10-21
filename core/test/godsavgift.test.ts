@@ -76,7 +76,8 @@ describe('Godsavgift — the Swedish national cargo-based fairway due (spec v0.2
   });
 
   // v0.8.0 re-baseline (in-test attribution): GOT gains the ordinary-time vessel-side lift, 4,000 moves x 1,029 = 4,116,000 SEK - 3,275,851.15 -> 7,391,851.15, per-GT 16.81 -> 37.94; no other figure moves.
-  it('the Grand Totals reconcile to the new baselines: GOT 7,391,851.15 / HAM 2,313,489.31 / HEL 8,750,057.40', () => {
+  // v0.11.0 re-baseline (in-test attribution): GOT lift and delivery user inputs (user ruling 2026-10-21) - the lift and the landside leg are user-specified, blank by default: the GOT default call 7,391,851.15 -> 3,275,851.15, per-GT 37.94 -> 16.81 (the 4,116,000 SEK lift no longer fires); no other figure moves.
+  it('the Grand Totals reconcile to the new baselines: GOT 3,275,851.15 / HAM 2,313,489.31 / HEL 8,750,057.40', () => {
     const got = calculatePortCallCost(loadPort('gothenburg_2026.yaml'), { vessel: DEFAULT_VESSEL, call: defaultCall('gothenburg') });
     const ham = calculatePortCallCost(loadPort('hamburg_2026.yaml'), { vessel: DEFAULT_VESSEL, call: defaultCall('hamburg') });
     const hel = calculatePortCallCost(loadPort('helsingborg_2026.yaml'), { vessel: DEFAULT_VESSEL, call: defaultCall('helsingborg') });
@@ -88,11 +89,15 @@ describe('Godsavgift — the Swedish national cargo-based fairway due (spec v0.2
     // default 2,204,910.90 (extraction reference §17.5); GOT/HEL hold.
     // v0.8.0 re-baseline (in-test attribution): GOT's pre-godsavgift base
     // gains the ordinary-time lift, 3,007,051.15 + 4,116,000 = 7,123,051.15.
-    expect(got.total).toBe(7123051.15 + 268800.00);
+    // v0.11.0 re-baseline (in-test attribution): GOT lift and delivery user
+    // inputs (user ruling 2026-10-21) - the lift is user-specified and blank
+    // by default, so GOT returns to its pre-lift base, 3,007,051.15.
+    expect(got.total).toBe(3007051.15 + 268800.00);
     expect(hel.total).toBe(8481257.40 + 268800.00);
     expect(ham.total).toBe(2204910.90);
     // v0.8.0 re-baseline (in-test attribution): GOT gains the ordinary-time vessel-side lift, 4,000 moves x 1,029 = 4,116,000 SEK - 3,275,851.15 -> 7,391,851.15, per-GT 16.81 -> 37.94; no other figure moves.
-    expect(got.total).toBe(7391851.15);
+    // v0.11.0 re-baseline (in-test attribution): GOT lift and delivery user inputs (user ruling 2026-10-21) - the lift and the landside leg are user-specified, blank by default: the GOT default call 7,391,851.15 -> 3,275,851.15, per-GT 37.94 -> 16.81 (the 4,116,000 SEK lift no longer fires); no other figure moves.
+    expect(got.total).toBe(3275851.15);
     expect(hel.total).toBe(8750057.40);
   });
 

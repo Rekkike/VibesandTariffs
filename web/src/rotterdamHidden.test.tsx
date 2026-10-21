@@ -138,7 +138,11 @@ describe('the GOT handling layer on the rendered surfaces (spec v0.8.0, Units 1-
     expect(cargo!.textContent).toContain('1 887 200');
   });
 
-  it('the per-port view: the lift is the sole line under the terminal handling header, as an ordinary rule line; the goods charge sits under port dues', async () => {
+  it('the per-port view: with a Cost per lift entered the lift is the sole line under the terminal handling header, as a user-specified line; the goods charge sits under port dues; blank renders no terminal handling header', async () => {
+    // v0.11.0 re-baseline (in-test attribution): GOT lift and delivery user inputs
+    // (user ruling 2026-10-21) - the lift is a user-specified input, blank by default;
+    // the continuity bridge enters 1,029 so the line renders as before, and the
+    // blank state renders no lift line.
     const got = LOADED_PORTS.find(p => p.metadata.id === 'gothenburg')!;
     container = document.createElement('div');
     document.body.appendChild(container);
@@ -148,7 +152,7 @@ describe('the GOT handling layer on the rendered surfaces (spec v0.8.0, Units 1-
         <PortWorkspace
           port={got}
           vessel={DEFAULT_VESSEL}
-          call={defaultCall('gothenburg') as CallInput}
+          call={{ ...(defaultCall('gothenburg') as CallInput), got_lift_cost: 1029 }}
           onVesselChange={() => {}}
           onCallChange={() => {}}
           onActiveVesselChange={() => {}}
@@ -158,9 +162,9 @@ describe('the GOT handling layer on the rendered surfaces (spec v0.8.0, Units 1-
     await settle();
     const groups = Array.from(container.querySelectorAll('.fee-family-group'));
     const th = groups.filter(g => (g.querySelector('.fee-family-header')?.textContent ?? '') === 'terminal handling');
-    const apmTh = th.find(g => (g.textContent ?? '').includes('Lift (ordinary time)'));
+    const apmTh = th.find(g => (g.textContent ?? '').includes('Lift (user-specified)'));
     expect(apmTh).toBeDefined();
-    expect(apmTh!.textContent).toContain('Terminal Handling - Lift (ordinary time)');
+    expect(apmTh!.textContent).toContain('Terminal Handling - Lift (user-specified)');
     expect(apmTh!.textContent).not.toContain('Goods Charge');
     expect(apmTh!.textContent).toContain('4 116 000');
     // Re-baselined at v0.8.3 origin-wording scrub (user ruling 2026-10-21): the lift renders like any other rule
@@ -173,7 +177,7 @@ describe('the GOT handling layer on the rendered surfaces (spec v0.8.0, Units 1-
     await act(async () => { toggle.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
     const detail = container.querySelector('[id="fee-derivation-apm_terminals_lift"]');
     expect(detail).not.toBeNull();
-    expect(detail!.textContent).toContain('Vessel-side lift, ordinary time');
+    expect(detail!.textContent).toContain('entered by the user for this call; not a tariff rate');
     const pd = groups.filter(g => (g.querySelector('.fee-family-header')?.textContent ?? '') === 'port dues');
     expect(pd.some(g => (g.textContent ?? '').includes('Goods Charge - <=20ft Container'))).toBe(true);
   });

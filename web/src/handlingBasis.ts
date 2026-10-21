@@ -17,6 +17,8 @@
 // port's published landside leg is added to its Grand Total at the
 // view/model layer.
 
+import { userSpecifiedRate } from '@port-cost/core';
+
 export type HinterlandMode = 'truck' | 'rail';
 
 export interface HandlingBasisAnnotation {
@@ -30,7 +32,7 @@ export interface HandlingBasisAnnotation {
 export const HANDLING_BASIS_ANNOTATIONS: Record<string, HandlingBasisAnnotation> = {
   gothenburg: {
     text:
-      'Handling basis: full-cycle, leg-priced. The vessel-side lift is billed separately at 1,029 SEK per unit per move (ordinary time), on top of the published goods charge — the archived APMT Terminal Tariff 2026 (June revision) §1, Terminal Charges on goods, 377/535 SEK per unit, a cargo due carried on the Cargo dues line, not handling. The landside receiving/delivering leg is billed separately at 453 SEK per unit (the container-through toggle).'
+      'Handling basis: full-cycle, leg-priced. The vessel-side lift is billed separately, per unit per move (ordinary time), on top of the published goods charge — the archived APMT Terminal Tariff 2026 (June revision) §1, Terminal Charges on goods, 377/535 SEK per unit, a cargo due carried on the Cargo dues line, not handling. The lift amount is the user-specified Cost per lift input (blank = not priced). The landside receiving/delivering leg is billed separately per unit (the container-through toggle); its amount is the user-specified Delivery input (blank = not added).'
   },
   hamburg: {
     text:
@@ -87,17 +89,24 @@ export interface ContainerThroughPart {
   // True when the port's handling rate is already the through figure
   // (bundled): nothing is added and the note says so.
   bundled: boolean;
+  // Spec v0.11.0: a user-specified leg (Gothenburg Delivery) that is blank
+  // reads 'not_entered' and an invalid entry reads 'invalid' (fail-closed);
+  // neither adds anything and neither reads as "not published".
+  status?: 'not_entered' | 'invalid';
 }
 
 // The published landside legs, per port and mode (SEK unless stated). The
 // unit convention: every container handled by the call (loaded +
 // discharged) takes the landside leg once - the same per-unit basis as the
-// handling lines; the call is never re-profiled.
+// handling lines; the call is never re-profiled. The Gothenburg leg is the
+// user-specified Delivery input (spec v0.11.0, passed as deliveryRaw, the
+// call's got_delivery_cost for that port).
 export function containerThroughParts(
   portId: string,
   mode: HinterlandMode,
   le20ftUnits: number,
-  gt20ftUnits: number
+  gt20ftUnits: number,
+  deliveryRaw?: unknown
 ): ContainerThroughPart {
   switch (portId) {
     case 'gavle':
@@ -224,17 +233,39 @@ export function containerThroughParts(
       };
     }
     case 'gothenburg': {
-      // v0.8.0: the gated landside leg (receiving/delivering, the same
-      // figure for truck and rail); GOTHENBURG_EXTRACTION_REFERENCE.md
-      // section 8.
-      const added = 453 * (le20ftUnits + gt20ftUnits);
+      // v0.11.0: the gated landside leg (receiving/delivering, the same
+      // figure for truck and rail) is the user-specified Delivery input -
+      // recorded in GOTHENBURG_EXTRACTION_REFERENCE.md section 8, never
+      // encoded. Blank adds nothing (not entered); an invalid entry is
+      // fail-closed and names the defect.
+      const delivery = userSpecifiedRate({ got_delivery_cost: deliveryRaw }, 'got_delivery_cost', 'Delivery');
+      if (delivery.state === 'blank') {
+        return {
+          portId,
+          addedAmount: null,
+          bundled: false,
+          status: 'not_entered',
+          note: 'Delivery not entered: enter the Delivery cost per unit at Gothenburg to add the landside leg.'
+        };
+      }
+      if (delivery.state === 'invalid') {
+        return {
+          portId,
+          addedAmount: null,
+          bundled: false,
+          status: 'invalid',
+          note: `Delivery not applied - ${delivery.error}`
+        };
+      }
+      const units = le20ftUnits + gt20ftUnits;
+      const added = Math.round(delivery.value! * units * 100) / 100;
       return {
         portId,
         addedAmount: added,
         bundled: false,
         note:
-          'Receiving/delivering added per unit (453 SEK): ' +
-          `453 x ${le20ftUnits + gt20ftUnits} = ${added} SEK.`
+          `Delivery added per unit (user-specified, ${delivery.value!.toLocaleString('en-US', { maximumFractionDigits: 4 })} SEK): ` +
+          `${delivery.value!.toLocaleString('en-US', { maximumFractionDigits: 4 })} x ${units} = ${added.toLocaleString('en-US', { maximumFractionDigits: 2 })} SEK.`
       };
     }
     case 'rotterdam':

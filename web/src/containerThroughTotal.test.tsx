@@ -40,6 +40,8 @@ const UNITS_GT = (CALL.containers_loaded_gt20ft || 0) + (CALL.containers_dischar
 // always did; the printed Grand Total, not the column order, carries the leg.
 const run = (mode?: 'truck' | 'rail') =>
   computePortResults(LOADED_PORTS, DEFAULT_VESSEL, CALL, RATE_INFO, comparisonBasisContext, undefined, mode);
+const runWith = (mode: 'truck' | 'rail' | undefined, overrides: Record<string, Record<string, unknown>>) =>
+  computePortResults(LOADED_PORTS, DEFAULT_VESSEL, CALL, RATE_INFO, comparisonBasisContext, overrides, mode);
 const totalOf = (rows: ReturnType<typeof run>, id: string) => rows.find(r => r.port.metadata.id === id)!.result!.total;
 
 let container: HTMLElement | null = null;
@@ -94,16 +96,39 @@ describe('container-through Grand Total reversal (spec v0.9.0) - the model', () 
       }
     });
   }
-  it('Gothenburg ON = the engine total plus the 453 SEK leg on every handled unit, in either mode, read from the view model', () => {
+  it('Gothenburg ON = the engine total plus the user-specified Delivery leg on every handled unit, in either mode, read from the view model', () => {
+    // v0.11.0 re-baseline (in-test attribution): GOT lift and delivery user
+    // inputs (user ruling 2026-10-21) - the leg is the Delivery input; the
+    // entered 453 reproduces the v0.10.1 figure (the continuity bridge).
     const engine = calculatePortCallCost(LOADED_PORTS.find(p => p.metadata.id === 'gothenburg')!, {
       vessel: DEFAULT_VESSEL,
-      call: { ...(defaultCall('gothenburg') as CallInput), ...CALL, port_id: 'gothenburg' } as CallInput
+      call: { ...(defaultCall('gothenburg') as CallInput), ...CALL, port_id: 'gothenburg', got_delivery_cost: 453 } as CallInput
     }).total;
     for (const mode of ['truck', 'rail'] as const) {
-      const leg = containerThroughParts('gothenburg', mode, UNITS_LE, UNITS_GT).addedAmount!;
+      const leg = containerThroughParts('gothenburg', mode, UNITS_LE, UNITS_GT, 453).addedAmount!;
       expect(leg).toBe(453 * (UNITS_LE + UNITS_GT));
-      expect(totalOf(run(mode), 'gothenburg')).toBeCloseTo(engine + leg, 2);
+      expect(totalOf(runWith(mode, { gothenburg: { got_delivery_cost: 453 } }), 'gothenburg')).toBeCloseTo(engine + leg, 2);
     }
+  });
+  it('Gothenburg ON with a blank Delivery adds nothing: 3,275,851.15 in either mode (the OFF total); the toggle OFF never fires an entered Delivery', () => {
+    // v0.11.0 (in-test attribution): GOT lift and delivery user inputs (user ruling 2026-10-21).
+    for (const mode of ['truck', 'rail'] as const) {
+      expect(totalOf(run(mode), 'gothenburg')).toBe(3275851.15);
+    }
+    // fail-open red target: an entered Delivery with the toggle OFF stays at the OFF total
+    expect(totalOf(runWith(undefined, { gothenburg: { got_delivery_cost: 453 } }), 'gothenburg')).toBe(3275851.15);
+  });
+  it('the continuity bridge: an entered lift 1,029 and delivery 453 reproduce the v0.10.1 figures exactly - 7,391,851.15 toggle OFF; 9,203,851.15 toggle ON (453 x 4,000 = 1,812,000)', () => {
+    // v0.11.0 (in-test attribution): GOT lift and delivery user inputs (user ruling 2026-10-21).
+    const entered = { gothenburg: { got_lift_cost: 1029, got_delivery_cost: 453 } };
+    expect(totalOf(runWith(undefined, entered), 'gothenburg')).toBe(7391851.15);
+    for (const mode of ['truck', 'rail'] as const) {
+      expect(totalOf(runWith(mode, entered), 'gothenburg')).toBe(9203851.15);
+    }
+  });
+  it('an invalid Delivery (negative) fires nothing even with the toggle ON', () => {
+    // v0.11.0 (in-test attribution): GOT lift and delivery user inputs (user ruling 2026-10-21).
+    expect(totalOf(runWith('truck', { gothenburg: { got_delivery_cost: -453 } }), 'gothenburg')).toBe(3275851.15);
   });
   it('ports with no published leg (Gävle bundled, Rotterdam, Norvik truck) are untouched by ON', () => {
     const off = run();

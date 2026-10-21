@@ -953,6 +953,34 @@ export function validatePort(port: PortDefinition): PortValidationResult {
       });
     }
   }
+  // User-specified inputs descriptor (spec v0.11.0): optional configuration;
+  // every line and leg names a call input, a label, a currency and a unit,
+  // and carries no rate. A line additionally names its fee rule id, biller
+  // and a known fee family.
+  if (port.user_specified_inputs !== undefined) {
+    const usi = port.user_specified_inputs as unknown as Record<string, unknown>;
+    const isStr = (v: unknown) => typeof v === 'string' && v.length > 0;
+    const malformed = (path: string) => errors.push({
+      message: `Port user_specified_inputs.${path} malformed (spec v0.11.0)`,
+      severity: 'error',
+      path: `user_specified_inputs.${path}`
+    });
+    for (const key of ['lines', 'legs'] as const) {
+      const list = usi[key];
+      if (list === undefined) continue;
+      if (!Array.isArray(list)) { malformed(key); continue; }
+      list.forEach((entry, idx) => {
+        const e = (entry ?? {}) as Record<string, unknown>;
+        const common = isStr(e.input) && isStr(e.label) && isStr(e.currency) && isStr(e.unit);
+        const lineOnly = key === 'lines'
+          ? isStr(e.id) && isStr(e.line_name) && isStr(e.biller) && isStr(e.fee_family)
+            && KNOWN_FEE_FAMILIES.has(e.fee_family as string)
+          : true;
+        const noRate = !('rate' in e) && !('unit_rate' in e);
+        if (!common || !lineOnly || !noRate) malformed(`${key}[${idx}]`);
+      });
+    }
+  }
   if (!port.input_profile || !Array.isArray(port.input_profile.sections) || port.input_profile.sections.length === 0) {
     errors.push({
       message: 'Port missing input_profile section (per-port workspace input profile, spec v0.2.59)',

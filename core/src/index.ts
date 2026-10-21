@@ -3,6 +3,7 @@
 export * from './types';
 export * from './engine';
 export * from './container_split';
+export * from './user_specified_rates';
 // Default form state (spec v0.2.28 default-call contract: worst-case
 // published-rate call; environmental levers blank = not entered)
 export * from './defaults';
