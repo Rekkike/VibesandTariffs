@@ -19,11 +19,14 @@ export interface UserSpecifiedDisclosureItem {
 // Input hints (spec v0.11.0, the tug-input precedent): a suggestion only,
 // never a prefill. The published rates stay recorded in the Gothenburg
 // extraction reference section 8; nothing here is read by any calculation.
+// v0.11.2 (GOT lift and delivery rate-text removal, user ruling 2026-10-21):
+// the hints no longer state the recorded figures anywhere in the app; an
+// entered value is the user's own figure and still discloses as entered.
 const HINTS: Record<string, string> = {
   got_lift_cost:
-    'Blank = not entered; no lift is priced. Suggestion only, never a prefill: the published ordinary-time rate is recorded in the Gothenburg extraction reference section 8 (1,029 SEK per unit per move). Prices on the call\'s moves (loaded + discharged).',
+    'Blank = not entered; no lift is priced. Suggestion only, never a prefill: the published ordinary-time rate is recorded in the Gothenburg extraction reference section 8. Prices on the call\'s moves (loaded + discharged).',
   got_delivery_cost:
-    'Blank = not entered; no landside leg is added. Applies only with the container-through toggle ON, under the selected hinterland mode. Suggestion only, never a prefill: the published receiving/delivering rate is recorded in the Gothenburg extraction reference section 8 (453 SEK per unit).'
+    'Blank = not entered; no landside leg is added. Applies only with the container-through toggle ON, under the selected hinterland mode. Suggestion only, never a prefill: the published receiving/delivering rate is recorded in the Gothenburg extraction reference section 8.'
 };
 
 export const userSpecifiedHint = (input: string): string | undefined => HINTS[input];
