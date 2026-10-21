@@ -27,7 +27,7 @@ export interface HandlingBasisAnnotation {
 export const HANDLING_BASIS_ANNOTATIONS: Record<string, HandlingBasisAnnotation> = {
   gothenburg: {
     text:
-      'Handling basis: full-cycle, leg-priced. The vessel-side lift is billed separately at 1,029 SEK per unit per move (ordinary time), on top of the published goods charge — the archived APMT Terminal Tariff 2026 (June revision) §1, Terminal Charges on goods, 377/535 SEK per unit, a cargo due carried on the Cargo dues line, not handling. The landside receiving/delivering leg is billed separately at 453 SEK per unit (the container-through toggle). The lift and landside rates: user-delivered confidential commercial invoice — rates not published in any tariff; details withheld; never a list price.'
+      'Handling basis: full-cycle, leg-priced. The vessel-side lift is billed separately at 1,029 SEK per unit per move (ordinary time), on top of the published goods charge — the archived APMT Terminal Tariff 2026 (June revision) §1, Terminal Charges on goods, 377/535 SEK per unit, a cargo due carried on the Cargo dues line, not handling. The landside receiving/delivering leg is billed separately at 453 SEK per unit (the container-through toggle).'
   },
   hamburg: {
     text:
@@ -222,17 +222,15 @@ export function containerThroughParts(
     }
     case 'gothenburg': {
       // v0.8.0: the gated landside leg (receiving/delivering, the same
-      // figure for truck and rail) - the confidential-source class
-      // (GOTHENBURG_EXTRACTION_REFERENCE.md section 8). A published-tariff
-      // citation may replace it later as a mechanical swap, never a figure
-      // change.
+      // figure for truck and rail); GOTHENBURG_EXTRACTION_REFERENCE.md
+      // section 8.
       const added = 453 * (le20ftUnits + gt20ftUnits);
       return {
         portId,
         addedAmount: added,
         bundled: false,
         note:
-          'Receiving/delivering added per unit (453 SEK; user-delivered confidential commercial invoice — rates not published in any tariff; details withheld): ' +
+          'Receiving/delivering added per unit (453 SEK): ' +
           `453 x ${le20ftUnits + gt20ftUnits} = ${added} SEK.`
       };
     }

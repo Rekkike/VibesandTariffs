@@ -66,8 +66,7 @@ export interface FunctionalClassInfo {
 // municipal port dues; Sjöfartsverket price list 2026 — fartygsavgift p.3,
 // beredskapsavgift p.4, godsavgift p.5, pilotage p.4, ordering fee p.4;
 // APMT Terminal Tariff 2026 §1 Terminal Charges on goods, §1.4 ISPS; the
-// v0.8.0 vessel-side lift from the confidential-source record,
-// GOTHENBURG_EXTRACTION_REFERENCE.md §8).
+// v0.8.0 vessel-side lift, GOTHENBURG_EXTRACTION_REFERENCE.md §8).
 const got: Record<string, FunctionalClassInfo> = {
   gothenburg_mooring_notice: {
     functional_class: 'purchased_service',
@@ -165,8 +164,8 @@ const got: Record<string, FunctionalClassInfo> = {
   },
   apm_terminals_lift: {
     functional_class: 'cargo_throughput_levy',
-    basis_note: 'Vessel-side container lift per unit per move, ordinary time (the like-for-like basis; overtime, OOG and premium variants recorded, not encoded); user-delivered confidential commercial invoice — rates not published in any tariff; details withheld',
-    source: 'GOTHENBURG_EXTRACTION_REFERENCE.md §8 (sanitized confidential-source record)'
+    basis_note: 'Vessel-side container lift per unit per move, ordinary time (the like-for-like basis; overtime, OOG and premium variants recorded, not encoded)',
+    source: 'GOTHENBURG_EXTRACTION_REFERENCE.md §8'
   },
   apm_terminals_handling_break_bulk: {
     functional_class: 'cargo_throughput_levy',
