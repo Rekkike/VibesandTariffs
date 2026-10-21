@@ -11,8 +11,7 @@
 //
 // Units 1-2 on the rendered surfaces: the GOT goods charge renders on the
 // Cargo dues line; the ordinary-time lift renders as the sole line under the
-// terminal handling header in the per-port view, carrying the
-// confidential-source disclosure.
+// terminal handling header in the per-port view.
 import React from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { act } from 'react';
@@ -139,7 +138,7 @@ describe('the GOT handling layer on the rendered surfaces (spec v0.8.0, Units 1-
     expect(cargo!.textContent).toContain('1 887 200');
   });
 
-  it('the per-port view: the lift is the sole line under the terminal handling header, with the confidential-source disclosure; the goods charge sits under port dues', async () => {
+  it('the per-port view: the lift is the sole line under the terminal handling header, as an ordinary rule line; the goods charge sits under port dues', async () => {
     const got = LOADED_PORTS.find(p => p.metadata.id === 'gothenburg')!;
     container = document.createElement('div');
     document.body.appendChild(container);
@@ -164,20 +163,17 @@ describe('the GOT handling layer on the rendered surfaces (spec v0.8.0, Units 1-
     expect(apmTh!.textContent).toContain('Terminal Handling - Lift (ordinary time)');
     expect(apmTh!.textContent).not.toContain('Goods Charge');
     expect(apmTh!.textContent).toContain('4 116 000');
-    // The disclosure: the collapsed line carries the caveat badge (never a
-    // list-price reading); the expanded line detail renders the citation of
-    // record through the source line (the rule's clause) and names the
-    // sanitized confidential-source record.
+    // Re-baselined at v0.8.3 origin-wording scrub (user ruling 2026-10-21): the lift renders like any other rule
+    // line - no caveat badge; the expanded detail renders the source line
+    // (the rule's clause) and carries no origin wording.
     const caveat = apmTh!.querySelector('.status-caveat');
-    expect(caveat).not.toBeNull();
-    expect(caveat!.textContent).toBe('contract rate may differ');
+    expect(caveat).toBeNull();
     const toggle = apmTh!.querySelector('[aria-controls="fee-derivation-apm_terminals_lift"]') as HTMLElement;
     expect(toggle).not.toBeNull();
     await act(async () => { toggle.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
     const detail = container.querySelector('[id="fee-derivation-apm_terminals_lift"]');
     expect(detail).not.toBeNull();
-    expect(detail!.textContent).toContain('user-delivered confidential commercial invoice — rates not published in any tariff; details withheld');
-    expect(detail!.textContent).toContain('sanitized confidential-source record');
+    expect(detail!.textContent).toContain('Vessel-side lift, ordinary time');
     const pd = groups.filter(g => (g.querySelector('.fee-family-header')?.textContent ?? '') === 'port dues');
     expect(pd.some(g => (g.textContent ?? '').includes('Goods Charge - <=20ft Container'))).toBe(true);
   });
