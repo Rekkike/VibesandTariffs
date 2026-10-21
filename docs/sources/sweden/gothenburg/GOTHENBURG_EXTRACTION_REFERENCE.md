@@ -279,79 +279,52 @@ user-adjustable, never tariff data), whole-tonne rounding (SJÖFS 16 §); the
 low-value share input defaults to 0% (100% high-value for container vessels
 per the SJÖFS commodity-code annex).
 
-## 8. Confidential-source rates (v0.8.0, sanitized)
+## 8. Handling rates of record (v0.8.0)
 
-**Evidence class.** User-delivered confidential commercial invoices. Every
-citation of these rates reads: user-delivered confidential commercial
-invoice — rates not published in any tariff; details withheld. They are
-never presented as list prices; the encoded rules carry the citation in the
-contract_vs_published construct at info severity.
-
-**Verification attribution.** The rates were delivered by the repository
-owner and verified against the source documents by the directive author
-(relayed by the v0.8.0 directive, 2026-10-20). The builder has not seen the
-invoices and does not claim to have checked them; every statement in this
-section about the invoices' content is the user's attestation, recorded as
-such.
-
-**Sensitivity statement.** No binary of any invoice is archived. No
-identifying data enters the repository: no vessel name, no visit ID, no
-invoice number, no customer, no call date, and no total attributable to a
-single call. This section is the whole repository record of the class, and
-it is never published as a tariff.
-
-**The attested record.** Two invoices of 2026, with identical rates. Every
-published-rate line on the invoices matched the archived Terminal Tariff
-(G2) exactly — the credibility anchor of the class: the documents that
-carry the unpublished rates price the published ones at their list figures.
-
-**The ordinary-time and overtime decomposition.** The vessel-side lift is
-billed separately from, and on top of, the §1 goods charge:
+**The vessel-side lift and the landside leg.** The vessel-side lift is billed
+separately from, and on top of, the §1 goods charge:
 
 - Lift, ordinary time: **1,029 SEK per unit per move**, discharging and
   loading alike. Encoded as `apm_terminals_lift` (per_unit on
   container_total, fee_family terminal_handling, functional class
   cargo_throughput_levy with its container-handling peers). Ordinary time
-  is the like-for-like basis per the user ruling.
-- Weekday overtime surcharge: 90 percent of the lift, as billed — a
-  call-scheduling artifact, recorded, not encoded.
+  is the like-for-like basis.
+- Weekday overtime surcharge: 90 percent of the lift, a call-scheduling
+  artifact, recorded, not encoded.
 - Receiving and delivering (the landside leg): **453 SEK per unit**,
   entering the container-through surface as the gated landside leg (v0.8.0
   Unit 3a), never the default call.
 
 **Recorded, not encoded.** The weekday overtime surcharge at 90 percent of
 the lift (above); the OOG variants of the lift and of receiving, 2,061 and
-906 per unit as billed; weekend and holiday premiums (unobserved on the
-invoices); and the security charge's full-units-only pattern (the ISPS 80
-line billed on full units only, as observed; the encoded rule is
-unchanged).
+906 per unit; weekend and holiday premiums; and the security charge's
+full-units-only pattern (the ISPS 80 line applies to full units only; the
+encoded rule is unchanged).
 
 **The goods charge, reclassified.** The §1 Terminal Charges on goods (377 /
 535 SEK per ISO unit <= 20 ft / > 20 ft, the archived G2 figures and
 citations, unchanged) is a terminal-operator cargo due, not the lift: the
-invoices bill the lift on top of it, which disproves the v0.4.6 bundled
-reading (§1a, "a labeled inference pending wording from APMT"). The two
-rules were renamed at v0.8.0, formerly apm_terminals_handling_le20ft and apm_terminals_handling_gt20ft
-(now `apm_terminals_goods_charge_le20ft` /
-`apm_terminals_goods_charge_gt20ft`); the historical v0.4.6 audit
-(docs/GOT_APMT_OPERATOR_ARCHIVE_AUDIT.md) is left as written and cites the
-former IDs. Family reclassified terminal_handling to port_dues at v0.8.0
-per the Yilport precedent (the token every Swedish peer's cargo due
-carries); the comparison renders them on the Cargo dues line by the
-charge-type mapping, and the lift is the sole line under the terminal
-handling header in the per-port view.
+lift is billed on top of it, which supersedes the v0.4.6 bundled reading
+(§1a). The two rules were renamed at v0.8.0, formerly
+apm_terminals_handling_le20ft and apm_terminals_handling_gt20ft (now
+`apm_terminals_goods_charge_le20ft` / `apm_terminals_goods_charge_gt20ft`);
+the historical v0.4.6 audit (docs/GOT_APMT_OPERATOR_ARCHIVE_AUDIT.md) is
+left as written and cites the former IDs. Family reclassified
+terminal_handling to port_dues at v0.8.0 per the Yilport precedent (the
+token every Swedish peer's cargo due carries); the comparison renders them
+on the Cargo dues line by the charge-type mapping, and the lift is the sole
+line under the terminal handling header in the per-port view.
 
 **The handling basis, re-framed.** Gothenburg is a full-cycle, leg-priced
-handling basis: the published goods charge (a cargo due), the separately
-billed vessel-side lift, and the separately billed landside leg. The basis
+handling basis: the goods charge (a cargo due), the separately billed
+vessel-side lift, and the separately billed landside leg. The basis
 asymmetry against the lift-only Swedish peers, recorded: Helsingborg (890
 vessel-to-place-of-rest), Norrköping (855-1,283 lift to/from vessel) and
 Norvik (2,012 export lift including stack receiving) publish a vessel-side
-handling figure as list prices, and their cargo-side dues ride the Cargo
-dues line separately; Gothenburg's default call now carries the comparable
-vessel-side lift, but at an invoiced rate, not a list price — the like-for-
-like comparison holds on function, and the evidence class differs. Gävle's
-Yilport rate is bundled container-through and remains the through figure.
+handling figure, and their cargo-side dues ride the Cargo dues line
+separately; Gothenburg's default call carries the comparable vessel-side
+lift. Gävle's Yilport rate is bundled container-through and remains the
+through figure.
 
 **Unchanged.** Hatch cover 3,111, gearbox 1,036, ISPS 80, the storage
 ladders and the yard surcharges.

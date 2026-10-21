@@ -98,10 +98,10 @@ describe('handling-basis annotations (spec v0.4.2, item 2) - a new annotation fa
     expect(handlingBasisAnnotationFor('norrkoping')!.text).toContain('855/1,051/1,249/1,283');
     expect(handlingBasisAnnotationFor('helsingborg')!.text).toContain("Place of rest");
   });
-  it('the GOT basis (v0.8.0): full-cycle, leg-priced — the lift billed separately on top of the goods charge, the landside leg separately, the confidential-source class disclosed', () => {
+  it('the GOT basis (v0.8.0): full-cycle, leg-priced — the lift billed separately on top of the goods charge, the landside leg separately', () => {
     // v0.8.0 re-baseline (in-test attribution, the S-c declared class): the
     // v0.4.6 bundled reading ("labeled as inference pending wording from
-    // APMT") is disproven by the confidential-source evidence - the lift is
+    // APMT") is superseded - the lift is
     // billed separately at 1,029 on top of the section 1 goods charge. The
     // annotation becomes the evidenced leg-priced basis; a residual
     // inference wording fails.
@@ -110,12 +110,12 @@ describe('handling-basis annotations (spec v0.4.2, item 2) - a new annotation fa
     expect(text).toContain('1,029 SEK per unit per move (ordinary time)');
     expect(text).toContain('§1, Terminal Charges on goods, 377/535 SEK per unit, a cargo due carried on the Cargo dues line, not handling');
     expect(text).toContain('453 SEK per unit');
-    expect(text).toContain('user-delivered confidential commercial invoice — rates not published in any tariff; details withheld');
-    expect(text).toContain('never a list price');
+    // Re-baselined at v0.8.3 origin-wording scrub (user ruling 2026-10-21): structure only, no origin narrative.
+    expect(text.endsWith('(the container-through toggle).')).toBe(true);
     expect(text).not.toContain('inference');
     expect(text).not.toMatch(/bundled \(container-through\)/);
   });
-  it('the GOT toggle participation (v0.8.0): the gated landside leg, 453 SEK per unit for either mode, cited to the confidential-source class', () => {
+  it('the GOT toggle participation (v0.8.0): the gated landside leg, 453 SEK per unit for either mode', () => {
     // v0.8.0 re-baseline (in-test attribution, the S-c declared class): the
     // v0.4.6 "not published" participation is replaced by the evidenced
     // receiving/delivering leg - 453 x 4,000 = 1,812,000 SEK at the default
@@ -125,7 +125,8 @@ describe('handling-basis annotations (spec v0.4.2, item 2) - a new annotation fa
       expect(got.addedAmount).toBe(453 * 4000);
       expect(got.addedAmount).toBe(1812000);
       expect(got.bundled).toBe(false);
-      expect(got.note).toContain('453 SEK; user-delivered confidential commercial invoice — rates not published in any tariff; details withheld');
+      expect(got.note).toContain('(453 SEK): ');  // re-baselined at v0.8.3 origin-wording scrub (user ruling 2026-10-21): the bare figure note
+      expect(got.note.startsWith('Receiving/delivering added per unit (453 SEK): ')).toBe(true);
       expect(got.note).toContain('453 x 4000 = 1812000 SEK.');
     }
   });

@@ -38,7 +38,7 @@ Scope questions (outside container-vessel scope) are listed separately and are n
 | C8 | Environment discipline: build copy, exact-path chunked runs, no `node_modules` in the repository tree | §12 |
 | C9 | Working discipline: one delivery, one bump; gate report before merge; a contradiction stops and is reported | §13, §11 |
 | C10 | Deployment: the served bundle is identified through the CI artifact manifest and the live shell | §8 |
-| C11 | Sensitivity rail: no vessel name, visit ID, invoice number, customer identifier, or call date appears where the confidential-source class is cited; the citation wording is fixed | GOTHENBURG_EXTRACTION_REFERENCE §8, v0.8.0 rail |
+| C11 | Identifier hygiene: no vessel name, call reference, document reference, party identifier, or call date appears in any authored file | Section 6 identifier-shape grep |
 | C12 | Scope: container vessels only | §1, deferred queue |
 
 Note: the directive refers to "§13 environment discipline"; in the committed specification the environment discipline is §12 and the working discipline is §13 (C8, C9).
@@ -80,9 +80,9 @@ With a faked clock of 2026-12-15 (build copy only; nothing committed), the exist
 
 Today (2026-10-21) all 811 and 588 are green; the first red date by the rule is 2026-12-01 (executed at 2026-12-15 and 2027-02-01; the window boundary dates themselves were not individually executed). Neither CI workflow runs the suites (R-03), so the deployed site is unaffected; the effect is on every later pass's baseline and on the comparison ranking, which can reorder in winter.
 
-### A-02 — ASYMMETRY — The printed comparison omits the Gothenburg handling-basis annotation that carries the lift's confidential-source wording · P1
+### A-02 — ASYMMETRY — RESOLVED — The Gothenburg handling-basis annotation carried origin wording (resolved at v0.8.3)
 Criteria C3, C11.
-On screen, the Gothenburg handling-basis annotation (`web/src/handlingBasis.ts:27–35`) is rendered under the terminal-handling family in both comparison layouts (`comparisonView.tsx:394, 633`). It states the 1,029 SEK vessel-side lift, its ordinary-time basis, and the fixed wording "user-delivered confidential commercial invoice — rates not published in any tariff; details withheld; never a list price". The print path imports only `containerThroughParts` from `handlingBasis` (`printComparisonPages.tsx:24`) and does not use `handlingBasisAnnotationFor`; the flags block is stated not to print (`printComparisonPages.tsx:12–15`). A printed Gothenburg Grand Total therefore includes a confidential-source figure with no wording on the page, while the same total on screen carries it. Not run through a print render in this pass: established from the code and the file's own header comment.
+Resolved by the v0.8.3 pass: the Gothenburg handling-basis annotation (`web/src/handlingBasis.ts`) is structure-only (the separately billed lift at 1,029 SEK per unit per move, ordinary time, the goods charge, and the landside leg at 453 SEK), and the lift and the landside leg render like any other rule line. The wording defect this finding recorded no longer exists. The structural observation stands as recorded: the print path imports only `containerThroughParts` from `handlingBasis` (`printComparisonPages.tsx:24`) and does not use `handlingBasisAnnotationFor`, so the annotation is on screen only (`comparisonView.tsx:394, 633`). Not run through a print render in this pass: established from the code and the file's own header comment.
 
 ### A-03 — ASYMMETRY — Container-through landside leg: Hamburg's 152 EUR applies irrespective of terminal; Bremerhaven's default-terminal basis differs · P3 **[KNOWN]**
 Criterion C5/C6. Recorded in the v0.8.0 ruling S-b (Hamburg precedent). Verified in `handlingBasis.ts` only; not re-argued.
@@ -103,8 +103,8 @@ Criteria C9, C10. `deploy.yml` builds with `CI=false npm run build` (warnings ar
 ### R-04 — RECOMMENDATION — Single named constant for the 0.55 NT estimate · P3
 `vessel.gt * 0.55` is written out at four sites (`engine.ts:213, 439, 811, 1952`).
 
-### R-05 — RECOMMENDATION — Wording of the collapsed lift badge on the single-port workspace · P3
-Criterion C3, C11. The collapsed fee row shows the generic badge "contract rate may differ" (`web/src/flagBadges.ts`); the confidential-source citation appears only when the row is expanded. The comparison screen carries the full wording through A-02's annotation, so the surface that matters most for a decision is covered; the single-port collapsed row says less. A badge title that names the evidence class would close it without adding a row.
+### R-05 — RECOMMENDATION — RESOLVED — Wording of the collapsed lift badge on the single-port workspace (resolved at v0.8.3) · P3
+Resolved by the v0.8.3 pass: the lift rule carries no caveat construct and renders like any other rule line; there is no badge wording to align.
 
 ### R-06 — RECOMMENDATION — No-UI inputs: one disposition per group (see §3) · P3
 
@@ -170,7 +170,7 @@ Environment limit, stated plainly: the PDF page renderer is not installed in thi
 |---|---|---|---|
 | `apm_terminals_goods_charge_le20ft`/`gt20ft`, break bulk, hatch cover, gearbox, ISPS (Gothenburg) | 377 / 535 / 54 per 1000 kg / 3111 / 1036 / 80 SEK | `apm-terminals-terminal-tariff-2026-june.txt`, "Page 2", §1.1–1.4 (lines 69–77) | All six figures match; page 2 and "Terminal Charges on goods" match |
 | `ntb_container_handling`, `ntb_lashing`, `ntb_twistlocks` (Bremerhaven) | 339.00 / 42.60 / 21.60 EUR | `ntb-reference-tariff-en-2026-08-01.txt`, clauses 2.1.1, 2.3.1, 2.3.2 | Figures and clause numbers match. The text transcription's page markers are ambiguous, so the YAML `page` fields (2, 3, 3) were not independently confirmed |
-| `apm_terminals_lift` (Gothenburg) | 1,029 SEK | Not an archive document: the sanitized record GOTHENBURG_EXTRACTION_REFERENCE §8 (user attestation; the builder has not seen and does not check the underlying invoices) | By design |
+| `apm_terminals_lift` (Gothenburg) | 1,029 SEK | Not an archive document: GOTHENBURG_EXTRACTION_REFERENCE §8 (handling rates of record) | By design |
 
 Not opened in this pass, and therefore not re-verified: every PDF-sourced rule at Gävle (hamntaxa p.4 2.97 SEK/GT and the istillägg), Helsingborg, Norrköping, Norvik (including the p.6→p.4 correction precedent), Aarhus, Hamburg, Rotterdam. Prior-pass verification stands as recorded; this audit adds none. A pass that can render PDFs (or a user-supplied text extraction) should take the priority list: Gävle winter variant; Norrköping and Helsingborg bands; the Aarhus gate-move basis (D-01).
 
@@ -180,31 +180,13 @@ Not opened in this pass, and therefore not re-verified: every PDF-sourced rule a
 - S-2: Break-bulk handling is encoded (`apm_terminals_handling_break_bulk`, 54 SEK per 1000 kg; input `break_bulk_1000kg`) — outside container scope.
 - No tanker rule was looked for by name; none was noticed.
 
-## 6. Sensitivity-rail grep (standing)
+## 6. Identifier-shape grep (standing)
 
-Run on the audit branch over all tracked files; verbatim command:
+Run over all tracked authored files at v0.8.3. Two shapes, both with zero hits: eight-digit document numbers beginning 2026, and three capital letters, a hyphen and four digits (call references). The standing identifier pattern set (call-reference, registry-number, party and document-number terms in English and Swedish) was re-run over all tracked files: 50 matching lines in 14 files; the v0.8.2 run reported 52 matching lines in 15 files, and the difference is the extraction reference's two hits, which were removed with the rewritten section.
 
-```
-git grep -n -i -E "visit[ _-]?id|invoice (no|number|nr)|\bIMO[ :]?[0-9]{7}\b|\bMMSI\b|customer (no|number|id)|faktura(nummer| ?nr)|kundnummer" -- .
-```
-
-Result: 52 matching lines in 15 files.
-
-| Lines | File |
-|---:|---|
-| 11 | `web/src/print.test.tsx` |
-| 9 | `docs/NT_REDERIVATION_AUDIT.md` |
-| 6 | `web/src/profileSeeding.test.tsx` |
-| 5 | `core/data/vessel_library.yaml` |
-| 4 | `core/src/vessel_profiles.ts` |
-| 3 | `docs/SPECIFICATION.md` |
-| 2 each | `vesselSelection.test.tsx`, `wasteOrigin.test.tsx`, `terminalScope.test.tsx`, `apm-terms-of-business-2025-03-31.txt`, `GOTHENBURG_EXTRACTION_REFERENCE.md` |
-| 1 each | `docs/SCENARIO_LAYER_AUDIT.md`, `core/src/defaults.ts`, `apm-terminals-terminal-tariff-2026-june.txt`, `ntb-reference-tariff-en-2026-08-01.txt` |
-
-- The IMO hits are four registry numbers — 9306017, 9632129, 9775737, 9967005 — all of vessels in the public vessel library (and its tests and fixtures). Registry identifiers of library vessels are not the confidential-source class.
-- The six non-IMO hits: the Bremerhaven and APMT archived texts ask payers to quote an invoice number (`ntb-reference-tariff-en-2026-08-01.txt:54`, `apm-terminals-terminal-tariff-2026-june.txt:238`, `apm-terms-of-business-2025-03-31.txt:81, 83`); and `GOTHENBURG_EXTRACTION_REFERENCE.md:298–299`, which is the sentence that states the prohibition itself.
-- A second grep for `invoice|visit|faktura|confidential|1029` over everything except the archived text transcriptions found the confidential class cited only in `core/data/gothenburg_2026.yaml` (2457–2482), `core/src/classification.ts` (69, 168, 169), `core/test/got_lift.test.ts`, `web/src/handlingBasis.ts`, the specification changelog, and the extraction reference §8, each with the fixed wording and none with a vessel name, visit ID, invoice number, customer identifier, or call date.
-- Result: no identifier-shaped string is attached to the confidential-source class anywhere in the repository. Whether any library vessel coincides with the invoiced vessel cannot be tested by a pattern and is not asserted either way.
+- The IMO hits are four registry numbers — 9306017, 9632129, 9775737, 9967005 — all of vessels in the public vessel library (and its tests and fixtures).
+- The remaining hits are in the verbatim archived texts under `docs/sources/` (exempt) and in the NT re-derivation, scenario-layer and specification text.
+- Result: no identifier-shaped string appears in any authored file attached to a call, a document or a party.
 
 ## 7. Deployment and packaging (Unit 6)
 
