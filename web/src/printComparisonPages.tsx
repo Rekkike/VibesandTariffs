@@ -16,14 +16,15 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
 import { Box, Table, TableBody, TableCell, TableHead, TableRow } from '@mui/material';
-import type { CallInput, PortDefinition, QualityFlag, VesselInput } from '@port-cost/core';
+import type { CallInput, CostCalculationResult, PortDefinition, QualityFlag, VesselInput } from '@port-cost/core';
 import { containerSplit } from '@port-cost/core';
-import { formatRate } from './conversion';
+import { conversionLabel, formatRate } from './conversion';
 import type { ComparisonBasisContext, ExchangeRateInfo } from './conversion';
 import { printContinuationNote, printPagesFor } from './printPages';
 import type { HinterlandMode } from './handlingBasis';
 import { containerThroughParts } from './handlingBasis';
 import { buildOpsSegment } from './comparisonModel';
+import { buildDiscountLine } from './discountLine';
 import type { PrintPage } from './printPages';
 import { APP_VERSION } from './version';
 
@@ -48,6 +49,11 @@ export interface PrintComparisonPagesProps {
       currency: string;
       quality_flags: QualityFlag[];
       ops_speculative?: { amount: number; lines: { id: string; label: string; amount: number; basis: string }[] } | null;
+      // Reconciliation rows (spec v0.10.1): read from the engine record of the
+      // print surface's own model, never from a screen-side map.
+      total_estimated_parameters?: number;
+      total_without_estimates?: number;
+      vessel_access?: { amount: number; effective_per_gt: number; classes: string[] };
     } | null;
   }[];
   rowsByStage: {
@@ -120,6 +126,29 @@ export const PrintComparisonPages: React.FC<PrintComparisonPagesProps> = ({
   const totalPorts = ports.length;
   const portById = new Map(ports.map(p => [p.metadata.id, p]));
   const opsSegment = buildOpsSegment(portResults);
+  // The converted secondary on paper (spec v0.10.1): the printed Grand Total's
+  // own rule - a non-SEK figure gains its converted SEK value exactly when
+  // the print conversion selection is ON; DKK converts through the derived
+  // cross, EUR at the resolved rate. Null when no converted figure prints.
+  const convertedFor = (amount: number, currency: string): number | null => {
+    if (currency === 'SEK' || !conversionsVisible) return null;
+    return currency === 'DKK'
+      ? amount * (rateInfo.rate / (declaredRows.find(r => r.to_currency === 'DKK')?.rate ?? 1))
+      : amount * rateInfo.rate;
+  };
+  const renderAmount = (amount: number, currency: string) => {
+    const conv = convertedFor(amount, currency);
+    return (
+      <Box sx={{ textAlign: 'right' }}>
+        <span className="comparison-figure">{formatCurrency(amount, currency)}</span>
+        {conv !== null && (
+          <Box sx={{ fontSize: '0.75rem' }} className="comparison-secondary">
+            {'\u2248'} {formatCurrency(conv, 'SEK')}
+          </Box>
+        )}
+      </Box>
+    );
+  };
   const cheapestPortId = null;
   const mostExpensivePortId = null;
 
@@ -368,6 +397,57 @@ export const PrintComparisonPages: React.FC<PrintComparisonPagesProps> = ({
                   ))}
               </>
             )}
+            {/* Discounts received on paper (spec v0.10.1, print reconciliation
+                rows): the screen's own row (spec v0.2.64), built with the same
+                buildDiscountLine over this surface's own portResults so a
+                dialog selection that differs from the screen toggle still
+                reconciles. Included in the Grand Total, never additive. */}
+            <TableRow className="comparison-discount-row print-discount-row" data-testid={`print-discount-row-${page.pageNumber}`}>
+              <TableCell>
+                <strong>Discounts received</strong>
+                <span className="comparison-discount-included-note">included in the Grand Total</span>
+              </TableCell>
+              {page.ports.map(({ id }) => {
+                const result = portResults.find(p => p.port.metadata.id === id)?.result;
+                if (!result) {
+                  return (
+                    <TableCell key={id} align="right" className="comparison-subtotal">
+                      <span className="comparison-error">error</span>
+                    </TableCell>
+                  );
+                }
+                const line = buildDiscountLine(result as unknown as CostCalculationResult);
+                const conv = convertedFor(line.sum, result.currency);
+                return (
+                  <TableCell key={id} align="right" className="comparison-subtotal">
+                    <Box sx={{ textAlign: 'right' }} className="comparison-discount-cell">
+                      {line.components.length > 0
+                        ? (
+                          <Box sx={{ textAlign: 'right' }}>
+                            <span className="comparison-figure">{formatCurrency(line.sum, result.currency)}</span>
+                            {conv !== null && (
+                              <Box sx={{ fontSize: '0.75rem' }} className="comparison-secondary">
+                                {'\u2248'} {formatCurrency(conv, 'SEK')}
+                              </Box>
+                            )}
+                            <Box sx={{ fontSize: '0.75rem' }} className="comparison-secondary">
+                              {line.percentage.toFixed(2)}% of gross (pre-discount) charges
+                            </Box>
+                          </Box>
+                        )
+                        : <span className="comparison-no-discount">no discounts at this call</span>}
+                      <Box sx={{ fontSize: '0.75rem' }} className="comparison-secondary">
+                        {line.components.map((c, i) => (
+                          <Box key={i} component="span" style={{ display: 'block' }} className="print-discount-component">
+                            {c.label}{c.detail ? ` (${c.detail})` : ''}: −{formatCurrency(c.amount, result.currency)} — {c.citation}
+                          </Box>
+                        ))}
+                      </Box>
+                    </Box>
+                  </TableCell>
+                );
+              })}
+            </TableRow>
             <TableRow className="comparison-total-row">
               <TableCell>
                 <strong>Grand Total</strong>
@@ -404,6 +484,97 @@ export const PrintComparisonPages: React.FC<PrintComparisonPagesProps> = ({
                   </TableCell>
                 );
               })}
+            </TableRow>
+            {/* Print reconciliation rows (spec v0.10.1): the screen's own rows
+                after the Grand Total - Estimated parameters subtotal, Total
+                without estimates, Vessel Access Charges with its per-GT bridge,
+                and the comparability note - mandatory reconciliation content on
+                every page, each page's cells carrying that page's ports. */}
+            <TableRow className="comparison-estimate-row print-estimate-row" data-testid={`print-estimate-row-${page.pageNumber}`}>
+              <TableCell>
+                <span className="status-badge status-warning" style={{ marginRight: 'var(--space-1)' }}>est.</span>
+                Estimated parameters subtotal
+              </TableCell>
+              {page.ports.map(({ id }) => {
+                const result = portResults.find(p => p.port.metadata.id === id)?.result;
+                return (
+                  <TableCell key={id} align="right" className="comparison-subtotal">
+                    {result ? renderAmount(result.total_estimated_parameters ?? 0, result.currency) : <span className="comparison-error">error</span>}
+                  </TableCell>
+                );
+              })}
+            </TableRow>
+            <TableRow className="comparison-estimate-row print-estimate-row" data-testid={`print-without-estimates-row-${page.pageNumber}`}>
+              <TableCell>
+                <strong>Total without estimates</strong>
+              </TableCell>
+              {page.ports.map(({ id }) => {
+                const result = portResults.find(p => p.port.metadata.id === id)?.result;
+                return (
+                  <TableCell key={id} align="right" className="comparison-subtotal">
+                    {result ? renderAmount(result.total_without_estimates ?? 0, result.currency) : <span className="comparison-error">error</span>}
+                  </TableCell>
+                );
+              })}
+            </TableRow>
+            <TableRow className="print-vessel-access-row" data-testid={`print-vessel-access-row-${page.pageNumber}`}>
+              <TableCell>
+                <strong>Vessel Access Charges</strong>
+                <span className="status-badge status-caveat" style={{ marginLeft: 'var(--space-1)' }}>derived metric</span>
+              </TableCell>
+              {page.ports.map(({ id }) => {
+                const result = portResults.find(p => p.port.metadata.id === id)?.result;
+                const va = result?.vessel_access;
+                return (
+                  <TableCell key={id} align="right" className="comparison-subtotal">
+                    {result && va
+                      ? (() => {
+                          const conv = convertedFor(va.amount, result.currency);
+                          return (
+                            <Box sx={{ textAlign: 'right' }}>
+                              <span>{formatCurrency(va.amount, result.currency)}</span>
+                              {conv !== null && (
+                                <Box sx={{ fontSize: '0.75rem' }} className="comparison-secondary">
+                                  {'\u2248'} {formatCurrency(conv, 'SEK')}
+                                </Box>
+                              )}
+                              <Box sx={{ fontSize: '0.75rem' }} className="comparison-secondary">
+                                {va.effective_per_gt.toFixed(2)} {result.currency}/GT effective — derived, not a published rate
+                                {conv !== null && (
+                                  <span> ({'\u2248'} {convertedFor(va.effective_per_gt, result.currency)!.toFixed(2)} SEK/GT converted)</span>
+                                )}
+                              </Box>
+                            </Box>
+                          );
+                        })()
+                      : <span className="comparison-error">error</span>}
+                  </TableCell>
+                );
+              })}
+            </TableRow>
+            <TableRow className="print-vessel-access-note-row" data-testid={`print-vessel-access-note-${page.pageNumber}`}>
+              <TableCell colSpan={page.ports.length + 1}>
+                <Box className="comparison-basis" sx={{ fontSize: '0.75rem', display: 'block' }}>
+                  <strong>Vessel Access Charges — comparability:</strong>{' '}
+                  <span style={{ display: 'block' }}>{conversionLabel(rateInfo)}.</span>
+                  {page.ports.map(({ id }) => {
+                    const agg = portResults.find(p => p.port.metadata.id === id)?.result?.vessel_access;
+                    if (!agg) return null;
+                    const fn = agg.classes
+                      .map(c => c === 'berth_terminal_infrastructure' ? 'berth/terminal infrastructure'
+                        : c === 'waterway_fairway_access' ? 'waterway/fairway access'
+                        : c === 'readiness_safety_capacity' ? 'readiness/safety capacity' : c)
+                      .join(' + ');
+                    return (
+                      <span key={id} style={{ display: 'block' }}>
+                        {portById.get(id)?.metadata.name}: covers {fn}
+                        {agg.classes.length < 3 && ' (functions not listed are funded outside this call’s charges — e.g. nationally from taxation)'}
+                        .
+                      </span>
+                    );
+                  })}
+                </Box>
+              </TableCell>
             </TableRow>
             {cheapestPortId === null && mostExpensivePortId === null && null}
           </TableBody>
