@@ -219,8 +219,9 @@ describe('per-port persisted call state (spec v0.2.60, port-switch reset defect 
     const hamCard = Array.from(cards).find(c => (c.textContent ?? '').includes('Hamburg'))!;
     expect(gotCard).toBeDefined();
     expect(hamCard).toBeDefined();
-    expect(gotCard.querySelector('.comparison-card-ops')).not.toBeNull();
-    expect(hamCard.querySelector('.comparison-card-ops')).toBeNull();
+    // OPS segment design (user ruling 2026-10-21) re-baseline: the card's OPS figure is the segment header.
+    expect(gotCard.querySelector('.comparison-card-ops-segment')).not.toBeNull();
+    expect(hamCard.querySelector('.comparison-card-ops-segment')).toBeNull();
   });
 
   it('the reset control clears that port\'s own fields — other ports\' entries and shared inputs survive', async () => {

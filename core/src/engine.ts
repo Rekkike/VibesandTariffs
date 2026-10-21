@@ -2178,11 +2178,25 @@ export function calculatePortCallCost(
     });
   }
   if (opsComponents.per_gt.enabled && typeof call.ops_per_gt_charge === 'number' && call.ops_per_gt_charge !== 0 && input.vessel.gt > 0) {
+    // Bounds (spec v0.9.1, descriptor-gated): at a port whose descriptor
+    // declares bounds the line is clamp(rate x GT, minimum, maximum); a blank
+    // bound is unbounded in that direction, and the bounds exist only
+    // through a non-blank rate (a blank rate prices no line, above). The
+    // maximum is applied last, so it wins if the user enters crossed
+    // bounds. Without the descriptor flag the line is the plain product,
+    // byte-identical to every earlier version.
+    const unbounded = input.vessel.gt * call.ops_per_gt_charge;
+    const min = opsComponents.per_gt.bounds && typeof call.ops_per_gt_min === 'number' ? call.ops_per_gt_min : undefined;
+    const max = opsComponents.per_gt.bounds && typeof call.ops_per_gt_max === 'number' ? call.ops_per_gt_max : undefined;
+    let clamped = unbounded;
+    let applied = '';
+    if (min !== undefined && clamped < min) { clamped = min; applied = `; minimum ${min.toLocaleString('en-US', { maximumFractionDigits: 4 })} ${opsComponents.per_gt.currency} applied`; }
+    if (max !== undefined && clamped > max) { clamped = max; applied = `; maximum ${max.toLocaleString('en-US', { maximumFractionDigits: 4 })} ${opsComponents.per_gt.currency} applied`; }
     opsLines.push({
       id: 'ops_spec_per_gt',
       label: 'OPS per-GT charge (user-specified)',
-      amount: roundToCent(input.vessel.gt * call.ops_per_gt_charge),
-      basis: `${input.vessel.gt.toLocaleString('en-US')} GT × ${call.ops_per_gt_charge.toLocaleString('en-US', { maximumFractionDigits: 4 })} ${opsComponents.per_gt.currency}/GT (user-specified, not tariff-derived)`
+      amount: roundToCent(clamped),
+      basis: `${input.vessel.gt.toLocaleString('en-US')} GT × ${call.ops_per_gt_charge.toLocaleString('en-US', { maximumFractionDigits: 4 })} ${opsComponents.per_gt.currency}/GT (user-specified, not tariff-derived)${applied}`
     });
   }
   // Per-unit charges (spec v0.9.0): the user's own amount per non-empty

@@ -1091,6 +1091,15 @@ body {
   letter-spacing: 0.04em;
   color: var(--text-secondary);
 }
+/* The OPS segment header carries the stage-row header style (spec v0.9.1). */
+.comparison-ops-segment-row td {
+  background: var(--surface-sunken);
+  font-weight: 600;
+  font-size: var(--font-caption);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-secondary);
+}
 /* Charge-type lines (spec v0.2.52): the fairway/berth/cargo due rows
    render as prominent named lines inside their stage - the label carries
    the charge type's description beneath it, in secondary text. */
@@ -1398,8 +1407,14 @@ textarea:focus-visible,
   margin-bottom: var(--space-2);
 }
 
-.comparison-ops-row > td {
+/* Comparison OPS segment (spec v0.9.1): its own segment after the stage
+   rows; the warning rule marks the user-specified group. */
+.comparison-ops-segment-row > td {
   border-top: 2px solid var(--warning);
+}
+.comparison-ops-line-row .comparison-chargetype-label {
+  font-weight: 600;
+  color: var(--text-primary);
 }
 
 /* EU regulatory input group (spec v0.2.69): the same label/note treatment
@@ -1414,7 +1429,7 @@ textarea:focus-visible,
   margin-bottom: var(--space-2);
 }
 
-.comparison-card-ops {
+.comparison-card-ops-segment {
   border-top: 2px solid var(--warning);
 }
 

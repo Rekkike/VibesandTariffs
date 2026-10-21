@@ -22,6 +22,7 @@ import type { ComparisonBasisContext, ExchangeRateInfo } from './conversion';
 import { printContinuationNote, printPagesFor } from './printPages';
 import type { HinterlandMode } from './handlingBasis';
 import { containerThroughParts } from './handlingBasis';
+import { buildOpsSegment } from './comparisonModel';
 import type { PrintPage } from './printPages';
 import { APP_VERSION } from './version';
 
@@ -45,6 +46,7 @@ export interface PrintComparisonPagesProps {
       total: number;
       currency: string;
       quality_flags: QualityFlag[];
+      ops_speculative?: { amount: number; lines: { id: string; label: string; amount: number; basis: string }[] } | null;
     } | null;
   }[];
   rowsByStage: {
@@ -116,6 +118,7 @@ export const PrintComparisonPages: React.FC<PrintComparisonPagesProps> = ({
   const pages = printPagesFor(ports.map(p => ({ id: p.metadata.id, name: p.metadata.name })));
   const totalPorts = ports.length;
   const portById = new Map(ports.map(p => [p.metadata.id, p]));
+  const opsSegment = buildOpsSegment(portResults);
   const cheapestPortId = null;
   const mostExpensivePortId = null;
 
@@ -306,6 +309,50 @@ export const PrintComparisonPages: React.FC<PrintComparisonPagesProps> = ({
                 )}
               </React.Fragment>
             ))}
+            {/* OPS segment on paper (spec v0.9.1): after the stage rows and
+                the container-through row, before the Grand Total - the
+                screen's own segment (the engine's subtotal and per-line
+                amounts and basis strings). Paper inherits the session:
+                entered values print, blank prints nothing. */}
+            {opsSegment.rows.some(row => page.ports.some(({ id }) => row.perPort.has(id))) && (
+              <>
+                <TableRow className="comparison-ops-segment-row print-ops-segment-row" data-testid={`print-ops-segment-${page.pageNumber}`}>
+                  <TableCell>
+                    <strong>OPS (user-specified, not tariff-derived) — included in the Grand Total</strong>
+                  </TableCell>
+                  {page.ports.map(({ id }) => {
+                    const subtotal = opsSegment.subtotals.get(id);
+                    return (
+                      <TableCell key={id} align="right" className="comparison-subtotal">
+                        {subtotal && <span className="comparison-figure">{formatCurrency(subtotal.amount, subtotal.currency)}</span>}
+                      </TableCell>
+                    );
+                  })}
+                </TableRow>
+                {opsSegment.rows
+                  .filter(row => page.ports.some(({ id }) => row.perPort.has(id)))
+                  .map(row => (
+                    <TableRow key={row.id} className="comparison-ops-line-row print-ops-line-row" data-testid={`print-ops-line-${row.id}-${page.pageNumber}`}>
+                      <TableCell className="comparison-family-cell">
+                        <span className="comparison-chargetype-label">{row.heading}</span>
+                      </TableCell>
+                      {page.ports.map(({ id }) => {
+                        const cell = row.perPort.get(id);
+                        return (
+                          <TableCell key={id} align="right" className="amount">
+                            {cell && (
+                              <Box sx={{ textAlign: 'right' }}>
+                                <span className="comparison-figure">{formatCurrency(cell.amount, cell.currency)}</span>
+                                <Box sx={{ fontSize: '0.75rem' }} className="comparison-secondary">{cell.basis}</Box>
+                              </Box>
+                            )}
+                          </TableCell>
+                        );
+                      })}
+                    </TableRow>
+                  ))}
+              </>
+            )}
             <TableRow className="comparison-total-row">
               <TableCell>
                 <strong>Grand Total</strong>

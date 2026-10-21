@@ -514,7 +514,9 @@ ops_speculative:
   electricity: { enabled: true, currency: DKK, unit: DKK/kWh }
   demand: { enabled: true, currency: DKK, unit: DKK/call }
   connection: { enabled: true, currency: DKK, unit: DKK/call }
-  per_gt: { enabled: false, currency: DKK, unit: DKK/GT }
+  # Per-GT line with user-specified minimum and maximum (spec v0.9.1):
+  # presence, currency, unit and bounds presence only - no rates, no figures.
+  per_gt: { enabled: true, currency: DKK, unit: DKK/GT, bounds: true }
 
 # Per-port input profile (spec v0.2.59): the input sections the workspace
 # renders for this port. UI configuration, never rates.
@@ -531,6 +533,9 @@ input_profile:
     - ops_electricity_price
     - ops_demand_charge
     - ops_connection_charge
+    - ops_per_gt_charge
+    - ops_per_gt_min
+    - ops_per_gt_max
     - ets_emissions_tco2
     - ets_allowance_price
     - lashing_containers

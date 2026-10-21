@@ -453,6 +453,9 @@ describe('port-specific reset fields (spec v0.2.60)', () => {
         'pilotage_hours', 'pilotage_extra_pilot',
         'pilotage_ordering_lead_time_hours', 'lay_up_days',
         'ops_electricity_price', 'ops_demand_charge', 'ops_connection_charge',
+        // Aarhus per-GT OPS input (user ruling 2026-10-21) re-baseline: the
+        // user-specified per-GT rate and its minimum and maximum bounds.
+        'ops_per_gt_charge', 'ops_per_gt_min', 'ops_per_gt_max',
         'ets_emissions_tco2', 'ets_allowance_price',
         'lashing_containers', 'dangerous_goods_units', 'reefer_units',
         'reefer_extra_days', 'storage_days_import', 'storage_days_export'
