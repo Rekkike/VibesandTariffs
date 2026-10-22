@@ -26,6 +26,7 @@ import type {
   PortInputProfileSection,
   VesselInput
 } from '@port-cost/core';
+import { annualWindowHint } from './annualWindowHint';
 import { getNetTonnageClass, containerSplit, userSpecifiedRate } from '@port-cost/core';
 import { userSpecifiedHint } from './userSpecifiedDisclosure';
 import { tierEffectLine } from './envGuidance';
@@ -505,6 +506,7 @@ export const WorkspaceInputs: React.FC<WorkspaceInputsProps> = (props) => {
                     onChange={(e) => handleCallChange('date', e.target.value)}
                     fullWidth
                     InputLabelProps={{ shrink: true }}
+                    helperText={annualWindowHint(port) ?? undefined}
                   />
                 </Grid>
                 <Grid item xs={12} sm={6}>

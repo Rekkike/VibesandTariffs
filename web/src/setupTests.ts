@@ -1,3 +1,8 @@
+// Fixed-date test baselines (spec v0.11.3): anchor calendar today before any
+// test module loads, so the production defaultCall() date stamp is the fixed
+// date in every suite.
+import './fixedClock';
+
 // jsdom lacks window.matchMedia; MUI's useMediaQuery (via the responsive
 // breakpoint infrastructure, spec v0.2.39) requires it. The stub reports a
 // non-matching query by default; tests that need a specific rendering path
