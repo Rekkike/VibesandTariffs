@@ -314,7 +314,7 @@ export const PrintComparisonPages: React.FC<PrintComparisonPagesProps> = ({
                             {printLineDetail(perPort.get(id), portById.get(id)!.metadata.currency)}
                           </>
                         ) : (
-                          <span className="comparison-not-levied">not levied at this port</span>
+                          <span className="comparison-not-levied">no published rate in the archived record at this port</span>
                         )}
                       </TableCell>
                     ))}
@@ -335,7 +335,7 @@ export const PrintComparisonPages: React.FC<PrintComparisonPagesProps> = ({
                             {printLineDetail(perPort.get(id), portById.get(id)!.metadata.currency)}
                           </>
                         ) : (
-                          <span className="comparison-not-levied">not levied at this port</span>
+                          <span className="comparison-not-levied">no published rate in the archived record at this port</span>
                         )}
                       </TableCell>
                     ))}

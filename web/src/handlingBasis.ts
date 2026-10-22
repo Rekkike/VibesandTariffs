@@ -32,7 +32,7 @@ export interface HandlingBasisAnnotation {
 export const HANDLING_BASIS_ANNOTATIONS: Record<string, HandlingBasisAnnotation> = {
   gothenburg: {
     text:
-      'Handling basis: full-cycle, leg-priced. The vessel-side lift is billed separately, per unit per move (ordinary time), on top of the published goods charge — the archived APMT Terminal Tariff 2026 (June revision) §1, Terminal Charges on goods, 377/535 SEK per unit, a cargo due carried on the Cargo dues line, not handling. The lift amount is the user-specified Cost per lift input (blank = not priced). The landside receiving/delivering leg is billed separately per unit (the container-through toggle); its amount is the user-specified Delivery input (blank = not added).'
+      'The lift amount is the user-specified Cost per lift input (blank = not priced). The landside receiving/delivering leg is billed separately per unit (the container-through toggle); its amount is the user-specified Delivery input (blank = not added).'
   },
   hamburg: {
     text:

@@ -281,8 +281,9 @@ describe('OPS speculative inputs — web surfaces (spec v0.2.57)', () => {
     expect(opsRow).not.toBeNull();
     expect(opsRow!.textContent).toContain('user-specified, not tariff-derived');
     // No absence wording in any OPS cell (no user value is not a tariff
-    // assertion) - no cell says "not levied at this port".
-    expect(opsRow!.textContent).not.toContain('not levied at this port');
+    // assertion) - no cell says "no published rate in the archived record at this port"
+    // (Comparison wording honesty (user ruling 2026-10-22) re-baseline: the absence wording is the new phrase).
+    expect(opsRow!.textContent).not.toContain('no published rate in the archived record at this port');
     // Per-port figures (sv-SE grouping is the non-breaking space U+00A0,
     // whole-kr rounding): GOT 3,125+10,000+19,484.90 = 32,609.90 SEK;
     // HAM 3,125+5,000 = 8,125 EUR; HEL 37,609.90 SEK.

@@ -25,6 +25,7 @@ import { useIsMobile } from './appTheme';
 import { comparisonBasisContext } from './portRegistry';
 import { portLabel } from './portLabel';
 import { customVesselLabel } from './vesselOptions';
+import { cargoDuesNoteFor } from './cargoDuesNotes';
 import {
   computePortResults,
   buildRuleNamesByPort,
@@ -431,9 +432,14 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
                                     {equivalenceNoteForRule('hhla_tonnage_dues', port.metadata.id)!.text}
                                   </Box>
                                 )}
+                                {chargeType.id === 'cargo_dues' && leviedAt.includes(port.metadata.id) && cargoDuesNoteFor(port.metadata.id) && (
+                                  <Box component="span" className="comparison-cargo-dues-note" data-testid={`cargo-dues-note-${port.metadata.id}`} sx={{ fontSize: '0.75rem', display: 'block' }}>
+                                    {cargoDuesNoteFor(port.metadata.id)!.text}
+                                  </Box>
+                                )}
                                 {leviedAt.includes(port.metadata.id)
                                   ? amountCell(perPort.get(port.metadata.id), port.metadata.currency, true)
-                                  : <span className="comparison-not-levied">not levied at this port</span>}
+                                  : <span className="comparison-not-levied">no published rate in the archived record at this port</span>}
                               </Box>
                             ))}
                             {familyRows.map(({ family, perPort }) => (
@@ -454,7 +460,7 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
                                 )}
                                 {perPort.get(port.metadata.id)
                                   ? amountCell(perPort.get(port.metadata.id), port.metadata.currency, true)
-                                  : <span className="comparison-not-levied">not levied at this port</span>}
+                                  : <span className="comparison-not-levied">no published rate in the archived record at this port</span>}
                               </Box>
                             ))}
                           </React.Fragment>
@@ -658,7 +664,16 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
                                 ports' and GOT's berth dues. */}
                             {leviedAt.includes(port.metadata.id)
                               ? amountCell(perPort.get(port.metadata.id), port.metadata.currency, derivationsVisible)
-                              : <span className="comparison-not-levied">not levied at this port</span>}
+                              : <span className="comparison-not-levied">no published rate in the archived record at this port</span>}
+                            {/* Cargo dues note (spec v0.11.4): where a port's
+                                cargo-side due is a terminal-operator charge
+                                carried on this line, the note states the
+                                placement (screen only). */}
+                            {chargeType.id === 'cargo_dues' && leviedAt.includes(port.metadata.id) && cargoDuesNoteFor(port.metadata.id) && (
+                              <Box component="span" className="comparison-cargo-dues-note" data-testid={`cargo-dues-note-${port.metadata.id}`} sx={{ fontSize: '0.75rem', display: 'block' }}>
+                                {cargoDuesNoteFor(port.metadata.id)!.text}
+                              </Box>
+                            )}
                           </TableCell>
                         ))}
                       </TableRow>
@@ -685,7 +700,7 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
                             <TableCell key={port.metadata.id} align="right" className="amount">
                               {entry
                                 ? amountCell(entry, port.metadata.currency, derivationsVisible)
-                                : <span className="comparison-not-levied">not levied at this port</span>}
+                                : <span className="comparison-not-levied">no published rate in the archived record at this port</span>}
                               {/* Handling-basis annotation (spec v0.4.2, item 2):
                                   a new annotation family, never an extension
                                   of the cargo-family equivalence notes - the

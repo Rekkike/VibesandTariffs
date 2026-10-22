@@ -148,12 +148,14 @@ describe('comparison stages and charge-type lines render (spec v0.2.52)', () => 
     expect(text).toContain('Cargo dues');
   });
 
-  it('absence structure: GOT and HAM cargo dues, the Swedish ports\u2019 berth dues, and the GOT/HAM fairway dues read "not levied at this port"', async () => {
+  it('absence structure: GOT and HAM cargo dues, the Swedish ports\u2019 berth dues, and the GOT/HAM fairway dues read the not-charged cell wording', async () => {
+    // Comparison wording honesty (user ruling 2026-10-22) re-baseline: the cell reads
+    // "no published rate in the archived record at this port" (the archive's limit, not a claim about the port).
     ({ container, root } = await renderComparison(defaultCall('gothenburg')));
     const notLevied = Array.from(container.querySelectorAll('.comparison-not-levied'))
       .map(el => el.textContent);
     expect(notLevied.length).toBeGreaterThan(0);
-    expect(notLevied.every(t => t === 'not levied at this port')).toBe(true);
+    expect(notLevied.every(t => t === 'no published rate in the archived record at this port')).toBe(true);
     // The old ambiguous "not charged" wording is gone.
     expect(container.textContent).not.toContain('not charged');
   });
@@ -311,7 +313,8 @@ describe('default-call totals and theme discipline stand (spec v0.2.50/v0.2.51; 
   });
 
   it('the app source renders the absence state via the shared amountCell and the explicit not-levied class', () => {
-    expect(appSource).toMatch(/not levied at this port/);
+    // Comparison wording honesty (user ruling 2026-10-22) re-baseline: the shared cell wording.
+    expect(appSource).toMatch(/no published rate in the archived record at this port/);
     expect(appSource).toMatch(/comparison-not-levied/);
     expect(appSource).toMatch(/className="comparison-stage-row"/);
     expect(appSource).toMatch(/className="comparison-chargetype-row"/);

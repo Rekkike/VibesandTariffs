@@ -98,28 +98,18 @@ describe('handling-basis annotations (spec v0.4.2, item 2) - a new annotation fa
     expect(handlingBasisAnnotationFor('norrkoping')!.text).toContain('855/1,051/1,249/1,283');
     expect(handlingBasisAnnotationFor('helsingborg')!.text).toContain("Place of rest");
   });
-  it('the GOT basis (v0.8.0): full-cycle, leg-priced — the lift billed separately on top of the goods charge, the landside leg separately', () => {
-    // v0.8.0 re-baseline (in-test attribution, the S-c declared class): the
-    // v0.4.6 bundled reading ("labeled as inference pending wording from
-    // APMT") is superseded - the lift is
-    // billed separately at 1,029 on top of the section 1 goods charge. The
-    // annotation becomes the evidenced leg-priced basis; a residual
-    // inference wording fails.
+  it('the GOT annotation states only the user-specified inputs (v0.11.4; formerly the v0.8.0 full-cycle basis)', () => {
+    // Comparison wording honesty (user ruling 2026-10-22) re-baseline: the annotation keeps only
+    // what is true of the user-specified inputs; the goods-charge placement
+    // moved to the cargo dues note (cargoDuesNotes.ts).
     const text = handlingBasisAnnotationFor('gothenburg')!.text;
-    expect(text).toContain('Handling basis: full-cycle, leg-priced.');
-    // v0.11.0 re-baseline (in-test attribution): GOT lift and delivery user
-    // inputs (user ruling 2026-10-21) - the lift and the landside leg are
-    // user-specified inputs; the annotation no longer states an encoded
-    // rate (the published rates stay recorded in the extraction reference
-    // section 8, never encoded).
-    expect(text).toContain('billed separately, per unit per move (ordinary time)');
-    expect(text).toContain('user-specified Cost per lift input (blank = not priced)');
+    expect(text).toBe(
+      'The lift amount is the user-specified Cost per lift input (blank = not priced). The landside receiving/delivering leg is billed separately per unit (the container-through toggle); its amount is the user-specified Delivery input (blank = not added).'
+    );
+    expect(text).not.toContain('Handling basis:');
+    expect(text).not.toContain('full-cycle');
     expect(text).not.toContain('1,029');
     expect(text).not.toContain('453');
-    expect(text).toContain('§1, Terminal Charges on goods, 377/535 SEK per unit, a cargo due carried on the Cargo dues line, not handling');
-    expect(text.endsWith('user-specified Delivery input (blank = not added).')).toBe(true);
-    expect(text).not.toContain('inference');
-    expect(text).not.toMatch(/bundled \(container-through\)/);
   });
   it('the GOT toggle participation (v0.8.0): the gated landside leg, 453 SEK per unit for either mode', () => {
     // v0.8.0 re-baseline (in-test attribution, the S-c declared class): the

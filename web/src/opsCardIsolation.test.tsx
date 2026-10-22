@@ -260,7 +260,8 @@ describe('card-surface OPS isolation (spec v0.2.62)', () => {
     // OPS segment design (user ruling 2026-10-21) re-baseline: the em dash is retired; every non-GOT
     // cell is empty (the label cell is the only other text).
     expect(cellTexts.slice(1).filter(t => t === '').length).toBe(selectedCount - 1);
-    expect(opsRow!.textContent).not.toContain('not levied at this port');
+    // Comparison wording honesty (user ruling 2026-10-22) re-baseline: the absence wording is the new phrase.
+    expect(opsRow!.textContent).not.toContain('no published rate in the archived record at this port');
   });
 
   it('the shared kWh input\'s cross-port coupling is the designed behavior and is disclosed on the input', async () => {

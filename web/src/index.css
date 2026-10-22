@@ -1680,6 +1680,13 @@ textarea:focus-visible,
   margin-top: var(--space-1);
   max-width: 46ch;
 }
+/* Cargo dues note (spec v0.11.4): the same secondary-context treatment,
+   beside the cargo dues figure. */
+.comparison-cargo-dues-note {
+  color: var(--text-secondary);
+  margin-top: var(--space-1);
+  max-width: 46ch;
+}
 /* NT observation provenance (spec v0.3.3, item 4): the class indication's
    evidentiary status — flagged, never presented as registry-confirmed. */
 .vessel-option-observation-note {

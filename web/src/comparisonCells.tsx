@@ -46,11 +46,16 @@ export const makeComparisonCells = (props: ComparisonCellsProps) => {
     showDerivation: boolean
   ) => {
     if (!entry) {
-      // Explicit absence (spec v0.2.52): a fee family a port does not levy
-      // renders "not levied at this port" — never hidden, so an absence of
-      // cost is not mistaken for missing data (spec 4.3.1 comparability
-      // rules; pinned choice, per-port and comparison alike).
-      return <span className="comparison-not-charged">not levied at this port</span>;
+      // Explicit absence (spec v0.2.52, preserved): a fee family with no
+      // line at a port renders the cell below - never hidden, so an absence
+      // of cost is not mistaken for missing data (spec 4.3.1 comparability
+      // rules; pinned choice, per-port and comparison alike). Wording
+      // (spec v0.11.4, user ruling 2026-10-22): the cell states the limit of
+      // the archive, never a claim about the port - the former wording
+      // asserted that the port levies nothing, which the archived record
+      // cannot establish; "no published rate in the archived record" says
+      // only what the record shows.
+      return <span className="comparison-not-charged">no published rate in the archived record at this port</span>;
     }
     const conv = toComparisonBasis(entry.amount, entry.currency || fallbackCurrency, rateInfo, comparisonBasisContext);
     return (

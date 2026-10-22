@@ -127,8 +127,10 @@ describe('godsavgift comparison rendering (spec v0.2.61)', () => {
     // The family line the fairway dues ride (v0.2.52 segmentation): the
     // Swedish national per-call dues and now the cargo-based godsavgift.
     expect(text).toContain('Fairway dues');
-    // HAM levies no fairway due (unchanged since v0.2.52).
-    expect(text).toContain('not levied at this port');
+    // HAM carries no fairway due line in the archived record (unchanged since
+    // v0.2.52). Comparison wording honesty (user ruling 2026-10-22) re-baseline: the cell states the
+    // archive's limit.
+    expect(text).toContain('no published rate in the archived record at this port');
   });
 
   it('the godsavgift charge line renders under Fairway dues at both Swedish ports (the collapsed detail carries the label and amount; the basis string itself is pinned in the core suite)', async () => {

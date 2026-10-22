@@ -142,7 +142,8 @@ describe('mobile comparison card structure (spec v0.2.55 structural pins)', () =
     }
   });
 
-  it('the "not levied at this port" absence wording renders on the cards', async () => {
+  it('the not-charged absence wording renders on the cards', async () => {
+    // Comparison wording honesty (user ruling 2026-10-22) re-baseline: the cell reads "no published rate in the archived record at this port".
     ({ container, root } = await renderComparison(true, defaultCall('gothenburg')));
     const cards = container!.querySelectorAll('.comparison-port-card');
     expect(cards.length).toBe(LOADED_PORTS.length);
@@ -151,7 +152,7 @@ describe('mobile comparison card structure (spec v0.2.55 structural pins)', () =
       const absences = Array.from(card.querySelectorAll('.comparison-not-levied'));
       totalAbsence += absences.length;
       for (const el of absences) {
-        expect((el.textContent ?? '').trim()).toBe('not levied at this port');
+        expect((el.textContent ?? '').trim()).toBe('no published rate in the archived record at this port');
       }
     }
     // absence structure is present on the mobile surface (e.g. GOT/HAM
@@ -200,7 +201,7 @@ describe('mobile zero-suppression re-activation (spec v0.2.55 structural pin)', 
     // v0.4.0: any rendered storage family line on the GOT card must be the
     // honest zero (a not-levied family absence), never a chargeable figure.
     for (const el of storageLines) {
-      expect((el.textContent ?? '')).toContain('not levied at this port');
+      expect((el.textContent ?? '')).toContain('no published rate in the archived record at this port');
     }
   });
   it('the zero-default storage stay renders no storage charge line at any port (spec v0.4.1 zero-default pin, desktop)', async () => {
