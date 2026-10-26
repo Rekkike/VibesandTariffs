@@ -71,6 +71,10 @@ document. Every figure identical:
 - Godsavgift: högvärdigt gods 3,36 kr/ton; lågvärdigt gods 1,67 kr/ton —
   identical (passageraravgift 2,52 kr/pax and privata fordon 3,36 kr/st are
   the GOT-only components, never fired on container calls).
+  (Superseded in place at v0.12.0, D-01 remediation (user rulings 2026-10-26): the two
+  Gothenburg rules that encoded these components were retired as outside
+  the container-vessel scope, scope question S-1; the rates stay recorded
+  here and in the archived price list, never encoded.)
 - Frekvent trafik scale: anlöp 1–2 100 %; 3 75 %; 4 50 %; 5 25 %; 6+ 0 % —
   identical.
 - Miljöincitament (CSI): A 80 %; B 55 %; C 10 %; D/E 0 % — identical.

@@ -1422,6 +1422,79 @@ export const WorkspaceInputs: React.FC<WorkspaceInputsProps> = (props) => {
                   </Grid>
                 </>
               )}
+              {/* Helsingborg optional services (spec v0.12.0, D-01 remediation,
+                  user rulings 2026-10-26): one count per published ancillary
+                  rate (tariff 2026 p.8). Blank, zero or negative prices
+                  nothing (the rules' presence gates). */}
+              {profileSections.has('helsingborg_ancillary') && (
+                <>
+                  <Typography variant="h6" component="h3" className="segment-heading vessel-call-heading">
+                    Helsingborg Ancillary Services (optional)
+                  </Typography>
+                  <Grid container spacing={2}>
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        id="hel-imo-transport-units"
+                        label="IMO Transport to a Dedicated Area (units)"
+                        type="number"
+                        value={state.call.imo_transport_units ?? ''}
+                        onChange={(e) => handleCallChange('imo_transport_units', e.target.value === '' ? undefined : parseInt(e.target.value))}
+                        fullWidth
+                        InputLabelProps={{ shrink: true }}
+                        helperText="Unitized cargo classified as dangerous cargo (IMO): 510.00 SEK per unit (tariff 2026 p.8). Blank = none."
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        id="hel-vgm-units"
+                        label="VGM Weighing (pre-advised export units)"
+                        type="number"
+                        value={state.call.vgm_units ?? ''}
+                        onChange={(e) => handleCallChange('vgm_units', e.target.value === '' ? undefined : parseInt(e.target.value))}
+                        fullWidth
+                        InputLabelProps={{ shrink: true }}
+                        helperText="430.00 SEK per pre-advised unit, export units only (tariff 2026 p.8); the not-pre-advised rate, 1,175.00 SEK per unit, is recorded, not priced. Blank = none."
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        id="hel-other-admin-units"
+                        label="Other Administrative Services (events)"
+                        type="number"
+                        value={state.call.other_admin_units ?? ''}
+                        onChange={(e) => handleCallChange('other_admin_units', e.target.value === '' ? undefined : parseInt(e.target.value))}
+                        fullWidth
+                        InputLabelProps={{ shrink: true }}
+                        helperText="360.00 SEK per event (tariff 2026 p.8). Blank = none."
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        id="hel-customs-inspection-count"
+                        label="Customs, Veterinary or Agricultural Inspections (units)"
+                        type="number"
+                        value={state.call.customs_inspection_count ?? ''}
+                        onChange={(e) => handleCallChange('customs_inspection_count', e.target.value === '' ? undefined : parseInt(e.target.value))}
+                        fullWidth
+                        InputLabelProps={{ shrink: true }}
+                        helperText="1,015.00 SEK per unit (tariff 2026 p.8). Blank = none."
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        id="hel-port-area-transport-units"
+                        label="Transport Within the Port Area (containers)"
+                        type="number"
+                        value={state.call.port_area_transport_units ?? ''}
+                        onChange={(e) => handleCallChange('port_area_transport_units', e.target.value === '' ? undefined : parseInt(e.target.value))}
+                        fullWidth
+                        InputLabelProps={{ shrink: true }}
+                        helperText="950.00 SEK per container, 20'–45' (tariff 2026 p.8). Blank = none."
+                      />
+                    </Grid>
+                  </Grid>
+                </>
+              )}
               </DisclosureCard>
               <DisclosureCard title="Call (continued)" summary="Energy at berth; yard & storage" defaultOpen>
               {/* ============ ENERGY AT BERTH SEGMENT INPUTS ============ */}

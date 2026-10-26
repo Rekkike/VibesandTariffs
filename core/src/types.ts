@@ -793,6 +793,14 @@ export interface CallInput {
   issc_valid?: boolean;              // valid ISSC certificate; double security fee when absent (least-favourable default)
   clean_shipping_index_class?: string; // Clean Shipping Index class 1-5 (port discount; distinct from Sjöfartsverket A-E)
   towage_cost_per_tug?: number;      // estimated towage SEK per tug-assist (Helsingborg)
+  // Helsingborg optional services (spec v0.12.0, D-01 remediation): one
+  // count per published ancillary rate (tariff 2026 p.8); blank by default,
+  // and a blank, zero or negative entry prices nothing (the presence gate).
+  imo_transport_units?: number;      // IMO-classified units transported to the dedicated area, 510.00 SEK per unit
+  vgm_units?: number;                // pre-advised export units weighed (VGM), 430.00 SEK per unit
+  other_admin_units?: number;        // other administrative services, 360.00 SEK per event
+  customs_inspection_count?: number; // customs/veterinary/agricultural inspections, 1,015.00 SEK per unit
+  port_area_transport_units?: number; // containers (20'-45') transported within the port area, 950.00 SEK per container
   sludge_extra_m3?: number;         // sludge above the 10 m3 included volume
   idle_berth_hours?: number;        // APM idle berth service hours (explicit request only)
   fresh_water_m3?: number;          // fresh water supplied (m3); free up to 50 m3, then 50 SEK/m3

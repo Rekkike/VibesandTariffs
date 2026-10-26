@@ -45,7 +45,7 @@ Note: the directive refers to "§13 environment discipline"; in the committed sp
 
 ## 2. Findings
 
-### D-01 — DEFECT — Eight per-unit rules reference an input that does not exist (silent permanent zero) · P2
+### D-01 — DEFECT — RESOLVED — Eight per-unit rules reference an input that does not exist (silent permanent zero) · P2 (resolved at v0.12.0)
 Criteria C2, C3, C7.
 Eight `per_unit` rules use a `unit_type` that is neither an engine case (`core/src/engine.ts:775–860`) nor a `CallInput` field (128 fields, `core/src/types.ts`); the generic default branch `(call as any)[unit_type] ?? 0` (`engine.ts:858–860`) therefore prices them at 0 with no way for a user to supply a count:
 
@@ -62,6 +62,8 @@ Eight `per_unit` rules use a `unit_type` that is neither an engine case (`core/s
 
 The Helsingborg descriptions say "Optional call input, default off", which asserts an input the code does not have. The loader (`loader.ts:363`) checks only that `unit_type` is present, not that it resolves. The two Gothenburg passenger/vehicle rules are also a scope question (S-1). Found by script over all nine YAML files and the `CallInput` field list.
 Recommendation: make the loader reject (or at least report) a `unit_type` that resolves to nothing; then either add the inputs or retire the dead rules with wording.
+
+Resolved by the v0.12.0 pass (D-01 remediation (user rulings 2026-10-26)): the loader fails closed on a per_unit `unit_type` that resolves neither to an engine case nor to a `CallInput` field, naming the port, the rule and the `unit_type`. The five Helsingborg rules price on five new blank-default inputs at their published rates (verified against tariff 2026 p.8). The two Gothenburg passenger and private-vehicle rules are retired out of scope (S-1). The Aarhus gate move truck rule is retired; its legs remain the container-through toggle surface. A ninth unresolved rule found in the v0.12.0 survey, the ungated Gothenburg break-bulk duplicate `apm_terminals_handling_break_bulk` (`1000_kg`), is retired as well. No figure moved.
 
 ### D-05 — DEFECT — The Gävle default call is not the published-ceiling call for seven months of the year · P1
 Criteria C4, C1.
@@ -178,7 +180,7 @@ Not opened in this pass, and therefore not re-verified: every PDF-sourced rule a
 
 ## 5. Scope questions (not recommendations)
 
-- S-1: Gothenburg carries Sjöfartsverket cargo-fee rules for passengers (`pax`) and private vehicles (`unit`) — passenger/RoRo-type charges in a container-only tool.
+- S-1: Gothenburg carries Sjöfartsverket cargo-fee rules for passengers (`pax`) and private vehicles (`unit`) — passenger/RoRo-type charges in a container-only tool. (Resolved at v0.12.0, D-01 remediation (user rulings 2026-10-26): adjudicated out of the container-vessel scope; both rules retired, the rates recorded in the national extraction reference.)
 - S-2: Break-bulk handling is encoded (`apm_terminals_handling_break_bulk`, 54 SEK per 1000 kg; input `break_bulk_1000kg`) — outside container scope.
 - No tanker rule was looked for by name; none was noticed.
 

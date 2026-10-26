@@ -208,7 +208,7 @@ describe('Aarhus — per-line baselines (the same default call)', () => {
   });
   it('the optional APMT surfaces charged zero at the default (blank counts charge zero, never a seeded count)', () => {
     for (const ruleId of [
-      'apmt_aarhus_lashing', 'apmt_aarhus_gate_move_truck',
+      'apmt_aarhus_lashing',
       'apmt_aarhus_reefer_daily', 'apmt_aarhus_imdg_surcharge'
     ]) {
       const fees = result.billers.flatMap(b => b.fees.filter(f => f.fee_rule_id === ruleId));
@@ -216,6 +216,9 @@ describe('Aarhus — per-line baselines (the same default call)', () => {
         expect(f.amount).toBe(0);
       }
     }
+  });
+  it('the retired gate move truck rule renders no line (D-01 remediation, user rulings 2026-10-26: removed from the silo; the legs are the container-through toggle surface)', () => {
+    expect(result.billers.flatMap(b => b.fees).filter(f => f.fee_rule_id === 'apmt_aarhus_gate_move_truck')).toHaveLength(0);
   });
   it('the storage scenario surfaces fired nothing (scenario-off is default)', () => {
     for (const ruleId of ['apmt_aarhus_storage_full', 'apmt_aarhus_storage_imdg']) {
@@ -260,8 +263,11 @@ describe('Aarhus — citation pins (every rule cites a real archived path)', () 
   const raw = yaml.load(fs.readFileSync(path.join(DATA_DIR, 'aarhus_2026.yaml'), 'utf8')) as PortDefinition;
   const rulesWithRefs = raw.fee_rules.filter(r => r.source_reference);
   it('every fee rule carries a source_reference with a document_url', () => {
-    expect(raw.fee_rules.length).toBe(17);
-    expect(rulesWithRefs.length).toBe(17);
+    // D-01 remediation (user rulings 2026-10-26) re-baseline: 17 -> 16, the
+    // retired apmt_aarhus_gate_move_truck rule (unresolved unit_type, priced
+    // 0.00; the legs are priced by the container-through machinery).
+    expect(raw.fee_rules.length).toBe(16);
+    expect(rulesWithRefs.length).toBe(16);
   });
   it('every document_url resolves at a real, non-empty archived path in the repository', () => {
     for (const rule of rulesWithRefs) {

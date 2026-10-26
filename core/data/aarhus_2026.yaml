@@ -304,26 +304,13 @@ fee_rules:
       clause: "2.5"
       verified_on: "2026-10-06"
       verified_by: "vibe-session-aarhus-expansion"
-  - id: apmt_aarhus_gate_move_truck
-    fee_family: cargo_fee
-    biller: APM Terminals Aarhus A/S
-    name: Gate Move (truck)
-    description: "APMT Aarhus 2026 tariff §4.1: 338.00 DKK per container, full or empty, including the horizontal move from truck to yard/stack or vice versa; based on delivery on weekdays Mon-Thu 06:00-18:00, Fri 06:00-17:00 (the gate access surcharge 100 DKK/container Mon-Thu 18:00-19:00 is a recorded surface). The landside leg — the comparison view's container-through toggle surface (the BRV/Eurogate precedent); blank charges zero."
-    rate_structure:
-      type: per_unit
-      unit_type: gate_moves_truck
-      unit_rate: 338.00
-    contract_vs_published:
-      description: "Published-default schedule (APMT Terms of Business §2.1, 14 Jan 2026 V20): written agreed rates prevail over the published schedule; the published-default honesty flag"
-      severity: warning
-    source_reference:
-      document_name: "Aarhus-01_01_2026-31_12_2026-Tariff - 2026.pdf"
-      document_url: "docs/sources/denmark/aarhus/apmt/Aarhus-01_01_2026-31_12_2026-Tariff - 2026.pdf"
-      document_issued: "2026-01-01"
-      page: "§4.1"
-      clause: "4.1"
-      verified_on: "2026-10-06"
-      verified_by: "vibe-session-aarhus-expansion"
+  # --- Gate move truck, retired at v0.12.0, D-01 remediation (user rulings 2026-10-26) ---
+  # The per_unit rule apmt_aarhus_gate_move_truck (unit_type gate_moves_truck,
+  # 338.00 DKK, tariff 4.1) is removed: the unit_type matched no call input and
+  # priced a silent zero. The landside legs, truck 338.00 and rail 414.00 DKK
+  # per container (tariff 4.1 and 4.2), are priced by the container-through
+  # machinery with the comparison toggle ON (web/src/handlingBasis.ts, since
+  # v0.8.0), recorded in AARHUS_EXTRACTION_REFERENCE.md section 5.2.
   - id: apmt_aarhus_reefer_daily
     fee_family: cargo_fee
     biller: APM Terminals Aarhus A/S

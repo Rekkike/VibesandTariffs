@@ -4,6 +4,7 @@
 import * as yaml from 'js-yaml';
 import * as fs from 'fs';
 import * as path from 'path';
+import { resolvesUnitType } from './unit_resolution';
 import {
   PortDefinition,
   FeeRule,
@@ -865,7 +866,22 @@ export function validatePort(port: PortDefinition): PortValidationResult {
     const ruleIds = new Set<string>();
     for (const rule of port.fee_rules) {
       const ruleErrors = validateFeeRule(rule);
-      
+
+      // D-01 remediation (spec v0.12.0, user rulings 2026-10-26): a per_unit
+      // unit_type must resolve to an engine case or a CallInput field.
+      // Before v0.12.0 an unresolved key priced a silent permanent zero
+      // through the engine's default branch; it now fails the load, naming
+      // the port, the rule and the unit_type.
+      const perUnit = rule.rate_structure as { type?: string; unit_type?: unknown } | undefined;
+      if (perUnit?.type === 'per_unit' && typeof perUnit.unit_type === 'string' && !resolvesUnitType(perUnit.unit_type)) {
+        ruleErrors.push({
+          rule_id: rule.id,
+          message: `Port "${port.metadata?.id ?? 'unknown'}", rule "${rule.id}": per_unit unit_type "${perUnit.unit_type}" resolves neither to an engine case nor to a CallInput field (an unresolved unit_type would price a silent zero)`,
+          severity: 'error',
+          path: 'rate_structure.unit_type'
+        });
+      }
+
       for (const error of ruleErrors) {
         if (error.severity === 'error') {
           errors.push(error);

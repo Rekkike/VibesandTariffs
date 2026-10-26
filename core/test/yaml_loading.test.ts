@@ -49,7 +49,10 @@ describe('Canonical YAML Loading', () => {
       'connection_fee',
       'lay_up',
       'readiness_fee',
-      'cargo_fee',
+      // 'cargo_fee' re-baselined out (D-01 remediation, user rulings
+      // 2026-10-26): its only Gothenburg rules, the godsavgift passenger and
+      // private-vehicle components, were retired as outside the
+      // container-vessel scope; the godsavgift itself is fairway_dues.
       'vessel_fee',
       'ordering_fee',
       'yard_surcharge',
@@ -61,6 +64,7 @@ describe('Canonical YAML Loading', () => {
     for (const family of requiredFamilies) {
       expect(uniqueFamilies.has(family)).toBe(true);
     }
+    expect(uniqueFamilies.has('cargo_fee')).toBe(false);
   });
 
   it('should have exactly 50 vessel_fee rules for the 10x5 matrix', () => {

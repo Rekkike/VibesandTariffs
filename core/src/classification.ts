@@ -138,16 +138,6 @@ const got: Record<string, FunctionalClassInfo> = {
     basis_note: 'Godsavgift — national cargo-based fairway due, 3.36 kr/t high-value / 1.67 kr/t low-value on derived cargo tonnes (Sjöfartsverket price list 2026 p.5, Föreskrift 2025:6); international basis assumed; transit cargo exempt',
     source: 'prislista-farleds-lotsavgifter-2026.pdf p.5'
   },
-  sjofartsverket_cargo_fee_passengers: {
-    functional_class: 'cargo_throughput_levy',
-    basis_note: 'Godsavgift — passenger component (Sjöfartsverket price list 2026 p.5)',
-    source: 'prislista-farleds-lotsavgifter-2026.pdf p.5'
-  },
-  sjofartsverket_cargo_fee_private_vehicles: {
-    functional_class: 'cargo_throughput_levy',
-    basis_note: 'Godsavgift — private-vehicle component (Sjöfartsverket price list 2026 p.5)',
-    source: 'prislista-farleds-lotsavgifter-2026.pdf p.5'
-  },
   // v0.8.0: renamed at v0.8.0, formerly apm_terminals_handling_le20ft and
   // apm_terminals_handling_gt20ft; family reclassified terminal_handling
   // to port_dues at v0.8.0 per the Yilport precedent; the basis_note
@@ -166,11 +156,6 @@ const got: Record<string, FunctionalClassInfo> = {
     functional_class: 'cargo_throughput_levy',
     basis_note: 'Vessel-side container lift per unit per move, ordinary time (the like-for-like basis; overtime, OOG and premium variants recorded, not encoded)',
     source: 'GOTHENBURG_EXTRACTION_REFERENCE.md §8'
-  },
-  apm_terminals_handling_break_bulk: {
-    functional_class: 'cargo_throughput_levy',
-    basis_note: 'Break-bulk handling (APMT Terminal Tariff 2026 §4)',
-    source: 'apm-terminal-tariff-2026.pdf §4'
   },
   apm_terminals_isps: {
     functional_class: 'cargo_throughput_levy',
@@ -940,11 +925,6 @@ const aar: Record<string, FunctionalClassInfo> = {
     functional_class: 'cargo_throughput_levy',
     basis_note: 'APMT lashing/unlashing per gang-hour (tariff 2.5) - ordered service, blank charges zero',
     source: 'Aarhus-01_01_2026-31_12_2026-Tariff - 2026.pdf 2.5'
-  },
-  apmt_aarhus_gate_move_truck: {
-    functional_class: 'cargo_throughput_levy',
-    basis_note: 'APMT truck gate move per container (tariff 4.1) - the landside leg, the container-through comparison surface',
-    source: 'Aarhus-01_01_2026-31_12_2026-Tariff - 2026.pdf 4.1'
   },
   apmt_aarhus_reefer_daily: {
     functional_class: 'cargo_throughput_levy',

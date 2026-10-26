@@ -614,11 +614,13 @@ fee_rules:
   fee_family: ancillary_service
   biller: Port of Helsingborg
   name: IMO-Transport
-  description: IMO-transport 510.00 SEK per unit. Optional call input, default off.
+  description: "Transport of unitized cargo classified as dangerous cargo (IMO) to a dedicated area, 510.00 SEK per unit (tariff 2026 p.8). Priced on the entered IMO-transport unit count (spec v0.12.0); a blank, zero or negative count prices nothing."
   rate_structure:
     type: per_unit
     unit_type: imo_transport_units
     unit_rate: 510.0
+  applicable_conditions:
+    imo_transport_units: present
   source_reference:
     document_name: tariff-2026.pdf
     document_url: docs/sources/sweden/helsingborg/port-authority/tariff-2026.pdf
@@ -667,12 +669,13 @@ fee_rules:
   fee_family: ancillary_service
   biller: Port of Helsingborg
   name: VGM Weighing
-  description: VGM weighing 430.00 SEK pre-advised (1,175.00 not pre-advised); pre-advised rate encoded. Optional
-    call input, default off.
+  description: "VGM weighing, export units only, 430.00 SEK per pre-advised unit (tariff 2026 p.8); the not-pre-advised rate, 1,175.00 SEK per unit, is recorded, never encoded. Priced on the entered pre-advised unit count (spec v0.12.0); a blank, zero or negative count prices nothing."
   rate_structure:
     type: per_unit
     unit_type: vgm_units
     unit_rate: 430.0
+  applicable_conditions:
+    vgm_units: present
   source_reference:
     document_name: tariff-2026.pdf
     document_url: docs/sources/sweden/helsingborg/port-authority/tariff-2026.pdf
@@ -685,11 +688,13 @@ fee_rules:
   fee_family: ancillary_service
   biller: Port of Helsingborg
   name: Other Administrative Services
-  description: Other administrative services 360.00 SEK. Optional call input, default off.
+  description: "Other administrative services, 360.00 SEK per event (tariff 2026 p.8). Priced on the entered event count (spec v0.12.0); a blank, zero or negative count prices nothing."
   rate_structure:
     type: per_unit
     unit_type: other_admin_units
     unit_rate: 360.0
+  applicable_conditions:
+    other_admin_units: present
   source_reference:
     document_name: tariff-2026.pdf
     document_url: docs/sources/sweden/helsingborg/port-authority/tariff-2026.pdf
@@ -702,11 +707,13 @@ fee_rules:
   fee_family: ancillary_service
   biller: Port of Helsingborg
   name: Customs/Veterinary Inspection
-  description: Customs or veterinary inspection 1,015.00 SEK. Optional call input, default off.
+  description: "Customs, veterinary or agricultural inspection charge, 1,015.00 SEK per unit (tariff 2026 p.8). Priced on the entered inspected-unit count (spec v0.12.0); a blank, zero or negative count prices nothing."
   rate_structure:
     type: per_unit
     unit_type: customs_inspection_count
     unit_rate: 1015.0
+  applicable_conditions:
+    customs_inspection_count: present
   source_reference:
     document_name: tariff-2026.pdf
     document_url: docs/sources/sweden/helsingborg/port-authority/tariff-2026.pdf
@@ -719,11 +726,13 @@ fee_rules:
   fee_family: ancillary_service
   biller: Port of Helsingborg
   name: Port-Area Transport
-  description: Transport within the port area 950.00 SEK. Optional call input, default off.
+  description: "Transport within the port area, containers 20'-45', 950.00 SEK per container (tariff 2026 p.8). Priced on the entered container count (spec v0.12.0); a blank, zero or negative count prices nothing."
   rate_structure:
     type: per_unit
     unit_type: port_area_transport_units
     unit_rate: 950.0
+  applicable_conditions:
+    port_area_transport_units: present
   source_reference:
     document_name: tariff-2026.pdf
     document_url: docs/sources/sweden/helsingborg/port-authority/tariff-2026.pdf
@@ -2792,5 +2801,10 @@ input_profile:
       heading: Cargo tonnage for godsavgift (planning weights)
     - id: helsingborg_call_parameters
       heading: Helsingborg Call Parameters
+    # The five optional-service counts (spec v0.12.0, D-01 remediation,
+    # user rulings 2026-10-26; tariff 2026 p.8): blank by default, shared
+    # call state like the Gothenburg ancillary inputs.
+    - id: helsingborg_ancillary
+      heading: Helsingborg Ancillary Services (optional)
     - id: eu_regulatory
       heading: EU Regulatory (ETS allowances - user-specified basis)

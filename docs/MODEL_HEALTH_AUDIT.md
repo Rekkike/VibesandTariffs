@@ -384,6 +384,9 @@ over-fitting). The minor trigger does not fire. v0.4.6 → v0.4.7.
      deleted, not repaired - the adjudication (delete as a duplicate, or gate
      and re-point its unit_type) belongs to a future pass; a repair touches
      the silo's rule set and is never silent.
+     (Resolved in place at v0.12.0, D-01 remediation (user rulings 2026-10-26): adjudicated
+     as a duplicate and deleted; it priced 0.00, so no total moved, and the
+     gated `apm_terminals_handling_break_bulk_scrap` is unchanged.)
    - **11. Input-coverage asymmetries recorded** (audit §5,
      docs/INPUT_COVERAGE_MATRIX.md): 25 engine inputs with no UI anywhere
      (the HHLA container-services and storage size-class families; the

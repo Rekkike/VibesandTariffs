@@ -1509,43 +1509,15 @@ fee_rules:
       verified_on: "2026-09-25"
       verified_by: "vibe-session-godsavgift"
 
-  - id: sjofartsverket_cargo_fee_passengers
-    fee_family: cargo_fee
-    biller: Sjöfartsverket
-    name: Cargo Fee - Passengers
-    description: "Passenger fee"
-    rate_structure:
-      type: per_unit
-      unit_rate: 2.52
-      unit_type: pax
-    source_reference:
-      document_name: prislista-farleds-lotsavgifter-2026.txt
-      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt
-      upstream_url: "https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf"
-      document_issued: "2025-11-01"
-      page: 5
-      clause: "Godsavgift - Passengers"
-      verified_on: "2025-12-10"
-      verified_by: "Port Cost Analyzer Team"
+  # --- Godsavgift passenger component, retired at v0.12.0, D-01 remediation (user rulings 2026-10-26) ---
+  # Out of the container-vessel scope (scope question S-1). The rate 2.52 SEK
+  # per passenger (price list 2026 p.5) stays recorded in the archived
+  # price list and in docs/sources/sweden/national/NATIONAL_EXTRACTION_REFERENCE.md.
 
-  - id: sjofartsverket_cargo_fee_private_vehicles
-    fee_family: cargo_fee
-    biller: Sjöfartsverket
-    name: Cargo Fee - Private Vehicles
-    description: "Private vehicles fee"
-    rate_structure:
-      type: per_unit
-      unit_rate: 3.36
-      unit_type: unit
-    source_reference:
-      document_name: prislista-farleds-lotsavgifter-2026.txt
-      document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt
-      upstream_url: "https://www-n.sjofartsverket.se/globalassets/tjanster/anlopstjanster/sjofartsverkets-farleds--och-lotsavgifter/prislista-farleds--och-lotsavgifter-2026.pdf"
-      document_issued: "2025-11-01"
-      page: 5
-      clause: "Godsavgift - Private Vehicles"
-      verified_on: "2025-12-10"
-      verified_by: "Port Cost Analyzer Team"
+  # --- Godsavgift private-vehicle component, retired at v0.12.0, D-01 remediation (user rulings 2026-10-26) ---
+  # Out of the container-vessel scope (scope question S-1). The rate 3.36 SEK
+  # per private vehicle (price list 2026 p.5) stays recorded in the archived
+  # price list and in docs/sources/sweden/national/NATIONAL_EXTRACTION_REFERENCE.md.
 
     # --- Readiness Fee (Beredskapsavgift) by Class ---
   - id: sjofartsverket_readiness_fee_class1
@@ -2435,24 +2407,11 @@ fee_rules:
       verified_on: "2025-12-15"
       verified_by: "Port Cost Analyzer Team"
 
-  - id: apm_terminals_handling_break_bulk
-    fee_family: terminal_handling
-    biller: APM Terminals Gothenburg
-    name: Terminal Handling - Break Bulk
-    description: "Terminal handling charge for break bulk cargo"
-    rate_structure:
-      type: per_unit
-      unit_rate: 54
-      unit_type: "1000_kg"
-    source_reference:
-      document_name: "apm-terminals-terminal-tariff-2026-june.txt"
-      document_url: "docs/sources/sweden/gothenburg/apm-terminals-terminal-tariff-2026-june.txt"
-      upstream_url: "https://www.apmterminals.com/en/gothenburg/services/terminal-tariff"
-      document_issued: "2025-12-01"
-      page: 2
-      clause: "Terminal Charges"
-      verified_on: "2025-12-15"
-      verified_by: "Port Cost Analyzer Team"
+  # --- Break-bulk duplicate, retired at v0.12.0, D-01 remediation (user rulings 2026-10-26) ---
+  # The ungated duplicate apm_terminals_handling_break_bulk (unit_type 1000_kg,
+  # no presence gate) priced a 0.00 line on every call. The surface is priced
+  # by apm_terminals_handling_break_bulk_scrap (54 SEK per 1,000 kg, input
+  # break_bulk_1000kg), unchanged.
 
   # --- Vessel-side lift (v0.11.0) ---
   # The lift is no longer an encoded rule: it is a user-specified call input
