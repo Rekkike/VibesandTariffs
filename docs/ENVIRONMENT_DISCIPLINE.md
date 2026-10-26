@@ -72,7 +72,9 @@ A report is true only if every stated fact is checkable. State deviations plainl
 
 ## 10. Standing verification ritual (every session, first)
 
-Re-verify the ECB EUR→SEK reference rate to the latest TARGET-business-day publication (the Frankfurter mirror in `core/data/exchange_rates.yaml`); update the YAML if the rate has moved, regenerate, and report the drift. The pinned default is static, versioned data; this ritual is its maintenance.
+Re-observe the ECB EUR→SEK and EUR→DKK reference rates against the latest TARGET-business-day publication (read at the ECB publication; a mirror is a cross-check only) and report any drift against the pinned values in `core/data/exchange_rates.yaml`. The observation is record-only: the pinned rates and their as-of date move only in a dedicated rate pass, never mid-pass, and each pair's drift is declared independently. The pinned default is static, versioned data; this ritual is its maintenance.
+
+(Superseded in place at v0.11.5, Docs alignment (user rulings 2026-10-22): the former text named the Frankfurter mirror as the observation source and instructed a YAML update, regeneration and drift report whenever the rate had moved. Both are superseded by the dedicated-rate-pass rule recorded in `core/data/exchange_rates.yaml`; specification §14 carries the same alignment.)
 
 ## 11. Directive format
 

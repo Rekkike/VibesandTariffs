@@ -22,6 +22,12 @@
 # derived cross (SEK per DKK = (EUR->SEK) / (EUR->DKK)). Those crosses
 # activate at the Aarhus/Gdynia expansion pass, not now — no speculative
 # pair is populated in this file, and no derived-cross code exists.
+#   (Superseded in place at v0.11.5, Docs alignment (user rulings 2026-10-22):
+#   the two paragraphs above are the v0.3.2 record. Since v0.6.0 the
+#   comparison also converts DKK: the Aarhus expansion populated the
+#   EUR->DKK published pair below, and the derived cross SEK per DKK =
+#   (EUR->SEK) / (EUR->DKK) is implemented in web/src/conversion.ts. The
+#   PLN pair at Gdynia remains unpopulated.)
 #
 # Sources: the ECB euro foreign-exchange reference rates,
 # mirrored by the Frankfurter API (https://api.frankfurter.app).

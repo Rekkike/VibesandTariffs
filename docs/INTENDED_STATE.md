@@ -122,7 +122,11 @@ points to rather than duplicating.
 2. The Sjöfartsverket block presents its components as visible lines
    (vessel fee, readiness fee, cargo fee, pilotage, ordering fee).
 3. No fee line may silently disappear; absence renders explicitly
-   ("not levied at this port" in the comparison view since v0.2.52).
+   ("no published rate in the archived record at this port" in the
+   comparison view since v0.11.4). (Superseded in place at v0.11.5,
+   Docs alignment (user rulings 2026-10-22): the phrase "not levied at this port",
+   rendered from v0.2.52, was replaced at v0.11.4 by the phrase above;
+   the explicit-absence principle is unchanged.)
 4. Progressive calculations are progressive (each GT/NT portion at its band
    rate), never banded-uniform.
 5. Discounts compose per tariff semantics (port environmental discount on

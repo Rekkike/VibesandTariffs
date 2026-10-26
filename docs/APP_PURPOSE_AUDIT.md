@@ -84,6 +84,8 @@ Today (2026-10-21) all 811 and 588 are green; the first red date by the rule is 
 Criteria C3, C11.
 Resolved by the v0.8.3 pass: the Gothenburg handling-basis annotation (`web/src/handlingBasis.ts`) is structure-only (the separately billed lift at 1,029 SEK per unit per move, ordinary time, the goods charge, and the landside leg at 453 SEK), and the lift and the landside leg render like any other rule line. The wording defect this finding recorded no longer exists. The structural observation stands as recorded: the print path imports only `containerThroughParts` from `handlingBasis` (`printComparisonPages.tsx:24`) and does not use `handlingBasisAnnotationFor`, so the annotation is on screen only (`comparisonView.tsx:394, 633`). Not run through a print render in this pass: established from the code and the file's own header comment.
 
+Superseded at v0.11.0 and v0.11.4 (marked in place at v0.11.5, Docs alignment (user rulings 2026-10-22)): the encoded lift and the hardcoded landside leg described above no longer exist. Since v0.11.0 the lift is the user-specified Cost per lift input and the landside leg is the user-specified Delivery input, both blank by default (blank = not priced, not added); since v0.11.4 the annotation states only what is true of those inputs. The figures 1,029 and 453 SEK stay recorded, not encoded, in the Gothenburg extraction reference §8.
+
 ### A-03 — ASYMMETRY — Container-through landside leg: Hamburg's 152 EUR applies irrespective of terminal; Bremerhaven's default-terminal basis differs · P3 **[KNOWN]**
 Criterion C5/C6. Recorded in the v0.8.0 ruling S-b (Hamburg precedent). Verified in `handlingBasis.ts` only; not re-argued.
 
@@ -170,7 +172,7 @@ Environment limit, stated plainly: the PDF page renderer is not installed in thi
 |---|---|---|---|
 | `apm_terminals_goods_charge_le20ft`/`gt20ft`, break bulk, hatch cover, gearbox, ISPS (Gothenburg) | 377 / 535 / 54 per 1000 kg / 3111 / 1036 / 80 SEK | `apm-terminals-terminal-tariff-2026-june.txt`, "Page 2", §1.1–1.4 (lines 69–77) | All six figures match; page 2 and "Terminal Charges on goods" match |
 | `ntb_container_handling`, `ntb_lashing`, `ntb_twistlocks` (Bremerhaven) | 339.00 / 42.60 / 21.60 EUR | `ntb-reference-tariff-en-2026-08-01.txt`, clauses 2.1.1, 2.3.1, 2.3.2 | Figures and clause numbers match. The text transcription's page markers are ambiguous, so the YAML `page` fields (2, 3, 3) were not independently confirmed |
-| `apm_terminals_lift` (Gothenburg) | 1,029 SEK | Not an archive document: GOTHENBURG_EXTRACTION_REFERENCE §8 (handling rates of record) | By design |
+| `apm_terminals_lift` (Gothenburg) | 1,029 SEK | Not an archive document: GOTHENBURG_EXTRACTION_REFERENCE §8 (handling rates of record) | By design. Superseded at v0.11.0 (marked in place at v0.11.5, Docs alignment (user rulings 2026-10-22)): the silo no longer encodes this rate; the line prices only the user-specified Cost per lift input, and 1,029 SEK stays recorded, not encoded, in §8 |
 
 Not opened in this pass, and therefore not re-verified: every PDF-sourced rule at Gävle (hamntaxa p.4 2.97 SEK/GT and the istillägg), Helsingborg, Norrköping, Norvik (including the p.6→p.4 correction precedent), Aarhus, Hamburg, Rotterdam. Prior-pass verification stands as recorded; this audit adds none. A pass that can render PDFs (or a user-supplied text extraction) should take the priority list: Gävle winter variant; Norrköping and Helsingborg bands; the Aarhus gate-move basis (D-01).
 

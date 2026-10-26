@@ -40,9 +40,16 @@ export interface ExchangeRateInfo {
 // source of truth; this constant exists so the module is testable without
 // the registry and so a missing data block degrades to the documented
 // default rather than an unconverted comparison.
+//
+// Dead fallback (v0.11.5, 2026-10-26): every production load carries the
+// EUR-SEK row of core/data/exchange_rates.yaml, so this constant is reached
+// only by the module's own unit tests and degenerate loads. Aligned to the
+// pinned values of record (the 2026-10-20 ECB observation: SEK 11.123 per
+// EUR; the EUR-DKK pin of 7.4746 has no fallback constant, a DKK conversion
+// without its registry row fails loudly). It moves with the YAML pin.
 export const DEFAULT_EXCHANGE_RATE: ExchangeRateInfo = {
-  rate: 11.29,
-  date: '2026-10-02',
+  rate: 11.123,
+  date: '2026-10-20',
   source: 'ECB euro reference rate (SEK per EUR)',
   is_default: true
 };

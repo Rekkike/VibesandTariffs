@@ -1,4 +1,4 @@
-# Cross-Port Input-Coverage Matrix (v0.4.7)
+# Cross-Port Input-Coverage Matrix (v0.4.7; header aligned at v0.11.5)
 
 Companion artifact of docs/MODEL_HEALTH_AUDIT.md §5. Inventory of every
 scenario/user input the model exposes, per port, with each asymmetry
@@ -8,7 +8,7 @@ time). The comparison view's honesty depends on asymmetries being recorded
 rather than discovered by users.
 
 Method: the engine's `CallInput` inventory cross-checked against (a) every
-fee rule's conditions/unit inputs per port (script over all six YAML silos)
+fee rule's conditions/unit inputs per port (script over all six YAML silos at v0.4.7; the model now carries nine port silos. Corrected in place at v0.11.5, Docs alignment (user rulings 2026-10-22): the heading formerly read v0.4.7 alone and the count six alone; the rows remain the v0.4.7 record except where marked)
 and (b) the UI's rendered inputs (every `handleCallChange` /
 `handleCallChanges` / `state.call` reference across the web source). The
 engine is the authority; the UI inventory is observational.
@@ -28,7 +28,7 @@ estimate, the storage-day pairs that the port prices, lay time, engine tier.
 
 | Port | Port-specific inputs rendered |
 |---|---|
-| GOT | `got_same_route_second_call`, `waste_certificate_2022_91`, `fresh_water_m3`, `sludge_extra_m3`, `scrubber_waste`, `break_bulk_1000kg`, `idle_berth_hours`, `mooring_charge`, hatch cover / gearbox counts, OOG/reefer/DG/overdue-DG units. The handling basis is full-cycle and leg-priced (v0.8.0): the vessel-side lift (`apm_terminals_lift`, ordinary time) and the §1 goods charge need no input - both price on the shared container counts; the overtime, OOG and weekend/holiday lift variants are recorded, not encoded (no input exists, the ordinary-time basis is the like-for-like default); the 453 landside leg rides the container-through toggle only, and with the toggle ON it is included in the Grand Total (v0.9.0); the OPS card adds `ops_unit_charge_20ft`, `ops_unit_charge_40ft` (user-specified SEK per non-empty unit, blank = none) and `ops_nonempty_units_20ft`, `ops_nonempty_units_40ft` (basis counts, configuration only, blank = the call's handled per-size count) |
+| GOT | `got_same_route_second_call`, `waste_certificate_2022_91`, `fresh_water_m3`, `sludge_extra_m3`, `scrubber_waste`, `break_bulk_1000kg`, `idle_berth_hours`, `mooring_charge`, hatch cover / gearbox counts, OOG/reefer/DG/overdue-DG units, and the two user-specified terminal handling inputs (v0.11.0) `got_lift_cost` ("Cost per lift", SEK per unit per move, priced on the call's moves) and `got_delivery_cost` ("Delivery", SEK per unit, fires only with the container-through toggle ON), both blank by default (blank = not priced, not added), rendered in the Vessel Call input section since v0.11.1. The handling basis is full-cycle and leg-priced (v0.8.0): the vessel-side lift (`apm_terminals_lift`, ordinary time) and the §1 goods charge need no input - both price on the shared container counts; the overtime, OOG and weekend/holiday lift variants are recorded, not encoded (no input exists, the ordinary-time basis is the like-for-like default); the 453 landside leg rides the container-through toggle only, and with the toggle ON it is included in the Grand Total (v0.9.0) (superseded at v0.11.0, marked in place at v0.11.5, Docs alignment (user rulings 2026-10-22): the encoded lift rate and the hardcoded 453 leg were removed; the lift prices only the Cost per lift input, and the landside leg prices only the Delivery input, with the toggle ON); the OPS card adds `ops_unit_charge_20ft`, `ops_unit_charge_40ft` (user-specified SEK per non-empty unit, blank = none) and `ops_nonempty_units_20ft`, `ops_nonempty_units_40ft` (basis counts, configuration only, blank = the call's handled per-size count) |
 | HAM | `terminal_operator`, `berth_type`, `berth_hours`, `hpa_berth_usage`, `gangway_class/count/supervision_hours`, `pilotage_segment_pct`, `port_time_hours`, `quantum_prior_year_gt`, lashing/twistlock/IMO containers, `layby_hours`, `reefer_extra_days`, `small_call_containers`, `container_service_admin_fee` (toggle), the three waste-reduction attestations, the scenario-parameter set (shifts, overtime, waiting, staff/equipment hours, gangs) |
 | HEL | `issc_valid`, `ees_rate_per_move`, `towage_cost_per_tug`, `clean_shipping_index_class`, `fresh_water_m3`, storage-day pairs, `sludge_extra_m3` (engine-side; see §3) |
 | GLE | the national shared set; no port-specific surface beyond the godsavgift planning weights (Karskär awaits a quay selector, recorded) |
