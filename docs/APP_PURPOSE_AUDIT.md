@@ -178,6 +178,8 @@ Environment limit, stated plainly: the PDF page renderer is not installed in thi
 
 Not opened in this pass, and therefore not re-verified: every PDF-sourced rule at Gävle (hamntaxa p.4 2.97 SEK/GT and the istillägg), Helsingborg, Norrköping, Norvik (including the p.6→p.4 correction precedent), Aarhus, Hamburg, Rotterdam. Prior-pass verification stands as recorded; this audit adds none. A pass that can render PDFs (or a user-supplied text extraction) should take the priority list: Gävle winter variant; Norrköping and Helsingborg bands; the Aarhus gate-move basis (D-01).
 
+(Resolved in place at v0.12.1, PDF citation spot-check (user ruling 2026-11-01): the PDF citation spot-check was performed against the archived PDFs with `pdftotext` and is recorded in `docs/PDF_CITATION_SPOT_CHECK.md`: 171 PDF-citing rules inventoried, 24 rows extracted across the eight silos that cite PDFs, every encoded figure matching its source; two discrepancy classes ruled 2026-11-02 and queued for remediation, the Aarhus lashing basis and the Gävle Yilport page citations. The Aarhus gate-move basis was settled at v0.12.0 (D-01). The Gävle winter variant and the Norrköping and Helsingborg bands of the priority list fell outside the deterministic sample and were not individually extracted.)
+
 ## 5. Scope questions (not recommendations)
 
 - S-1: Gothenburg carries Sjöfartsverket cargo-fee rules for passengers (`pax`) and private vehicles (`unit`) — passenger/RoRo-type charges in a container-only tool. (Resolved at v0.12.0, D-01 remediation (user rulings 2026-10-26): adjudicated out of the container-vessel scope; both rules retired, the rates recorded in the national extraction reference.)
