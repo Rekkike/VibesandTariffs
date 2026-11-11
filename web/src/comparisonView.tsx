@@ -916,7 +916,7 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
                                 <Box sx={{ fontSize: '0.75rem' }} className="comparison-secondary">
                                   {result.vessel_access.effective_per_gt.toFixed(2)} {result.currency}/GT effective — derived, not a published rate
                                   {vaConv.converted && (
-                                    <span> ({'≈'} {(result.vessel_access.effective_per_gt * rateInfo.rate).toFixed(2)} SEK/GT converted)</span>
+                                    <span> ({'≈'} {toComparisonBasis(result.vessel_access.effective_per_gt, result.currency, rateInfo, comparisonBasisContext).amount.toFixed(2)} SEK/GT converted)</span>
                                   )}
                                 </Box>
                               </Box>

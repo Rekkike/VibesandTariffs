@@ -44,16 +44,7 @@ export function isMobileViewport(width: number | undefined): boolean {
   return width < STACKING_BREAKPOINT_PX;
 }
 
-// Ranking-summary ordering (spec v0.2.39): the ranking strip is the
-// comparison view's headline answer and survives the transposition intact -
-// cheapest first, on the converted comparison basis (never raw amounts
-// across currencies; spec v0.2.31). Pure function over the same inputs as
-// rankByConvertedBasis so ordering integrity is directly testable.
-export function rankOrderByConvertedBasis(
-  totals: { portId: string; amount: number; currency: string }[],
-  rate: { rate: number }
-): { portId: string; amount: number; currency: string }[] {
-  const basis = (t: { amount: number; currency: string }) =>
-    t.currency === 'EUR' ? t.amount * rate.rate : t.amount;
-  return [...totals].sort((a, b) => basis(a) - basis(b));
-}
+// Ranking lives in conversion.ts (rankByConvertedBasis /
+// rankOrderByConvertedBasis) - the single conversion path; this module
+// carries layout constants only. (v0.13.3: a production-dead duplicate
+// ranking helper that converted EUR inline was removed from here.)

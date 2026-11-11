@@ -22,8 +22,6 @@ export { PortWorkspace } from './portWorkspace';
 export { ComparisonView } from './comparisonView';
 export { PortDrawer, groupPortsByCountry, COMPARISON_SELECTION_CAP, COMPARISON_CAP_MESSAGE } from './portDrawer';
 
-// Navigation pages per spec v0.2.17 section 4.3.1 (spec v0.2.60
-// decomposition): extracted from App.tsx verbatim.
 // Navigation pages per spec v0.2.17 section 4.3.1: per-port workspaces plus a
 // distinct comparison screen. Per-port separation is required as soon as a
 // second port loads; the selector is always present for forward compatibility.
@@ -108,11 +106,10 @@ const App: React.FC = () => {
   // fields fall to the port's defaults in the merge.
   const [perPortCallFields, setPerPortCallFields] = useState<Record<string, Record<string, unknown>>>({});
   // Fresh-load comparison selection (spec v0.2.59): bounded, not all-ports.
-  // The first four loaded ports render by default (registry order); at the
-  // current three ports this is all of them - identical DOM to the previous
-  // all-ports default - and at eight ports the comparison opens workable
-  // instead of opening at its worst case. The checkbox list remains the
-  // explicit subset control; nothing is rendered beyond the selection.
+  // The first four loaded ports render by default (registry order), so the
+  // comparison opens workable instead of opening at its worst case. The
+  // checkbox list remains the explicit subset control; nothing is rendered
+  // beyond the selection.
   const [comparisonSelection, setComparisonSelection] = useState<string[]>(
     LOADED_PORTS.slice(0, 4).map(p => p.metadata.id)
   );

@@ -20,6 +20,11 @@ Thumbs.db
 *.log
 npm-debug.log*
 
+# Backup / temp artifacts
+*.bak
+*.orig
+*~
+
 # Environment
 .env
 .env.local

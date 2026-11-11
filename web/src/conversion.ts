@@ -18,13 +18,12 @@
 // the module's exported labels render exactly as before for it.
 //
 // The rate is a user-editable input with a documented default stored in
-// the data. The pinned default is static, versioned data. The rate-refresh
-// button (v0.3.2) fetches the latest ECB publication on demand — a
-// user-initiated UI-layer action that applies the fetched value as an
-// override, never a replacement of the pinned default. Blank or invalid
-// input falls back to the default with a visible flag; a converted figure
-// never appears without its rate and date; a failed fetch leaves the
-// current value in effect with a visible failure note — never silent.
+// the data. The pinned default is static, versioned data. The v0.3.2
+// rate-refresh button (a runtime fetch) was removed at v0.4.0: no runtime
+// API call exists, and the ECB's published-rates page is a plain link; the
+// manual override input remains a display adjustment only. Blank or
+// invalid input falls back to the default with a visible flag; a converted
+// figure never appears without its rate and date.
 //
 // This module is pure presentation logic — it never touches computation.
 
@@ -124,14 +123,17 @@ export function declaredRateFor(
 }
 
 // Provenance metadata for an override whose date and source differ from the
-// pinned default (v0.3.2): the rate-refresh button applies a fetched ECB
-// publication, and that publication date must render with the fetched rate
-// — never the pinned as_of, never a stale date masquerading as fresh.
+// pinned default (v0.3.2): a caller applying a non-default rate may carry
+// its own date and source, which must render with that rate — never the
+// pinned as_of, never a stale date masquerading as fresh. Retained as a live
+// test surface of resolveExchangeRate; no fetch module exists (the v0.3.2
+// rate-refresh button was removed at v0.4.0, and rateRefresh.test.tsx pins
+// its absence).
 export interface OverrideProvenance {
   date: string;
   source: string;
-  // v0.3.5 fallback chain: the endpoint that answered, named in the
-  // fetched rendering. Absent for pre-v0.3.5 callers (manual overrides).
+  // Historical v0.3.5 fetch-chain field: the endpoint that answered, named
+  // in the fetched rendering. Absent for manual overrides.
   endpoint?: string;
 }
 

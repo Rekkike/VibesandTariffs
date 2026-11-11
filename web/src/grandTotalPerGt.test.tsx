@@ -26,7 +26,7 @@ import { LOADED_PORTS as RENDERED_PORTS } from './portRegistry';
 import { DEFAULT_VESSEL, defaultCall, calculatePortCallCost } from '@port-cost/core';
 import type { CallInput, PortDefinition, VesselInput } from '@port-cost/core/types';
 import { readDecomposedAppSource } from './appSource';
-import { eurSekRate, perGt } from './testRates';
+import { converted, eurSekRate, perGt } from './testRates';
 
 // v0.8.0 re-baseline (in-test attribution): the suite pins the rendered
 // port set - the app's LOADED_PORTS (portRegistry), Rotterdam hidden by
@@ -304,5 +304,65 @@ describe('Grand Total derived per-GT — per-port workspace untouched (spec v0.2
     const stripExcerpt = appSource.slice(stripIdx, stripIdx + 220);
     expect(stripExcerpt).not.toContain('pergt');
     expect(stripExcerpt).not.toContain('SEK/GT');
+  });
+});
+
+// v0.13.3 defect repair (user rulings 2026-11-11): the converted per-GT
+// annotations on the two screen surfaces multiplied the native per-GT figure
+// by the kr-per-EUR rate directly; for a DKK port that mis-converted (Aarhus
+// showed the raw DKK/GT x kr-per-EUR figures instead of the derived-cross
+// conversion). The annotations now route through toComparisonBasis, the
+// single conversion path. The Grand Total per-GT cell already routed
+// correctly and does not move. All expectations are derived per the v0.13.1
+// doctrine: native x YAML rate through testRates, never a byte-pinned rate
+// literal.
+describe('Converted per-GT annotations route through the single conversion path (v0.13.3)', () => {
+  const gt = DEFAULT_VESSEL.gt;
+  const AAR_NATIVE = 6348361.00; // Aarhus default-call total, DKK (native pin)
+  const aarhusResult = calculatePortCallCost(portById('aarhus'), { vessel: DEFAULT_VESSEL, call: defaultCall('aarhus') });
+  const hamResult = calculatePortCallCost(portById('hamburg'), { vessel: DEFAULT_VESSEL, call: defaultCall('hamburg') });
+  const aarhusVaPg = aarhusResult.vessel_access!.effective_per_gt;
+  const aarhusPd = aarhusResult.billers.flatMap(b => b.fees).find(f => f.fee_family === 'port_dues')!;
+  const aarhusFamPg = Math.round((aarhusPd.amount / gt) * 100) / 100;
+  const hamVaPg = hamResult.vessel_access!.effective_per_gt;
+  const hamPd = hamResult.billers.flatMap(b => b.fees).find(f => f.fee_family === 'port_dues')!;
+  const hamFamPg = Math.round((hamPd.amount / gt) * 100) / 100;
+
+  it('Aarhus (DKK): the vessel-access and port-dues annotations convert at the derived cross, not kr-per-EUR', async () => {
+    ({ container, root } = await renderComparison(false, defaultCall('gothenburg')));
+    const vaRow = Array.from(container!.querySelectorAll('.comparison-total-row'))
+      .find(r => (r.textContent ?? '').includes('Vessel Access Charges'))!;
+    expect(vaRow).toBeDefined();
+    // at the pins of record this derives to 6.18 (was 46.16 pre-fix)
+    const expectedVa = converted(aarhusVaPg, 'DKK').toFixed(2);
+    const erroneousVa = (aarhusVaPg * eurSekRate()).toFixed(2);
+    expect(vaRow.textContent).toContain(`≈ ${expectedVa} SEK/GT converted`);
+    expect(vaRow.textContent).not.toContain(`≈ ${erroneousVa} SEK/GT converted`);
+    // the port-dues family cell annotation (body row, not the total row):
+    // derives to 5.88 at the pins of record (was 43.96 pre-fix)
+    const text = container!.textContent ?? '';
+    const expectedFam = converted(aarhusFamPg, 'DKK').toFixed(2);
+    const erroneousFam = (aarhusFamPg * eurSekRate()).toFixed(2);
+    expect(text).toContain(`≈ ${expectedFam} SEK/GT converted`);
+    expect(text).not.toContain(`≈ ${erroneousFam} SEK/GT converted`);
+  });
+
+  it('EUR ports are unchanged by the repair (regression pin): Hamburg keeps the direct rate', async () => {
+    ({ container, root } = await renderComparison(false, defaultCall('gothenburg')));
+    const vaRow = Array.from(container!.querySelectorAll('.comparison-total-row'))
+      .find(r => (r.textContent ?? '').includes('Vessel Access Charges'))!;
+    expect(vaRow.textContent).toContain(`≈ ${converted(hamVaPg, 'EUR').toFixed(2)} SEK/GT converted`);
+    expect(container!.textContent).toContain(`≈ ${converted(hamFamPg, 'EUR').toFixed(2)} SEK/GT converted`);
+  });
+
+  it('the Grand Total per-GT for Aarhus does not move: it already routed through the single path', async () => {
+    ({ container, root } = await renderComparison(false, defaultCall('gothenburg')));
+    const totalRow = Array.from(container!.querySelectorAll('.comparison-total-row'))
+      .find(r => (r.textContent ?? '').includes('Grand Total'))!;
+    // derives to 47.90 SEK/GT at the pins of record
+    const expected = perGt(AAR_NATIVE, 'DKK', gt);
+    const aarhusCell = Array.from(totalRow.querySelectorAll('.comparison-total-pergt'))
+      .find(c => (c.textContent ?? '').includes(`${expected} SEK/GT`))!;
+    expect(aarhusCell).toBeDefined();
   });
 });

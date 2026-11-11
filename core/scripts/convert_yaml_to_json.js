@@ -96,8 +96,10 @@ function main() {
         console.log(`Loaded port ${data.metadata.id} (${data.metadata.name}) from ${file}: ${data.fee_rules.length} fee rules`);
       } else if (data && Array.isArray(data.published_pairs) && data.published_pairs.length > 0) {
         // Spec v0.3.2: published-pairs exchange-rate reference data
-        // (EUR-anchored published pairs; static, versioned pins; the UI's
-        // rate-refresh fetch is an override layer, never a default).
+        // (EUR-anchored published pairs; static, versioned pins; the pinned
+        // default is the model's rate - the v0.3.2 rate-refresh fetch was
+        // removed at v0.4.0, and the manual override input is a display
+        // adjustment only).
         // Emitted as exchange_rates on ports.json. Adding a pair is a
         // data-only addition to published_pairs — no code change.
         const pairs = data.published_pairs;

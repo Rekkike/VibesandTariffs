@@ -99,7 +99,7 @@ function check(changedFiles, baseSpec, headSpec, headVersionTs) {
         `Behavior paths: ${BEHAVIOR_PATHS.join(', ')}`,
         `Changed behavior files:`,
         ...behaviorChanges.map((f) => `  ${f}`),
-        `Add a new "| 0.2.x | date | ..." changelog row and bump the header version in ${SPEC_PATH} in the same change.`,
+        `Add a new "| 0.x.y | date | ..." changelog row and bump the header version in ${SPEC_PATH} in the same change.`,
       ].join('\n')
     );
   }
@@ -112,7 +112,7 @@ function check(changedFiles, baseSpec, headSpec, headVersionTs) {
   const constant = headVersionTs === null ? null : webVersionConstant(headVersionTs);
   if (headVersionTs !== null && constant === null) {
     fail(
-      `the web version constant (${VERSION_CONST_PATH}) does not carry a parseable APP_VERSION = 'v0.2.x' — the version chip has no source of truth.`
+      `the web version constant (${VERSION_CONST_PATH}) does not carry a parseable APP_VERSION = 'v0.x.y' — the version chip has no source of truth.`
     );
   }
   if (headVersionTs !== null && header !== null && constant !== header) {

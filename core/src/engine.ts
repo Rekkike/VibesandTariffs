@@ -1604,9 +1604,9 @@ export function evaluateFeeRule(
       const beforeAdjStep = adjustedAmount;
       // Check if condition is met
       if (adjustment.condition) {
-        // Simple condition evaluation
-        // For now, we'll check against the input
-        // This is a simplified approach - in production, use a proper expression evaluator
+        // Condition evaluation: the delivered evaluator handles disjunction,
+        // conjunction and the named comparison forms; an unmatched condition
+        // evaluates false (fail-closed).
         const conditionMet = evaluateCondition(adjustment.condition, input);
         if (!conditionMet) continue;
       }
@@ -1781,12 +1781,12 @@ export function evaluateFeeRule(
 }
 
 /**
- * Simple condition evaluator (simplified for now)
+ * Condition evaluator: disjunction ('a || b'), conjunction ('a &&'), and
+ * the named comparison forms over call/vessel inputs. An unrecognized
+ * condition evaluates false (fail-closed) - a data rule never fires on a
+ * condition the evaluator does not understand.
  */
 function evaluateCondition(condition: string, input: CostCalculationInput): boolean {
-  // For now, handle simple conditions
-  // In production, use a proper expression evaluator
-  
   // Disjunction: 'a || b' is met when either side is met (e.g. ESI >= 30 or
   // CSI class 4 for Helsingborg's environmental discount)
   if (condition.includes('||')) {

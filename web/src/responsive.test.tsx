@@ -12,7 +12,9 @@
 //   - conversion disclosure per-view, mobile-only -> render tests (button
 //     absent on desktop, aria-expanded toggles)
 //   - ranking integrity: cheapest-first on the converted basis -> pure
-//     rankOrderByConvertedBasis pins (spec v0.2.31: never raw amounts)
+//     rankOrderByConvertedBasis pins (spec v0.2.31: never raw amounts);
+//     v0.13.3: the pins run against the single-path implementation in
+//     conversion.ts (the responsive.ts duplicate was removed)
 import * as fs from 'fs';
 import * as path from 'path';
 import React from 'react';
@@ -23,11 +25,17 @@ import {
   STACKING_BREAKPOINT_PX,
   STACKING_MEDIA_QUERY,
   isMobileViewport,
-  rankOrderByConvertedBasis,
   defaultMatchMedia
 } from './responsive';
+// v0.13.3: the ranking pins migrated to the single conversion path after
+// the production-dead duplicate in responsive.ts was deleted.
+import { rankOrderByConvertedBasis, resolveComparisonBasis } from './conversion';
+import type { ExchangeRateInfo } from './conversion';
 import { ComparisonView, __setMobileQueryForTests } from './App';
 import portsRegistry from './data/ports.json';
+
+const testRate = (rate: number): ExchangeRateInfo =>
+  ({ rate, date: '2026-06-15', source: 'fixed test rate', is_default: false });
 import { LOADED_PORTS as RENDERED_PORTS } from './portRegistry';
 import type { PortDefinition, VesselInput, CallInput } from '@port-cost/core/types';
 import { readDecomposedAppSource } from './appSource';
@@ -122,7 +130,7 @@ describe('ranking integrity: cheapest first on the converted basis (spec v0.2.31
         { portId: 'gothenburg', amount: 40000, currency: 'SEK' },
         { portId: 'helsingborg', amount: 90000, currency: 'SEK' }
       ],
-      { rate: 11.275 }
+      testRate(11.275)
     );
     expect(ranked.map(r => r.portId)).toEqual(['gothenburg', 'hamburg', 'helsingborg']);
   });
@@ -133,7 +141,7 @@ describe('ranking integrity: cheapest first on the converted basis (spec v0.2.31
       { portId: 'gothenburg', amount: 40000, currency: 'SEK' }
     ];
     const rawOrder = [...totals].sort((a, b) => a.amount - b.amount).map(t => t.portId);
-    const convertedOrder = rankOrderByConvertedBasis(totals, { rate: 11.275 }).map(t => t.portId);
+    const convertedOrder = rankOrderByConvertedBasis(totals, testRate(11.275)).map(t => t.portId);
     expect(rawOrder).toEqual(['hamburg', 'gothenburg']);
     expect(convertedOrder).toEqual(['gothenburg', 'hamburg']);
   });
@@ -143,8 +151,24 @@ describe('ranking integrity: cheapest first on the converted basis (spec v0.2.31
       { portId: 'b', amount: 2, currency: 'SEK' },
       { portId: 'a', amount: 1, currency: 'SEK' }
     ];
-    rankOrderByConvertedBasis(totals, { rate: 1 });
+    rankOrderByConvertedBasis(totals, testRate(1));
     expect(totals.map(t => t.portId)).toEqual(['b', 'a']);
+  });
+
+  it('DKK ranks through the derived cross, never raw amounts (v0.13.3 migrated coverage)', () => {
+    const ctx = resolveComparisonBasis((portsRegistry as any).exchange_rates);
+    const eurSek = ctx.rows.find(r => r.from_currency === 'EUR' && r.to_currency === 'SEK')!;
+    const derived = { eurToDkk: ctx.rows.find(r => r.from_currency === 'EUR' && r.to_currency === 'DKK') };
+    const rateInfo: ExchangeRateInfo = { rate: eurSek.rate, date: eurSek.as_of, source: eurSek.source, is_default: true };
+    const totals = [
+      { portId: 'hamburg', amount: 2204910.90, currency: 'EUR' },
+      { portId: 'aarhus', amount: 6348361.00, currency: 'DKK' }
+    ];
+    const rawOrder = [...totals].sort((a, b) => a.amount - b.amount).map(t => t.portId);
+    const convertedOrder = rankOrderByConvertedBasis(totals, rateInfo, ctx, derived).map(t => t.portId);
+    // raw: hamburg 2.2M < aarhus 6.3M; converted: aarhus ~9.33M SEK < hamburg ~24.2M SEK
+    expect(rawOrder).toEqual(['hamburg', 'aarhus']);
+    expect(convertedOrder).toEqual(['aarhus', 'hamburg']);
   });
 
   it('defaultMatchMedia reports false when the query does not match', () => {

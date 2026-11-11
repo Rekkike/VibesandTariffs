@@ -95,7 +95,7 @@ export const makeComparisonCells = (props: ComparisonCellsProps) => {
               ? `${entry.published_per_gt.rate.toFixed(2)} ${entry.currency || fallbackCurrency}/GT — published flat rate, no banding${entry.published_per_gt.citation ? ` (${entry.published_per_gt.citation})` : ''}`
               : `${entry.effective_per_gt.toFixed(2)} ${entry.currency || fallbackCurrency}/GT effective — derived, not a published rate`}
             {conv.converted && (
-              <span> (≈ {(entry.effective_per_gt * rateInfo.rate).toFixed(2)} SEK/GT converted)</span>
+              <span> (≈ {toComparisonBasis(entry.effective_per_gt, entry.currency || fallbackCurrency, rateInfo, comparisonBasisContext).amount.toFixed(2)} SEK/GT converted)</span>
             )}
           </Box>
         )}

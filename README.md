@@ -58,7 +58,7 @@ The development server needs a private-network (LAN) address on the machine: bec
 
 After any change under `core/data/` or `core/src/`, re-run the conversion (`cd core && node scripts/convert_yaml_to_json.js`, also available as `npm run convert-data`) and the core build (`cd core && npm run build`) before starting or testing the web app.
 
-The root `package.json` scripts are not the supported entry points: none of them runs the data conversion, and the development server is started with `npm start` inside `web/` (the root `dev` script that delegated to a nonexistent web `dev` script was removed at v0.12.2).
+The root `package.json` scripts are not the supported entry points: none of them runs the data conversion, and the development server is started with `npm start` inside `web/` (the root `dev` script that delegated to a nonexistent web `dev` script was removed at v0.12.2). The root `test:web` and `test:all` scripts (added at v0.13.3) run the web suite, respectively both suites, in a single non-watch run; like the other root scripts they do not perform the conversion or the core build, so they require the per-workspace setup above first.
 
 ### Production Build
 
