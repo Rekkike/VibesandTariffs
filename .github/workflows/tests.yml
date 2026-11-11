@@ -21,7 +21,8 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          # Node 22 since v0.15.1: the vite 8 / vitest 5 line requires >= 22.12
+          node-version: 22
 
       - name: Install core and convert YAML to JSON
         run: cd core && npm ci && node scripts/convert_yaml_to_json.js

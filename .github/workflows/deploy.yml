@@ -14,7 +14,8 @@ jobs:
       
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          # Node 22 since v0.15.1: the vite 8 line requires >= 22.12
+          node-version: 22
       
       # Install core dependencies and convert YAML to JSON
       - name: Install core and convert YAML to JSON
@@ -30,13 +31,15 @@ jobs:
       
       # Build web app
       - name: Build web app
-        run: cd web && CI=false npm run build
+        # vite build since v0.15.1; CI=false was a react-scripts warning
+        # semantics toggle and has no Vite equivalent
+        run: cd web && npm run build
       
       - uses: actions/configure-pages@v5
       
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: web/build
+          path: web/dist
 
   deploy:
     needs: build

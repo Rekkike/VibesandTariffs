@@ -229,3 +229,42 @@ in-repo; the README LAN note is updated there); Stage 2 also takes
 build.sourcemap true, an explicit 'modules' build target, and the
 Node 20 to 22 move of both workflows with vite 8/vitest 5/jsdom 31
 (projected 0/0 advisories, verified in a scratch projection).
+
+### Stage 2 delivery record (v0.15.1, 2026-11-11, Build-tool migration to
+### Vite, branch `vibe/build-swap-v0151-4e91ee6` from main 4e91ee6)
+
+react-scripts 5.0.1 removed from web dependencies entirely (1154 packages
+leave the lockfile); scripts are vite / vite build / vitest run; the
+eslintConfig key (lint layer dropped per the ruling above — this note is
+its record) and the proxy field (no server exists in-repo) are deleted;
+the CRA homepage value /VibesandTariffs is superseded by `base` in
+web/vite.config.ts and the key is removed — its fate: carried verbatim
+into vite.config.ts, the served base path is unchanged. web/index.html
+moves from web/public/ (no %PUBLIC_URL% macros; public/ held no other
+assets). tsconfig moduleResolution node -> bundler. New web/vite.config.ts:
+@vitejs/plugin-react, base, build.sourcemap true, explicit target —
+deviation: vite 8 is rolldown-based and rejects the legacy 'modules'
+keyword (observed BUNDLER_INITIALIZE_ERROR), so the target is es2020, the
+old 'modules' baseline. npm audit observed in the /tmp build copy: before
+(4e91ee6) 39 full / 34 production; after (v0.15.1 tree) 7 low full / 0
+production — the web tree itself is 0/0; the 7 low are all in core's jest
+29 dev chain, untouched by this pass and dev-only. deploy.yml and
+tests.yml move to Node 22 (vite 8 requires >= 22.12), the Pages artifact
+path is web/dist, CI=false dropped. Determinism: two consecutive vite
+builds byte-identical. Shell: assets/index-<hash>.js + assets/index-<hash>.css,
+zero static/js/main, asset-manifest.json gone (unused by the deploy
+route; recorded here). Content pins on the new bundle at v0.15.1:
+10.991 x2, 7.4754 x1, 2026-11-10 x3, 'Call date:' x4, 'not entered - no
+date-window rule fires' x2, v0.15.1 x1, v0.15.0 x0. Print CSS carries
+break-inside/page-break-inside and @media print/@page into the built
+stylesheet (Vite does not autoprefix; both properties were already
+present in source). One informational rolldown chunk-size notice
+(>500 kB), recorded. Env scan: zero process.env/REACT_APP/PUBLIC_URL in
+web/src, re-verified — no conversion was necessary. vitest.config.ts
+fields all survive the vitest 3 -> 5 upgrade unchanged. Final bundle at
+v0.15.1: assets/index-dU9ekIJF.js (sha256
+90116476339237f9f48fc8f41eaf8e1c10e5fe9646170d9284f33f124fcce5f1),
+CSS assets/index-CPM43X7J.css (sha256
+a6b8ef14341dc4c52c7d380d9e78f1306f666db673b97f2a591a03d089b3a83e),
+byte-identical across two consecutive builds; shell references both
+assets, zero static/js/main.

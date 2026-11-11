@@ -20,7 +20,7 @@ This document is the audit-first seam of the v0.5.2 deployment-hygiene pass. It 
 The amendment targets the spec's §8 "Served-bundle identity when the JS asset is unfetchable (v0.2.55, standing method)" paragraph. Its current method, step by step:
 
 1. The deploy workflow's build log lists the artifact it uploaded (`File sizes after gzip` and the upload-artifact step's file listing).
-2. The production build emits a content-hashed bundle filename (`static/js/main.<hash>.js`).
+2. The production build emits a content-hashed bundle filename (`static/js/main.<hash>.js`). (Superseded in place at v0.15.1, 2026-11-11, Build-tool migration to Vite: since v0.15.1 the build is Vite and the pattern is `assets/index-<hash>.js` with `assets/index-<hash>.css`; the step's substance — content-hashed filename, identical content implies identical filename, verified byte-identical across two consecutive builds — is unchanged. The CRA naming above is the pre-v0.15.1 record.)
 3. **The load-bearing step as written:** "the local zero-warning build emits the same filename; a filename match between the deploy log's artifact listing and the local build is therefore a content-identity proof of the served bundle."
 4. The served HTML shell is fetched with cache bypass to confirm the deployment serves the application.
 

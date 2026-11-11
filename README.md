@@ -52,9 +52,9 @@ cd ../web && npm ci
 npm start
 ```
 
-The application is then available at `http://localhost:3000/VibesandTariffs` (the `homepage` field of `web/package.json` sets the base path).
+The application is then available at `http://localhost:5173/VibesandTariffs` (the `base` in `web/vite.config.ts` sets the base path; since v0.15.1 the dev server is Vite, whose default port is 5173 — formerly `http://localhost:3000/VibesandTariffs` under react-scripts, whose `homepage` field set the base path).
 
-The development server needs a private-network (LAN) address on the machine: because `web/package.json` carries a `proxy` field, the react-scripts dev server derives its allowed host from that address, and on a machine without one `npm start` stops with "options.allowedHosts[0] should be a non-empty string". The production build below does not depend on it.
+(Recorded at v0.15.1, Build-tool migration to Vite: the `proxy` field was removed from `web/package.json` — no server exists in-repo — so the former react-scripts allowedHosts/LAN constraint no longer applies; the Vite dev server has no such requirement.)
 
 After any change under `core/data/` or `core/src/`, re-run the conversion (`cd core && node scripts/convert_yaml_to_json.js`, also available as `npm run convert-data`) and the core build (`cd core && npm run build`) before starting or testing the web app.
 
@@ -66,7 +66,7 @@ The root `package.json` scripts are not the supported entry points: none of them
 cd web && npm run build
 ```
 
-The build writes the static site to `web/build/`.
+The build writes the static site to `web/dist/` (since v0.15.1; formerly `web/build/` under react-scripts).
 
 
 ## Architecture Decision Records (ADR)
@@ -462,7 +462,7 @@ The tables in this section summarize the core inputs; `core/src/types.ts` is the
 
 ## Deployment
 
-The application is deployed to GitHub Pages by the workflow `.github/workflows/deploy.yml` on every push to `main`: it installs and converts the data in `core`, builds the core, installs and builds the web app, and publishes `web/build` as the Pages artifact. The site is served under the `/VibesandTariffs` base path. There is no server component: the deployed artifact is the static web bundle over the core engine. Deployment verification follows `docs/SPECIFICATION.md` §8.
+The application is deployed to GitHub Pages by the workflow `.github/workflows/deploy.yml` on every push to `main`: it installs and converts the data in `core`, builds the core, installs and builds the web app, and publishes `web/dist` as the Pages artifact (since v0.15.1; formerly `web/build` under react-scripts). The site is served under the `/VibesandTariffs` base path. There is no server component: the deployed artifact is the static web bundle over the core engine. Deployment verification follows `docs/SPECIFICATION.md` §8.
 
 ## Contributing
 
