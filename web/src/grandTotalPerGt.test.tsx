@@ -26,6 +26,7 @@ import { LOADED_PORTS as RENDERED_PORTS } from './portRegistry';
 import { DEFAULT_VESSEL, defaultCall, calculatePortCallCost } from '@port-cost/core';
 import type { CallInput, PortDefinition, VesselInput } from '@port-cost/core/types';
 import { readDecomposedAppSource } from './appSource';
+import { eurSekRate, perGt } from './testRates';
 
 // v0.8.0 re-baseline (in-test attribution): the suite pins the rendered
 // port set - the app's LOADED_PORTS (portRegistry), Rotterdam hidden by
@@ -33,6 +34,15 @@ import { readDecomposedAppSource } from './appSource';
 // the Rotterdam engine values stay pinned core-side).
 const LOADED_PORTS: PortDefinition[] = RENDERED_PORTS;
 const portById = (id: string) => LOADED_PORTS.find(p => p.metadata.id === id)!;
+
+// v0.13.1 doctrine (in-test attribution): every rate-dependent expectation
+// in this suite is derived from the native total x the YAML rate through
+// testRates - no byte-pinned rate literal survives here.
+const HAM_NATIVE = 2204910.90;
+const BRV_NATIVE = 2199677.26;
+const hamPerGt = () => perGt(HAM_NATIVE, 'EUR', DEFAULT_VESSEL.gt);
+const brvPerGt = () => perGt(BRV_NATIVE, 'EUR', DEFAULT_VESSEL.gt);
+const rateText = () => `${eurSekRate()} kr/EUR`;
 
 const OPS_ENTERED: Partial<CallInput> = {
   ops_kwh_consumption: 1250,
@@ -141,15 +151,16 @@ describe('Grand Total derived per-GT — desktop comparison (spec v0.2.58)', () 
     expect(text).not.toContain('7.69 SEK/GT');
   });
 
-  it('HAM converts through the rate input: 124.37 SEK/GT at the default 10.991, with the derived-and-converted disclosure naming the rate dependency (v0.13.0 ritual re-baseline)', async () => {
+  it(`HAM converts through the rate input: ${hamPerGt()} SEK/GT at the default ${eurSekRate()}, with the derived-and-converted disclosure naming the rate dependency (v0.13.0 ritual re-baseline; v0.13.1 doctrine: title derived)`, async () => {
     ({ container, root } = await renderComparison(false, defaultCall('gothenburg')));
     const totalRow = Array.from(container!.querySelectorAll('.comparison-total-row'))
       .find(r => (r.textContent ?? '').includes('Grand Total'))!;
     // v0.5.1: two German ports now convert (Bremerhaven 126.71 SEK/GT
     // beside HAM), so the HAM cell is found by its own figure, not by the
     // disclosure text alone.
+    // v0.13.1 doctrine (in-test attribution): DERIVED cell selector.
     const hamCell = Array.from(totalRow.querySelectorAll('.comparison-total-pergt'))
-      .find(c => (c.textContent ?? '').includes('124.37 SEK/GT'))!;
+      .find(c => (c.textContent ?? '').includes(`${hamPerGt()} SEK/GT`))!;
     expect(hamCell).toBeDefined();
     // v0.13.0 ritual re-baseline (ECB rate pass (user rulings 2026-11-11)): 10.9910 as of
     // 2026-11-10 (was 11.123, 2026-10-20) - 2,204,910.90 x 10.9910 / 194,849
@@ -163,15 +174,17 @@ describe('Grand Total derived per-GT — desktop comparison (spec v0.2.58)', () 
     // 2026-10-07, the observed ECB TARGET publication (was 11.2525,
     // 2026-10-05) - 2,204,910.90 × 11.224 ÷ 194,849 = 127.01 SEK/GT
     // (was 127.33; the Eurogate terminal layer; §17.5).
-    expect(hamCell.textContent).toContain('124.37 SEK/GT');
-    expect(hamCell.textContent).toContain('10.991 kr/EUR');
+    // v0.13.1 doctrine (in-test attribution): DERIVED expectations.
+    expect(hamCell.textContent).toContain(`${hamPerGt()} SEK/GT`);
+    expect(hamCell.textContent).toContain(rateText());
     // The Bremerhaven per-GT renders with the same converted disclosure:
     // 2,199,272.49 × 11.224 ÷ 194,849 = 126.71 SEK/GT (v0.5.1 baseline;
     // v0.6.6 ritual re-baseline at 11.224, 2026-10-07; was 127.03).
+    // v0.13.1 doctrine (in-test attribution): DERIVED cell selector and rate text.
     const brvCell = Array.from(totalRow.querySelectorAll('.comparison-total-pergt'))
-      .find(c => (c.textContent ?? '').includes('124.08 SEK/GT'))!;
+      .find(c => (c.textContent ?? '').includes(`${brvPerGt()} SEK/GT`))!;
     expect(brvCell).toBeDefined();
-    expect(brvCell.textContent).toContain('10.991 kr/EUR');
+    expect(brvCell.textContent).toContain(rateText());
   });
 
   it('the figure changes when GT changes (a different vessel re-derives it)', async () => {
@@ -233,7 +246,9 @@ describe('Grand Total derived per-GT — mobile comparison cards (spec v0.2.58)'
     const hiddenTags = ham.querySelectorAll('.comparison-card-total .comparison-converted-hidden-tag');
     expect(hiddenTags.length).toBe(2);
     expect(Array.from(hiddenTags).some(t => (t.textContent ?? '').includes('converted per-GT figure hidden'))).toBe(true);
-    expect(ham.querySelector('.comparison-card-total')!.textContent).not.toContain('127.01');
+    // v0.13.1 doctrine (in-test attribution): the absence pin derives the
+    // current HAM per-GT (was byte-pinned to the v0.8.1 figure 127.01).
+    expect(ham.querySelector('.comparison-card-total')!.textContent).not.toContain(`${hamPerGt()} SEK/GT`);
   });
 });
 

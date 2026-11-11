@@ -35,7 +35,8 @@ import { ComparisonView, __setMobileQueryForTests } from './App';
 import portsRegistry from './data/ports.json';
 import { DEFAULT_VESSEL, defaultCall } from '@port-cost/core';
 import type { CallInput, PortDefinition } from '@port-cost/core/types';
-import { resolveExchangeRate } from './conversion';
+import { DEFAULT_EXCHANGE_RATE, resolveExchangeRate } from './conversion';
+import { asOf, eurSekRate } from './testRates';
 
 const LOADED_PORTS: PortDefinition[] = ((portsRegistry as any).ports ?? []).filter(
   (p: any) => p && p.fee_rules && Array.isArray(p.fee_rules)
@@ -210,5 +211,16 @@ describe('rate-fetch removal (spec v0.4.0 rider — the v0.3.2/v0.3.5 reversal)'
     expect(yamlText.includes('rate: 7.4754')).toBe(true);
     expect(exchangeRates).toHaveLength(2);
     expect(eurSek.pair ?? eurSek.from_currency + '-' + eurSek.to_currency).toBe('EUR-SEK');
+  });
+
+  it('the dead fallback constant stays aligned with the YAML EUR-SEK row: rate and date (v0.13.1 guard)', () => {
+    // v0.13.1 doctrine (in-test attribution): DEFAULT_EXCHANGE_RATE was
+    // previously compared only with itself (conversion.test.ts reads the
+    // constant symbolically). The guard pins it against the YAML source
+    // of truth via testRates, which reads core/data/exchange_rates.yaml
+    // directly - so a rate pass that moves the YAML but not the constant
+    // (or vice versa) goes red here.
+    expect(DEFAULT_EXCHANGE_RATE.rate).toBe(eurSekRate());
+    expect(DEFAULT_EXCHANGE_RATE.date).toBe(asOf());
   });
 });

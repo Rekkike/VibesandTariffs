@@ -29,6 +29,7 @@ import { LOADED_PORTS as RENDERED_PORTS } from './portRegistry';
 import * as fs from 'fs';
 import * as path from 'path';
 import { readDecomposedAppSource } from './appSource';
+import { asOf, dkkAsOf, eurDkkRate, eurSekRate } from './testRates';
 
 // v0.8.0 re-baseline (in-test attribution): the suite pins the rendered
 // port set - the app's LOADED_PORTS (portRegistry), Rotterdam hidden by
@@ -62,8 +63,12 @@ describe('currency declaration is data (spec v0.2.59)', () => {
       // execution of the dedicated rate pass).
       // v0.13.0 ritual pin (ECB rate pass (user rulings 2026-11-11)): 10.9910 as of
       // 2026-11-10 (was 11.123, 2026-10-20), the dedicated rate pass.
-      rate: 10.991,
-      as_of: '2026-11-10',
+      // v0.13.1 doctrine (in-test attribution): DERIVED from the YAML via
+      // testRates (the helper reads core/data/exchange_rates.yaml, never
+      // this registry) - the pin still proves registry == YAML, so a stale
+      // registry stays red, but a rate pass leaves this literal-free.
+      rate: eurSekRate(),
+      as_of: asOf(),
       source: 'ECB euro reference rate (SEK per EUR)'
     });
     // v0.6.0 Aarhus expansion: the second EUR-anchored published pair
@@ -80,8 +85,10 @@ describe('currency declaration is data (spec v0.2.59)', () => {
       // 7.4745 -> 7.4746 and the as_of to 2026-10-20, the same publication.
       // v0.13.0 ritual pin (ECB rate pass (user rulings 2026-11-11)): 7.4746 -> 7.4754
       // and the as_of to 2026-11-10, the same publication.
-      rate: 7.4754,
-      as_of: '2026-11-10',
+      // v0.13.1 doctrine (in-test attribution): DERIVED from the YAML via
+      // testRates, as above.
+      rate: eurDkkRate(),
+      as_of: dkkAsOf(),
       source: 'ECB euro reference rate (DKK per EUR)'
     });
   });

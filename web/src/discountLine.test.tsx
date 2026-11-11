@@ -35,6 +35,7 @@ import portsRegistry from './data/ports.json';
 import { LOADED_PORTS as RENDERED_PORTS } from './portRegistry';
 import { ComparisonView, __setMobileQueryForTests } from './App';
 import { buildDiscountLine } from './discountLine';
+import { converted, displayRounded, perGt, rateBasisText } from './testRates';
 
 // v0.8.0 re-baseline (in-test attribution): the suite pins the rendered
 // port set - the app's LOADED_PORTS (portRegistry), Rotterdam hidden by
@@ -157,6 +158,10 @@ describe('comparison-legibility zero-drift pins (spec v0.2.64)', () => {
       // 6,348,361 x 10.9910/7.4754 = 9,333,927 kr; per-GT 47.90 (was
       // 9,447,037 kr / 48.48); the native DKK total untouched; the column
       // order is unchanged.
+      // v0.13.1 doctrine (in-test attribution): RETAINED as one of the two
+      // byte-pinned golden full rendered strings in this suite - the
+      // DKK-cross formatting oracle (converted total, per-GT, rate-basis
+      // wording, exactly as rendered).
       '6\u00a0348\u00a0361\u00a0Dkr\u2248 9\u00a0333\u00a0927\u00a0kr converted \u2014 at 10.991 kr/EUR, 2026-11-1047.90 SEK/GT effective \u2014 derived, not a published rate; converted at the exchange-rate input (at 10.991 kr/EUR, 2026-11-10)',
       // v0.4.2 re-baseline (the Yilport terminal layer, in-test attribution):
       // G\u00e4vle 1,370,979.35 + 8,936,000 = 10,306,979.35; per-GT
@@ -178,7 +183,11 @@ describe('comparison-legibility zero-drift pins (spec v0.2.64)', () => {
       // v0.13.0 ritual re-baseline (ECB rate pass (user rulings 2026-11-11)): 2,199,677.26
       // x 10.9910 = 24,176,653 kr; per-GT 124.08 (was 24,467,010 kr / 125.57
       // at 11.123, 2026-10-20); the native EUR figure untouched.
-      '2\u00a0199\u00a0677\u00a0\u20ac\u2248 24\u00a0176\u00a0653\u00a0kr converted \u2014 at 10.991 kr/EUR, 2026-11-10124.08 SEK/GT effective \u2014 derived, not a published rate; converted at the exchange-rate input (at 10.991 kr/EUR, 2026-11-10)',
+      // v0.13.1 doctrine (in-test attribution): DERIVED expectation -
+      // native x YAML-rate through testRates (full precision, display
+      // rounding), no byte-pinned rate literal; a rate pass leaves this
+      // cell untouched.
+      `${displayRounded(2199677.26, 'EUR')}\u2248 ${displayRounded(converted(2199677.26, 'EUR'))} converted \u2014 ${rateBasisText()}${perGt(2199677.26, 'EUR', DEFAULT_VESSEL.gt)} SEK/GT effective \u2014 derived, not a published rate; converted at the exchange-rate input (${rateBasisText()})`,
       // v0.6.6 ritual re-baseline (the only movement): the conversion-only
       // figure moves with the standing rate re-verification — 11.224 as of
       // 2026-10-07 (was 11.2525, 2026-10-05; the ECB TARGET publication
@@ -192,6 +201,10 @@ describe('comparison-legibility zero-drift pins (spec v0.2.64)', () => {
       // v0.13.0 ritual re-baseline (ECB rate pass (user rulings 2026-11-11)): 2,204,910.90
       // x 10.9910 = 24,234,176 kr; per-GT 124.37 (was 24,525,224 kr / 125.87
       // at 11.123, 2026-10-20); the native EUR figure untouched.
+      // v0.13.1 doctrine (in-test attribution): RETAINED as one of the two
+      // byte-pinned golden full rendered strings in this suite - the
+      // EUR-direct formatting oracle (converted total, per-GT, rate-basis
+      // wording, exactly as rendered).
       '2\u00a0204\u00a0911\u00a0\u20ac\u2248 24\u00a0234\u00a0176\u00a0kr converted \u2014 at 10.991 kr/EUR, 2026-11-10124.37 SEK/GT effective \u2014 derived, not a published rate; converted at the exchange-rate input (at 10.991 kr/EUR, 2026-11-10)'
     ]);
   });
@@ -681,7 +694,9 @@ describe('the derived per-GT metric\u2019s per-GT-OPS disclosure (spec v0.2.64, 
       // v0.13.0 ritual re-baseline (ECB rate pass (user rulings 2026-11-11)): at 10.9910 (the
       // observed 2026-11-10 ECB publication; was 11.123) - 2,213,035.90 EUR
       // x 10.9910 / 194,849 = 124.83 SEK/GT (was 126.33).
-      .find(c => (c.textContent ?? '').includes('124.83'))!;
+      // v0.13.1 doctrine (in-test attribution): DERIVED - perGt of the
+      // HAM+OPS native total through testRates, no byte-pinned literal.
+      .find(c => (c.textContent ?? '').includes(perGt(2213035.90, 'EUR', DEFAULT_VESSEL.gt)))!;
     expect(hamCell.textContent).toContain('includes user-specified OPS');
     expect(hamCell.textContent).not.toContain('per-GT OPS charge uses the same GT basis');
   });
