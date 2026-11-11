@@ -22,6 +22,7 @@ import { calculatePortCallCost, DEFAULT_VESSEL, defaultCall } from '@port-cost/c
 import type { CallInput, PortDefinition } from '@port-cost/core/types';
 import { HANDLING_BASIS_ANNOTATIONS } from './handlingBasis';
 import { cargoDuesNoteFor, CARGO_DUES_NOTES } from './cargoDuesNotes';
+import { PUBLISHED_TARIFF_NOTE } from './publishedTariffNote';
 import * as crypto from 'crypto';
 
 jest.setTimeout(60000);
@@ -177,5 +178,35 @@ describe('comparison wording honesty - the cargo dues note (spec v0.11.4)', () =
     const row = Array.from(container!.querySelectorAll('.comparison-total-row')).find(r => (r.textContent ?? '').includes('Grand Total'))!;
     expect(row.textContent).toContain('3 275 851');
     expect(row.textContent).toContain('2 204 911');
+  });
+});
+
+// CI test step and comparison disclosure (spec v0.12.3; user rulings
+// 2026-11-11): the published-tariff disclosure note renders on the comparison
+// screen, desktop and mobile, with the ruled wording exactly, and does not
+// print. Red proof of record (build copy): observed failing before the note
+// rendered.
+describe('comparison disclosure - the published-tariff note (spec v0.12.3)', () => {
+  const RULED =
+    'Figures on this screen model the published tariff only. The Aarhus and Hamburg schedules provide for individually negotiated deviations (APMT Aarhus Terms of Business §2.1; Eurogate Hamburg prices and conditions S9 §1.1 and S9 §1.3.6); the clause texts are recorded verbatim in the extraction references, and any negotiated side agreement is not reflected in these figures.';
+  const note = () => Array.from(container!.querySelectorAll('[data-testid="published-tariff-note"]')).map(e => e.textContent ?? '');
+  it('11. screen: the note renders once with the ruled wording exactly, in the desktop view and on the mobile cards view', async () => {
+    expect(PUBLISHED_TARIFF_NOTE).toBe(RULED);
+    await render(false);
+    expect(note()).toEqual([RULED]);
+    await act(async () => { root!.unmount(); });
+    container!.remove();
+    root = null;
+    await render(true);
+    expect(note()).toEqual([RULED]);
+  });
+  it('12. screen only: the note does not print', async () => {
+    await render(false);
+    await act(async () => { window.dispatchEvent(new Event('beforeprint')); });
+    const printedText = document.body.querySelector('.print-pages')?.textContent ?? '';
+    await act(async () => { window.dispatchEvent(new Event('afterprint')); });
+    expect(printedText.length).toBeGreaterThan(0);
+    expect(printedText).not.toContain('model the published tariff only');
+    expect(printedText).not.toContain('negotiated');
   });
 });

@@ -19,6 +19,7 @@ import type {
   VesselInput
 } from '@port-cost/core';
 import { containerSplit } from '@port-cost/core';
+import { PUBLISHED_TARIFF_NOTE } from './publishedTariffNote';
 import { DEFAULT_EXCHANGE_RATE, conversionLabel, formatRate, resolveExchangeRate, toComparisonBasis } from './conversion';
 import portsRegistry from './data/ports.json';
 import { useIsMobile } from './appTheme';
@@ -364,6 +365,13 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
                 : 'From outside Europe (default — the worst case; set \'From a European port\' for the intra-Europe leg)'}
             </span>
           </Box>
+
+          {/* Published-tariff disclosure (spec v0.12.3, user rulings
+              2026-11-11): screen only - the print pages are a separate
+              composition and do not carry it. */}
+          <Typography variant="caption" className="comparison-basis" sx={{ display: 'block' }} data-testid="published-tariff-note">
+            {PUBLISHED_TARIFF_NOTE}
+          </Typography>
 
           {/* The conversion disclosure (the ranking strip's one unique mobile
               element) moves here, into the table-header area above the

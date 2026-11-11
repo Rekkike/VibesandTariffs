@@ -1,0 +1,41 @@
+name: Tests
+
+# Runs the core and web suites on every push to main and once a week
+# (spec v0.12.3, user rulings 2026-11-11). The weekly run makes a
+# date-dependent failure visible without a push. This workflow reports only:
+# it is not a required check and gates nothing.
+on:
+  push:
+    branches: [ main ]
+  schedule:
+    # Mondays 05:17 UTC
+    - cron: '17 5 * * 1'
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install core and convert YAML to JSON
+        run: cd core && npm ci && node scripts/convert_yaml_to_json.js
+
+      - name: Build core
+        run: cd core && npm run build
+
+      - name: Core tests
+        run: cd core && npm test
+
+      - name: Install web dependencies
+        run: cd web && npm ci
+
+      # react-scripts test: the direct jest runner lacks the Babel transform
+      # (spec section 12.4).
+      - name: Web tests
+        run: cd web && CI=true npm test -- --watchAll=false
