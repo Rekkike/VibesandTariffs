@@ -35,7 +35,9 @@ jobs:
       - name: Install web dependencies
         run: cd web && npm ci
 
-      # react-scripts test: the direct jest runner lacks the Babel transform
-      # (spec section 12.4).
+      # Web tests run under Vitest since v0.15.0 (spec section 12.4,
+      # superseded in place there): web/ npm test is `vitest run`, already a
+      # single run; fileParallelism:false in web/vitest.config.ts is the
+      # --runInBand equivalent.
       - name: Web tests
-        run: cd web && CI=true npm test -- --watchAll=false
+        run: cd web && npm test

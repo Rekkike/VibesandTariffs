@@ -24,8 +24,8 @@ import { HANDLING_BASIS_ANNOTATIONS } from './handlingBasis';
 import { cargoDuesNoteFor, CARGO_DUES_NOTES } from './cargoDuesNotes';
 import { PUBLISHED_TARIFF_NOTE } from './publishedTariffNote';
 import * as crypto from 'crypto';
+import { vi } from 'vitest';
 
-jest.setTimeout(60000);
 
 const NEW = 'no published rate in the archived record at this port';
 const OLD = 'not levied at this port';

@@ -114,10 +114,11 @@ describe('Two-clock tier display — derivation steps (spec v0.2.46)', () => {
     expect(tier.detail).toContain('pricelist-maritime-shipping-2026.pdf');
     expect(tier.amount).toBe(907.5);
   });
-  it('the condensed comparison form states both components, not one merged number', () => {
+  it('the condensed comparison form states both components, not one merged number', async () => {
     // condensedDerivation renders the composition components; the Hamburg
-    // card/cell must read as two distinct charges.
-    const { condensedDerivation } = require('./derivation');
+    // card/cell must read as two distinct charges. (spec v0.15.0: ESM runner,
+    // relative require -> await import.)
+    const { condensedDerivation } = await import('./derivation');
     const td = feeByRule(engineRun(50), 'hhla_tonnage_dues');
     const c = condensedDerivation(td);
     expect(c!.composition).toContain('First 24 h (1.25 EUR/GT): 68,750');

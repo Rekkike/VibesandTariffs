@@ -21,6 +21,7 @@
 import { registerPortDefinition, allPortResetFields } from '@port-cost/core';
 import type { CallInput, PortDefinition } from '@port-cost/core/types';
 import portsRegistry from './data/ports.json';
+import { vi } from 'vitest';
 
 const LOADED_PORTS: PortDefinition[] = ((portsRegistry as any).ports ?? []).filter(
   (p: any) => p && p.fee_rules && Array.isArray(p.fee_rules)
@@ -53,27 +54,26 @@ describe('reset_fields union semantics (spec v0.2.68, item 4)', () => {
     try { registerPortDefinition(LOADED_PORTS[0]); } catch (e) { /* no-op */ }
   });
 
-  it('the data contract: a field declared by any port routes per-port at every port (union membership governs)', () => {
+  it('the data contract: a field declared by any port routes per-port at every port (union membership governs)', async () => {
     registerPortDefinition(UNION_FIXTURE_PORT);
     expect(allPortResetFields()).toContain('dkk_harbour_dues');
     // The App builds its split set from the registry union at module load;
     // the fixture's registration is a data-contract change, and the split
     // in a freshly-loaded App follows the grown union. (The setup registry
-    // loaded App against the real ports only; isolating the module re-loads
-    // it against the grown registry — the same mechanics a real
+    // loaded App against the real ports only; resetting the module graph
+    // re-loads it against the grown registry — the same mechanics a real
     // reset_fields addition triggers on the next page load.)
     const holder: { split?: (call: CallInput) => { perPort: Record<string, unknown>; shared: Record<string, unknown> } } = {};
-    jest.isolateModules(() => {
-      // The isolated require graph re-creates the core registry AND the App
-      // module scope — the fixture must be registered inside the isolation
-      // (after the setup ports re-register via portRegistry) so the fresh
-      // App consumes the grown union: exactly the data-contract mechanics a
-      // reset_fields addition triggers on the next page load.
-      const core = require('@port-cost/core');
-      core.registerPortDefinition(UNION_FIXTURE_PORT);
-      const appModule = require('./App');
-      holder.split = appModule.splitCallByPersistence;
-    });
+    // vitest's isolateModules equivalent: reset the module graph, then
+    // dynamic-import — the fresh graph re-creates the core registry AND the
+    // App module scope, and the fixture is registered inside the fresh graph
+    // (the setup ports re-register via portRegistry on App load) so the
+    // fresh App consumes the grown union (spec v0.15.0 runner migration).
+    vi.resetModules();
+    const core = await import('@port-cost/core');
+    core.registerPortDefinition(UNION_FIXTURE_PORT);
+    const appModule = await import('./App');
+    holder.split = appModule.splitCallByPersistence;
     const call = {
       port_id: 'gothenburg',
       dkk_harbour_dues: 1200,
@@ -90,13 +90,13 @@ describe('reset_fields union semantics (spec v0.2.68, item 4)', () => {
     expect(shared['port_id']).toBeUndefined();
   });
 
-  it('the union contract at the real data: a real per-port field routes per-port, a real shared field stays shared', () => {
+  it('the union contract at the real data: a real per-port field routes per-port, a real shared field stays shared', async () => {
     const call = {
       port_id: 'hamburg',
       ops_electricity_price: 2.5,
       ops_kwh_consumption: 1250
     } as unknown as CallInput;
-    const split = require('./App').splitCallByPersistence;
+    const { splitCallByPersistence: split } = await import('./App');
     const { perPort, shared } = split(call);
     // ops_electricity_price: declared by all three real ports — per-port.
     expect(perPort['ops_electricity_price']).toBe(2.5);

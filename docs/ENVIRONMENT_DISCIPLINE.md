@@ -23,7 +23,7 @@ When tallying per-suite counts, jest positional arguments are regular expression
 
 ## 4. Web-suite runner
 
-The web suite requires `npm test` (react-scripts); the direct jest runner lacks the Babel transform. Use `--runInBand` to cap resource use when chunking is not enough.
+The web suite requires `npm test` (react-scripts); the direct jest runner lacks the Babel transform. Use `--runInBand` to cap resource use when chunking is not enough. (Superseded in place at v0.15.0, 2026-11-11, Test-runner migration to Vitest: since v0.15.0 the web suite runs under Vitest — `npm test` in web/ is `vitest run` with fileParallelism:false in web/vitest.config.ts; the react-scripts wording above is the pre-v0.15.0 record.)
 
 ## 5. Web fetches
 

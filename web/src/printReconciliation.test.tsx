@@ -26,8 +26,8 @@ import { computePortResults } from './comparisonModel';
 import { buildDiscountLine } from './discountLine';
 import { resolveExchangeRate } from './conversion';
 import { comparisonBasisContext } from './portRegistry';
+import { vi } from 'vitest';
 
-jest.setTimeout(60000);
 
 const LOADED_PORTS: PortDefinition[] = ((portsRegistry as any).ports ?? []).filter(
   (p: any) => p && p.fee_rules && Array.isArray(p.fee_rules)
@@ -84,7 +84,7 @@ const printLive = async (): Promise<Printed> => {
   return p;
 };
 const printViaDialog = async (opts: { through?: boolean; conversions?: boolean }, viewCall: CallInput = DISCOUNT_CALL): Promise<Printed> => {
-  const printSpy = jest.spyOn(window, 'print').mockImplementation(() => {});
+  const printSpy = vi.spyOn(window, 'print').mockImplementation(() => {});
   try {
     await act(async () => {
       root!.render(

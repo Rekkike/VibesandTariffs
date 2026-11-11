@@ -13,8 +13,8 @@ import { PortWorkspace } from './App';
 import portsRegistry from './data/ports.json';
 import { DEFAULT_VESSEL, defaultCall } from '@port-cost/core';
 import type { CallInput, PortDefinition } from '@port-cost/core/types';
+import { vi } from 'vitest';
 
-jest.setTimeout(60000);
 
 const LOADED_PORTS: PortDefinition[] = ((portsRegistry as any).ports ?? []).filter(
   (p: any) => p && p.fee_rules && Array.isArray(p.fee_rules)

@@ -32,6 +32,7 @@ import portsRegistry from './data/ports.json';
 import type { PortDefinition } from '@port-cost/core/types';
 import * as fs from 'fs';
 import * as path from 'path';
+import { vi } from 'vitest';
 
 const LOADED_PORTS: PortDefinition[] = ((portsRegistry as any).ports ?? []).filter(
   (p: any) => p && p.fee_rules && Array.isArray(p.fee_rules)
@@ -96,7 +97,6 @@ const settle = async (ms = 650) => {
 
 // App-level renders with the 500 ms calculation debounce need multiple
 // settles per test; the default 5 s jest timeout is too tight.
-jest.setTimeout(30000);
 
 describe('per-port persisted call state (spec v0.2.60, port-switch reset defect fix)', () => {
   let container: HTMLDivElement | null = null;

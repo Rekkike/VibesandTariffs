@@ -21,8 +21,8 @@ import type { CallInput } from '@port-cost/core/types';
 import portsRegistry from './data/ports.json';
 import { HIDDEN_PORT_IDS, LOADED_PORTS } from './portRegistry';
 import { printPagesFor } from './printPages';
+import { vi } from 'vitest';
 
-jest.setTimeout(60000);
 
 const settle = async (ms = 650) => {
   await act(async () => { await new Promise(r => setTimeout(r, ms)); });

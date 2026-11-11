@@ -18,8 +18,8 @@ import type { CallInput, PortDefinition } from '@port-cost/core/types';
 import { containerThroughParts } from './handlingBasis';
 import * as fs from 'fs';
 import * as path from 'path';
+import { vi } from 'vitest';
 
-jest.setTimeout(60000);
 
 const LOADED_PORTS: PortDefinition[] = ((portsRegistry as any).ports ?? []).filter(
   (p: any) => p && p.fee_rules && Array.isArray(p.fee_rules)

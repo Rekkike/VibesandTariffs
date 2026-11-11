@@ -117,8 +117,9 @@ Run the conversion and the core build first (see Installation). Then:
 # Core engine suites (Jest)
 cd core && npm test
 
-# Web suites (react-scripts test, single run without watch mode)
-cd web && CI=true npm test -- --watchAll=false
+# Web suites (Vitest since v0.15.0, single run; web/vitest.config.ts sets
+# fileParallelism:false, the --runInBand equivalent)
+cd web && npm test
 ```
 
 `cd core && npm run test:watch` runs the core suites in watch mode. The root `npm test` script runs the core suites only.

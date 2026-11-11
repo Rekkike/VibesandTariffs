@@ -108,7 +108,7 @@ describe('published-vs-derived per-GT labeling (spec v0.2.68, item 3)', () => {
   });
 
   it('the mobile card renders the same conditional labeling (the shared amountCell path)', async () => {
-    const { ComparisonView, __setMobileQueryForTests } = require('./App');
+    const { ComparisonView, __setMobileQueryForTests } = await import('./App');
     __setMobileQueryForTests(() => true);
     const c = document.createElement('div');
     document.body.appendChild(c);

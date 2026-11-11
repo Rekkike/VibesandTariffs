@@ -39,6 +39,7 @@ import {
 import type { PortDefinition } from '@port-cost/core/types';
 import portsRegistry from './data/ports.json';
 import { LOADED_PORTS as RENDERED_PORTS } from './portRegistry';
+import { vi } from 'vitest';
 
 // v0.8.0 re-baseline (in-test attribution): the suite pins the rendered
 // port set - the app's LOADED_PORTS (portRegistry), Rotterdam hidden by
@@ -72,7 +73,6 @@ const buildSeventhPort = (): PortDefinition => {
   };
 };
 
-jest.setTimeout(30000);
 
 // Forced checkbox click (the handler-level cap proof's honest form):
 // React's checkbox change contract listens to the click event, and a

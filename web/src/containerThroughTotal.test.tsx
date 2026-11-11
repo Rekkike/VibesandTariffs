@@ -24,6 +24,7 @@ import { computePortResults } from './comparisonModel';
 import { containerThroughParts } from './handlingBasis';
 import { rankOrderByConvertedBasis, resolveExchangeRate } from './conversion';
 import { comparisonBasisContext } from './portRegistry';
+import { vi } from 'vitest';
 
 const LOADED_PORTS: PortDefinition[] = ((portsRegistry as any).ports ?? []).filter(
   (p: any) => p && p.fee_rules && Array.isArray(p.fee_rules)
@@ -206,7 +207,7 @@ describe('container-through Grand Total reversal (spec v0.9.0) - print', () => {
   };
 
   const printThroughDialog = async (dialogOn: boolean, screenOn: boolean) => {
-    const printSpy = jest.spyOn(window, 'print').mockImplementation(() => {});
+    const printSpy = vi.spyOn(window, 'print').mockImplementation(() => {});
     try {
       await renderView();
       if (screenOn) await clickToggle();
@@ -261,7 +262,7 @@ describe('container-through Grand Total reversal (spec v0.9.0) - print', () => {
     expect(onPrinted).not.toEqual(offPrinted);
   });
   it('the printed per-GT annotation follows the printed total (derivations ON, through ON)', async () => {
-    const printSpy = jest.spyOn(window, 'print').mockImplementation(() => {});
+    const printSpy = vi.spyOn(window, 'print').mockImplementation(() => {});
     try {
       await renderView();
       await clickToggle();

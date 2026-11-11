@@ -19,6 +19,7 @@ import { act } from 'react';
 import App, { __setMobileQueryForTests } from './App';
 import type { PortDefinition } from '@port-cost/core/types';
 import portsRegistry from './data/ports.json';
+import { vi } from 'vitest';
 
 const LOADED_PORTS: PortDefinition[] = ((portsRegistry as any).ports ?? []).filter(
   (p: any) => p && p.fee_rules && Array.isArray(p.fee_rules)
@@ -102,7 +103,6 @@ const selectPortIntoComparison = async (container: HTMLElement, portName: string
   await act(async () => { toggleNow!.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
 };
 
-jest.setTimeout(60000);
 
 describe('card-surface OPS isolation (spec v0.2.62)', () => {
   let container: HTMLDivElement | null = null;

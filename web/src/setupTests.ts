@@ -2,6 +2,20 @@
 // test module loads, so the production defaultCall() date stamp is the fixed
 // date in every suite.
 import './fixedClock';
+import { vi } from 'vitest';
+import { createRequire } from 'module';
+import { fileURLToPath } from 'url';
+import * as nodePath from 'path';
+
+// spec v0.15.0 (Vitest runner migration): the jest global maps to vi, so any
+// residual jest.spyOn call keeps working under Vitest (vi.setTimeout does not
+// exist in vitest 3.x; the per-file jest.setTimeout lines are replaced by
+// testTimeout/hookTimeout 60000 in vitest.config.ts). Vitest test files are
+// ESM, so the CJS require/__dirname the suites use for fs/path/core reads are
+// provided as globals; relative TS source imports go through await import().
+(globalThis as any).jest = vi;
+(globalThis as any).require = createRequire(import.meta.url);
+(globalThis as any).__dirname = nodePath.dirname(fileURLToPath(import.meta.url));
 
 // jsdom lacks window.matchMedia; MUI's useMediaQuery (via the responsive
 // breakpoint infrastructure, spec v0.2.39) requires it. The stub reports a

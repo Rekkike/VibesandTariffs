@@ -21,6 +21,7 @@ import { DEFAULT_VESSEL, defaultCall } from '@port-cost/core';
 import type { CallInput, PortDefinition } from '@port-cost/core';
 import portsRegistry from './data/ports.json';
 import { LOADED_PORTS as RENDERED_PORTS } from './portRegistry';
+import { vi } from 'vitest';
 
 // v0.8.0 re-baseline (in-test attribution): the suite pins the rendered
 // port set - the app's LOADED_PORTS (portRegistry), Rotterdam hidden by
@@ -234,7 +235,12 @@ describe('the shared-reference contract (spec v0.4.4: referenced, never duplicat
 });
 
 describe('red proofs (spec v0.4.4, observed failing before trusted)', () => {
-  const { chargeTypeForRule: ctr } = jest.requireActual('./chargeTypes');
+  // spec v0.15.0 runner migration: jest.requireActual -> await vi.importActual
+  // in beforeAll (a describe body cannot await).
+  let ctr: typeof import('./chargeTypes').chargeTypeForRule;
+  beforeAll(async () => {
+    ({ chargeTypeForRule: ctr } = await vi.importActual<typeof import('./chargeTypes')>('./chargeTypes'));
+  });
 
   it('a reverted cargo-dues membership fails: a cargo due left off the Cargo dues line renders outside it (the v0.4.0 state observed red)', () => {
     const mutated = (id: string) => id === 'pon_cargo_due_20ft' ? null : ctr(id);

@@ -27,6 +27,7 @@ import { DEFAULT_VESSEL, defaultCall, calculatePortCallCost } from '@port-cost/c
 import { APP_VERSION } from './version';
 import { asOf, converted, defaultRateInfo, displayRounded, dkkAsOf, eurDkkRate, eurSekRate } from './testRates';
 import type { CallInput, PortDefinition, VesselInput } from '@port-cost/core/types';
+import { vi } from 'vitest';
 
 const cssSource = fs.readFileSync(path.join(__dirname, 'index.css'), 'utf8');
 const printPagesSource = fs.readFileSync(path.join(__dirname, 'printPages.ts'), 'utf8');
@@ -50,7 +51,6 @@ const DECLARED_ROWS = ((portsRegistry as any).exchange_rates ?? []) as {
 // composition on the real rendered registry is 3+3+2.
 const eightPorts = LOADED_PORTS.map(p => ({ id: p.metadata.id, name: p.metadata.name }));
 
-jest.setTimeout(30000);
 
 describe('print page composition — the settled 3+3+3 constant (spec v0.6.2)', () => {
   it('the break constant is three port columns per page, documented in-code as settled and never derived', () => {
@@ -238,7 +238,12 @@ describe('print header content — the unfalsifiability rule (spec v0.6.2)', () 
         // v0.13.3 -> v0.14.0; zero movement at the fixed-clock-anchored
         // baselines - every pinned baseline byte-identical, the
         // production default (today) unchanged in behavior.
-        expect(APP_VERSION).toBe('v0.14.0');
+        // Test-runner migration to Vitest v0.15.0 (user rulings
+        // 2026-11-11, Stage 1 of the CRA migration): the bump moves the
+        // version constant v0.14.0 -> v0.15.0; the test runner only —
+        // the production build stays react-scripts and the bundle is
+        // byte-identical at unchanged version.
+        expect(APP_VERSION).toBe('v0.15.0');
         expect(text).toContain('Tariff year: 2026');
         expect(text).toContain('Vessel profile: MAREN MAERSK (IMO 9632129)');
         expect(text).toContain('ESI:');
@@ -387,7 +392,7 @@ describe('the export button and chrome hiding (spec v0.6.2, units 1 and 3)', () 
   });
 
   it('the comparison renders the Print / Save as PDF button opening the print dialog (spec v0.6.5, unit 1)', async () => {
-    const printSpy = jest.spyOn(window, 'print').mockImplementation(() => {});
+    const printSpy = vi.spyOn(window, 'print').mockImplementation(() => {});
     container = document.createElement('div');
     document.body.appendChild(container);
     root = createRoot(container);
@@ -1294,7 +1299,7 @@ describe('print dialog (spec v0.6.5, unit 1)', () => {
     }
   });
   it('Cancel closes the dialog without printing', async () => {
-    const printSpy = jest.spyOn(window, 'print').mockImplementation(() => {});
+    const printSpy = vi.spyOn(window, 'print').mockImplementation(() => {});
     const { container, root } = await renderView();
     try {
       const dialog = await openDialog(container);
@@ -1312,7 +1317,7 @@ describe('print dialog (spec v0.6.5, unit 1)', () => {
     }
   });
   it('Print in the dialog triggers the browser print with the pages reading the dialog selections - derivations ON while the screen is OFF', async () => {
-    const printSpy = jest.spyOn(window, 'print').mockImplementation(() => {});
+    const printSpy = vi.spyOn(window, 'print').mockImplementation(() => {});
     const { container, root } = await renderView();
     try {
       // Screen OFF; the dialog flips derivations ON; the paper carries the
@@ -1343,7 +1348,7 @@ describe('print dialog (spec v0.6.5, unit 1)', () => {
     }
   });
   it('dialog selections OFF while the screen is ON - the paper omits what the dialog turned off', async () => {
-    const printSpy = jest.spyOn(window, 'print').mockImplementation(() => {});
+    const printSpy = vi.spyOn(window, 'print').mockImplementation(() => {});
     const { container, root } = await renderView();
     try {
       // Screen derivations ON; the dialog turns it OFF; the paper stays
@@ -1376,7 +1381,7 @@ describe('print dialog (spec v0.6.5, unit 1)', () => {
     }
   });
   it('the converted-sums selection prints in both directions: ON adds the converted sum, OFF keeps it off the paper', async () => {
-    const printSpy = jest.spyOn(window, 'print').mockImplementation(() => {});
+    const printSpy = vi.spyOn(window, 'print').mockImplementation(() => {});
     const { container, root } = await renderView();
     try {
       // Direction 1: screen OFF, dialog ON - the Grand Total carries the
@@ -1426,7 +1431,7 @@ describe('print dialog (spec v0.6.5, unit 1)', () => {
     }
   });
   it('the container-through selection prints in both directions: ON adds the row, OFF keeps it absent', async () => {
-    const printSpy = jest.spyOn(window, 'print').mockImplementation(() => {});
+    const printSpy = vi.spyOn(window, 'print').mockImplementation(() => {});
     const { container, root } = await renderView();
     try {
       // Direction 1: dialog ON - the landside legs row prints.
@@ -1470,7 +1475,7 @@ describe('print dialog (spec v0.6.5, unit 1)', () => {
     }
   });
   it('the override clears after printing - a later Ctrl+P prints the live screen state again', async () => {
-    const printSpy = jest.spyOn(window, 'print').mockImplementation(() => {});
+    const printSpy = vi.spyOn(window, 'print').mockImplementation(() => {});
     const { container, root } = await renderView();
     try {
       const dialog = await openDialog(container);

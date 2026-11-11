@@ -200,3 +200,32 @@ Recorded here as executed: per-unit commits on
 version; post-version-bump hash; CSS throughout); suite counts and per-suite
 deltas; lockfile and guard evidence; token sweep. See the v0.13.3 changelog
 row in docs/SPECIFICATION.md for the delivery-level statement.
+
+## 9. CRA migration Stage 1 record (v0.15.0, 2026-11-11, Test-runner
+## migration to Vitest, user rulings 2026-11-11)
+
+Branch `vibe/test-runner-v0150-b5e64e3` from main b5e64e3. Scope: the web
+test runner swaps to Vitest 3.x (web/vitest.config.ts; jsdom 26.x web-nested);
+the production build stays react-scripts 5.0.1. npm audit, observed in the
+/tmp build copy: before (b5e64e3) 36 full / 34 production (18 low, 5
+moderate, 13 high, 0 critical full; 16/5/13 production); after (v0.15.0
+tree) 39 full / 34 production — the +3 are dev-only and are the recorded
+interim per the ruling: @vitest/mocker (moderate) and tinypool/vitest
+(2 critical) in the Vitest worker chain, none in shipped runtime
+dependencies; all 34 production advisories remain inside the
+react-scripts 5.0.1 tree and leave at Stage 2. Suite counts unchanged:
+core 902/41, web 693/60 under `vitest run` (chunked 106+131+97+114+160+85,
+exact-path anchors, fileParallelism:false). Hash-equality red proof: at
+unchanged version v0.14.0 the production build reproduces
+main.40012ac1.js (sha256 f0a6f0a6…) and main.0277ea08.css (sha256
+5bbda472…) byte-identically — the runner swap does not touch the bundle.
+Fixed-clock red proof: with the fixedClock anchoring removed from the
+setup path, 4 of 9 fixedDate pins go red under Vitest; restored green.
+Recorded for Stage 2 (effective there, per the same rulings): the lint
+layer is dropped entirely (the eslintConfig key leaves with
+react-scripts; no lint gate exists in CI and the build type-check covers
+the type signal) and the web proxy field is dropped (no server exists
+in-repo; the README LAN note is updated there); Stage 2 also takes
+build.sourcemap true, an explicit 'modules' build target, and the
+Node 20 to 22 move of both workflows with vite 8/vitest 5/jsdom 31
+(projected 0/0 advisories, verified in a scratch projection).
