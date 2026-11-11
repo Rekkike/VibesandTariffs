@@ -225,7 +225,10 @@ describe('print header content — the unfalsifiability rule (spec v0.6.2)', () 
         // figures moved with the pins, native figures did not.
         // v0.13.1 bump ritual (in-test attribution): the patch bump moves
         // the version constant v0.13.0 -> v0.13.1; no figure moved.
-        expect(APP_VERSION).toBe('v0.13.1');
+        // Documentation alignment v0.13.2 (user ruling 2026-11-11)
+        // re-baseline: the docs-only bump moves the version constant
+        // v0.13.1 -> v0.13.2; no figure moved.
+        expect(APP_VERSION).toBe('v0.13.2');
         expect(text).toContain('Tariff year: 2026');
         expect(text).toContain('Vessel profile: MAREN MAERSK (IMO 9632129)');
         expect(text).toContain('ESI:');
