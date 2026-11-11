@@ -1,6 +1,8 @@
 // Test-seam registration (spec v0.2.59): the per-port configuration
 // sections (default_call, ops_speculative, input_profile) are data now.
-// Jest runs core tests against the src/ files with core/data on disk, so
+// Vitest runs core tests against the src/ files with core/data on disk (spec
+// v0.16.0 runner migration; the CJS require/__dirname globals come from
+// test/vitest_setup_globals.ts), so
 // the setup registers every port YAML's sections once per test process,
 // exactly as the web registers from the generated registry at App module
 // scope. Tests that need a clean registry (the loud-failure pins) use the

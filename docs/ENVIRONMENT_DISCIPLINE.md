@@ -12,7 +12,7 @@ Justification: full sandbox workspace resets occurred twice in the v0.3.5 sessio
 
 ## 2. Exact-path tally anchors
 
-When tallying per-suite counts, jest positional arguments are regular expressions: an unanchored pattern matches unintended suites (the v0.3.5 session double-counted — a `theme` pattern also matched `summaryTheme`, observing 506 against the 494 baseline). Use exact-path anchors for per-suite runs and report counts with their arithmetic.
+When tallying per-suite counts, jest positional arguments are regular expressions: an unanchored pattern matches unintended suites (the v0.3.5 session double-counted — a `theme` pattern also matched `summaryTheme`, observing 506 against the 494 baseline). Use exact-path anchors for per-suite runs and report counts with their arithmetic. (Superseded in place at v0.16.0, 2026-11-11, Core test-runner migration to Vitest: since v0.16.0 both suites run under Vitest, whose positional filters are also regular expressions — the exact-path anchor discipline is unchanged; the jest wording above is the pre-v0.16.0 record.)
 
 ## 3. Checkpoint protocol
 

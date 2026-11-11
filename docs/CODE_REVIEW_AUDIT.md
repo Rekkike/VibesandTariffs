@@ -268,3 +268,38 @@ CSS assets/index-CPM43X7J.css (sha256
 a6b8ef14341dc4c52c7d380d9e78f1306f666db673b97f2a591a03d089b3a83e),
 byte-identical across two consecutive builds; shell references both
 assets, zero static/js/main.
+
+## 10. Core test-runner migration record (v0.16.0, 2026-11-11, branch
+## `vibe/test-runner-core-v0160-8c5ce76` from main 8c5ce76)
+
+Core's suite moves from jest 29 + ts-jest to Vitest 5 (5.1.0, aligned to
+the web's 5.1.0) in a single pass; core has no build axis, so no staging.
+Inventory correction to the Stage 0 consultation report: beyond the five
+require() sites in three files (aarhus/bremerhaven crypto;
+engine.test.ts's Panamax beforeAll js-yaml/fs/path), __dirname appears
+in ~25 of the 41 test files, so the pass covers all CJS access with one
+globals shim (core/test/vitest_setup_globals.ts: createRequire +
+__dirname, loaded first in setupFiles) instead of per-file inline
+conversion; zero jest.* sites existed (zero vi. conversions). New
+core/vitest.config.ts (globals, node env, setupFiles, include, fileParallelism:false);
+core/jest.config.js deleted. collectCoverage disposition per ruling:
+per-run coverage collection dropped (the Stage 1 record-only item);
+@vitest/coverage-v8 5.1.0 declared so --coverage works on demand; no
+coverage in the default script or CI. Typecheck restored per ruling:
+core/tsconfig.test.json (test-inclusive, types node + vitest/globals
+replacing the departed @types/jest) + test:types script, wired into
+tests.yml's core job before the suite run; gate green at HEAD
+(tsc --noEmit exit 0, no pre-existing errors). Web typecheck gap observed
+read-only in the scratch copy and queued as its own record item: web
+tsc --noEmit reports 75 errors, all in *.test.* files, all TS2304/TS2582
+missing vitest-globals names (the gap dates from v0.15.1, when the CRA
+build type-check left with react-scripts); no web change in this pass.
+Vite copies ruling: the two post-migration vite copies (core and web,
+both 8.3.8) are accepted as is — same version, no duplicate majors.
+npm audit observed in the /tmp copy: before 7 low / 0 production at
+8c5ce76; after 0 / 0, with jest, ts-jest and @types/jest leaving the root
+lockfile entirely. Counts: core 902/902 across 41 under vitest run,
+chunked 201+119+124+144+184+130; web untouched (zero web/ files in the
+diff), 693/60 in CI. Observed-red proof: the winter pin 10,885,680.88
+mutated to .89 went red under vitest, restored byte-identical green.
+Registry regeneration unchanged (ports.json sha256 fbd08c77…).

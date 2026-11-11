@@ -30,6 +30,15 @@ jobs:
       - name: Build core
         run: cd core && npm run build
 
+      # Core typecheck gate (spec v0.16.0): test-inclusive tsconfig with
+      # vitest/globals types, restored when ts-jest left with jest 29.
+      - name: Core typecheck
+        run: cd core && npm run test:types
+
+      # Core tests run under Vitest since v0.16.0 (web/ runs Vitest since
+      # v0.15.0): npm test in core/ is `vitest run`, already a single run;
+      # fileParallelism:false in core/vitest.config.ts is the --runInBand
+      # equivalent.
       - name: Core tests
         run: cd core && npm test
 

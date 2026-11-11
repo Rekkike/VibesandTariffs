@@ -114,7 +114,8 @@ The build writes the static site to `web/dist/` (since v0.15.1; formerly `web/bu
 Run the conversion and the core build first (see Installation). Then:
 
 ```bash
-# Core engine suites (Jest)
+# Core engine suites (Vitest since v0.16.0, single run; core/vitest.config.ts
+# sets fileParallelism:false, the --runInBand equivalent)
 cd core && npm test
 
 # Web suites (Vitest since v0.15.0, single run; web/vitest.config.ts sets
@@ -458,7 +459,7 @@ The tables in this section summarize the core inputs; `core/src/types.ts` is the
 - **Web UI**: React + TypeScript + Material-UI
 - **Data Format**: YAML (for authoring) / JSON (for loading)
 - **Build Tool**: npm workspaces
-- **Testing**: Jest
+- **Testing**: Vitest (both suites since v0.16.0; formerly Jest for core, react-scripts' jest for web)
 
 ## Deployment
 
