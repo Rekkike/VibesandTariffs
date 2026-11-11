@@ -152,7 +152,12 @@ describe('comparison-legibility zero-drift pins (spec v0.2.64)', () => {
       // pass): 11.123 / 7.4746 as of 2026-10-20 (was 11.224 / 7.4745,
       // 2026-10-07) - 6,348,361 x 11.123/7.4746 = 9,447,037 kr; per-GT
       // 48.48 (was 9,532,946 kr / 48.92); the native DKK total untouched.
-      '6\u00a0348\u00a0361\u00a0Dkr\u2248 9\u00a0447\u00a0037\u00a0kr converted \u2014 at 11.123 kr/EUR, 2026-10-2048.48 SEK/GT effective \u2014 derived, not a published rate; converted at the exchange-rate input (at 11.123 kr/EUR, 2026-10-20)',
+      // v0.13.0 ritual re-baseline (ECB rate pass (user rulings 2026-11-11)): 10.9910 /
+      // 7.4754 as of 2026-11-10 (was 11.123 / 7.4746, 2026-10-20) -
+      // 6,348,361 x 10.9910/7.4754 = 9,333,927 kr; per-GT 47.90 (was
+      // 9,447,037 kr / 48.48); the native DKK total untouched; the column
+      // order is unchanged.
+      '6\u00a0348\u00a0361\u00a0Dkr\u2248 9\u00a0333\u00a0927\u00a0kr converted \u2014 at 10.991 kr/EUR, 2026-11-1047.90 SEK/GT effective \u2014 derived, not a published rate; converted at the exchange-rate input (at 10.991 kr/EUR, 2026-11-10)',
       // v0.4.2 re-baseline (the Yilport terminal layer, in-test attribution):
       // G\u00e4vle 1,370,979.35 + 8,936,000 = 10,306,979.35; per-GT
       // 10,306,979.35 / 194,849 = 52.8973 -> 52.90 (was 7.04); the column
@@ -170,7 +175,10 @@ describe('comparison-legibility zero-drift pins (spec v0.2.64)', () => {
       // v0.8.1 ritual re-baseline (in-test attribution): 2,199,677.26 x
       // 11.123 = 24,467,010 kr; per-GT 125.57 (was 24,689,178 kr / 126.71 at
       // 11.224, 2026-10-07); the native EUR figure untouched.
-      '2\u00a0199\u00a0677\u00a0\u20ac\u2248 24\u00a0467\u00a0010\u00a0kr converted \u2014 at 11.123 kr/EUR, 2026-10-20125.57 SEK/GT effective \u2014 derived, not a published rate; converted at the exchange-rate input (at 11.123 kr/EUR, 2026-10-20)',
+      // v0.13.0 ritual re-baseline (ECB rate pass (user rulings 2026-11-11)): 2,199,677.26
+      // x 10.9910 = 24,176,653 kr; per-GT 124.08 (was 24,467,010 kr / 125.57
+      // at 11.123, 2026-10-20); the native EUR figure untouched.
+      '2\u00a0199\u00a0677\u00a0\u20ac\u2248 24\u00a0176\u00a0653\u00a0kr converted \u2014 at 10.991 kr/EUR, 2026-11-10124.08 SEK/GT effective \u2014 derived, not a published rate; converted at the exchange-rate input (at 10.991 kr/EUR, 2026-11-10)',
       // v0.6.6 ritual re-baseline (the only movement): the conversion-only
       // figure moves with the standing rate re-verification — 11.224 as of
       // 2026-10-07 (was 11.2525, 2026-10-05; the ECB TARGET publication
@@ -181,7 +189,10 @@ describe('comparison-legibility zero-drift pins (spec v0.2.64)', () => {
       // v0.8.1 ritual re-baseline (in-test attribution): 2,204,910.90 x
       // 11.123 = 24,525,224 kr; per-GT 125.87 (was 24,747,920 kr / 127.01 at
       // 11.224, 2026-10-07); the native EUR figure untouched.
-      '2\u00a0204\u00a0911\u00a0\u20ac\u2248 24\u00a0525\u00a0224\u00a0kr converted \u2014 at 11.123 kr/EUR, 2026-10-20125.87 SEK/GT effective \u2014 derived, not a published rate; converted at the exchange-rate input (at 11.123 kr/EUR, 2026-10-20)'
+      // v0.13.0 ritual re-baseline (ECB rate pass (user rulings 2026-11-11)): 2,204,910.90
+      // x 10.9910 = 24,234,176 kr; per-GT 124.37 (was 24,525,224 kr / 125.87
+      // at 11.123, 2026-10-20); the native EUR figure untouched.
+      '2\u00a0204\u00a0911\u00a0\u20ac\u2248 24\u00a0234\u00a0176\u00a0kr converted \u2014 at 10.991 kr/EUR, 2026-11-10124.37 SEK/GT effective \u2014 derived, not a published rate; converted at the exchange-rate input (at 10.991 kr/EUR, 2026-11-10)'
     ]);
   });
 
@@ -667,7 +678,10 @@ describe('the derived per-GT metric\u2019s per-GT-OPS disclosure (spec v0.2.64, 
       // v0.8.1 ritual re-baseline (in-test attribution): at 11.123 (the
       // observed 2026-10-20 ECB publication; was 11.224) - 2,213,035.90 EUR
       // x 11.123 / 194,849 = 126.33 SEK/GT (was 127.48).
-      .find(c => (c.textContent ?? '').includes('126.33'))!;
+      // v0.13.0 ritual re-baseline (ECB rate pass (user rulings 2026-11-11)): at 10.9910 (the
+      // observed 2026-11-10 ECB publication; was 11.123) - 2,213,035.90 EUR
+      // x 10.9910 / 194,849 = 124.83 SEK/GT (was 126.33).
+      .find(c => (c.textContent ?? '').includes('124.83'))!;
     expect(hamCell.textContent).toContain('includes user-specified OPS');
     expect(hamCell.textContent).not.toContain('per-GT OPS charge uses the same GT basis');
   });

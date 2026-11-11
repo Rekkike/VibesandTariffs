@@ -200,11 +200,14 @@ describe('rate-fetch removal (spec v0.4.0 rider — the v0.3.2/v0.3.5 reversal)'
     // publication.
     // v0.8.1 ritual re-baseline (in-test attribution): 11.123 as of
     // 2026-10-20 (was 11.224, 2026-10-07), the dedicated rate pass.
-    expect(yamlText.includes('rate: 11.123')).toBe(true);
-    expect(yamlText.includes('as_of: 2026-10-20')).toBe(true);
+    // v0.13.0 ritual re-baseline (ECB rate pass (user rulings 2026-11-11)): 10.9910 and
+    // 7.4754 as of 2026-11-10 (were 11.123 and 7.4746, 2026-10-20); the
+    // YAML source text carries the published four-decimal form 10.9910.
+    expect(yamlText.includes('rate: 10.9910')).toBe(true);
+    expect(yamlText.includes('as_of: 2026-11-10')).toBe(true);
     // v0.6.0 Aarhus expansion: the second EUR-anchored pair (the derived
     // cross's denominator; the ritual now checks both pairs).
-    expect(yamlText.includes('rate: 7.4746')).toBe(true);
+    expect(yamlText.includes('rate: 7.4754')).toBe(true);
     expect(exchangeRates).toHaveLength(2);
     expect(eurSek.pair ?? eurSek.from_currency + '-' + eurSek.to_currency).toBe('EUR-SEK');
   });
