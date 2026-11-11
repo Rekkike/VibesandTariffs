@@ -303,3 +303,32 @@ chunked 201+119+124+144+184+130; web untouched (zero web/ files in the
 diff), 693/60 in CI. Observed-red proof: the winter pin 10,885,680.88
 mutated to .89 went red under vitest, restored byte-identical green.
 Registry regeneration unchanged (ports.json sha256 fbd08c77…).
+
+## 11. Incident record (v0.16.1, 2026-11-11, Version ritual completion)
+
+What happened: the v0.16.0 pass (c4cae55) merged with docs/SPECIFICATION.md
+at v0.16.0 while web/src/version.ts (APP_VERSION, the chip's single source)
+stayed v0.15.1, because the v0.16.0 directive's Unit 4 ordered a spec-only
+bump. Consequence, observed at c4cae55 in the branch scratch: the web
+versionChip cross-check ("the constant matches the specification header")
+was red — Expected v0.16.0, received v0.15.1, 1 of 5 in that suite — and
+stayed red until v0.16.1 completed the ritual (green 5/5 after; the pass's
+observed-red proof is the base state itself). The version guard's forward
+pass was green throughout because no behavior path changed (the guard's
+chip cross-check only fires on behavior-path changes; the chip-behind
+--state fixture pins the failure mode at exit 1).
+Root cause, two stacked gaps: (1) the Stage 0 core-runner consultation's
+Unit 7 described the version ritual for a migration pass but did not flag
+that a spec-only bump leaves the chip cross-check red — the consultation's
+own gap; (2) the v0.16.0 directive's Unit 4 then encoded that gap as a
+"spec-only bump" instruction. The worksuite ledger records the directive's
+spec-only premise as the flawed premise; this pass is the correction, not a
+precedent: future passes bump spec header, changelog row and APP_VERSION
+together in the same change whenever any web/src file changes (the guard
+requires it), and a spec-only bump is only legitimate when no web/src file
+changes AND the chip cross-check is knowingly left for a follow-up — which
+this incident shows is not a state CI can stay in.
+Correction delivered at v0.16.1: APP_VERSION v0.16.1, print pin, spec
+header, one PATCH row; incident note adjacent to the spec changelog table;
+this row. Nothing re-run or hidden: any queued c4cae55 Tests run that
+executed shows the honest red record of this incident.
