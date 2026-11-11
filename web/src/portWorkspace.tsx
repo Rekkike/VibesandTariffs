@@ -39,6 +39,7 @@ import {
 import type { SeededProfile } from '@port-cost/core';
 import { partitionFees } from './zeroCollapse';
 import { opsFoldActive, opsFoldParts, opsPerGtLineFor } from './opsFold';
+import { engineCallDate } from './callDate';
 import { chargeTypeForRule } from './chargeTypes';
 import { badgesForFlags } from './flagBadges';
 import { DerivationDetail } from './derivation';
@@ -205,7 +206,10 @@ export const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call
       try {
         const input: CostCalculationInput = {
           vessel: state.vessel,
-          call: { ...state.call, port_id: port.metadata.id }
+          // Call date (spec v0.14.0, the A-01 remediation): the entry feeds
+          // CallInput.date; an invalid entry is fed as blank so no
+          // date-window rule fires, and the field names the defect.
+          call: { ...state.call, port_id: port.metadata.id, date: engineCallDate(state.call.date) }
         };
 
         const result = calculatePortCallCost(port, input);

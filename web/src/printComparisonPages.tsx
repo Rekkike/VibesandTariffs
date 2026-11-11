@@ -28,6 +28,7 @@ import { buildDiscountLine } from './discountLine';
 import type { PrintPage } from './printPages';
 import { APP_VERSION } from './version';
 import { userSpecifiedDisclosures } from './userSpecifiedDisclosure';
+import { callDateDisclosure } from './callDate';
 
 // One printed fee line (the comparison model's own line record, carried
 // into print as-is): the charge-line name, its biller, its amount, and the
@@ -222,7 +223,11 @@ export const PrintComparisonPages: React.FC<PrintComparisonPagesProps> = ({
         Container moves:{' '}
         {((call.containers_loaded_le20ft || 0) + (call.containers_loaded_gt20ft || 0) +
           (call.containers_discharged_le20ft || 0) + (call.containers_discharged_gt20ft || 0)).toLocaleString('en-US')} (loaded + discharged) · Lay time:{' '}
-        {call.lay_time_hours != null ? `${call.lay_time_hours} h at berth` : 'not entered'}
+        {call.lay_time_hours != null ? `${call.lay_time_hours} h at berth` : 'not entered'} ·{' '}
+        {/* Call date (spec v0.14.0, the A-01 remediation; the print
+            follow-through doctrine): the paper states the date in use - an
+            invalid entry names the defect, never a substituted date. */}
+        {callDateDisclosure(call.date)}
       </p>
       {/* Empty/full split (spec v0.10.0): the entered pair and the derived
           counts print as call facts; blank prints nothing; an invalid pair

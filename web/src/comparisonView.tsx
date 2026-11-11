@@ -47,6 +47,7 @@ import type { HinterlandMode } from './handlingBasis';
 import { buildDiscountLine } from './discountLine';
 import { PrintComparisonPages } from './printComparisonPages';
 import { userSpecifiedDisclosures } from './userSpecifiedDisclosure';
+import { callDateDisclosure } from './callDate';
 
 interface ComparisonViewProps {
   ports: PortDefinition[];
@@ -330,6 +331,13 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
               {call.lay_time_hours != null ? `${call.lay_time_hours} h at berth` : 'not entered'}
               {assumedCallFields.includes('lay_time_hours') &&
                 ' (assumed from vessel class at Gothenburg-class productivity — adjust for your actual call)'}
+            </span>
+            {/* Call date (spec v0.14.0, the A-01 remediation): the date in use
+                is stated once here - the user-controlled call parameter that
+                selects any port's annual-window variant; an invalid entry
+                names the defect instead of substituting a date. */}
+            <span className="comparison-context-item" data-testid="comparison-context-date">
+              {callDateDisclosure(call.date)}
             </span>
             <span className="comparison-context-item">
               <span className="comparison-context-label">ESI:</span>{' '}

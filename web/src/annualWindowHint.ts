@@ -20,7 +20,7 @@ export function annualWindowHint(port: PortDefinition): string | null {
   if (!w) return null;
   return (
     `Winter period: ${w.start_day} ${MONTHS[w.start_month - 1]} to ${w.end_day} ${MONTHS[w.end_month - 1]}. ` +
-    'A call date inside this period prices the published winter surcharge (+100 % on the vessel-side hamnavgift, the doubled rate); ' +
+    'The selected call date inside this period prices the published winter surcharge (+100 % on the vessel-side hamnavgift, the doubled rate); ' +
     'a date outside it prices the base rate.'
   );
 }

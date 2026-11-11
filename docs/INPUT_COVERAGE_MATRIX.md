@@ -24,6 +24,15 @@ set, EU ETS emissions/allowance price, pilotage required/hours/extra
 pilot/ordering lead time, lay-up days, tug count, towage estimate, handling
 estimate, the storage-day pairs that the port prices, lay time, engine tier.
 
+(Recorded at v0.14.0, 2026-11-11, Call-date input (A-01 remediation) (user
+ruling 2026-11-11): the shared `date` input is a user-controlled call-date
+field at the call-parameters surface - it defaults to today, the rendered
+field states the date in use, validation is fail-loud (an invalid entry is
+named at the input, the comparison context strip and the paper header and
+fires no date-window rule; no date is ever silently substituted), and the
+selected date feeds `CallInput.date` through the single engine path at both
+compute sites and is disclosed on the context strip and the paper header.)
+
 ## 2. Per-port input surfaces
 
 | Port | Port-specific inputs rendered |

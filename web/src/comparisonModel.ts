@@ -20,6 +20,7 @@ import { partitionFees } from './zeroCollapse';
 import { opsFoldActive, opsFoldParts, opsPerGtLineFor } from './opsFold';
 import { containerThroughParts } from './handlingBasis';
 import type { HinterlandMode } from './handlingBasis';
+import { engineCallDate } from './callDate';
 
 export interface PortResultEntry {
   port: PortDefinition;
@@ -189,7 +190,13 @@ export const computePortResults = (
           ...(perPortCallOverrides?.[port.metadata.id] ?? {}),
           port_id: port.metadata.id
         };
-        const engineResult = calculatePortCallCost(port, { vessel, call: merged as unknown as CallInput });
+        // Call date (spec v0.14.0, the A-01 remediation): the selected date
+        // feeds CallInput.date; an invalid entry is fed as blank so no
+        // date-window rule fires (the surfaces name the defect).
+        const engineResult = calculatePortCallCost(port, {
+          vessel,
+          call: { ...(merged as unknown as CallInput), date: engineCallDate(merged.date) }
+        });
         const leg = containerThroughMode ? containerThroughLegFor(port.metadata.id, containerThroughMode, call, merged as unknown as CallInput) : 0;
         const result: CostCalculationResult = leg > 0
           ? {

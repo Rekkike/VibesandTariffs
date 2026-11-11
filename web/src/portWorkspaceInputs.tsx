@@ -27,6 +27,7 @@ import type {
   VesselInput
 } from '@port-cost/core';
 import { annualWindowHint } from './annualWindowHint';
+import { checkCallDate, callDateDefectText } from './callDate';
 import { getNetTonnageClass, containerSplit, userSpecifiedRate } from '@port-cost/core';
 import { userSpecifiedHint } from './userSpecifiedDisclosure';
 import { tierEffectLine } from './envGuidance';
@@ -107,6 +108,15 @@ export const WorkspaceInputs: React.FC<WorkspaceInputsProps> = (props) => {
   const ntNotice = portBillsOnNtClasses(port)
     ? ntBoundaryNoticeFor(estimatedFields.includes('nt'), state.vessel.nt, state.vessel.gt, ntObserved)
     : null;
+  // Call date (spec v0.14.0, the A-01 remediation): the field states the date
+  // in use; the entry feeds CallInput.date through the single engine path
+  // unchanged. Fail-loud validation (callDate.ts): an entry that is not a
+  // real YYYY-MM-DD calendar date is never substituted - the field errors
+  // and names the defect, and no date-window rule fires.
+  const dateCheck = checkCallDate(state.call.date);
+  const dateHelper = dateCheck.state === 'valid'
+    ? `Call date in use: ${dateCheck.value}${annualWindowHint(port) ? ` · ${annualWindowHint(port)}` : ''}`
+    : `Call date: ${dateCheck.state === 'blank' ? 'not entered - no date-window rule fires' : callDateDefectText(dateCheck.value)}`;
   return (
           <Grid item xs={12} md={6}>
             <Paper className="form-section" elevation={0}>
@@ -502,11 +512,12 @@ export const WorkspaceInputs: React.FC<WorkspaceInputsProps> = (props) => {
                   <TextField
                     label="Date"
                     type="date"
-                    value={state.call.date}
+                    value={state.call.date ?? ''}
                     onChange={(e) => handleCallChange('date', e.target.value)}
                     fullWidth
                     InputLabelProps={{ shrink: true }}
-                    helperText={annualWindowHint(port) ?? undefined}
+                    error={dateCheck.state !== 'valid'}
+                    helperText={dateHelper}
                   />
                 </Grid>
                 <Grid item xs={12} sm={6}>

@@ -233,7 +233,12 @@ describe('print header content — the unfalsifiability rule (spec v0.6.2)', () 
         // v0.13.2 -> v0.13.3; no total, native figure or ranking moved
         // (the single declared rendered change is the Aarhus converted
         // per-GT annotation repair).
-        expect(APP_VERSION).toBe('v0.13.3');
+        // Call-date input (A-01 remediation) v0.14.0 (user ruling
+        // 2026-11-11): the bump moves the version constant
+        // v0.13.3 -> v0.14.0; zero movement at the fixed-clock-anchored
+        // baselines - every pinned baseline byte-identical, the
+        // production default (today) unchanged in behavior.
+        expect(APP_VERSION).toBe('v0.14.0');
         expect(text).toContain('Tariff year: 2026');
         expect(text).toContain('Vessel profile: MAREN MAERSK (IMO 9632129)');
         expect(text).toContain('ESI:');
