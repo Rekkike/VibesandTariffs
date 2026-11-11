@@ -467,3 +467,32 @@ Recommendation, argued from evidence: **option (b) — keep HHLA as a switchable
 - The social-fund exclusion list corrects to `[storage, security]` — `terminal_handling` leaves the exclusion list per S9 §1.3.13; the materials-for-stowing-and-lashing exclusion is the lashing-service lines' own materials (no lashing materials line exists in the fee surface; the exclusion is recorded in the reference and stays vacuous until a materials line exists).
 - Classification entries for every new rule id; berth-side rules join the web berth-dues membership where the segmentation contract requires.
 - The HHLA layer stands unchanged as the variant (scope guard: no HHLA rule edits beyond none; the layer only ceases to be the default).
+### 17.8 Deviating-agreement clauses (S9, verbatim, recorded at v0.12.2)
+
+Citation repairs and clause extraction (user rulings 2026-11-02),
+reference-record only, zero drift: the two clauses of the Eurogate
+Prices and Conditions (S9, `prices-and-conditions-2026.pdf`, effective
+1st March 2026) under which a side agreement deviates from the published
+schedule, extracted verbatim with their citations. No presentation change
+in this pass.
+
+- S9 §1.1 (PDF page 2 of the archived binary), "Provisions for use of
+  facilities": "Along with current statutory regulations, use of
+  facilities shall be governed by the regulations contained in these
+  Prices and Conditions and by the Standard Terms and Conditions of
+  Business of the EUROGATE Group in its latest version."
+- S9 §1.3.6 (PDF page 2 of the archived binary): "For services which
+  are not indicated in this Statement or which require special expenditure,
+  charges must be agreed upon with the Company in advance." (the
+  parenthetical example in the source: "(e.g. salvage of containers)")
+
+Reading recorded, not encoded: the published schedule in S9 is the
+default; charges for unlisted or special-expenditure services are set by
+advance agreement with the company, and the use of the facilities is
+additionally governed by the EUROGATE Group Standard Terms and Conditions
+of Business in their latest version (S10, contract layer, no prices,
+recorded not-archived with live upstream URLs per section 1). This is the
+Hamburg analogue of the Aarhus ToB §2.1 clause recorded in
+AARHUS_EXTRACTION_REFERENCE.md §5.5. The model prices the published
+schedule; any comparison-screen note about negotiated deviations is
+proposed for a future ruling, not implemented here.

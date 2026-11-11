@@ -460,7 +460,11 @@ describe('port-specific reset fields (spec v0.2.60)', () => {
         // user-specified per-GT rate and its minimum and maximum bounds.
         'ops_per_gt_charge', 'ops_per_gt_min', 'ops_per_gt_max',
         'ets_emissions_tco2', 'ets_allowance_price',
-        'lashing_containers', 'dangerous_goods_units', 'reefer_units',
+        // v0.12.2 re-baseline (user ruling 2026-11-02): the inert
+        // lashing_containers entry left the Aarhus reset_fields with the
+        // retired apmt_aarhus_lashing rule (the input renders nowhere at
+        // Aarhus; the Hamburg usage is untouched).
+        'dangerous_goods_units', 'reefer_units',
         'reefer_extra_days', 'storage_days_import', 'storage_days_export'
       ],
       // v0.7.0 Rotterdam expansion: the ninth port's own per-port set - the

@@ -130,6 +130,13 @@ describe('P2: blank never fires, and every default-call total is byte-identical'
       expect(load('gothenburg').fee_rules.some(r => r.id === ruleId)).toBe(false);
     }
     expect(load('aarhus').fee_rules.some(r => r.id === 'apmt_aarhus_gate_move_truck')).toBe(false);
+    // v0.12.2 (user ruling 2026-11-02): the lashing rule is retired too —
+    // unreachable at Aarhus (the input renders only in the Hamburg
+    // call-parameters section), priced 0.00 at every default; the Hamburg
+    // eurogate_lashing rule keeps the lashing_containers CallInput case, so
+    // the D-01 resolution set is unchanged.
+    expect(load('aarhus').fee_rules.some(r => r.id === 'apmt_aarhus_lashing')).toBe(false);
+    expect(lines(aarhus, 'apmt_aarhus_lashing')).toHaveLength(0);
     // The gated break-bulk rule is unchanged: 54 SEK per 1,000 kg entered.
     expect(lines(run('gothenburg', { break_bulk_1000kg: 10 }), 'apm_terminals_handling_break_bulk_scrap')[0].amount).toBe(540);
   });

@@ -13,7 +13,6 @@
     "build:web": "cd web && npm run build",
     "test": "npm run test:core",
     "test:core": "cd core && npm test",
-    "dev": "cd web && npm run dev",
     "start": "cd web && npm run start"
   },
   "devDependencies": {

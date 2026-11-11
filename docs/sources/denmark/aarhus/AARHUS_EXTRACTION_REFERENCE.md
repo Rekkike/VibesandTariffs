@@ -275,7 +275,10 @@ small call (the small-call scenario surface).
 Hatch covers 870.00 DKK per move (§2.2); gear boxes 552.00 DKK (§2.3);
 restow via quay 1,105.00 DKK (§2.4); lashing per gang-hour (§2.5, the
 shift table 2,251.00/2,786.00/3,545.00 — the lashing scenario surface,
-gated on the lashing container count as at GOT/BRV). Start-up at 04:00:
+gated on the lashing container count as at GOT/BRV). (Superseded in place
+at v0.12.2, user ruling 2026-11-02: the lashing rule is retired from the
+silo as unreachable at Aarhus — the full record is section 5.6 below; this
+sentence stands as the extraction-time record of 2026-10-06.) Start-up at 04:00:
 fee per crane 19,335 DKK (§3) — a scenario surface, recorded. Gang
 waiting/cancellation (§3.1–3.2) and idle berth dues 307 DKK/gang-hour
 (§3.3) — recorded surfaces, never default-fired.
@@ -324,13 +327,39 @@ machinery keyed to the dangerous-goods/OOG inputs (blank charges zero).
 
 ### 5.5 The published-default honesty flag (A4 §2.1)
 
-"The rates for the provision of the Terminal Services shall be the rates
-agreed in writing between the Parties or, where no such rates have been
-agreed, the rates listed on the website of APM Terminals or otherwise
-made available to the Terminal" (ToB §2.1). The published schedule is
-the default, contract rates may differ — flagged at the NTB
-reference-tariff prominence class (`contract_vs_published`), rendered on
-the APMT lines, never hidden.
+Verbatim, the complete clause (A4, "APM Terminals Aarhus Terms of Business
+14 Jan 2026 V20.pdf", §2.1, PDF page 2 of the archived binary; the
+quotation is completed verbatim at v0.12.2, Citation repairs and clause
+extraction (user rulings 2026-11-02), which had truncated it at extraction):
+
+"2.1 The rates for the provision of the Terminal Services shall be the
+rates agreed in writing between the Parties or, where no such rates have
+been agreed, the rates listed on the website of APM Terminals or otherwise
+made available to the Terminal User from time to time."
+
+The published schedule is the default; written agreed rates prevail over
+it — flagged at the NTB reference-tariff prominence class
+(`contract_vs_published`), rendered on the APMT lines, never hidden.
+
+### 5.6 Recorded, not encoded — lashing (§2.5), retired at v0.12.2
+
+User ruling 2026-11-02, Citation repairs and clause extraction (user
+rulings 2026-11-02): the encoded rule `apmt_aarhus_lashing` is retired
+from the silo. Basis of the retirement: the rule was unreachable at
+Aarhus — its input `lashing_containers` renders only inside the Hamburg
+call-parameters section, which the Aarhus input profile does not carry —
+and it priced 0.00 at every default, so the removal is presentation-only.
+The rates and basis are kept here, never encoded again without a ruled
+directive:
+
+- §2.5 basis: lashing per gang (2 persons) per hour — weekday 1st shift
+  (07:00–16:00) 2,251.00 DKK; 2nd shift 2,786.00 DKK; all other times
+  3,545.00 DKK; minimum payment 4 hours = 9,004.00 DKK per gang.
+- The tariff prices the gang-hour, not the container: the v0.12.1-era
+  encoding multiplied the per-gang-hour rate by a per-container count with
+  the 4-hour minimum unencoded (the discrepancy recorded in
+  docs/PDF_CITATION_SPOT_CHECK.md §4.1). No re-encoding is proposed; a
+  gang-hour input is a future ruled pass.
 
 ## 6. The crane adjudication (settled at scan; encode the decision)
 

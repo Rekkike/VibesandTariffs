@@ -58,7 +58,7 @@ The development server needs a private-network (LAN) address on the machine: bec
 
 After any change under `core/data/` or `core/src/`, re-run the conversion (`cd core && node scripts/convert_yaml_to_json.js`, also available as `npm run convert-data`) and the core build (`cd core && npm run build`) before starting or testing the web app.
 
-The root `package.json` scripts are not the supported entry points: its `dev` script delegates to a `dev` script that `web/package.json` does not define, and none of the root scripts runs the data conversion.
+The root `package.json` scripts are not the supported entry points: none of them runs the data conversion, and the development server is started with `npm start` inside `web/` (the root `dev` script that delegated to a nonexistent web `dev` script was removed at v0.12.2).
 
 ### Production Build
 
@@ -82,6 +82,13 @@ The build writes the static site to `web/build/`.
 **Consequences**:
 - The GitHub Actions workflow runs `cd core && npm ci` and `cd web && npm ci` as separate steps (`.github/workflows/deploy.yml`); `npm ci` installs the committed root lockfile tree
 - Running `npm install` at root will install `@types/react-dom` which will break the core build
+  (Superseded in place at v0.12.2, Citation repairs and clause extraction (user rulings 2026-11-02):
+  the stale consequence claim is corrected — observed at v0.12.2, a root-level workspaces install
+  hoists `@types/react-dom` into the root `node_modules`, and the core build still exits clean
+  under it (`core/tsconfig.json` carries `"lib": ["ES2020", "DOM"]` and `skipLibCheck`), so a
+  root install no longer breaks the core build. The decision above is unchanged: the workflow and
+  local setup install dependencies per workspace, and the bullet's original wording is retained as
+  the historical record of its own version.)
 - This applies to both CI/CD and local development
 
 **Example of correct workflow step**:

@@ -365,7 +365,7 @@ fee_rules:
       document_name: yilport-container-terminal-tariff-2026.pdf
       document_url: docs/sources/sweden/gavle/yilport-container-terminal-tariff-2026.pdf
       upstream_url: "https://yilport.com/en/images/PartDocuments/2026_yilport_ga_vle_container_terminal_general_tariff.pdf"
-      page: 3
+      page: 4
       clause: '4.1 Full container SEK 1 679 (Includes lift off vessel, train or truck into terminal and lift to vessel, train or truck out of terminal. Hatch covers and twist-lock handling is included)'
       verified_on: '2026-10-01'
       verified_by: vibe-session-terminal-basis
@@ -384,7 +384,7 @@ fee_rules:
       document_name: yilport-container-terminal-tariff-2026.pdf
       document_url: docs/sources/sweden/gavle/yilport-container-terminal-tariff-2026.pdf
       upstream_url: "https://yilport.com/en/images/PartDocuments/2026_yilport_ga_vle_container_terminal_general_tariff.pdf"
-      page: 3
+      page: 4
       clause: '4.2 Empty container SEK 1 235 (Includes lift off vessel, train or truck into terminal and lift to vessel, train or truck out of terminal, lifts to and from inspection area, inspection and dry sweeping. Includes removal of nails, hazardous placards and other minor tasks)'
       verified_on: '2026-10-21'
       verified_by: Port Cost Analyzer Team
@@ -402,7 +402,7 @@ fee_rules:
       document_name: yilport-container-terminal-tariff-2026.pdf
       document_url: docs/sources/sweden/gavle/yilport-container-terminal-tariff-2026.pdf
       upstream_url: "https://yilport.com/en/images/PartDocuments/2026_yilport_ga_vle_container_terminal_general_tariff.pdf"
-      page: 3
+      page: 4
       clause: '4.3 OOG Containers - additional 100% of the above rates'
       verified_on: '2026-10-01'
       verified_by: vibe-session-terminal-basis
@@ -423,7 +423,7 @@ fee_rules:
       document_name: yilport-container-terminal-tariff-2026.pdf
       document_url: docs/sources/sweden/gavle/yilport-container-terminal-tariff-2026.pdf
       upstream_url: "https://yilport.com/en/images/PartDocuments/2026_yilport_ga_vle_container_terminal_general_tariff.pdf"
-      page: 3
+      page: 4
       clause: '5.1 Cargo Due (per full container) SEK 482'
       verified_on: '2026-10-01'
       verified_by: vibe-session-terminal-basis
@@ -442,7 +442,7 @@ fee_rules:
       document_name: yilport-container-terminal-tariff-2026.pdf
       document_url: docs/sources/sweden/gavle/yilport-container-terminal-tariff-2026.pdf
       upstream_url: "https://yilport.com/en/images/PartDocuments/2026_yilport_ga_vle_container_terminal_general_tariff.pdf"
-      page: 3
+      page: 4
       clause: '5.2 ISPS (per full container) SEK 73'
       verified_on: '2026-10-01'
       verified_by: vibe-session-terminal-basis
@@ -460,7 +460,7 @@ fee_rules:
       document_name: yilport-container-terminal-tariff-2026.pdf
       document_url: docs/sources/sweden/gavle/yilport-container-terminal-tariff-2026.pdf
       upstream_url: "https://yilport.com/en/images/PartDocuments/2026_yilport_ga_vle_container_terminal_general_tariff.pdf"
-      page: 3
+      page: 4
       clause: '5.3 IMDG / Reefer Surcharge (per unit) SEK 401'
       verified_on: '2026-10-01'
       verified_by: vibe-session-terminal-basis
@@ -478,7 +478,7 @@ fee_rules:
       document_name: yilport-container-terminal-tariff-2026.pdf
       document_url: docs/sources/sweden/gavle/yilport-container-terminal-tariff-2026.pdf
       upstream_url: "https://yilport.com/en/images/PartDocuments/2026_yilport_ga_vle_container_terminal_general_tariff.pdf"
-      page: 3
+      page: 4
       clause: '5.3 IMDG / Reefer Surcharge (per unit) SEK 401'
       verified_on: '2026-10-01'
       verified_by: vibe-session-terminal-basis
@@ -505,7 +505,7 @@ fee_rules:
       document_name: yilport-container-terminal-tariff-2026.pdf
       document_url: docs/sources/sweden/gavle/yilport-container-terminal-tariff-2026.pdf
       upstream_url: "https://yilport.com/en/images/PartDocuments/2026_yilport_ga_vle_container_terminal_general_tariff.pdf"
-      page: 4
+      page: 5
       clause: '7. Storage (per TEU per Day) - 7.1 Full Containers: Free Time 7 calendar days; 8+ days SEK 135'
       verified_on: '2026-10-01'
       verified_by: vibe-session-terminal-basis
@@ -531,7 +531,7 @@ fee_rules:
       document_name: yilport-container-terminal-tariff-2026.pdf
       document_url: docs/sources/sweden/gavle/yilport-container-terminal-tariff-2026.pdf
       upstream_url: "https://yilport.com/en/images/PartDocuments/2026_yilport_ga_vle_container_terminal_general_tariff.pdf"
-      page: 4
+      page: 5
       clause: '7. Storage (per TEU per Day) - 7.1 Full Containers: 8+ days SEK 135 per TEU (2 TEU per >20ft unit, section 1.3)'
       verified_on: '2026-10-01'
       verified_by: vibe-session-terminal-basis
