@@ -247,14 +247,18 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
   });
   return (
     <Box className="container">
-      <Paper className="header" elevation={3}>
-        <Typography variant="h1" component="h1">
+      {/* P3 (Stage 4 of the design overhaul, v0.19.0): the comparison view's
+          page-top header Paper is removed - one h1 per page, the app shell's
+          header in App.tsx. "Port Comparison" becomes an h2 in the content
+          area; the subtitle moves verbatim, no rewording. */}
+      <Box className="comparison-view-head">
+        <Typography variant="h2" component="h2">
           Port Comparison
         </Typography>
         <Typography variant="subtitle1">
           Same vessel, same call - one column per selected port. List-price (published tariff) basis.
         </Typography>
-      </Paper>
+      </Box>
 
       {selectedPorts.length === 0 && (
         <Paper className="comparison-section" elevation={2}>

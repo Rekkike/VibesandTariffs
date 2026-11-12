@@ -949,6 +949,28 @@ body {
   margin-bottom: var(--space-6);
 }
 
+/* Stage 4 of the design overhaul (v0.19.0), fix P3: the comparison view's
+   page-top header Paper is removed - one h1 per page, the app shell's
+   header. "Port Comparison" renders as an h2 in the content area above the
+   comparison section; the subtitle rides with it verbatim. Tokens only. */
+.comparison-view-head {
+  margin-bottom: var(--space-4);
+}
+
+.comparison-view-head h2 {
+  margin: 0;
+  font-size: var(--font-headline);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--text-primary);
+}
+
+.comparison-view-head p {
+  margin: var(--space-1) 0 0 0;
+  font-size: var(--font-caption);
+  color: var(--text-secondary);
+}
+
 /* Persistent navigation (Stage 3 of the design overhaul, the 2026-11-12
    ruling): the v0.5.0 combined "Ports" drawer is replaced by the
    always-visible segmented nav - the port selector and the comparison
@@ -1135,7 +1157,7 @@ body {
 
 .comparison-table th,
 .comparison-table td {
-  padding: var(--space-2) var(--space-3);
+  padding: var(--space-2) var(--space-4);
   border-bottom: 1px solid var(--border);
   font-variant-numeric: tabular-nums;
 }
@@ -1189,6 +1211,49 @@ body {
   min-width: 140px;
 }
 
+/* Stage 4 of the design overhaul (v0.19.0): the sticky table header, the
+   desktop table path only. The container is the scroll context (overflow-x:
+   auto above; the 140 px column floor degrades by horizontal scroll inside
+   it), so the head sticks within the container: the container gains a
+   viewport-bounded max-height and the header cells stick to its top while
+   the body scrolls. Scoped to min-width 600px - below the stacking
+   breakpoint the mobile card path renders instead and this container is
+   display: none (untouched). Tokens only. */
+@media (min-width: 600px) {
+  .comparison-table-container {
+    max-height: calc(100vh - var(--space-6) * 3);
+  }
+
+  .comparison-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+  }
+}
+
+/* Stage 4 (v0.19.0): zebra and hover row treatment, token-only colors, both
+   modes. The banded rows (stage, OPS segment, totals, estimate, discount)
+   keep their own backgrounds; the hover tint applies to every body row. */
+.comparison-table tbody tr:nth-child(even):not(.comparison-stage-row):not(.comparison-ops-segment-row):not(.comparison-total-row):not(.comparison-estimate-row):not(.comparison-discount-row) td {
+  background: var(--surface-sunken);
+}
+
+.comparison-table tbody tr:hover td {
+  background: var(--accent-tint);
+}
+
+/* Stage 4 (v0.19.0), fix P5: the quieter secondary line. Converted values,
+   per-GT and OPS-fold secondary lines render as one smaller caption-size
+   line at the text-secondary level. Wording untouched - the converted tag,
+   the approximate-sign prefix and every basis string stay verbatim; the
+   scoped selectors outrank the inline font-size on the cells, so the size
+   resolves to the token in both modes. */
+.comparison-table .comparison-secondary,
+.comparison-cards .comparison-secondary {
+  font-size: var(--font-caption);
+  line-height: 1.4;
+}
+
 .comparison-port-name {
   font-weight: 600;
   display: block;
@@ -1197,9 +1262,10 @@ body {
 .comparison-marker {
   display: inline-block;
   padding: 1px var(--space-2);
-  border-radius: var(--space-1);
+  border-radius: var(--radius-s);
   font-size: var(--font-caption);
-  font-weight: 500;
+  font-weight: 600;
+  letter-spacing: 0.02em;
   margin-top: var(--space-1);
 }
 
@@ -1413,11 +1479,23 @@ textarea:focus-visible,
 .comparison-cards {
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
+  gap: var(--space-5);
 }
 
 .comparison-port-card {
-  padding: var(--space-4);
+  padding: var(--space-5);
+}
+
+/* Stage 4 of the design overhaul (v0.19.0): mobile card styling below the
+   600 px stacking breakpoint - the transposed cards get the raised-surface
+   treatment (border, radius-m, elevation-1 token) so each port card reads
+   as one unit against the page background. The scoped selector outranks the
+   MUI Paper class so the radius and shadow resolve to the tokens in both
+   modes. The transposition contract is unchanged. Tokens only. */
+.comparison-cards .comparison-port-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-m);
+  box-shadow: var(--elevation-1);
 }
 
 .comparison-card-title {
@@ -1425,7 +1503,7 @@ textarea:focus-visible,
   align-items: baseline;
   flex-wrap: wrap;
   gap: var(--space-2);
-  margin-bottom: var(--space-3);
+  margin-bottom: var(--space-4);
   font-size: var(--font-subtitle);
   font-weight: 600;
 }
