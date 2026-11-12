@@ -76,12 +76,14 @@ const byExactId = (id: string): string => {
 // the drawer and clicks its row button (docs/SELECTION_SURFACE_AUDIT.md
 // item 0.5). Same navigation behavior, same ports.
 const clickTab = async (container: HTMLElement, tabText: string) => {
-  const toggle = container.querySelector('.port-drawer-toggle');
+  // v0.18.0 re-anchor (in-test attribution): the v0.5.0 drawer is replaced
+  // by the persistent nav - the port selector opens the navigation popover.
+  const toggle = container.querySelector('.app-nav-port');
   expect(toggle).toBeDefined();
   await act(async () => {
     toggle!.dispatchEvent(new MouseEvent('click', { bubbles: true }));
   });
-  const row = Array.from(container.querySelectorAll('.port-drawer-body button'))
+  const row = Array.from(container.querySelectorAll('.app-nav-panel button'))
     .find(b => (b.textContent ?? '').toLowerCase().includes(tabText.toLowerCase()));
   expect(row).toBeDefined();
   await act(async () => {
@@ -188,11 +190,12 @@ describe('per-port persisted call state (spec v0.2.60, port-switch reset defect 
     // v0.4.0: the fresh-load comparison selection is bounded (first four
     // registry ports); this pin's subject is the all-ports per-port merge,
     // so the remaining ports are selected via the checkbox control first.
-    // v0.5.0 re-pointing: the compare checkboxes live in the port drawer
+    // v0.18.0 re-anchor (in-test attribution): the compare checkboxes live in the nav compare panel (opened by the always-visible chip); the v0.5.0 drawer is gone.
+    // v0.5.0 re-pointing (historical): the compare checkboxes lived in the port drawer
     // (the same selection store and comparison feed; the surface moved).
-    const drawerToggle = container!.querySelector('.port-drawer-toggle')!;
+    const drawerToggle = container!.querySelector('.app-nav-compare-chip')!;
     await act(async () => { drawerToggle.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
-    const boxes = Array.from(container!.querySelectorAll('.port-drawer-body input[type="checkbox"]')) as HTMLInputElement[];
+    const boxes = Array.from(container!.querySelectorAll('.app-nav-compare-panel input[type="checkbox"]')) as HTMLInputElement[];
     // v0.5.1: the comparison cap (6) now binds on the seven-port registry,
     // so selecting every port through the drawer is capped at six - this
     // pin's subject is the per-port merge, not the cap, so the selection

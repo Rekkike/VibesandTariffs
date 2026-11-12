@@ -53,22 +53,24 @@ describe('Rotterdam out of view - the exclusion constant (spec v0.8.0, Unit 4)',
     expect(defaultCall('rotterdam').port_id ?? 'rotterdam').toBe('rotterdam');
   });
 
-  it('the app drawer lists the eight rendered ports and no Netherlands group', async () => {
+  it('the app nav lists the eight rendered ports and no Netherlands group', async () => {
     __setMobileQueryForTests(() => false);
     container = document.createElement('div');
     document.body.appendChild(container);
     root = createRoot(container);
     await act(async () => { root!.render(<App />); });
     await settle();
-    const toggle = container.querySelector('.port-drawer-toggle');
-    expect(toggle).not.toBeNull();
-    await act(async () => { toggle!.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
-    const boxes = Array.from(container.querySelectorAll('.port-drawer-body input[type="checkbox"]'));
+    // v0.18.0 re-anchor (in-test attribution): the compare chip opens the
+    // country-grouped compare panel (the v0.5.0 drawer is gone).
+    const chip = container.querySelector('.app-nav-compare-chip');
+    expect(chip).not.toBeNull();
+    await act(async () => { chip!.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    const boxes = Array.from(container.querySelectorAll('.app-nav-compare-panel input[type="checkbox"]'));
     expect(boxes).toHaveLength(8);
-    const headers = Array.from(container.querySelectorAll('.port-drawer-country-header'))
+    const headers = Array.from(container.querySelectorAll('.app-nav-compare-panel .app-nav-country-header'))
       .map(h => (h.textContent ?? '').trim());
     expect(headers).toEqual(['Denmark', 'Germany', 'Sweden']);
-    expect(container.querySelector('.port-drawer-body')!.textContent).not.toContain('Rotterdam');
+    expect(container.querySelector('.app-nav-compare-panel')!.textContent).not.toContain('Rotterdam');
   });
 
   it('the comparison over the rendered set: eight columns, no Rotterdam, Gothenburg carries the cheapest marker', async () => {

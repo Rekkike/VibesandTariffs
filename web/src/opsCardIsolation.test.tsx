@@ -47,12 +47,14 @@ const findFieldByLabel = (container: HTMLElement, label: string): HTMLInputEleme
 // SELECTION_SURFACE_AUDIT.md item 0.5); navigation opens the drawer and
 // clicks its row button. Same navigation behavior, same ports.
 const clickTab = async (container: HTMLElement, tabText: string) => {
-  const toggle = container.querySelector('.port-drawer-toggle');
+  // v0.18.0 re-anchor (in-test attribution): the v0.5.0 drawer is replaced
+  // by the persistent nav - the port selector opens the navigation popover.
+  const toggle = container.querySelector('.app-nav-port');
   expect(toggle).toBeDefined();
   await act(async () => {
     toggle!.dispatchEvent(new MouseEvent('click', { bubbles: true }));
   });
-  const row = Array.from(container.querySelectorAll('.port-drawer-body button'))
+  const row = Array.from(container.querySelectorAll('.app-nav-panel button'))
     .find(b => (b.textContent ?? '').toLowerCase().includes(tabText.toLowerCase()));
   expect(row).toBeDefined();
   await act(async () => {
@@ -71,10 +73,10 @@ const settle = async (ms = 650) => {
 // path; the cap of 6 binds on the seven-port registry, so selecting HEL
 // at cap first unchecks a port outside the pin's subject).
 const selectPortIntoComparison = async (container: HTMLElement, portName: string) => {
-  const toggle = container.querySelector('.port-drawer-toggle');
+  const toggle = container.querySelector('.app-nav-compare-chip');
   expect(toggle).toBeDefined();
   await act(async () => { toggle!.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
-  const box = Array.from(container.querySelectorAll('.port-drawer-body input[type="checkbox"]'))
+  const box = Array.from(container.querySelectorAll('.app-nav-compare-panel input[type="checkbox"]'))
     .find(i => (i.getAttribute('aria-label') ?? '').toLowerCase().includes(portName.toLowerCase())) as HTMLInputElement;
   expect(box).toBeDefined();
   if (box!.checked) return;
@@ -82,7 +84,7 @@ const selectPortIntoComparison = async (container: HTMLElement, portName: string
     // At cap: uncheck a port outside this pin's subject (never the
     // subject ports Gothenburg/Hamburg, never Bremerhaven whose figure
     // is irrelevant to the GOT/HEL isolation), then check the target.
-    const sacrificial = Array.from(container.querySelectorAll('.port-drawer-body input[type="checkbox"]'))
+    const sacrificial = Array.from(container.querySelectorAll('.app-nav-compare-panel input[type="checkbox"]'))
       .find((i): i is HTMLInputElement =>
         (i as HTMLInputElement).checked &&
         !(i.getAttribute('aria-label') ?? '').toLowerCase().includes(portName.toLowerCase()) &&
@@ -99,7 +101,7 @@ const selectPortIntoComparison = async (container: HTMLElement, portName: string
   // Close the drawer again: the drawer's own clickTab helper opens it, and
   // its toggle click would close an already-open panel (leaving the
   // navigation row unfindable).
-  const toggleNow = container.querySelector('.port-drawer-toggle');
+  const toggleNow = container.querySelector('.app-nav-compare-chip');
   await act(async () => { toggleNow!.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
 };
 
@@ -231,11 +233,12 @@ describe('card-surface OPS isolation (spec v0.2.62)', () => {
     // registry ports (spec v0.2.59 bounded default); this pin's subject is
     // the all-ports isolation, so every port is selected first (the
     // checkbox list is the explicit subset control).
-    // v0.5.0 re-pointing: the compare checkboxes live in the port drawer
+    // v0.18.0 re-anchor (in-test attribution): the compare checkboxes live in the nav compare panel (opened by the always-visible chip); the v0.5.0 drawer is gone.
+    // v0.5.0 re-pointing (historical): the compare checkboxes lived in the port drawer
     // (the same selection store and comparison feed; the surface moved).
-    const drawerToggle = container!.querySelector('.port-drawer-toggle')!;
+    const drawerToggle = container!.querySelector('.app-nav-compare-chip')!;
     await act(async () => { drawerToggle.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
-    const boxes = Array.from(container!.querySelectorAll('.port-drawer-body input[type="checkbox"]')) as HTMLInputElement[];
+    const boxes = Array.from(container!.querySelectorAll('.app-nav-compare-panel input[type="checkbox"]')) as HTMLInputElement[];
     // v0.5.1: the cap (6) binds on the seven-port registry - the isolation
     // subject (GOT vs the rest) holds inside the bounded set; the row's
     // cell count follows the selected set.

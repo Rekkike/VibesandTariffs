@@ -501,6 +501,11 @@ export const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call
 
   return (
     <>
+      {/* Sticky workspace head (Stage 3, v0.18.0): the total strip stays
+          visible while the cost breakdown scrolls, and the segment toggles
+          sit in the same head so they remain reachable without scrolling the
+          whole list. Display only - no data, no semantics. */}
+      <Box className="workspace-sticky-head">
       {/* Persistent total strip - always visible regardless of toggled page */}
       <Paper className="total-strip" elevation={2}>
         <Box className="total-strip-main">
@@ -556,6 +561,27 @@ export const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call
         </Box>
       </Paper>
 
+      {/* Segment page toggles - filter display only (moved into the
+          sticky head at v0.18.0 so they stay reachable without scrolling
+          the whole list) */}
+      <Box className="segment-toggle-bar">
+        <ToggleButtonGroup
+          value={visibleSegments}
+          onChange={(_, newValue: CostSegment[]) => setVisibleSegments(newValue)}
+          aria-label="Cost segments"
+          className="segment-toggle"
+          size="small"
+          sx={{ mt: 1, mb: 1 }}
+        >
+          {SEGMENTS.map(segment => (
+            <ToggleButton key={segment.id} value={segment.id} aria-label={segment.label}>
+              {segment.label}
+            </ToggleButton>
+          ))}
+        </ToggleButtonGroup>
+      </Box>
+      </Box>
+
       {/* Main Content */}
       <Grid container spacing={3} className="form-container">
         {/* Input Form - grouped by segment */}
@@ -586,21 +612,6 @@ export const PortWorkspace: React.FC<PortWorkspaceProps> = ({ port, vessel, call
           <Paper className="results-section" elevation={2}>
             <Typography variant="h5" component="h2">Cost Breakdown</Typography>
 
-            {/* Segment page toggles - filter display only */}
-            <ToggleButtonGroup
-              value={visibleSegments}
-              onChange={(_, newValue: CostSegment[]) => setVisibleSegments(newValue)}
-              aria-label="Cost segments"
-              className="segment-toggle"
-              size="small"
-              sx={{ mt: 2, mb: 2 }}
-            >
-              {SEGMENTS.map(segment => (
-                <ToggleButton key={segment.id} value={segment.id} aria-label={segment.label}>
-                  {segment.label}
-                </ToggleButton>
-              ))}
-            </ToggleButtonGroup>
 
             {state.isLoading ? (
               <Typography>Calculating...</Typography>

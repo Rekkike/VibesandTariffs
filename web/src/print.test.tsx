@@ -258,7 +258,11 @@ describe('print header content — the unfalsifiability rule (spec v0.6.2)', () 
         // overhaul): the bump moves the version constant v0.16.2 ->
         // v0.17.0; presentation substrate only (tokens, self-hosted font,
         // theme-color meta) — zero figure movement.
-        expect(APP_VERSION).toBe('v0.17.0');
+        // Workspace and input surfaces v0.18.0 (Stage 3 of the design
+        // overhaul): the bump moves the version constant v0.17.0 ->
+        // v0.18.0; navigation machinery and workspace chrome only — zero
+        // figure movement.
+        expect(APP_VERSION).toBe('v0.18.0');
         expect(text).toContain('Tariff year: 2026');
         expect(text).toContain('Vessel profile: MAREN MAERSK (IMO 9632129)');
         expect(text).toContain('ESI:');
@@ -406,7 +410,10 @@ describe('the export button and chrome hiding (spec v0.6.2, units 1 and 3)', () 
     root = null;
   });
 
-  it('the comparison renders the Print / Save as PDF button opening the print dialog (spec v0.6.5, unit 1)', async () => {
+  // v0.18.0 re-baseline (in-test attribution, the one ruled string change of the pass,
+  // user ruling 2026-11-12): the header control's visible label now reads
+  // 'Print comparison'.
+  it('the comparison renders the Print comparison button opening the print dialog (spec v0.6.5, unit 1)', async () => {
     const printSpy = vi.spyOn(window, 'print').mockImplementation(() => {});
     container = document.createElement('div');
     document.body.appendChild(container);
@@ -1527,7 +1534,8 @@ describe('print dialog (spec v0.6.5, unit 1)', () => {
   });
 });
 
-// Header print control (spec v0.6.5, unit 2): the Print / Save as PDF
+// Header print control (spec v0.6.5, unit 2): the Print comparison control
+// (v0.18.0 ruled label, user ruling 2026-11-12; was 'Print / Save as PDF')
 // control renders in the app header bar, in the header-controls container
 // beside the theme toggle. Red proof: removing the control turns the
 // placement pin red.
@@ -1544,7 +1552,8 @@ describe('header print control placement (spec v0.6.5, unit 2)', () => {
       // comparison on click (the printed artifact is the comparison).
       const button = container.querySelector('[data-testid="print-export-button"]') as HTMLButtonElement;
       expect(button).not.toBeNull();
-      expect(button.textContent).toBe('Print / Save as PDF');
+      // v0.18.0 re-baseline (in-test attribution): the ruled label change.
+      expect(button.textContent).toBe('Print comparison');
       const controls = button.closest('.header-controls');
       expect(controls).not.toBeNull();
       expect(controls!.querySelector('.theme-toggle')).not.toBeNull();
