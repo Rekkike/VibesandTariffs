@@ -90,7 +90,7 @@ export const muiThemeFor = (mode: ThemeMode) => {
       body2: { fontSize: typeScale.caption },
       caption: { fontSize: typeScale.caption }
     },
-    shape: { borderRadius: radiusScale.s },
+    shape: { borderRadius: Number.parseInt(radiusScale.s, 10) },
     components: {
       MuiPaper: { styleOverrides: { root: { backgroundImage: 'none' } } },
       MuiTab: { styleOverrides: { root: { minHeight: 48 } } },
