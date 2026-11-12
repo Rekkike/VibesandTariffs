@@ -1116,10 +1116,6 @@ body {
     min-width: 0;
   }
 }
-  margin: 0;
-}
-
-
 
 .comparison-basis {
   color: var(--text-secondary);
