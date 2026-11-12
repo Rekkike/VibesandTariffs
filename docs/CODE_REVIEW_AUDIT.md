@@ -224,7 +224,14 @@ setup path, 4 of 9 fixedDate pins go red under Vitest; restored green.
 Recorded for Stage 2 (effective there, per the same rulings): the lint
 layer is dropped entirely (the eslintConfig key leaves with
 react-scripts; no lint gate exists in CI and the build type-check covers
-the type signal) and the web proxy field is dropped (no server exists
+the type signal) (Superseded in place at v0.16.2, 2026-11-12, Web
+typecheck gate (worksuite ruling 2026-11-12): since v0.15.1 the vite
+build runs no tsc, so the build type-check left with react-scripts and
+nothing type-checked the web tests from v0.15.1 until v0.16.2; from
+v0.16.2 the web test:types gate (tsc --noEmit over the test-inclusive
+web/tsconfig.json, wired into tests.yml immediately before the Web
+tests step) covers the type signal. The original wording above is the
+pre-v0.16.2 record and is not rewritten.) and the web proxy field is dropped (no server exists
 in-repo; the README LAN note is updated there); Stage 2 also takes
 build.sourcemap true, an explicit 'modules' build target, and the
 Node 20 to 22 move of both workflows with vite 8/vitest 5/jsdom 31
@@ -294,6 +301,20 @@ read-only in the scratch copy and queued as its own record item: web
 tsc --noEmit reports 75 errors, all in *.test.* files, all TS2304/TS2582
 missing vitest-globals names (the gap dates from v0.15.1, when the CRA
 build type-check left with react-scripts); no web change in this pass.
+(Superseded in place at v0.16.2, 2026-11-12, Web typecheck gate
+(worksuite ruling 2026-11-12): the 75 figure was an undercount of the
+same class and the same cure. The full observation of record at e09b484
+is 3,421 error lines across exactly 60 web test files — 2,561 TS2304
+(expect 2,497, afterEach 55, beforeEach 8, beforeAll 1) and 858 TS2582
+(it 690, describe 168), all vitest-globals names — plus two
+out-of-class items: TS7006 at helsingborgServices.test.tsx(88,70),
+downstream of the unresolved it.each and vanishing with the globals
+fix, and TS1501 at handlingBasis.test.tsx(214,71), a dotAll regex flag
+against target es5, adjudicated to a target es2020 raise (the build's
+own target of record, vite.config.ts build.target es2020; the es2018
+minimum and a test-regex rewrite were both ruled out). The record item
+is closed at §12 below. The original line is the v0.16.0 record and is
+not rewritten.)
 Vite copies ruling: the two post-migration vite copies (core and web,
 both 8.3.8) are accepted as is — same version, no duplicate majors.
 npm audit observed in the /tmp copy: before 7 low / 0 production at
@@ -332,3 +353,53 @@ Correction delivered at v0.16.1: APP_VERSION v0.16.1, print pin, spec
 header, one PATCH row; incident note adjacent to the spec changelog table;
 this row. Nothing re-run or hidden: any queued c4cae55 Tests run that
 executed shows the honest red record of this incident.
+
+## 12. Web typecheck gate record (v0.16.2, 2026-11-12, branch
+## `vibe/web-typecheck-v0162-e09b484` from main e09b484)
+
+Closes the §10 record item (the web typecheck gap queued at v0.16.0,
+dating from v0.15.1, when the CRA build type-check left with
+react-scripts). Observation of record, the pass's red proof at base
+e09b484 in the /tmp build copy (tsc 5.9.3 --noEmit -p web/tsconfig.json,
+exit 2): 3,421 error lines across exactly 60 web test files, all
+web/src/*.test.* — 2,561 TS2304 (expect 2,497, afterEach 55, beforeEach
+8, beforeAll 1) and 858 TS2582 (it 690, describe 168), all
+vitest-globals names — plus two out-of-class items adjudicated by the
+worksuite ruling of 2026-11-12: TS7006 at helsingborgServices.test.tsx
+(88,70), accepted as downstream of the unresolved it.each (vanishes
+with the globals fix, observed), and TS1501 at handlingBasis.test.tsx
+(214,71), a dotAll regex flag against target es5, ruled to a target
+es2020 raise — the type-check language level matches the build's own
+target of record (vite.config.ts build.target es2020); the es2018
+minimum and a test-regex rewrite were both ruled out. The v0.16.0
+scratch's 75-error figure was an undercount of the same class and the
+same cure; superseded in place above per the same ruling. The fix:
+web/tsconfig.json gains "types": ["node", "vitest/globals"] (the
+existing include already covers src, so the tests are in scope) and
+target es5 -> es2020; web/package.json gains the test:types script
+(tsc --noEmit) and declares typescript ^5.9.3 in devDependencies
+(aligned to the root 5.9.3 line, the v0.13.3 js-yaml declare-what-you-
+use precedent; the lockfile gains exactly one line, the web workspace
+entry — the hoisted root typescript 5.9.3 satisfies the range, no
+duplicate); .github/workflows/tests.yml gains a "Web typecheck" step
+immediately before "Web tests", mirroring the Core typecheck step with
+an in-workflow attribution comment naming v0.16.2. Type resolution
+verified by traceResolution: vitest/globals resolves to
+web/node_modules/vitest/globals.d.ts (web-local vitest 5.1.0);
+@types/node resolves to the hoisted root node_modules/@types/node
+26.6.2 through the workspaces walk, so no @types/node declaration was
+needed in web/package.json. Gate green at the post-fix state
+(cd web && npm run test:types, tsc --noEmit exit 0); the base state
+itself is the red proof (3,421 errors, exit 2). Bundle red proof: at
+unchanged version v0.16.1 with the new tsconfig, vite build reproduces
+assets/index-BlIV8-wy.js (sha256
+80bf45915d65cb222e8491e22ecf51463de10c36992af4b8a838c85abe22d1a4) and
+assets/index-CPM43X7J.css (sha256
+a6b8ef14341dc4c52c7d380d9e78f1306f666db673b97f2a591a03d089b3a83e)
+byte-identically — the target raise is types-only, zero bundle
+movement. Counts hold: web 693/693 across 60 re-run chunked after the
+gate (106+131+97+114+160+40+45, exact-path anchors), core untouched
+(zero core/ files in the diff) 902/41. npm audit in the /tmp copy
+after the lockfile regen: 0 full / 0 production. The version ritual
+v0.16.2 and the full verification ledger sit in the spec changelog row
+0.16.2.
