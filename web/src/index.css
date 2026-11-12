@@ -949,6 +949,28 @@ body {
   margin-bottom: var(--space-6);
 }
 
+/* Stage 4 of the design overhaul (v0.19.0), fix P3: the comparison view's
+   page-top header Paper is removed - one h1 per page, the app shell's
+   header. "Port Comparison" renders as an h2 in the content area above the
+   comparison section; the subtitle rides with it verbatim. Tokens only. */
+.comparison-view-head {
+  margin-bottom: var(--space-4);
+}
+
+.comparison-view-head h2 {
+  margin: 0;
+  font-size: var(--font-headline);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--text-primary);
+}
+
+.comparison-view-head p {
+  margin: var(--space-1) 0 0 0;
+  font-size: var(--font-caption);
+  color: var(--text-secondary);
+}
+
 /* Persistent navigation (Stage 3 of the design overhaul, the 2026-11-12
    ruling): the v0.5.0 combined "Ports" drawer is replaced by the
    always-visible segmented nav - the port selector and the comparison
