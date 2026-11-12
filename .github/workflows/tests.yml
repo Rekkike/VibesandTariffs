@@ -45,6 +45,15 @@ jobs:
       - name: Install web dependencies
         run: cd web && npm ci
 
+      # Web typecheck gate (v0.16.2, 2026-11-12, worksuite ruling of the
+      # same date): since v0.16.2 the web tests are type-checked again by
+      # tsc --noEmit over the test-inclusive web/tsconfig.json (types node +
+      # vitest/globals, target es2020), mirroring the Core typecheck step
+      # above (the spec v0.16.0 precedent); the gap dated from v0.15.1,
+      # when the CRA build type-check left with react-scripts.
+      - name: Web typecheck
+        run: cd web && npm run test:types
+
       # Web tests run under Vitest since v0.15.0 (spec section 12.4,
       # superseded in place there): web/ npm test is `vitest run`, already a
       # single run; fileParallelism:false in web/vitest.config.ts is the
