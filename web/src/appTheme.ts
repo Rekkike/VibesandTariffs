@@ -8,6 +8,7 @@ import {
   STACKING_MEDIA_QUERY,
   MediaQueryHook
 } from './responsive';
+import { paletteFor, fontFamily, typeScale, radiusScale } from './designTokens';
 
 // Theme hooks and the MUI bridge (spec v0.2.60 decomposition, audit item B):
 // extracted from App.tsx verbatim - the stored-preference hook, the
@@ -46,45 +47,50 @@ export const useIsMobile = (): boolean => {
 export const __setMobileQueryForTests = (hook: MediaQueryHook | null) => {
   injectedMobileQuery = hook;
 };
-// MUI palette bridged to the same tokens so MUI components follow the theme.
+// MUI palette bridged to the design tokens so MUI components follow the
+// theme: every value below is read from designTokens.ts, the single source
+// of truth (its :root blocks in index.css are the mirrored CSS face).
 // Breakpoints (spec v0.2.39 Responsive Layout): sm is the stacking threshold
 // (600 px - the responsive.ts contract constant); the minimum supported
 // viewport is 360 px. MUI xs is widened to the contract floor so grid
 // gutters never squeeze below it.
-export const muiThemeFor = (mode: ThemeMode) => createTheme({
-  breakpoints: {
-    values: { xs: MIN_SUPPORTED_VIEWPORT_PX, sm: STACKING_BREAKPOINT_PX, md: 900, lg: 1200, xl: 1536 }
-  },
-  palette: {
-    mode,
-    primary: { main: mode === 'dark' ? '#6ea8fe' : '#0b57d0' },
-    background: {
-      default: mode === 'dark' ? '#16191d' : '#f4f5f6',
-      paper: mode === 'dark' ? '#1f2429' : '#ffffff'
+export const muiThemeFor = (mode: ThemeMode) => {
+  const t = paletteFor(mode);
+  return createTheme({
+    breakpoints: {
+      values: { xs: MIN_SUPPORTED_VIEWPORT_PX, sm: STACKING_BREAKPOINT_PX, md: 900, lg: 1200, xl: 1536 }
     },
-    text: {
-      primary: mode === 'dark' ? '#eceeef' : '#1a1e22',
-      secondary: mode === 'dark' ? '#a7b0b7' : '#4d5860'
+    palette: {
+      mode,
+      primary: { main: t.accent },
+      background: {
+        default: t.surface,
+        paper: t.surfaceRaised
+      },
+      text: {
+        primary: t.textPrimary,
+        secondary: t.textSecondary
+      },
+      divider: t.border
     },
-    divider: mode === 'dark' ? '#3a4148' : '#cdd2d8'
-  },
-  typography: {
-    fontFamily: "'IBM Plex Sans', -apple-system, 'Segoe UI', Roboto, sans-serif",
-    h1: { fontSize: '20px', fontWeight: 600 },
-    h2: { fontSize: '16px', fontWeight: 600 },
-    h3: { fontSize: '16px', fontWeight: 600 },
-    h5: { fontSize: '16px', fontWeight: 600 },
-    h6: { fontSize: '16px', fontWeight: 600 },
-    subtitle1: { fontSize: '14px' },
-    subtitle2: { fontSize: '12px' },
-    body1: { fontSize: '14px' },
-    body2: { fontSize: '12px' },
-    caption: { fontSize: '12px' }
-  },
-  shape: { borderRadius: 4 },
-  components: {
-    MuiPaper: { styleOverrides: { root: { backgroundImage: 'none' } } },
-    MuiTab: { styleOverrides: { root: { minHeight: 48 } } },
-    MuiToggleButton: { styleOverrides: { root: { minHeight: 40 } } }
-  }
-});
+    typography: {
+      fontFamily,
+      h1: { fontSize: typeScale.headline, fontWeight: 600 },
+      h2: { fontSize: typeScale.subtitle, fontWeight: 600 },
+      h3: { fontSize: typeScale.subtitle, fontWeight: 600 },
+      h5: { fontSize: typeScale.subtitle, fontWeight: 600 },
+      h6: { fontSize: typeScale.subtitle, fontWeight: 600 },
+      subtitle1: { fontSize: typeScale.body },
+      subtitle2: { fontSize: typeScale.caption },
+      body1: { fontSize: typeScale.body },
+      body2: { fontSize: typeScale.caption },
+      caption: { fontSize: typeScale.caption }
+    },
+    shape: { borderRadius: radiusScale.s },
+    components: {
+      MuiPaper: { styleOverrides: { root: { backgroundImage: 'none' } } },
+      MuiTab: { styleOverrides: { root: { minHeight: 48 } } },
+      MuiToggleButton: { styleOverrides: { root: { minHeight: 40 } } }
+    }
+  });
+};

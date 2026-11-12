@@ -14,6 +14,9 @@
    Theme: semantic tokens on :root; dark default; light mapped over the same
    token names (one design, two palettes). Toggle persisted in localStorage;
    prefers-color-scheme: light respected only absent a stored preference.
+   Token source of truth: web/src/designTokens.ts — the :root blocks below are
+   its mirrored CSS face; extend a token there, mirror the value here, never
+   rename an existing token name.
    ========================================================================== */
 
 :root {
@@ -26,16 +29,17 @@
   --text-primary: #eceeef;
   --text-secondary: #a7b0b7;
   --text-disabled: #6a737b;
-  --accent: #6ea8fe;
-  --accent-hover: #8cbcff;
+  --accent: #5c9dff;
+  --accent-hover: #8db9ff;
+  --on-accent: #0b1a2e;
   --positive: #5cd6a9;
   --warning: #e8c268;
   --error: #ff8f8f;
   --warning-tint: rgba(232, 194, 104, 0.12);
   --positive-tint: rgba(92, 214, 169, 0.12);
   --error-tint: rgba(255, 143, 143, 0.12);
-  --accent-tint: rgba(110, 168, 254, 0.14);
-  --focus-ring: #8cbcff;
+  --accent-tint: rgba(92, 157, 255, 0.14);
+  --focus-ring: #8db9ff;
   /* Modal shadow (v0.6.5 close repair): the print dialog's elevation as a
      token - the v0.2.51 theme discipline keeps every color literal inside
      the :root blocks. */
@@ -57,6 +61,19 @@
   --font-headline: 20px;
   --font-display: 28px;
 
+  /* Radius scale, three-level elevation, density (a token, never a user
+     lever; 1 is the shipped density) and the font stack — IBM Plex Sans is
+     self-hosted (assets/fonts/plex-sans, woff2, SIL OFL 1.1), the system
+     stack stays the fallback. Values mirror designTokens.ts. */
+  --radius-s: 6px;
+  --radius-m: 10px;
+  --radius-l: 14px;
+  --elevation-1: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --elevation-2: 0 4px 14px rgba(0, 0, 0, 0.35);
+  --elevation-3: 0 12px 32px rgba(0, 0, 0, 0.45);
+  --density: 1;
+  --font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+
   color-scheme: dark;
 }
 
@@ -70,24 +87,27 @@
   --text-primary: #1a1e22;
   --text-secondary: #4d5860;
   --text-disabled: #8b949d;
-  --accent: #0b57d0;
-  --accent-hover: #0843a4;
+  --accent: #0a52c9;
+  --accent-hover: #083e9c;
+  --on-accent: #ffffff;
   --positive: #0e7245;
   --warning: #8a5a00;
   --error: #b3232e;
   --warning-tint: rgba(138, 90, 0, 0.09);
   --positive-tint: rgba(14, 114, 69, 0.08);
   --error-tint: rgba(179, 35, 46, 0.08);
-  --accent-tint: rgba(11, 87, 208, 0.08);
-  --focus-ring: #0b57d0;
+  --accent-tint: rgba(10, 82, 201, 0.08);
+  --focus-ring: #0a52c9;
+  --elevation-1: 0 1px 2px rgba(20, 30, 45, 0.06);
+  --elevation-2: 0 4px 14px rgba(20, 30, 45, 0.08);
+  --elevation-3: 0 12px 32px rgba(20, 30, 45, 0.12);
 
   color-scheme: light;
 }
 
 body {
   margin: 0;
-  font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI',
-    'Roboto', 'Helvetica Neue', sans-serif;
+  font-family: var(--font-family);
   font-size: var(--font-body);
   line-height: 1.5;
   background-color: var(--surface);
