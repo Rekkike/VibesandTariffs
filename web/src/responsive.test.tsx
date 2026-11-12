@@ -556,3 +556,23 @@ describe('comparison-table fit contract (spec v0.2.43)', () => {
     __setMobileQueryForTests(null);
   });
 });
+
+// v0.18.1 mobile workspace head fix (user report 2026-11-12, adjudicated):
+// below the 600 px stacking breakpoint the sticky workspace head must NOT
+// stick - the rule below pins the unstuck treatment in the screen media
+// block, so a future pass that removes it goes red. The desktop treatment
+// at and above 600 px is pinned unchanged in the same test.
+describe('workspace sticky head responsive treatment (v0.18.1)', () => {
+  it('below 599.95 px the workspace sticky head is unstuck (position: static, z-index: auto); at and above 600 px it stays sticky at top var(--space-2) with z-index 6', () => {
+    const mobileBlocks = cssSource.match(/@media \(max-width: 599\.95px\) \{[\s\S]*?\n\}/g) ?? [];
+    const block = mobileBlocks.find(b => b.includes('.workspace-sticky-head'));
+    expect(block).toBeDefined();
+    expect(block).toMatch(/\.workspace-sticky-head\s*\{\s*position:\s*static;\s*z-index:\s*auto;\s*\}/);
+    // The desktop rule outside the media block is unchanged.
+    const desktopRule = cssSource.match(/\.workspace-sticky-head\s*\{[^}]*\}/);
+    expect(desktopRule).not.toBeNull();
+    expect(desktopRule![0]).toMatch(/position:\s*sticky/);
+    expect(desktopRule![0]).toMatch(/top:\s*var\(--space-2\)/);
+    expect(desktopRule![0]).toMatch(/z-index:\s*6/);
+  });
+});

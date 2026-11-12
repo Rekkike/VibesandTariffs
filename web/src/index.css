@@ -1634,6 +1634,19 @@ textarea:focus-visible,
   .comparison-table-container {
     display: none;
   }
+
+  /* v0.18.1 mobile workspace head fix (user report 2026-11-12, confirmed at
+     source): below the stacking breakpoint the sticky workspace head does
+     NOT stick - it scrolls with the column, restoring the pre-v0.18.0
+     mobile behavior. Without this rule the ~300-400 px head (Grand Total,
+     reset control, OPS/estimate/segment lines, segment toggle bar) pins at
+     the viewport top for the whole cost-breakdown scroll and covers roughly
+     40 percent of a phone screen. At and above 600 px the desktop treatment
+     is unchanged (position: sticky; top: var(--space-2); z-index: 6). */
+  .workspace-sticky-head {
+    position: static;
+    z-index: auto;
+  }
 }
 
 /* Contract floor: 360 px — no element may overflow or force page-level
