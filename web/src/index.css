@@ -1479,11 +1479,23 @@ textarea:focus-visible,
 .comparison-cards {
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
+  gap: var(--space-5);
 }
 
 .comparison-port-card {
-  padding: var(--space-4);
+  padding: var(--space-5);
+}
+
+/* Stage 4 of the design overhaul (v0.19.0): mobile card styling below the
+   600 px stacking breakpoint - the transposed cards get the raised-surface
+   treatment (border, radius-m, elevation-1 token) so each port card reads
+   as one unit against the page background. The scoped selector outranks the
+   MUI Paper class so the radius and shadow resolve to the tokens in both
+   modes. The transposition contract is unchanged. Tokens only. */
+.comparison-cards .comparison-port-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-m);
+  box-shadow: var(--elevation-1);
 }
 
 .comparison-card-title {
@@ -1491,7 +1503,7 @@ textarea:focus-visible,
   align-items: baseline;
   flex-wrap: wrap;
   gap: var(--space-2);
-  margin-bottom: var(--space-3);
+  margin-bottom: var(--space-4);
   font-size: var(--font-subtitle);
   font-weight: 600;
 }
