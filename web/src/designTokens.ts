@@ -30,6 +30,21 @@ export const typeScale = {
 } as const;
 export const radiusScale = { s: '6px', m: '10px', l: '14px' } as const;
 export const density = '1';
+// Motion: MUI's default transition durations, routed through the theme so
+// they are theme-sourced (muiThemeFor spreads this into
+// transitions.duration; the values are unchanged - zero behavior change).
+// The prefers-reduced-motion media query in index.css collapses the CSS
+// chrome transitions.
+export const motion = {
+  duration: {
+    shortest: 150,
+    shorter: 200,
+    standard: 300,
+    complex: 375,
+    enteringScreen: 225,
+    leavingScreen: 195
+  }
+} as const;
 
 // Mode-dependent palette tokens. Keys map to the CSS custom property names
 // in the :root blocks (--accent, --accent-hover, ...).

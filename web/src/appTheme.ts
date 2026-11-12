@@ -8,7 +8,7 @@ import {
   STACKING_MEDIA_QUERY,
   MediaQueryHook
 } from './responsive';
-import { paletteFor, fontFamily, typeScale, radiusScale } from './designTokens';
+import { paletteFor, fontFamily, typeScale, radiusScale, motion } from './designTokens';
 
 // Theme hooks and the MUI bridge (spec v0.2.60 decomposition, audit item B):
 // extracted from App.tsx verbatim - the stored-preference hook, the
@@ -91,6 +91,9 @@ export const muiThemeFor = (mode: ThemeMode) => {
       caption: { fontSize: typeScale.caption }
     },
     shape: { borderRadius: Number.parseInt(radiusScale.s, 10) },
+    // Transition durations routed through the theme from the motion token
+    // set (the values are MUI's defaults - zero behavior change).
+    transitions: { duration: { ...motion.duration } },
     components: {
       MuiPaper: { styleOverrides: { root: { backgroundImage: 'none' } } },
       MuiTab: { styleOverrides: { root: { minHeight: 48 } } },

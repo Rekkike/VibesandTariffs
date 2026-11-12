@@ -778,6 +778,23 @@ body {
   color: var(--text-secondary);
 }
 
+/* Sticky workspace head (Stage 3, v0.18.0): the total strip stays visible
+   while the cost breakdown scrolls, and the segment toggle bar rides in the
+   same head so the toggles remain reachable without scrolling the whole
+   list. Display only - no data, no semantics. Tokens only. */
+.workspace-sticky-head {
+  position: sticky;
+  top: var(--space-2);
+  z-index: 6;
+}
+
+.segment-toggle-bar {
+  display: flex;
+  align-items: center;
+  padding: var(--space-1) 0;
+  background: var(--surface);
+}
+
 /* ====================== Biller / segment sections ====================== */
 
 .biller-section {
@@ -1290,6 +1307,22 @@ body {
 
 code {
   font-family: 'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace;
+}
+
+/* Reduced motion (Stage 3, v0.18.0): under prefers-reduced-motion the
+   chrome's transitions collapse to none. The chevron transitions are inline
+   in the components, so !important is required to override them; MUI's own
+   transition durations are routed through the theme (the motion set in
+   designTokens.ts, consumed by muiThemeFor). */
+@media (prefers-reduced-motion: reduce) {
+  .app-nav-chevron,
+  .disclosure-chevron,
+  .theme-toggle,
+  .btn,
+  .workspace-reset,
+  .print-export-button {
+    transition: none !important;
+  }
 }
 
 /* ========================= Global focus policy ========================= */
