@@ -29,6 +29,10 @@ export const useAppTheme = (): [ThemeMode, () => void] => {
   useEffect(() => {
     persistTheme(localStorage, mode);
     document.documentElement.dataset.theme = mode;
+    // The browser chrome color follows the active mode; both modes' values
+    // live in designTokens.ts (themeColor per palette).
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute('content', paletteFor(mode).themeColor);
   }, [mode]);
   const toggle = () => setMode(m => (m === 'dark' ? 'light' : 'dark'));
   return [mode, toggle];
