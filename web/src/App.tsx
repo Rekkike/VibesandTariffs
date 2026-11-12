@@ -13,14 +13,14 @@ import { APP_VERSION } from './version';
 import { LOADED_PORTS } from './portRegistry';
 import { PortWorkspace } from './portWorkspace';
 import { ComparisonView } from './comparisonView';
-import { PortDrawer } from './portDrawer';
+import { AppNav } from './appNav';
 
 // Public surface (spec v0.2.60 decomposition): the views and the test seam
 // are re-exported so every existing import from './App' is unchanged.
 export { __setMobileQueryForTests } from './appTheme';
 export { PortWorkspace } from './portWorkspace';
 export { ComparisonView } from './comparisonView';
-export { PortDrawer, groupPortsByCountry, COMPARISON_SELECTION_CAP, COMPARISON_CAP_MESSAGE } from './portDrawer';
+export { AppNav, groupPortsByCountry, COMPARISON_SELECTION_CAP, COMPARISON_CAP_MESSAGE } from './appNav';
 
 // Navigation pages per spec v0.2.17 section 4.3.1: per-port workspaces plus a
 // distinct comparison screen. Per-port separation is required as soon as a
@@ -239,11 +239,13 @@ const App: React.FC = () => {
         </Box>
       </Paper>
 
-      {/* Persistent port selector (spec v0.5.0 selection-surface
-          redesign): the horizontal tab list is replaced by the
-          country-grouped collapsible drawer - one "Ports" control,
-          navigation and the compare checkboxes carried inside it. */}
-      <PortDrawer
+      {/* Persistent navigation (Stage 3 of the design overhaul, the
+          2026-11-12 ruling): the v0.5.0 combined "Ports" drawer is
+          replaced by the always-visible segmented nav - the port selector
+          and the comparison entry in the bar, the country-grouped popovers
+          carrying navigation and the compare checkboxes, and the visible
+          n/6 compare chip. The selection model is unchanged. */}
+      <AppNav
         ports={LOADED_PORTS}
         page={page}
         onNavigate={setPage}

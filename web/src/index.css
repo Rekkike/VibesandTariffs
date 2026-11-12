@@ -926,107 +926,176 @@ body {
   margin-bottom: var(--space-6);
 }
 
-/* Port drawer (spec v0.5.0 selection-surface redesign): the collapsed
-   "Ports" control and its country-grouped panel replace the horizontal
-   tab list. Tokens only (the v0.2.51 discipline). */
-.port-drawer {
-  padding: 0;
-}
-
-.port-drawer-toggle {
+/* Persistent navigation (Stage 3 of the design overhaul, the 2026-11-12
+   ruling): the v0.5.0 combined "Ports" drawer is replaced by the
+   always-visible segmented nav - the port selector and the comparison
+   entry in the bar, country-grouped popovers for navigation and for the
+   compare selection, and the visible n/6 compare chip. Tokens only (the
+   v0.2.51 discipline). The .port-nav root class is kept: the @media print
+   chrome suppression pins it. */
+.app-nav {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: var(--space-3);
-  width: 100%;
-  padding: var(--space-3) var(--space-4);
-  background: none;
-  border: none;
-  border-bottom: 1px solid var(--border);
-  color: var(--text-primary);
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+}
+
+.app-nav button {
   font: inherit;
-  font-weight: 600;
   cursor: pointer;
 }
 
-.port-drawer-toggle:focus-visible {
-  outline: 2px solid var(--focus-ring);
-  outline-offset: -2px;
+.app-nav-port,
+.app-nav-compare,
+.app-nav-compare-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background: none;
+  border: 1px solid transparent;
+  border-radius: var(--radius-s);
+  color: var(--text-primary);
+  font-weight: 600;
 }
 
-.port-drawer-summary {
+.app-nav-port {
+  border-color: var(--border);
+}
+
+.app-nav-compare-chip {
+  margin-left: auto;
+  border-color: var(--border);
+  background: var(--surface-raised);
   color: var(--text-secondary);
   font-weight: 400;
-  font-size: var(--font-caption);
 }
 
-.port-drawer-chevron {
-  margin-left: auto;
+.app-nav-chip-count {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.app-nav-chevron {
   color: var(--text-secondary);
+  transition: transform 150ms;
 }
 
-.port-drawer-body {
+.app-nav-port:focus-visible,
+.app-nav-compare:focus-visible,
+.app-nav-compare-chip:focus-visible,
+.app-nav-item:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 1px;
+}
+
+.app-nav-row-active {
+  background: var(--accent-tint);
+  color: var(--accent);
+}
+
+.app-nav-panel,
+.app-nav-compare-panel {
+  position: absolute;
+  top: calc(100% + var(--space-1));
+  left: var(--space-3);
+  z-index: 10;
+  min-width: 240px;
+  max-height: 70vh;
+  overflow-y: auto;
   padding: var(--space-3) var(--space-4) var(--space-4);
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-m);
+  box-shadow: var(--elevation-2);
 }
 
-.port-drawer-country {
+.app-nav-compare-panel {
+  right: var(--space-3);
+  left: auto;
+}
+
+.app-nav-country {
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
 }
 
-.port-drawer-country-header {
+.app-nav-country-header {
   color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
 
-.port-drawer-row {
+.app-nav-item,
+.app-nav-compare-row {
+  text-align: left;
+  padding: var(--space-2) var(--space-3);
+  background: none;
+  border: none;
+  border-radius: var(--radius-s);
+  color: var(--text-primary);
+  font: inherit;
+}
+
+.app-nav-compare-row {
   display: flex;
   align-items: center;
   gap: var(--space-3);
   flex-wrap: wrap;
 }
 
-.port-drawer-nav,
-.port-drawer-row.port-drawer-row-only-nav {
+.app-nav-compare-name {
   flex: 1 1 auto;
-  text-align: left;
-  padding: var(--space-2) var(--space-3);
-  background: none;
-  border: none;
-  border-radius: var(--space-1);
-  color: var(--text-primary);
-  font: inherit;
-  cursor: pointer;
 }
 
-.port-drawer-nav:focus-visible {
-  outline: 2px solid var(--focus-ring);
-  outline-offset: 1px;
-}
-
-.port-drawer-row-active {
-  background: var(--accent-tint);
-  color: var(--accent);
-}
-
-.port-drawer-compare {
+.app-nav-compare-check {
   margin-right: 0;
 }
 
-.port-drawer-count,
-.port-drawer-cap-message {
+.app-nav-count,
+.app-nav-cap-message {
   color: var(--text-secondary);
   font-size: var(--font-caption);
   margin: 0;
 }
 
-.port-drawer-cap-message {
+.app-nav-cap-message {
   color: var(--warning);
 }
+
+/* The nav bar wraps within the 360/600 responsive contract: below the
+   stacking breakpoint the segments wrap and the chip keeps its count
+   visible; the contract floor itself is unchanged (responsive.ts). */
+@media (max-width: 599.95px) {
+  .app-nav {
+    gap: var(--space-1);
+    padding: var(--space-1) var(--space-2);
+  }
+
+  .app-nav-port,
+  .app-nav-compare,
+  .app-nav-compare-chip {
+    padding: var(--space-2);
+    font-size: var(--font-caption);
+  }
+
+  .app-nav-panel,
+  .app-nav-compare-panel {
+    left: var(--space-2);
+    right: var(--space-2);
+    min-width: 0;
+  }
+}
+  margin: 0;
+}
+
 
 
 .comparison-basis {

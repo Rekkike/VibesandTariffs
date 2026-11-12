@@ -89,36 +89,44 @@ describe('accessibility floor (WCAG 2.2 AA, v0.2.25–v0.2.32 surfaces)', () => 
   // aria-controls bound to the panel it opens, no click-only divs. The
   // drawer module is in the appSource union; its aria contract is asserted
   // here per the disclosureCard conventions above.
-  it('the port drawer toggle is a native button carrying aria-expanded and aria-controls bound to its panel (v0.5.0)', () => {
-    const drawerSource = fs.readFileSync(path.join(__dirname, 'portDrawer.tsx'), 'utf8');
-    const idx = drawerSource.search(/aria-expanded=\{open\}\s*aria-controls=\{panelId\}/);
+  // v0.18.0 re-anchor (in-test attribution): the v0.5.0 drawer is replaced
+  // by the persistent segmented nav (appNav.tsx) - the same disclosure
+  // contract pins against its popovers: native buttons, aria-expanded and
+  // aria-controls bound to the panel they open, Escape closes, no click-only
+  // divs.
+  it('the nav port selector is a native button carrying aria-expanded and aria-controls bound to its popover', () => {
+    const navSource = fs.readFileSync(path.join(__dirname, 'appNav.tsx'), 'utf8');
+    const idx = navSource.search(/aria-expanded=\{navOpen\}\s*aria-controls=\{navPanelId\}/);
     expect(idx).toBeGreaterThan(-1);
-    const surrounding = drawerSource.slice(Math.max(0, idx - 500), idx);
-    expect(surrounding).toMatch(/<button\s+type="button"\s+className="port-drawer-toggle"/);
-    // The panel the toggle references carries the id the control names
-    expect(drawerSource).toMatch(/id=\{panelId\}\s+className="port-drawer-body"/);
-    // The panel id is the literal the toggle names
-    expect(drawerSource).toMatch(/const panelId = 'port-drawer-panel'/);
+    const surrounding = navSource.slice(Math.max(0, idx - 500), idx);
+    expect(surrounding).toMatch(/<button\s+type="button"\s+className="app-nav-port"/);
+    // The popover the selector references carries the id the control names
+    expect(navSource).toMatch(/id=\{navPanelId\}\s+className="app-nav-panel"/);
+    // The popover id is the literal the selector names
+    expect(navSource).toMatch(/const navPanelId = 'app-nav-panel'/);
   });
-  it('the drawer closes on Escape and on navigation, and its open state is component-local (never global)', () => {
-    const drawerSource = fs.readFileSync(path.join(__dirname, 'portDrawer.tsx'), 'utf8');
-    expect(drawerSource).toMatch(/if \(e\.key === 'Escape' && open\)/);
-    expect(drawerSource).toMatch(/setOpen\(false\);\s*onNavigate\(target\)/);
-    expect(drawerSource).toMatch(/const \[open, setOpen\] = useState\(false\)/);
-    const moduleLevel = /let\s+drawerOpen/.test(drawerSource);
+  it('the nav popovers close on Escape and on navigation, and their open state is component-local (never global)', () => {
+    const navSource = fs.readFileSync(path.join(__dirname, 'appNav.tsx'), 'utf8');
+    expect(navSource).toMatch(/if \(e\.key === 'Escape' && \(navOpen \|\| compareOpen\)\)/);
+    expect(navSource).toMatch(/setNavOpen\(false\);/);
+    expect(navSource).toMatch(/onNavigate\(target\)/);
+    expect(navSource).toMatch(/const \[navOpen, setNavOpen\] = useState\(false\)/);
+    expect(navSource).toMatch(/const \[compareOpen, setCompareOpen\] = useState\(false\)/);
+    const moduleLevel = /let\s+(navOpen|compareOpen)/.test(navSource);
     expect(moduleLevel).toBe(false);
   });
-  it('the drawer rows are native buttons and the compare checkboxes carry programmatic labels (no click-only divs)', () => {
-    const drawerSource = fs.readFileSync(path.join(__dirname, 'portDrawer.tsx'), 'utf8');
-    expect(drawerSource).toMatch(/className=\{`port-drawer-nav\$\{/);
-    expect(drawerSource).toMatch(/'aria-label': `Compare \$\{portLabel\(port\)\}`/);
+  it('the nav rows are native buttons and the compare checkboxes carry programmatic labels (no click-only divs)', () => {
+    const navSource = fs.readFileSync(path.join(__dirname, 'appNav.tsx'), 'utf8');
+    expect(navSource).toMatch(/className=\{`app-nav-item\$\{/);
+    expect(navSource).toMatch(/'aria-label': `Compare \$\{portLabel\(port\)\}`/);
     // The disabled-by-cap checkbox discloses its reason (title), never a
     // silent disable
-    expect(drawerSource).toMatch(/title=\{disabledByCap \? COMPARISON_CAP_MESSAGE : undefined\}/);
+    expect(navSource).toMatch(/title=\{disabledByCap \? COMPARISON_CAP_MESSAGE : undefined\}/);
   });
-  it('the drawer keeps the global focus-visible policy (focus ring on every drawer control)', () => {
-    expect(cssSource).toMatch(/\.port-drawer-toggle:focus-visible/);
-    expect(cssSource).toMatch(/\.port-drawer-nav:focus-visible/);
+  it('the nav keeps the global focus-visible policy (focus ring on every nav control)', () => {
+    expect(cssSource).toMatch(/\.app-nav-port:focus-visible/);
+    expect(cssSource).toMatch(/\.app-nav-item:focus-visible/);
+    expect(cssSource).toMatch(/\.app-nav-compare-chip:focus-visible/);
   });
 });
 

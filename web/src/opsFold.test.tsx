@@ -315,10 +315,12 @@ describe('GOT per-GT OPS fold — the workspace surface (spec v0.2.70)', () => {
   // the drawer and clicks its row button (docs/SELECTION_SURFACE_AUDIT.md
   // item 0.5). Same navigation behavior, same ports.
   const clickTab = async (c: HTMLElement, tabText: string) => {
-    const toggle = c.querySelector('.port-drawer-toggle');
+    // v0.18.0 re-anchor (in-test attribution): the persistent nav's port
+    // selector opens the navigation popover (the v0.5.0 drawer is gone).
+    const toggle = c.querySelector('.app-nav-port');
     expect(toggle).toBeDefined();
     await act(async () => { toggle!.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
-    const row = Array.from(c.querySelectorAll('.port-drawer-body button'))
+    const row = Array.from(c.querySelectorAll('.app-nav-panel button'))
       .find(b => (b.textContent ?? '').toLowerCase().includes(tabText.toLowerCase()));
     expect(row).toBeDefined();
     await act(async () => { row!.dispatchEvent(new MouseEvent('click', { bubbles: true })); });

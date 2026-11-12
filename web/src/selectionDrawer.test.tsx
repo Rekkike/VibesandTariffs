@@ -1,3 +1,5 @@
+// v0.18.0 re-anchor (in-test attribution): the v0.5.0 combined drawer is replaced by the persistent segmented nav (appNav.tsx); every DOM query below is re-anchored to the nav chrome with the same semantics - no expectation weakened, same test count.
+//
 // Port-drawer pins (spec v0.5.0 selection-surface redesign, item 0.5
 // transition 5; docs/SELECTION_SURFACE_AUDIT.md §§0.3-0.4).
 //
@@ -32,10 +34,10 @@ import * as yaml from 'js-yaml';
 import * as fs from 'fs';
 import * as path from 'path';
 import {
-  PortDrawer,
+  AppNav,
   groupPortsByCountry,
   COMPARISON_SELECTION_CAP
-} from './portDrawer';
+} from './appNav';
 import type { PortDefinition } from '@port-cost/core/types';
 import portsRegistry from './data/ports.json';
 import { LOADED_PORTS as RENDERED_PORTS } from './portRegistry';
@@ -99,7 +101,7 @@ describe('port drawer (spec v0.5.0) - structure and grouping', () => {
     const selection: string[] = [];
     act(() => {
       root.render(
-        <PortDrawer
+        <AppNav
           ports={LOADED_PORTS}
           page={{ kind: 'port', portId: 'gothenburg' }}
           onNavigate={() => {}}
@@ -108,13 +110,13 @@ describe('port drawer (spec v0.5.0) - structure and grouping', () => {
         />
       );
     });
-    const toggle = container.querySelector('.port-drawer-toggle') as HTMLButtonElement;
+    const toggle = container.querySelector('.app-nav-port') as HTMLButtonElement;
     expect(toggle).not.toBeNull();
     expect(toggle.tagName).toBe('BUTTON');
     expect(toggle.getAttribute('aria-expanded')).toBe('false');
-    expect(toggle.getAttribute('aria-controls')).toBe('port-drawer-panel');
+    expect(toggle.getAttribute('aria-controls')).toBe('app-nav-panel');
     // Collapsed: no panel in the DOM
-    expect(container.querySelector('.port-drawer-body')).toBeNull();
+    expect(container.querySelector('.app-nav-panel')).toBeNull();
     act(() => { root.unmount(); });
     container.remove();
   });
@@ -125,7 +127,7 @@ describe('port drawer (spec v0.5.0) - structure and grouping', () => {
     const root = createRoot(container);
     act(() => {
       root.render(
-        <PortDrawer
+        <AppNav
           ports={LOADED_PORTS}
           page={{ kind: 'comparison' }}
           onNavigate={() => {}}
@@ -134,12 +136,12 @@ describe('port drawer (spec v0.5.0) - structure and grouping', () => {
         />
       );
     });
-    const toggle = container.querySelector('.port-drawer-toggle') as HTMLButtonElement;
+    const toggle = container.querySelector('.app-nav-port') as HTMLButtonElement;
     act(() => { toggle.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
-    const panel = container.querySelector('#port-drawer-panel');
+    const panel = container.querySelector('#app-nav-panel');
     expect(panel).not.toBeNull();
     const headers = Array.from(
-      container.querySelectorAll('.port-drawer-country-header')
+      container.querySelectorAll('.app-nav-country-header')
     ).map(h => (h.textContent ?? '').trim());
     // The nine-port reality (v0.7.0): five Swedish silos, the two German
     // ports, the Danish silo, and the Dutch silo - grouping is data-derived
@@ -181,7 +183,7 @@ describe('port drawer (spec v0.5.0) - structure and grouping', () => {
     let navigated: { kind: 'port'; portId: string } | { kind: 'comparison' } | null = null;
     act(() => {
       root.render(
-        <PortDrawer
+        <AppNav
           ports={LOADED_PORTS}
           page={{ kind: 'port', portId: 'gothenburg' }}
           onNavigate={p => { navigated = p; }}
@@ -190,25 +192,25 @@ describe('port drawer (spec v0.5.0) - structure and grouping', () => {
         />
       );
     });
-    const toggle = container.querySelector('.port-drawer-toggle') as HTMLButtonElement;
+    const toggle = container.querySelector('.app-nav-port') as HTMLButtonElement;
     act(() => { toggle.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
-    expect(container.querySelector('.port-drawer-body')).not.toBeNull();
+    expect(container.querySelector('.app-nav-panel')).not.toBeNull();
     // Escape closes, no navigation
     act(() => {
       toggle.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
     });
-    expect(container.querySelector('.port-drawer-body')).toBeNull();
+    expect(container.querySelector('.app-nav-panel')).toBeNull();
     expect(navigated).toBeNull();
     // Reopen, navigate: closes and routes
     act(() => { toggle.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
-    const navRow = Array.from(container.querySelectorAll('.port-drawer-nav'))
+    const navRow = Array.from(container.querySelectorAll('.app-nav-item'))
       .find(b => (b.textContent ?? '').includes('Helsingborg')) as HTMLButtonElement;
     act(() => { navRow.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
-    expect(container.querySelector('.port-drawer-body')).toBeNull();
+    expect(container.querySelector('.app-nav-panel')).toBeNull();
     expect(navigated).toEqual({ kind: 'port', portId: 'helsingborg' });
     // The comparison row routes to the comparison page
     act(() => { toggle.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
-    const compareRow = Array.from(container.querySelectorAll('.port-drawer-body button'))
+    const compareRow = Array.from(container.querySelectorAll('.app-nav-panel button'))
       .find(b => (b.textContent ?? '').includes('Compare Ports')) as HTMLButtonElement;
     act(() => { compareRow.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
     expect(navigated).toEqual({ kind: 'comparison' });
@@ -222,7 +224,7 @@ describe('port drawer (spec v0.5.0) - structure and grouping', () => {
     const root = createRoot(container);
     act(() => {
       root.render(
-        <PortDrawer
+        <AppNav
           ports={LOADED_PORTS}
           page={{ kind: 'port', portId: 'hamburg' }}
           onNavigate={() => {}}
@@ -231,9 +233,9 @@ describe('port drawer (spec v0.5.0) - structure and grouping', () => {
         />
       );
     });
-    const toggle = container.querySelector('.port-drawer-toggle') as HTMLButtonElement;
+    const toggle = container.querySelector('.app-nav-port') as HTMLButtonElement;
     act(() => { toggle.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
-    const activeRows = Array.from(container.querySelectorAll('.port-drawer-row-active'));
+    const activeRows = Array.from(container.querySelectorAll('.app-nav-row-active'));
     expect(activeRows).toHaveLength(1);
     expect(activeRows[0].textContent).toContain('Hamburg');
     act(() => { root.unmount(); });
@@ -250,7 +252,7 @@ describe('port drawer (spec v0.5.0) - the comparison selection feed', () => {
     const setSelection = (next: string[]) => { selection.splice(0, selection.length, ...next); };
     act(() => {
       root.render(
-        <PortDrawer
+        <AppNav
           ports={LOADED_PORTS}
           page={{ kind: 'comparison' }}
           onNavigate={() => {}}
@@ -259,10 +261,11 @@ describe('port drawer (spec v0.5.0) - the comparison selection feed', () => {
         />
       );
     });
-    const toggle = container.querySelector('.port-drawer-toggle') as HTMLButtonElement;
-    act(() => { toggle.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    // v0.18.0: the compare chip opens the compare panel (checkboxes live there).
+    const chip = container.querySelector('.app-nav-compare-chip') as HTMLButtonElement;
+    act(() => { chip.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
     const checkboxFor = (name: string) => {
-      const box = Array.from(container.querySelectorAll('.port-drawer-body input[type="checkbox"]'))
+      const box = Array.from(container.querySelectorAll('.app-nav-compare-panel input[type="checkbox"]'))
         .find(i => (i.getAttribute('aria-label') ?? '').includes(name)) as HTMLInputElement;
       expect(box).toBeDefined();
       return box;
@@ -285,7 +288,7 @@ describe('port drawer (spec v0.5.0) - the comparison selection feed', () => {
     const root = createRoot(container);
     act(() => {
       root.render(
-        <PortDrawer
+        <AppNav
           ports={LOADED_PORTS}
           page={{ kind: 'comparison' }}
           onNavigate={() => {}}
@@ -294,14 +297,19 @@ describe('port drawer (spec v0.5.0) - the comparison selection feed', () => {
         />
       );
     });
-    const toggle = container.querySelector('.port-drawer-toggle') as HTMLButtonElement;
-    act(() => { toggle.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
-    const count = container.querySelector('.port-drawer-count') as HTMLElement;
+    // v0.18.0: the compare chip shows the n/6 count at all times - no popover
+    // needs opening (the carried 'always renders' semantics, now always visible).
+    const chipCount = container.querySelector('.app-nav-chip-count') as HTMLElement;
+    expect(chipCount).not.toBeNull();
+    expect(chipCount.textContent).toBe(`6/${COMPARISON_SELECTION_CAP}`);
+    const chip = container.querySelector('.app-nav-compare-chip') as HTMLButtonElement;
+    act(() => { chip.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    const count = container.querySelector('.app-nav-count') as HTMLElement;
     expect(count.textContent).toBe(`6/${COMPARISON_SELECTION_CAP} selected`);
     // Below cap the counter renders too (re-render with 2 selected)
     act(() => {
       root.render(
-        <PortDrawer
+        <AppNav
           ports={LOADED_PORTS}
           page={{ kind: 'comparison' }}
           onNavigate={() => {}}
@@ -310,7 +318,9 @@ describe('port drawer (spec v0.5.0) - the comparison selection feed', () => {
         />
       );
     });
-    const count2 = container.querySelector('.port-drawer-count') as HTMLElement;
+    const chipCount2 = container.querySelector('.app-nav-chip-count') as HTMLElement;
+    expect(chipCount2.textContent).toBe(`2/${COMPARISON_SELECTION_CAP}`);
+    const count2 = container.querySelector('.app-nav-count') as HTMLElement;
     expect(count2.textContent).toBe(`2/${COMPARISON_SELECTION_CAP} selected`);
     act(() => { root.unmount(); });
     container.remove();
@@ -327,7 +337,7 @@ describe('port drawer (spec v0.5.0) - the comparison cap (6, the 140 px floor ar
   ) => {
     act(() => {
       root.render(
-        <PortDrawer
+        <AppNav
           ports={ports}
           page={{ kind: 'comparison' }}
           onNavigate={() => {}}
@@ -336,8 +346,9 @@ describe('port drawer (spec v0.5.0) - the comparison cap (6, the 140 px floor ar
         />
       );
     });
-    const toggle = container.querySelector('.port-drawer-toggle') as HTMLButtonElement;
-    act(() => { toggle.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    // v0.18.0: open the compare panel via the always-visible chip.
+    const chip = container.querySelector('.app-nav-compare-chip') as HTMLButtonElement;
+    act(() => { chip.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
   };
 
   it('with nine real ports loaded the cap binds in the DOM (v0.5.1 made the cap live at seven; v0.7.0: the ninth port widens the bound set - three unchecked rows render disabled at cap)', () => {
@@ -354,7 +365,7 @@ describe('port drawer (spec v0.5.0) - the comparison cap (6, the 140 px floor ar
     const selected = LOADED_PORTS.slice(0, 6).map(p => p.metadata.id);
     renderDrawer(container, root, LOADED_PORTS, selected, () => {});
     const boxes = Array.from(
-      container.querySelectorAll('.port-drawer-body input[type="checkbox"]')
+      container.querySelectorAll('.app-nav-compare-panel input[type="checkbox"]')
     ) as HTMLInputElement[];
     // v0.8.0 re-baseline (in-test attribution): eight rendered ports
     // (Rotterdam hidden) - the cap still binds, with two unchecked rows
@@ -381,18 +392,18 @@ describe('port drawer (spec v0.5.0) - the comparison cap (6, the 140 px floor ar
     const selected = LOADED_PORTS.slice(0, 6).map(p => p.metadata.id); // 6 = the cap
     renderDrawer(container, root, LOADED_PORTS, selected, () => {});
     const uncheckedBox = Array.from(
-      container.querySelectorAll('.port-drawer-body input[type="checkbox"]')
+      container.querySelectorAll('.app-nav-compare-panel input[type="checkbox"]')
     ).find(i => !(i as HTMLInputElement).checked) as HTMLInputElement;
     expect(uncheckedBox).toBeDefined();
     expect(uncheckedBox.disabled).toBe(true);
     // The disclosure names the cap and the remedy
-    const message = container.querySelector('.port-drawer-cap-message') as HTMLElement;
+    const message = container.querySelector('.app-nav-cap-message') as HTMLElement;
     expect(message).not.toBeNull();
     expect(message.textContent).toContain('capped at 6 ports');
     expect(message.textContent).toContain('uncheck one');
     // The checked checkboxes stay enabled at cap (unchecking always works)
     const checkedBoxes = Array.from(
-      container.querySelectorAll('.port-drawer-body input[type="checkbox"]')
+      container.querySelectorAll('.app-nav-compare-panel input[type="checkbox"]')
     ).filter(b => (b as HTMLInputElement).checked) as HTMLInputElement[];
     expect(checkedBoxes).toHaveLength(6);
     expect(checkedBoxes.every(b => !b.disabled)).toBe(true);
@@ -413,7 +424,7 @@ describe('port drawer (spec v0.5.0) - the comparison cap (6, the 140 px floor ar
     const setSelection = (next: string[]) => { selected.splice(0, selected.length, ...next); };
     renderDrawer(container, root, LOADED_PORTS, selected, setSelection);
     const disabledBox = Array.from(
-      container.querySelectorAll('.port-drawer-body input[type="checkbox"]')
+      container.querySelectorAll('.app-nav-compare-panel input[type="checkbox"]')
     ).find(i => !(i as HTMLInputElement).checked) as HTMLInputElement;
     expect(disabledBox).toBeDefined();
     expect(disabledBox.disabled).toBe(true);
@@ -425,7 +436,7 @@ describe('port drawer (spec v0.5.0) - the comparison cap (6, the 140 px floor ar
     expect(selected).not.toContain(disabledPortId);
     // Unchecking works at cap (the remedy the message names)
     const gotBox = Array.from(
-      container.querySelectorAll('.port-drawer-body input[type="checkbox"]')
+      container.querySelectorAll('.app-nav-compare-panel input[type="checkbox"]')
     ).find(i => (i.getAttribute('aria-label') ?? '').includes('Gothenburg')) as HTMLInputElement;
     act(() => { forceCheckboxClick(gotBox); });
     expect(selected).toHaveLength(5);
@@ -436,7 +447,7 @@ describe('port drawer (spec v0.5.0) - the comparison cap (6, the 140 px floor ar
     // own component-local state and survives the re-render).
     act(() => {
       root.render(
-        <PortDrawer
+        <AppNav
           ports={LOADED_PORTS}
           page={{ kind: 'comparison' }}
           onNavigate={() => {}}
@@ -449,7 +460,7 @@ describe('port drawer (spec v0.5.0) - the comparison cap (6, the 140 px floor ar
     // the proof checks the originally disabled port's own row - the one
     // the handler ignored at cap - and asserts the handler now honors it.
     const reEnabledBox = Array.from(
-      container.querySelectorAll('.port-drawer-body input[type="checkbox"]')
+      container.querySelectorAll('.app-nav-compare-panel input[type="checkbox"]')
     ).find(i =>
       (i.getAttribute('aria-label') ?? '').includes(
         LOADED_PORTS.find(p => p.metadata.id === disabledPortId)!.metadata.name
