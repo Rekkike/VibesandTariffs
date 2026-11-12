@@ -298,17 +298,23 @@ body {
   white-space: nowrap;
 }
 
-/* Theme toggle: 24x24 minimum target, visible focus */
+/* Theme toggle: icon-only button (Stage 3, the 2026-11-12 ruling), 32x32
+   target, visible focus. The accessible name is the aria-label in App.tsx;
+   aria-pressed carries the state. */
 .theme-toggle {
   flex: none;
-  min-width: 48px;
-  min-height: 32px;
-  padding: var(--space-1) var(--space-2);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
   border: 1px solid var(--border);
-  border-radius: var(--space-2);
+  border-radius: var(--radius-s);
   background: var(--surface-raised);
   color: var(--text-primary);
-  font-size: var(--font-caption);
+  font-size: var(--font-subtitle);
+  line-height: 1;
   cursor: pointer;
 }
 

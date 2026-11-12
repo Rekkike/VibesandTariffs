@@ -201,16 +201,23 @@ const App: React.FC = () => {
           <span className="version-chip" title={`Application version ${APP_VERSION} (matches the specification header; enforced by the version guard)`}>
             {APP_VERSION}
           </span>
+          {/* Icon toggle (Stage 3, the 2026-11-12 ruling): the accessible
+              name is the aria-label, the state stays aria-pressed, and the
+              pcca-theme semantics are unchanged. */}
           <button
             type="button"
             className="theme-toggle"
             onClick={toggleTheme}
             aria-pressed={themeMode === 'light'}
+            aria-label={themeMode === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
             title="Toggle dark / light theme"
           >
-            {themeMode === 'dark' ? '☽ Light' : '☀ Dark'}
+            {themeMode === 'dark' ? '☀' : '☽'}
           </button>
-          {/* Print control (spec v0.6.5, unit 2): relocated from the
+          {/* Print control (spec v0.6.5, unit 2; Stage 3, the one ruled string
+              change of the pass, user ruling 2026-11-12: the visible label
+              now reads "Print comparison" wherever the control appears).
+              Relocated from the
               comparison body to the header bar, beside the theme toggle.
               On the port-workspace page it routes to the comparison first
               (the printed artifact is the comparison); on the comparison
@@ -223,7 +230,7 @@ const App: React.FC = () => {
               aria-label="Print or save the comparison as PDF"
               data-testid="print-export-button"
             >
-              Print / Save as PDF
+              Print comparison
             </button>
           ) : (
             <button
@@ -233,7 +240,7 @@ const App: React.FC = () => {
               aria-label="Compare ports to print the comparison"
               data-testid="print-export-button"
             >
-              Print / Save as PDF
+              Print comparison
             </button>
           )}
         </Box>
