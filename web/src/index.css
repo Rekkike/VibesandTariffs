@@ -19,6 +19,40 @@
    rename an existing token name.
    ========================================================================== */
 
+/* Self-hosted IBM Plex Sans (woff2, SIL OFL 1.1 - license text alongside the
+   font files at assets/fonts/plex-sans/LICENSE.txt). Source of record: the
+   official IBM Plex release @ibm/plex-sans@1.1.0 (asset ibm-plex-sans.zip,
+   files from fonts/complete/woff2/). The four weights are the ones the
+   styles actually use: 400, 500, 600, 700. */
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('./assets/fonts/plex-sans/IBMPlexSans-Regular.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('./assets/fonts/plex-sans/IBMPlexSans-Medium.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('./assets/fonts/plex-sans/IBMPlexSans-SemiBold.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('./assets/fonts/plex-sans/IBMPlexSans-Bold.woff2') format('woff2');
+}
+
 :root {
   /* Dark palette (default) — checked against WCAG 2.2 AA in the report */
   --surface: #16191d;
