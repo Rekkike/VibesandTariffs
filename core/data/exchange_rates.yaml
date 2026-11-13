@@ -4,7 +4,7 @@
 # The comparison basis is SEK: the Swedish ports bill in SEK and Hamburg in
 # EUR, so the single conversion needed is EUR->SEK. The pinned default is
 # static, versioned data: the pinned rates below are the values of record,
-# currently the 2026-11-10 ECB observation, and they move only in dedicated
+# currently the 2026-11-12 ECB observation, and they move only in dedicated
 # rate passes, never mid-pass. The comparison view renders the pinned rate
 # beside every converted figure; display conversions are presentation-only.
 # The rate-refresh button (v0.3.2) was removed at v0.4.0. The manual
@@ -55,28 +55,31 @@
 #   DKK drift declared: 7.4745 -> 7.4746, as_of 2026-10-07 -> 2026-10-20
 #   (the ECB TARGET publication of 2026-10-20, observed at execution; read
 #   from the ECB daily XML and cross-checked against the mirror above).
-#   Current  pin (v0.13.0 ritual, ECB rate pass (user rulings 2026-11-11),
-#   verified 2026-11-11): the ECB TARGET publication of 2026-11-10, read
+#   Previous pin (v0.13.0 ritual, ECB rate pass (user rulings 2026-11-11),
+#   verified 2026-11-11): 10.9910 / 7.4754 as of 2026-11-10 (the ECB
+#   TARGET publication of 2026-11-10, read from the ECB daily XML and
+#   cross-checked against the mirror).
+#   Current  pin (v0.20.0 ritual, ECB rate pass (user ruling 2026-11-13),
+#   verified 2026-11-13): the ECB TARGET publication of 2026-11-12, read
 #   from the ECB daily XML (www.ecb.europa.eu/stats/eurofxref/
-#   eurofxref-daily.xml): Cube time='2026-11-10', SEK rate='10.9910',
-#   DKK rate='7.4754'. Cross-checked against the mirror, which now serves
-#   from https://api.frankfurter.dev/v1/latest?from=EUR&to=SEK,DKK (the
-#   address above redirects there):
-#   { "base": "EUR", "date": "2026-11-10", "rates": { "DKK": 7.4754, "SEK": 10.991 } }
-#   The published four-decimal SEK rate is 10.9910; the mirror and the
-#   parsed value below drop the trailing zero (10.991), the same number.
-#   SEK drift declared: 11.123 -> 10.9910 (-0.1320), as_of 2026-10-20 -> 2026-11-10;
-#   DKK drift declared: 7.4746 -> 7.4754 (+0.0008), as_of 2026-10-20 -> 2026-11-10.
+#   eurofxref-daily.xml): Cube time='2026-11-12', SEK rate='11.0628',
+#   DKK rate='7.4754'. Cross-checked against the mirror
+#   (https://api.frankfurter.dev/v1/latest?from=EUR&to=SEK,DKK):
+#   { "base": "EUR", "date": "2026-11-12", "rates": { "DKK": 7.4754, "SEK": 11.0628 } }
+#   Mirror-identical; the worksuite observation of 2026-11-13 06:09 UTC
+#   reads the same publication.
+#   SEK drift declared: 10.9910 -> 11.0628 (+0.0718, +0.6533 percent), as_of 2026-11-10 -> 2026-11-12;
+#   DKK drift declared: 7.4754 -> 7.4754 (0.0000), as_of 2026-11-10 -> 2026-11-12.
 published_pairs:
   - pair: EUR-SEK
     from_currency: EUR
     to_currency: SEK
-    rate: 10.9910
-    as_of: 2026-11-10
+    rate: 11.0628
+    as_of: 2026-11-12
     source: ECB euro reference rate (SEK per EUR)
   - pair: EUR-DKK
     from_currency: EUR
     to_currency: DKK
     rate: 7.4754
-    as_of: 2026-11-10
+    as_of: 2026-11-12
     source: ECB euro reference rate (DKK per EUR)

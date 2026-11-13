@@ -158,11 +158,16 @@ describe('comparison-legibility zero-drift pins (spec v0.2.64)', () => {
       // 6,348,361 x 10.9910/7.4754 = 9,333,927 kr; per-GT 47.90 (was
       // 9,447,037 kr / 48.48); the native DKK total untouched; the column
       // order is unchanged.
+      // v0.20.0 ritual re-baseline (ECB rate pass (user ruling 2026-11-13)): 11.0628 /
+      // 7.4754 as of 2026-11-12 (was 10.9910 / 7.4754, 2026-11-10) -
+      // 6,348,361 x 11.0628/7.4754 = 9,394,902 kr; per-GT 48.22 (was
+      // 9,333,927 kr / 47.90); the native DKK total untouched; the column
+      // order is unchanged.
       // v0.13.1 doctrine (in-test attribution): RETAINED as one of the two
       // byte-pinned golden full rendered strings in this suite - the
       // DKK-cross formatting oracle (converted total, per-GT, rate-basis
       // wording, exactly as rendered).
-      '6\u00a0348\u00a0361\u00a0Dkr\u2248 9\u00a0333\u00a0927\u00a0kr converted \u2014 at 10.991 kr/EUR, 2026-11-1047.90 SEK/GT effective \u2014 derived, not a published rate; converted at the exchange-rate input (at 10.991 kr/EUR, 2026-11-10)',
+      '6\u00a0348\u00a0361\u00a0Dkr\u2248 9\u00a0394\u00a0902\u00a0kr converted \u2014 at 11.0628 kr/EUR, 2026-11-1248.22 SEK/GT effective \u2014 derived, not a published rate; converted at the exchange-rate input (at 11.0628 kr/EUR, 2026-11-12)',
       // v0.4.2 re-baseline (the Yilport terminal layer, in-test attribution):
       // G\u00e4vle 1,370,979.35 + 8,936,000 = 10,306,979.35; per-GT
       // 10,306,979.35 / 194,849 = 52.8973 -> 52.90 (was 7.04); the column
@@ -201,11 +206,14 @@ describe('comparison-legibility zero-drift pins (spec v0.2.64)', () => {
       // v0.13.0 ritual re-baseline (ECB rate pass (user rulings 2026-11-11)): 2,204,910.90
       // x 10.9910 = 24,234,176 kr; per-GT 124.37 (was 24,525,224 kr / 125.87
       // at 11.123, 2026-10-20); the native EUR figure untouched.
+      // v0.20.0 ritual re-baseline (ECB rate pass (user ruling 2026-11-13)): 2,204,910.90
+      // x 11.0628 = 24,392,488 kr; per-GT 125.19 (was 24,234,176 kr / 124.37
+      // at 10.9910, 2026-11-10); the native EUR figure untouched.
       // v0.13.1 doctrine (in-test attribution): RETAINED as one of the two
       // byte-pinned golden full rendered strings in this suite - the
       // EUR-direct formatting oracle (converted total, per-GT, rate-basis
       // wording, exactly as rendered).
-      '2\u00a0204\u00a0911\u00a0\u20ac\u2248 24\u00a0234\u00a0176\u00a0kr converted \u2014 at 10.991 kr/EUR, 2026-11-10124.37 SEK/GT effective \u2014 derived, not a published rate; converted at the exchange-rate input (at 10.991 kr/EUR, 2026-11-10)'
+      '2\u00a0204\u00a0911\u00a0\u20ac\u2248 24\u00a0392\u00a0488\u00a0kr converted \u2014 at 11.0628 kr/EUR, 2026-11-12125.19 SEK/GT effective \u2014 derived, not a published rate; converted at the exchange-rate input (at 11.0628 kr/EUR, 2026-11-12)'
     ]);
   });
 
