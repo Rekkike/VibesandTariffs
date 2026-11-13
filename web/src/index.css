@@ -1983,10 +1983,13 @@ textarea:focus-visible,
   background: var(--surface);
   color: var(--text-primary);
   border: 1px solid var(--border);
-  padding: var(--space-4);
-  min-width: 340px;
+  border-radius: var(--radius-m);
+  padding: var(--space-5);
+  min-width: 360px;
   max-width: 480px;
-  box-shadow: 0 var(--space-2) var(--space-4) var(--modal-shadow);
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: var(--elevation-3);
   z-index: 1000;
 }
 .print-dialog-option {
@@ -2001,7 +2004,35 @@ textarea:focus-visible,
 .print-dialog-actions {
   display: flex;
   gap: var(--space-2);
-  margin-top: var(--space-3);
+  margin-top: var(--space-4);
+  justify-content: flex-end;
+}
+
+/* Stage 5 of the design overhaul (v0.19.1): the dialog's action buttons get
+   the chrome's token treatment - the primary action on the accent, the
+   cancel quiet on the sunken surface. Tokens only; labels and toggles
+   untouched. */
+.print-dialog-print,
+.print-dialog-cancel {
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-s);
+  background: var(--surface-sunken);
+  color: var(--text-primary);
+  font-family: var(--font-family);
+  font-size: var(--font-body);
+  cursor: pointer;
+}
+
+.print-dialog-print {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-accent);
+  font-weight: 600;
+}
+
+.print-dialog-print:hover {
+  background: var(--accent-hover);
 }
 
 @media print {
@@ -2221,6 +2252,61 @@ textarea:focus-visible,
      With the avoid on the block, a too-tall row degrades explicitly: the
      cut lands between blocks (or between the description's own lines),
      the remainder moves to the next sheet - never mid-word or mid-phrase. */
+
+  /* Stage 5 of the design overhaul (v0.19.1), the paper polish: typography
+     and spacing only, plus the grid's weights. No color literal is
+     introduced - the paper ink and hairline are the block's existing
+     values, referenced here as currentColor. Every pagination rule above
+     (both break-inside properties, in kind, on the same elements) and the
+     @page A4 portrait rule are untouched. */
+  html,
+  body {
+    line-height: 1.45;
+  }
+
+  /* The paper grid is tighter than the screen's token padding - mm units so
+     the cells scale with the sheet; the header row takes a heavier rule. */
+  .print-page .comparison-table th,
+  .print-page .comparison-table td {
+    padding: 1.5mm 2mm;
+  }
+
+  .print-page .comparison-table th {
+    border-bottom: 2px solid currentColor !important;
+  }
+
+  /* The four-line header layout breathes a little more on paper: the title
+     separates from the parameter lines, each line gets a touch more air. */
+  .print-header {
+    margin-bottom: 4mm;
+  }
+
+  .print-header .print-header-title {
+    margin-bottom: 1.5mm;
+    letter-spacing: 0.01em;
+  }
+
+  .print-header .print-header-line {
+    margin-bottom: 0.8mm;
+    line-height: 1.45;
+  }
+
+  .print-continuation {
+    margin: 2mm 0;
+    line-height: 1.45;
+  }
+
+  .print-grand-total-footnote {
+    margin-top: 2.5mm;
+    padding-top: 1.5mm;
+    border-top: 1px solid currentColor;
+  }
+
+  .print-footer {
+    margin-top: 5mm;
+    line-height: 1.45;
+    letter-spacing: 0.02em;
+  }
 
   /* The screen's Paper elevation borders flatten; the page's own borders
      draw the grid. */
