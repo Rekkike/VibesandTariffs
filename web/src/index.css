@@ -2327,3 +2327,8 @@ textarea:focus-visible,
     box-shadow: none !important;
   }
 }
+
+/* SCRATCH red-proof commit for the v0.21.0 visual-geometry gate: re-injects
+   position: sticky on the workspace total strip. Reverted immediately
+   after the RED run is observed; must not survive into the merge. */
+.total-strip { position: sticky; top: 0; z-index: 6; }
