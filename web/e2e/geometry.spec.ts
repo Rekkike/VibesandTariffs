@@ -38,7 +38,9 @@ async function gotoWorkspace(page: Page): Promise<void> {
 
 async function gotoComparison(page: Page): Promise<void> {
   await page.goto('/');
-  await page.getByRole('button', { name: 'Compare ports' }).click();
+  // exact: the workspace's print control carries the aria-label "Compare
+  // ports to print the comparison", which substring-matches otherwise
+  await page.getByRole('button', { name: 'Compare ports', exact: true }).click();
   await expect(page.locator('.comparison-view-head')).toBeVisible();
 }
 
