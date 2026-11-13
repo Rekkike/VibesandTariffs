@@ -1,0 +1,66 @@
+name: Visual geometry gate
+
+# CI visual-geometry gate (v0.21.0, queue item 9, user ruling 2026-11-13):
+# the ruled geometry - no sticky chrome on any app surface, the comparison
+# table container's max-height: none, the workspace total strip static in
+# normal flow, the 600 px breakpoint from both sides, the version chip -
+# asserted at computed-style level in headless Chromium against the BUILT
+# dist (vite preview), so a silent return of sticky chrome or the
+# inner-scroll model fails CI. Runs on every push (all branches), weekly,
+# and on demand. Screenshots upload on success and failure (if: always()).
+# The three existing workflows (tests.yml, spec-guard.yml, deploy.yml) are
+# untouched.
+on:
+  push:
+  schedule:
+    # Mondays 05:37 UTC (the Tests workflow owns 05:17)
+    - cron: '37 5 * * 1'
+  workflow_dispatch:
+
+jobs:
+  geometry:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          # Node 22 since v0.15.1: the vite 8 / vitest 5 line requires >= 22.12
+          node-version: 22
+
+      # The web bundle inlines the registry, so the YAML->JSON conversion
+      # and the core build must run before the web install/build (same
+      # order as tests.yml).
+      - name: Install core and convert YAML to JSON
+        run: cd core && npm ci && node scripts/convert_yaml_to_json.js
+
+      - name: Build core
+        run: cd core && npm run build
+
+      - name: Install web dependencies
+        run: cd web && npm ci
+        env:
+          # Browsers are installed explicitly below, chromium only; the
+          # lockfile install must not pull the full browser set.
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+
+      - name: Install Playwright Chromium
+        run: cd web && npx playwright install --with-deps chromium
+
+      # The playwright.config webServer builds web/dist and serves it with
+      # vite preview on 127.0.0.1:4173 under the Vite base
+      # /VibesandTariffs/; the suite (web/e2e/geometry.spec.ts, retries 0)
+      # runs against that built artifact.
+      - name: Run the visual-geometry suite
+        run: cd web && npx playwright test
+
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-geometry-screenshots
+          path: web/test-results/screenshots/
+          if-no-files-found: warn
+          retention-days: 14
