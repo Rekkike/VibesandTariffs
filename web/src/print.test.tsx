@@ -277,7 +277,11 @@ describe('print header content — the unfalsifiability rule (spec v0.6.2)', () 
         // the bump moves the version constant v0.19.1 -> v0.19.2; the
         // retired inner scroll context and sticky thead — CSS-only, zero
         // figure movement, zero wording change.
-        expect(APP_VERSION).toBe('v0.19.2');
+        // Workspace sticky head retirement v0.19.3 (user sticky-chrome
+        // review finding and ruling 2026-11-13): the bump moves the version
+        // constant v0.19.2 -> v0.19.3; the sticky workspace head retired on
+        // all widths — CSS-only, zero figure movement, zero wording change.
+        expect(APP_VERSION).toBe('v0.19.3');
         expect(text).toContain('Tariff year: 2026');
         expect(text).toContain('Vessel profile: MAREN MAERSK (IMO 9632129)');
         expect(text).toContain('ESI:');

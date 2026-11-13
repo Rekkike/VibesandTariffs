@@ -557,23 +557,29 @@ describe('comparison-table fit contract (spec v0.2.43)', () => {
   });
 });
 
-// v0.18.1 mobile workspace head fix (user report 2026-11-12, adjudicated):
-// below the 600 px stacking breakpoint the sticky workspace head must NOT
-// stick - the rule below pins the unstuck treatment in the screen media
-// block, so a future pass that removes it goes red. The desktop treatment
-// at and above 600 px is pinned unchanged in the same test.
-describe('workspace sticky head responsive treatment (v0.18.1)', () => {
-  it('below 599.95 px the workspace sticky head is unstuck (position: static, z-index: auto); at and above 600 px it stays sticky at top var(--space-2) with z-index 6', () => {
+// v0.19.3 workspace sticky head retirement (user sticky-chrome review
+// finding and ruling of 2026-11-13): the v0.18.0 sticky workspace head is
+// retired on ALL widths - the total strip and the segment toggle bar scroll
+// with the column, the pre-v0.18.0 behavior. The v0.18.1 pin (which
+// asserted the mobile unstick rule and the desktop sticky rule) is
+// superseded one-for-one by this absence pin, applying the v0.18.1
+// sticky-chrome lesson in reverse and completing the retirement of all
+// sticky chrome: no rule in the stylesheet gives .workspace-sticky-head
+// position: sticky, in either mode (the class stays on the component
+// element as inert markup). Any future pass that reintroduces a sticky
+// workspace head goes red.
+describe('workspace sticky head retirement (v0.19.3)', () => {
+  it('no rule gives .workspace-sticky-head position: sticky anywhere in the stylesheet, in either mode', () => {
     const mobileBlocks = cssSource.match(/@media \(max-width: 599\.95px\) \{[\s\S]*?\n\}/g) ?? [];
-    const block = mobileBlocks.find(b => b.includes('.workspace-sticky-head'));
-    expect(block).toBeDefined();
-    expect(block).toMatch(/\.workspace-sticky-head\s*\{\s*position:\s*static;\s*z-index:\s*auto;\s*\}/);
-    // The desktop rule outside the media block is unchanged.
-    const desktopRule = cssSource.match(/\.workspace-sticky-head\s*\{[^}]*\}/);
-    expect(desktopRule).not.toBeNull();
-    expect(desktopRule![0]).toMatch(/position:\s*sticky/);
-    expect(desktopRule![0]).toMatch(/top:\s*var\(--space-2\)/);
-    expect(desktopRule![0]).toMatch(/z-index:\s*6/);
+    const desktopBlocks = cssSource.match(/@media \(min-width: 600px\)\s*\{[\s\S]*?\n\}/g) ?? [];
+    const mediaCss = [...mobileBlocks, ...desktopBlocks].join('\n');
+    // Inside any media block: no sticky workspace head.
+    expect(mediaCss).not.toMatch(/\.workspace-sticky-head\s*\{[^}]*position:\s*sticky/);
+    // Nor anywhere else in the stylesheet (the base, unscoped rules).
+    expect(cssSource).not.toMatch(/\.workspace-sticky-head\s*\{[^}]*position:\s*sticky/);
+    // The v0.18.1 unstick rule is gone with the retirement (dead CSS once
+    // nothing sticks).
+    expect(cssSource).not.toMatch(/\.workspace-sticky-head\s*\{[^}]*position:\s*static/);
   });
 });
 
