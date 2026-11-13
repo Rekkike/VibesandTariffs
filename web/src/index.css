@@ -778,15 +778,24 @@ body {
   color: var(--text-secondary);
 }
 
-/* Sticky workspace head (Stage 3, v0.18.0): the total strip stays visible
-   while the cost breakdown scrolls, and the segment toggle bar rides in the
-   same head so the toggles remain reachable without scrolling the whole
-   list. Display only - no data, no semantics. Tokens only. */
-.workspace-sticky-head {
-  position: sticky;
-  top: var(--space-2);
-  z-index: 6;
-}
+/* Sticky workspace head (Stage 3, v0.18.0) shipped position: sticky;
+   top: var(--space-2); z-index: 6 here: the total strip stayed visible
+   while the cost breakdown scrolled, and the segment toggle bar rode in the
+   same head so the toggles remained reachable without scrolling the whole
+   list. Display only - no data, no semantics. Tokens only. The v0.18.1
+   defect-and-fix record (the mobile unstick rule below the 600 px stacking
+   breakpoint, user report of 2026-11-12) and the Stage 0 risk register R1
+   lesson (no suite pinned sticky geometry) remain in the historical record
+   in the mobile media block below. SUPERSEDED at v0.19.3 by the user's
+   sticky-chrome review finding and ruling of 2026-11-13: the sticky header
+   in the port details (workspace) section serves no purpose - it is
+   retired on ALL widths, and the total strip and the segment toggle bar
+   scroll with the column (the pre-v0.18.0 behavior). The
+   .workspace-sticky-head class stays on the component element as inert
+   markup. The retirement is pinned by an absence pin in
+   responsive.test.tsx (the v0.18.1 sticky-chrome lesson applied in
+   reverse): no rule gives .workspace-sticky-head a sticky position
+   anywhere in the stylesheet, in either mode. */
 
 .segment-toggle-bar {
   display: flex;
@@ -1712,17 +1721,22 @@ textarea:focus-visible,
   }
 
   /* v0.18.1 mobile workspace head fix (user report 2026-11-12, confirmed at
-     source): below the stacking breakpoint the sticky workspace head does
-     NOT stick - it scrolls with the column, restoring the pre-v0.18.0
-     mobile behavior. Without this rule the ~300-400 px head (Grand Total,
-     reset control, OPS/estimate/segment lines, segment toggle bar) pins at
-     the viewport top for the whole cost-breakdown scroll and covers roughly
-     40 percent of a phone screen. At and above 600 px the desktop treatment
-     is unchanged (position: sticky; top: var(--space-2); z-index: 6). */
-  .workspace-sticky-head {
-    position: static;
-    z-index: auto;
-  }
+     source) shipped position: static; z-index: auto here: below the stacking
+     breakpoint the sticky workspace head did NOT stick - it scrolled with
+     the column, restoring the pre-v0.18.0 mobile behavior. Without the rule
+     the ~300-400 px head (Grand Total, reset control, OPS/estimate/segment
+     lines, segment toggle bar) pinned at the viewport top for the whole
+     cost-breakdown scroll and covered roughly 40 percent of a phone screen;
+     the defect class was the Stage 0 risk register R1 lesson (no suite
+     pinned sticky geometry). SUPERSEDED at v0.19.3 by the user's
+     sticky-chrome review finding and ruling of 2026-11-13: the v0.18.0
+     sticky workspace head is retired on ALL widths, so this unstick rule is
+     dead CSS once nothing sticks and is deleted with it - the head scrolls
+     with the column in both modes (the pre-v0.18.0 behavior). The
+     retirement is pinned by an absence pin in responsive.test.tsx (the
+     v0.18.1 sticky-chrome lesson applied in reverse): no rule gives
+     .workspace-sticky-head a sticky position anywhere in the stylesheet, in
+     either mode. */
 }
 
 /* Contract floor: 360 px — no element may overflow or force page-level
