@@ -286,7 +286,12 @@ describe('print header content — the unfalsifiability rule (spec v0.6.2)', () 
         // constants of record move to the ECB TARGET publication of
         // 2026-11-12 — data-only, declared movement at the converted
         // surfaces only.
-        expect(APP_VERSION).toBe('v0.20.0');
+        // CI visual-geometry gate v0.21.0 (queue item 9, user ruling
+        // 2026-11-13): the bump moves the version constant v0.20.0 ->
+        // v0.21.0; the dev-only Playwright CI layer and the new workflow —
+        // zero app-source change, zero figure movement, the bundle does
+        // not move.
+        expect(APP_VERSION).toBe('v0.21.0');
         expect(text).toContain('Tariff year: 2026');
         expect(text).toContain('Vessel profile: MAREN MAERSK (IMO 9632129)');
         expect(text).toContain('ESI:');
