@@ -1211,25 +1211,23 @@ body {
   min-width: 140px;
 }
 
-/* Stage 4 of the design overhaul (v0.19.0): the sticky table header, the
-   desktop table path only. The container is the scroll context (overflow-x:
-   auto above; the 140 px column floor degrades by horizontal scroll inside
-   it), so the head sticks within the container: the container gains a
-   viewport-bounded max-height and the header cells stick to its top while
-   the body scrolls. Scoped to min-width 600px - below the stacking
-   breakpoint the mobile card path renders instead and this container is
-   display: none (untouched). Tokens only. */
-@media (min-width: 600px) {
-  .comparison-table-container {
-    max-height: calc(100vh - var(--space-6) * 3);
-  }
-
-  .comparison-table thead th {
-    position: sticky;
-    top: 0;
-    z-index: 2;
-  }
-}
+/* Stage 4 of the design overhaul (v0.19.0) shipped a sticky table header on
+   the desktop table path: a @media (min-width: 600px) block gave the
+   container a viewport-bounded max-height (calc(100vh - var(--space-6) * 3))
+   and the thead cells position: sticky; top: 0; z-index: 2, so the header
+   stuck within a second, inner scroll context while the table body scrolled
+   inside the container. SUPERSEDED at v0.19.2 by the user's desktop visual
+   review finding and ruling of 2026-11-13: on desktop the page scrolls the
+   comparison list - the separate inner scroll context is retired together
+   with the sticky header that depended on it (the historical record of what
+   v0.19.0 shipped stays in this comment per the in-place supersession
+   convention). The container keeps its base overflow-x: auto - the
+   horizontal-scroll context that degrades the 140 px column floor at
+   narrow desktop widths is untouched; below the 600 px stacking breakpoint
+   the mobile card path renders instead and this container is display: none
+   (untouched). The ruled scroll model is pinned in responsive.test.tsx: no
+   max-height on the container and no position: sticky on the thead at or
+   above 600 px. */
 
 /* Stage 4 (v0.19.0): zebra and hover row treatment, token-only colors, both
    modes. The banded rows (stage, OPS segment, totals, estimate, discount)

@@ -576,3 +576,30 @@ describe('workspace sticky head responsive treatment (v0.18.1)', () => {
     expect(desktopRule![0]).toMatch(/z-index:\s*6/);
   });
 });
+
+// v0.19.2 comparison page scroll (user desktop visual review finding and
+// ruling of 2026-11-13): at and above 600 px the page scrolls the comparison
+// list - the v0.19.0 inner scroll context (container max-height) and the
+// sticky thead that depended on it are retired. This absence pin keeps the
+// ruled scroll model in place: any future pass that reintroduces a
+// max-height on the comparison container or a position: sticky on the
+// comparison thead goes red (the v0.18.1 sticky-chrome lesson, applied in
+// reverse). The container's base horizontal scroll context is pinned
+// unchanged.
+describe('comparison page scroll model (v0.19.2)', () => {
+  it('at and above 600 px no rule gives the comparison container a max-height and no rule makes the comparison thead sticky; the container keeps overflow-x: auto', () => {
+    const desktopBlocks = cssSource.match(/@media \(min-width: 600px\)\s*\{[\s\S]*?\n\}/g) ?? [];
+    const desktopCss = desktopBlocks.join('\n');
+    // No min-width: 600px block may carry the retired rules.
+    expect(desktopCss).not.toMatch(/\.comparison-table-container\s*\{[^}]*max-height/);
+    expect(desktopCss).not.toMatch(/\.comparison-table thead th\s*\{[^}]*position:\s*sticky/);
+    // Nor may the rules survive anywhere else in the stylesheet.
+    expect(cssSource).not.toMatch(/\.comparison-table-container\s*\{[^}]*max-height/);
+    expect(cssSource).not.toMatch(/\.comparison-table thead th\s*\{[^}]*position:\s*sticky/);
+    // The base horizontal-scroll context (the 140 px floor degradation
+    // path) is unchanged.
+    const containerRule = cssSource.match(/\.comparison-table-container\s*\{[^}]*\}/);
+    expect(containerRule).not.toBeNull();
+    expect(containerRule![0]).toMatch(/overflow-x:\s*auto/);
+  });
+});
