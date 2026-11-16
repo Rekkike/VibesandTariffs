@@ -117,7 +117,12 @@ export const makeComparisonCells = (props: ComparisonCellsProps) => {
             <span className="ops-fold-part ops-fold-combined">(c) combined {entry.ops_fold.combinedPerGt.toFixed(2)} {entry.currency || fallbackCurrency}/GT (a + b — derived)</span>
           </Box>
         )}
-        {entry.lines.map((line, index) => (
+        {/* Comparison line-item fold (spec v0.21.1, user ruling 2026-11-16):
+            the per-rule line items render only while the fee lines and
+            derivations disclosure is open (off by default), on the desktop
+            table and the phone cards alike; the family figure and its short
+            secondary lines above stay unconditional. */}
+        {showDerivation && entry.lines.map((line, index) => (
           <Box key={index} sx={{ fontSize: '0.75rem', mt: 0.25 }} className="comparison-secondary">
             {line.name} · {line.biller}: {formatCurrency(line.amount, entry.currency || fallbackCurrency)}
             {line.estimated && (

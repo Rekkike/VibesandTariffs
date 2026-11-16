@@ -135,6 +135,12 @@ describe('godsavgift comparison rendering (spec v0.2.61)', () => {
 
   it('the godsavgift charge line renders under Fairway dues at both Swedish ports (the collapsed detail carries the label and amount; the basis string itself is pinned in the core suite)', async () => {
     await renderComparison(defaultCall('gothenburg') as CallInput);
+    // Comparison line-item fold (spec v0.21.1, user ruling 2026-11-16): the
+    // line is folded by default and opens with the fee lines and
+    // derivations disclosure.
+    expect(container!.textContent ?? '').not.toContain('Cargo Fee (Godsavgift)');
+    const btn = container!.querySelector('button.comparison-derivation-disclosure') as HTMLButtonElement;
+    await act(async () => { btn.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
     const text = container!.textContent ?? '';
     // The v0.2.52 segmentation contract: the godsavgift rides the Fairway
     // dues line. Default call: 80,000 t x 3.36 = 268,800.00 SEK.

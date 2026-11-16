@@ -291,7 +291,10 @@ describe('print header content — the unfalsifiability rule (spec v0.6.2)', () 
         // v0.21.0; the dev-only Playwright CI layer and the new workflow —
         // zero app-source change, zero figure movement, the bundle does
         // not move.
-        expect(APP_VERSION).toBe('v0.21.0');
+        // Comparison line-item fold v0.21.1 (user ruling 2026-11-16): the
+        // patch bump moves the version constant v0.21.0 -> v0.21.1; zero
+        // figure movement, print untouched.
+        expect(APP_VERSION).toBe('v0.21.1');
         expect(text).toContain('Tariff year: 2026');
         expect(text).toContain('Vessel profile: MAREN MAERSK (IMO 9632129)');
         expect(text).toContain('ESI:');
@@ -1624,7 +1627,10 @@ describe('the conversion toggle renamed to Convert to SEK (spec v0.6.5, unit 3)'
     // The dialog's conversions checkbox label carries the same wording.
     expect(viewSource).toMatch(/\{' '\}Convert to SEK/);
     // The derivation toggle keeps its own name (untouched by the rename).
-    expect(viewSource).toMatch(/'Hide fee derivations' : 'Show fee derivations'/);
+    // Widened at v0.21.1 (comparison line-item fold, user ruling
+    // 2026-11-16; was 'Hide fee derivations' : 'Show fee derivations'): the
+    // same toggle now also folds the per-rule line items.
+    expect(viewSource).toMatch(/'Hide fee lines and derivations' : 'Show fee lines and derivations'/);
 
     const container = document.createElement('div');
     document.body.appendChild(container);
