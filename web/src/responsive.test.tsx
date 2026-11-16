@@ -412,8 +412,11 @@ describe('comparison view: condensed derivation in both layouts (spec v0.2.42)',
     expect(mobileBtn!.getAttribute('aria-controls')).toBe('comparison-conversions-panel');
     expect(mobileBtn!.textContent).toContain('Show fee lines and derivations');
     expect(container!.querySelectorAll('.comparison-derivation-condensed').length).toBe(0);
+    // Folded default on the cards: no per-rule line item renders.
+    expect(container!.querySelector('.comparison-cards')!.textContent).not.toContain(' \u00b7 ');
     await act(async () => { mobileBtn!.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
     expect(mobileBtn!.getAttribute('aria-expanded')).toBe('true');
+    expect(container!.querySelector('.comparison-cards')!.textContent).toContain(' \u00b7 ');
     expect(mobileBtn!.textContent).toContain('Hide fee lines and derivations');
     const condensed = container!.querySelectorAll('.comparison-derivation-condensed');
     expect(condensed.length).toBeGreaterThan(0);
