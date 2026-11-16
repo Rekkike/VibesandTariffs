@@ -400,6 +400,24 @@ describe('comparison view: condensed derivation in both layouts (spec v0.2.42)',
 
   it('mobile: the card lines carry the condensed derivation (structure stated under the figure)', async () => {
     await renderComparison(true);
+    // Comparison line-item fold (spec v0.21.1, user ruling 2026-11-16): the
+    // phone cards fold exactly as the desktop table does. This retires the
+    // v0.2.43 asymmetry pinned here before (the cards showed the
+    // derivations by default with no disclosure control): the control now
+    // renders on the cards, the lines and derivations are folded by default,
+    // and opening it reveals them.
+    const mobileBtn = container!.querySelector('button.comparison-derivation-disclosure') as HTMLButtonElement | null;
+    expect(mobileBtn).not.toBeNull();
+    expect(mobileBtn!.getAttribute('aria-expanded')).toBe('false');
+    expect(mobileBtn!.getAttribute('aria-controls')).toBe('comparison-conversions-panel');
+    expect(mobileBtn!.textContent).toContain('Show fee lines and derivations');
+    expect(container!.querySelectorAll('.comparison-derivation-condensed').length).toBe(0);
+    // Folded default on the cards: no per-rule line item renders.
+    expect(container!.querySelector('.comparison-cards')!.textContent).not.toContain(' \u00b7 ');
+    await act(async () => { mobileBtn!.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    expect(mobileBtn!.getAttribute('aria-expanded')).toBe('true');
+    expect(container!.querySelector('.comparison-cards')!.textContent).toContain(' \u00b7 ');
+    expect(mobileBtn!.textContent).toContain('Hide fee lines and derivations');
     const condensed = container!.querySelectorAll('.comparison-derivation-condensed');
     expect(condensed.length).toBeGreaterThan(0);
     // v0.2.56: the first condensed derivation is the flat-rate case whose
@@ -416,9 +434,6 @@ describe('comparison view: condensed derivation in both layouts (spec v0.2.42)',
       .find(c => (c.textContent ?? '').includes('Hamburg'))!;
     expect(hamburgCard).toBeDefined();
     expect(hamburgCard.querySelectorAll('.comparison-derivation-condensed').length).toBeGreaterThan(0);
-    // Mobile cards keep derivations visible by default, no disclosure
-    // required (spec v0.2.43): the card layout fits without the collapse.
-    expect(container!.querySelector('.comparison-derivation-disclosure')).toBeNull();
   });
 
   it('desktop: the condensed derivation is collapsed by default in the table layout (spec v0.2.43 fit contract)', async () => {
@@ -432,7 +447,11 @@ describe('comparison view: condensed derivation in both layouts (spec v0.2.42)',
     expect(btn).not.toBeNull();
     expect(btn!.getAttribute('aria-expanded')).toBe('false');
     expect(btn!.getAttribute('aria-controls')).toBe('comparison-derivation-panel');
-    expect(btn!.textContent).toContain('Show fee derivations');
+    // Label widened at v0.21.1 (user ruling 2026-11-16; was "Show fee
+    // derivations"): the control now also folds the per-rule line items.
+    expect(btn!.textContent).toContain('Show fee lines and derivations');
+    // Folded default (v0.21.1): no per-rule line item renders in the table.
+    expect(container!.querySelector('.comparison-table')!.textContent).not.toContain(' \u00b7 ');
     // Figure cells still carry the native figure.
     expect(container!.querySelectorAll('.comparison-table .comparison-figure').length).toBeGreaterThan(0);
   });
@@ -448,13 +467,19 @@ describe('comparison view: condensed derivation in both layouts (spec v0.2.42)',
     expect(hamburgCell).toBeDefined();
     const btn2 = container!.querySelector('button.comparison-derivation-disclosure') as HTMLButtonElement;
     expect(btn2.getAttribute('aria-expanded')).toBe('true');
-    expect(btn2.textContent).toContain('Hide fee derivations');
+    expect(btn2.textContent).toContain('Hide fee lines and derivations');
+    // The per-rule line items open with the derivations (v0.21.1).
+    expect(container!.querySelector('.comparison-table')!.textContent).toContain(' \u00b7 ');
   });
 
   it('the condensed derivation never leaks the raw band arithmetic string (opaque-proof, compact)', async () => {
     await renderComparison(true);
+    // v0.21.1 fold: open the lines first so the check is not vacuous.
+    const btn = container!.querySelector('button.comparison-derivation-disclosure') as HTMLButtonElement;
+    await act(async () => { btn.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
     const texts = Array.from(container!.querySelectorAll('.comparison-derivation-condensed'))
       .map(el => el.textContent ?? '');
+    expect(texts.length).toBeGreaterThan(0);
     for (const t of texts) {
       expect(t).not.toMatch(/\* 1\.96/);
     }

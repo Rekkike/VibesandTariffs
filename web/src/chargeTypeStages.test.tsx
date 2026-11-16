@@ -97,6 +97,16 @@ describe('charge-type mapping (spec v0.2.52)', () => {
 
 // ---- Rendered DOM pins -------------------------------------------------
 
+// Comparison line-item fold (spec v0.21.1, user ruling 2026-11-16): the
+// per-rule line items render only while the fee lines and derivations
+// disclosure is open (off by default). openLines clicks the real control.
+const openLines = async (container: HTMLElement) => {
+  const btn = container.querySelector('button.comparison-derivation-disclosure') as HTMLButtonElement;
+  expect(btn).not.toBeNull();
+  expect(btn.getAttribute('aria-expanded')).toBe('false');
+  await act(async () => { btn.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+};
+
 const renderComparison = async (
   call: CallInput,
   vessel: VesselInput = DEFAULT_VESSEL,
@@ -185,6 +195,9 @@ describe('comparison stages and charge-type lines render (spec v0.2.52)', () => 
     const fairwayRow = Array.from(container.querySelectorAll('.comparison-chargetype-row'))
       .find(r => (r.textContent ?? '').includes('Fairway dues'));
     expect(fairwayRow).toBeDefined();
+    // Folded default (v0.21.1): no per-rule line item renders in the row.
+    expect(fairwayRow!.textContent).not.toContain(' \u00b7 ');
+    await openLines(container);
     expect(fairwayRow!.textContent).toContain('201\u00a0805'); // vessel fee class 9 CSI E
     expect(fairwayRow!.textContent).toContain('60\u00a0370'); // readiness fee class 9
   });
@@ -240,6 +253,8 @@ describe('zero-line suppression (spec v0.2.52)', () => {
       storage_days_export: 10,
       storage_days_import: 10
     }));
+    // The storage line item opens with the fee lines (v0.21.1 fold).
+    await openLines(container);
     const text = container.textContent ?? '';
     expect(text).toContain('storage');
     expect(text).toContain('745'); // apm_terminals_storage_export at 10 days

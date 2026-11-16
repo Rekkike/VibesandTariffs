@@ -33,7 +33,13 @@ const LOADED_PORTS: PortDefinition[] = ((portsRegistry as any).ports ?? []).filt
   (p: any) => p && p.fee_rules && Array.isArray(p.fee_rules)
 );
 
-const renderMobileComparison = async (call: CallInput) => {
+// Comparison line-item fold (spec v0.21.1, user ruling 2026-11-16): the
+// per-rule line items and their condensed derivations render only while the
+// fee lines and derivations disclosure is open, on the phone cards as on the
+// desktop table. The derivation-content pins below open it through the real
+// control (openLines = true), so they keep asserting the rendered
+// derivations rather than passing vacuously on an empty card.
+const renderMobileComparison = async (call: CallInput, openLines = false) => {
   __setMobileQueryForTests(() => true);
   const container = document.createElement('div');
   document.body.appendChild(container);
@@ -50,6 +56,12 @@ const renderMobileComparison = async (call: CallInput) => {
       />
     );
   });
+  if (openLines) {
+    const btn = container.querySelector('button.comparison-derivation-disclosure') as HTMLButtonElement;
+    expect(btn).not.toBeNull();
+    expect(btn.getAttribute('aria-expanded')).toBe('false');
+    await act(async () => { btn.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+  }
   return { container, root };
 };
 
@@ -102,7 +114,7 @@ describe('mobile card vertical rhythm (spec v0.2.56)', () => {
   });
 
   it('the separated derivation note renders within the mobile card list', async () => {
-    ({ container, root } = await renderMobileComparison(defaultCall('gothenburg')));
+    ({ container, root } = await renderMobileComparison(defaultCall('gothenburg'), true));
     const card = Array.from(container!.querySelectorAll('.comparison-port-card'))
       .find(c => (c.textContent ?? '').includes('Gothenburg'));
     expect(card).toBeDefined();
@@ -115,7 +127,7 @@ describe('mobile card vertical rhythm (spec v0.2.56)', () => {
 
 describe('flat-rate basis renders exactly once (spec v0.2.56)', () => {
   it('a flat-rate line states its basis exactly once (the Sjofartsverket vessel fee 201805 line)', async () => {
-    ({ container, root } = await renderMobileComparison(defaultCall('gothenburg')));
+    ({ container, root } = await renderMobileComparison(defaultCall('gothenburg'), true));
     const card = Array.from(container!.querySelectorAll('.comparison-port-card'))
       .find(c => (c.textContent ?? '').includes('Gothenburg'));
     expect(card).toBeDefined();
@@ -133,14 +145,16 @@ describe('flat-rate basis renders exactly once (spec v0.2.56)', () => {
   });
 
   it('the doubled basis pattern renders nowhere on the cards', async () => {
-    ({ container, root } = await renderMobileComparison(defaultCall('gothenburg')));
+    ({ container, root } = await renderMobileComparison(defaultCall('gothenburg'), true));
+    // Non-vacuity (v0.21.1): with the lines open the loop below has derivations to check.
+    expect(container!.querySelectorAll('.comparison-derivation-condensed').length).toBeGreaterThan(0);
     for (const el of Array.from(container!.querySelectorAll('.comparison-derivation-condensed'))) {
       expect(el.textContent ?? '').not.toMatch(/Flat rate\s+—\s+Flat rate/);
     }
   });
 
   it('non-flat derivations keep their structure and composition (the dedupe only swallows the prefix case)', async () => {
-    ({ container, root } = await renderMobileComparison(defaultCall('gothenburg')));
+    ({ container, root } = await renderMobileComparison(defaultCall('gothenburg'), true));
     const card = Array.from(container!.querySelectorAll('.comparison-port-card'))
       .find(c => (c.textContent ?? '').includes('Gothenburg'));
     expect(card).toBeDefined();

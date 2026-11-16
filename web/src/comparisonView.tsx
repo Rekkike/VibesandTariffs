@@ -399,6 +399,22 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
               Convert to SEK
             </button>
           )}
+          {/* Fee lines and derivations disclosure on the phone cards (spec
+              v0.21.1, user ruling 2026-11-16): the same per-view state as the
+              desktop control, so the line-item fold is identical on both
+              widths; this retires the v0.2.43 asymmetry in which the cards
+              always showed the derivations. */}
+          {isMobile && (
+            <button
+              type="button"
+              className="disclosure-header comparison-derivation-disclosure"
+              aria-expanded={derivationsVisible}
+              aria-controls="comparison-conversions-panel"
+              onClick={() => setDerivationsVisible(v => !v)}
+            >
+              {derivationsVisible ? 'Hide fee lines and derivations' : 'Show fee lines and derivations'}
+            </button>
+          )}
           {/* Mobile transposition (spec v0.2.39): below the stacking
               breakpoint the comparison renders one card per port, fee
               families listed with native-primary figures (converted
@@ -458,7 +474,7 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
                                   </Box>
                                 )}
                                 {leviedAt.includes(port.metadata.id)
-                                  ? amountCell(perPort.get(port.metadata.id), port.metadata.currency, true)
+                                  ? amountCell(perPort.get(port.metadata.id), port.metadata.currency, derivationsVisible)
                                   : <span className="comparison-not-levied">no published rate in the archived record at this port</span>}
                               </Box>
                             ))}
@@ -479,7 +495,7 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
                                   </Box>
                                 )}
                                 {perPort.get(port.metadata.id)
-                                  ? amountCell(perPort.get(port.metadata.id), port.metadata.currency, true)
+                                  ? amountCell(perPort.get(port.metadata.id), port.metadata.currency, derivationsVisible)
                                   : <span className="comparison-not-levied">no published rate in the archived record at this port</span>}
                               </Box>
                             ))}
@@ -563,7 +579,7 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
             aria-controls="comparison-derivation-panel"
             onClick={() => setDerivationsVisible(v => !v)}
           >
-            {derivationsVisible ? 'Hide fee derivations' : 'Show fee derivations'}
+            {derivationsVisible ? 'Hide fee lines and derivations' : 'Show fee lines and derivations'}
           </button>
           {/* Compare container-through toggle (spec v0.4.2, item 3):
               default OFF - the off state is byte-identical to the

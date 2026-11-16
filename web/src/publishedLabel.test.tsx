@@ -54,12 +54,19 @@ const cleanup = async (container: HTMLDivElement, root: Root) => {
 };
 
 // The desktop table cell for a port's port-dues family row.
+// Comparison line-item fold (spec v0.21.1, user ruling 2026-11-16): the cell
+// is located by its port column (the heading's .comparison-port-name), not
+// by the port name inside the cell, which only the folded per-rule line
+// items carried. The per-GT labels pinned here are unconditional, so every
+// assertion below now holds at the folded default.
 const familyCell = (container: HTMLDivElement, portName: string) => {
+  const headCells = Array.from(container.querySelectorAll('.comparison-table thead tr:first-child > *'));
+  const col = headCells.findIndex(th => (th.querySelector('.comparison-port-name')?.textContent ?? '').includes(portName));
+  expect(col).toBeGreaterThan(0);
   const row = Array.from(container.querySelectorAll('.comparison-table tbody tr'))
     .find(tr => (tr.querySelector('.comparison-family-label')?.textContent ?? '').trim() === 'port dues');
   expect(row).toBeDefined();
-  const cells = Array.from(row!.querySelectorAll('td'));
-  return cells.find(td => (td.textContent ?? '').includes(portName));
+  return Array.from(row!.children)[col] as HTMLElement | undefined;
 };
 
 describe('published-vs-derived per-GT labeling (spec v0.2.68, item 3)', () => {
