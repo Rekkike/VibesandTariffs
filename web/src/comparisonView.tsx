@@ -45,6 +45,7 @@ import {
 } from './handlingBasis';
 import type { HinterlandMode } from './handlingBasis';
 import { buildDiscountLine } from './discountLine';
+import { buildShareOfTotal, ShareOfTotalStripView } from './shareOfTotal';
 import { PrintComparisonPages } from './printComparisonPages';
 import { userSpecifiedDisclosures } from './userSpecifiedDisclosure';
 import { callDateDisclosure } from './callDate';
@@ -88,6 +89,14 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
   const isMobile = useIsMobile();
   const [conversionsVisible, setConversionsVisible] = useState(false);
   const [derivationsVisible, setDerivationsVisible] = useState(false);
+  // Share-of-total disclosure (spec v0.22.0, user rulings 2026-11-20):
+  // default OFF - the off state is byte-identical to the pre-disclosure
+  // view (pinned). ON, each port's Grand Total gains one compact
+  // composition strip derived from the presented total (see
+  // shareOfTotal.tsx); screen only, never on paper. Same per-view state
+  // on both widths (the v0.21.1 parity doctrine), one control render at a
+  // time (the isMobile gating pattern).
+  const [shareOfTotalVisible, setShareOfTotalVisible] = useState(false);
   // Compare container-through toggle (spec v0.4.2, item 3): default OFF -
   // the off state is byte-identical to the pre-toggle view (pinned). ON
   // adds the published landside legs to the unbundled ports; the
@@ -193,6 +202,14 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
   // Comparison OPS segment (spec v0.9.1): read from the engine's own
   // ops_speculative records, never recomputed.
   const opsSegment = useMemo(() => buildOpsSegment(portResults), [portResults]);
+  // Share-of-total strips (spec v0.22.0): one per port, derived from the
+  // same rowsBySegment stage sums the view renders plus the presented
+  // total; a port with no result (or a non-positive total) maps to null
+  // and renders no strip.
+  const shareStrips = useMemo(
+    () => new Map(portResults.map(({ port, result }) => [port.metadata.id, buildShareOfTotal(port.metadata.id, result, rowsBySegment.rowsByStage)])),
+    [portResults, rowsBySegment]
+  );
   // Print model (spec v0.9.0): the paper follows the print selection, not the
   // screen toggle - the dialog path carries its own container-through choice,
   // the live-state Ctrl+P path inherits the screen toggle. The Grand Total,
@@ -245,6 +262,13 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
     vessel,
     formatCurrency
   });
+  const shareStripNode = (portId: string) => {
+    if (!shareOfTotalVisible) return null;
+    const strip = shareStrips.get(portId);
+    return strip
+      ? <ShareOfTotalStripView strip={strip} testId={`share-of-total-${portId}`} />
+      : null;
+  };
   return (
     <Box className="container">
       {/* P3 (Stage 4 of the design overhaul, v0.19.0): the comparison view's
@@ -399,6 +423,21 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
               Convert to SEK
             </button>
           )}
+          {/* Share-of-total disclosure on the phone (spec v0.22.0, user
+              rulings 2026-11-20): the same per-view state as the desktop
+              control, placed beside "Convert to SEK" above the cards, so
+              the composition strip opens identically on both widths. */}
+          {isMobile && (
+            <button
+              type="button"
+              className="disclosure-header comparison-share-disclosure"
+              aria-expanded={shareOfTotalVisible}
+              onClick={() => setShareOfTotalVisible(v => !v)}
+              data-testid="share-of-total-toggle"
+            >
+              {shareOfTotalVisible ? 'Hide share of total' : 'Show share of total'}
+            </button>
+          )}
           {/* Fee lines and derivations disclosure on the phone cards (spec
               v0.21.1, user ruling 2026-11-16): the same per-view state as the
               desktop control, so the line-item fold is identical on both
@@ -448,6 +487,10 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
                           <Box sx={{ textAlign: 'right' }}>
                             {convCell(result.total, result.currency)}
                             {grandTotalPerGtCell(result.total, result.currency, Boolean(result.ops_speculative), opsPerGtPresent(result))}
+                            {/* Share-of-total strip on the card (spec
+                                v0.22.0): under the Grand Total lead,
+                                only while the disclosure is open. */}
+                            {shareStripNode(port.metadata.id)}
                           </Box>
                         </Box>
                         {/* Stage grouping and charge-type lines (spec
@@ -580,6 +623,18 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
             onClick={() => setDerivationsVisible(v => !v)}
           >
             {derivationsVisible ? 'Hide fee lines and derivations' : 'Show fee lines and derivations'}
+          </button>
+          {/* Share-of-total disclosure on the desktop (spec v0.22.0, user
+              rulings 2026-11-20): beside the fee-lines control, the same
+              per-view state the phone carries beside "Convert to SEK". */}
+          <button
+            type="button"
+            className="disclosure-header comparison-share-disclosure"
+            aria-expanded={shareOfTotalVisible}
+            onClick={() => setShareOfTotalVisible(v => !v)}
+            data-testid="share-of-total-toggle"
+          >
+            {shareOfTotalVisible ? 'Hide share of total' : 'Show share of total'}
           </button>
           {/* Compare container-through toggle (spec v0.4.2, item 3):
               default OFF - the off state is byte-identical to the
@@ -884,6 +939,10 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
                         ? <Box sx={{ textAlign: 'right' }}>
                             {convCell(result.total, result.currency)}
                             {grandTotalPerGtCell(result.total, result.currency, Boolean(result.ops_speculative), opsPerGtPresent(result))}
+                            {/* Share-of-total strip in the Grand Total cell
+                                (spec v0.22.0): only while the disclosure is
+                                open; a non-positive total renders nothing. */}
+                            {shareStripNode(port.metadata.id)}
                           </Box>
                         : <span className="comparison-error">error</span>}
                     </TableCell>
