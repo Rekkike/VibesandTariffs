@@ -19,7 +19,7 @@
 import { test, expect, type Page } from '@playwright/test';
 import * as path from 'path';
 
-const EXPECTED_VERSION = 'v0.22.0';
+const EXPECTED_VERSION = 'v0.23.0';
 
 const VIEWPORTS = [
   { name: '1280x800', width: 1280, height: 800 },

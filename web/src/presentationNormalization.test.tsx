@@ -199,6 +199,12 @@ describe('the shared-reference contract (spec v0.4.4: referenced, never duplicat
     expect(files.sort()).toEqual([
       'aarhus_2026.yaml', 'bremerhaven_2026.yaml', 'exchange_rates.yaml',
       'gavle_2026.yaml', 'gothenburg_2026.yaml', 'hamburg_2026.yaml',
+      // v0.23.0 re-baseline (in-test attribution, user ruling of 2026-11-23):
+      // the tree-inert dual-year fork hamburg_2027.yaml joins the data
+      // directory beside the frozen 2026 silo; the converter's sentinel keeps
+      // it out of ports.json, so the registered-port enumeration below is
+      // unchanged.
+      'hamburg_2027.yaml',
       'helsingborg_2026.yaml', 'norrkoping_2026.yaml', 'norvik_2026.yaml',
       // v0.7.0 re-baseline (the Rotterdam expansion): the ninth silo's
       // file joins the data-directory list; the no-port-local-copy
