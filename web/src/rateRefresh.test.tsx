@@ -207,11 +207,14 @@ describe('rate-fetch removal (spec v0.4.0 rider — the v0.3.2/v0.3.5 reversal)'
     // v0.20.0 ritual re-baseline (ECB rate pass (user ruling 2026-11-13)): 11.0628 and
     // 7.4754 as of 2026-11-12 (were 10.9910 and 7.4754, 2026-11-10; SEK drift
     // +0.0718, DKK drift 0.0000, the as_of advances).
-    expect(yamlText.includes('rate: 11.0628')).toBe(true);
-    expect(yamlText.includes('as_of: 2026-11-12')).toBe(true);
+    // v0.25.0 ritual re-baseline (ECB rate pass (user ruling 2026-11-23)): 11.2375 and
+    // 7.4746 as of 2026-11-23 (were 11.0628 and 7.4754, 2026-11-12; SEK drift
+    // +0.1747, DKK drift -0.0008, the as_of advances).
+    expect(yamlText.includes('rate: 11.2375')).toBe(true);
+    expect(yamlText.includes('as_of: 2026-11-23')).toBe(true);
     // v0.6.0 Aarhus expansion: the second EUR-anchored pair (the derived
     // cross's denominator; the ritual now checks both pairs).
-    expect(yamlText.includes('rate: 7.4754')).toBe(true);
+    expect(yamlText.includes('rate: 7.4746')).toBe(true);
     expect(exchangeRates).toHaveLength(2);
     expect(eurSek.pair ?? eurSek.from_currency + '-' + eurSek.to_currency).toBe('EUR-SEK');
   });
@@ -225,7 +228,9 @@ describe('rate-fetch removal (spec v0.4.0 rider — the v0.3.2/v0.3.5 reversal)'
     // (or vice versa) goes red here.
     // v0.20.0 ritual re-baseline (ECB rate pass (user ruling 2026-11-13)):
     // the guard is symbolic and follows the pin unchanged - at the new
-    // pins it asserts 11.0628 / 2026-11-12.
+    // pins it asserted 11.0628 / 2026-11-12.
+    // v0.25.0 ritual re-baseline (ECB rate pass (user ruling 2026-11-23)):
+    // still symbolic - at the new pins it asserts 11.2375 / 2026-11-23.
     expect(DEFAULT_EXCHANGE_RATE.rate).toBe(eurSekRate());
     expect(DEFAULT_EXCHANGE_RATE.date).toBe(asOf());
   });

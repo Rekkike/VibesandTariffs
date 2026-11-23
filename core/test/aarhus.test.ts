@@ -114,15 +114,18 @@ describe('Aarhus — the cross-rate pin (DKK -> SEK via the EUR anchor; the mach
   // v0.20.0 ritual re-baseline (ECB rate pass (user ruling 2026-11-13)): the ECB TARGET
   // publication of 2026-11-12 states EUR-SEK 11.0628 (was 10.9910) and
   // EUR-DKK 7.4754 (unchanged, drift 0.0000); both as_of move to 2026-11-12.
-  it('the published pairs carry both ECB rows: EUR-SEK 11.0628 and EUR-DKK 7.4754, both as of 2026-11-12', () => {
+  // v0.25.0 ritual re-baseline (ECB rate pass (user ruling 2026-11-23)): the ECB TARGET
+  // publication of 2026-11-23 states EUR-SEK 11.2375 (was 11.0628) and
+  // EUR-DKK 7.4746 (was 7.4754); both as_of move to 2026-11-23.
+  it('the published pairs carry both ECB rows: EUR-SEK 11.2375 and EUR-DKK 7.4746, both as of 2026-11-23', () => {
     const sek = rates.find(p => p.pair === 'EUR-SEK');
     const dkk = rates.find(p => p.pair === 'EUR-DKK');
     expect(sek).toBeDefined();
-    expect(sek!.rate).toBe(11.0628);
+    expect(sek!.rate).toBe(11.2375);
     expect(dkk).toBeDefined();
-    expect(dkk!.rate).toBe(7.4754);
+    expect(dkk!.rate).toBe(7.4746);
     expect(new Date(sek!.as_of).toISOString()).toBe(new Date(dkk!.as_of).toISOString());
-    expect(new Date(sek!.as_of).toISOString().slice(0, 10)).toBe('2026-11-12');
+    expect(new Date(sek!.as_of).toISOString().slice(0, 10)).toBe('2026-11-23');
   });
   // v0.8.1 ritual re-baseline (in-test attribution): 11.123 / 7.4746 =
   // 1.488106386963851 (was 11.224 / 7.4745 = 1.5016389056124155).
@@ -130,11 +133,13 @@ describe('Aarhus — the cross-rate pin (DKK -> SEK via the EUR anchor; the mach
   // 1.470289215292827 (was 11.123 / 7.4746 = 1.488106386963851).
   // v0.20.0 ritual re-baseline (ECB rate pass (user ruling 2026-11-13)): 11.0628 / 7.4754 =
   // 1.4798940524921744 (was 10.9910 / 7.4754 = 1.470289215292827).
-  it('the derived cross is full precision: 11.0628 / 7.4754 = 1.4798940524921744 (never a fixed ratio in code)', () => {
+  // v0.25.0 ritual re-baseline (ECB rate pass (user ruling 2026-11-23)): 11.2375 / 7.4746 =
+  // 1.5034249324378564 (was 11.0628 / 7.4754 = 1.4798940524921744).
+  it('the derived cross is full precision: 11.2375 / 7.4746 = 1.5034249324378564 (never a fixed ratio in code)', () => {
     const sek = rates.find(p => p.pair === 'EUR-SEK')!.rate;
     const dkk = rates.find(p => p.pair === 'EUR-DKK')!.rate;
     const cross = sek / dkk;
-    expect(cross).toBe(1.4798940524921744);
+    expect(cross).toBe(1.5034249324378564);
     // The full-precision contract: the cross is not a rounded constant.
     expect(Math.round(cross * 1e10) / 1e10).not.toBe(Math.round(cross * 100) / 100);
   });
@@ -151,11 +156,14 @@ describe('Aarhus — the cross-rate pin (DKK -> SEK via the EUR anchor; the mach
   // v0.20.0 ritual re-baseline (ECB rate pass (user ruling 2026-11-13)): 6,348,361.00 x
   // (11.0628 / 7.4754) = 9,394,901.69 SEK (was 9,333,926.71 at 10.9910 /
   // 7.4754, 2026-11-10). The native 6,348,361.00 DKK is untouched.
-  it('the converted comparison figure: 6,348,361.00 DKK x (11.0628 / 7.4754) = 9,394,901.69 SEK (rounded at display only)', () => {
+  // v0.25.0 ritual re-baseline (ECB rate pass (user ruling 2026-11-23)): 6,348,361.00 x
+  // (11.2375 / 7.4746) = 9,544,284.21 SEK (was 9,394,901.69 at 11.0628 /
+  // 7.4754, 2026-11-12). The native 6,348,361.00 DKK is untouched.
+  it('the converted comparison figure: 6,348,361.00 DKK x (11.2375 / 7.4746) = 9,544,284.21 SEK (rounded at display only)', () => {
     const sek = rates.find(p => p.pair === 'EUR-SEK')!.rate;
     const dkk = rates.find(p => p.pair === 'EUR-DKK')!.rate;
     const converted = 6348361.00 * (sek / dkk);
-    expect(Math.round(converted * 100) / 100).toBe(9394901.69);
+    expect(Math.round(converted * 100) / 100).toBe(9544284.21);
   });
   it('the derived cross reads the published rows at run time (red-proof: a mutated DKK row moves the converted figure)', () => {
     // The red proof for this pin was observed: with the EUR-DKK rate
@@ -170,10 +178,12 @@ describe('Aarhus — the cross-rate pin (DKK -> SEK via the EUR anchor; the mach
     // 9,333,926.71 (were 7.4746 and 9,447,036.55).
     // v0.20.0 ritual re-baseline (ECB rate pass (user ruling 2026-11-13)): 7.4754
     // (unchanged) and 9,394,901.69 (was 9,333,926.71).
-    expect(dkkPair.rate).toBe(7.4754);
+    // v0.25.0 ritual re-baseline (ECB rate pass (user ruling 2026-11-23)): 7.4746
+    // and 9,544,284.21 (was 7.4754 and 9,394,901.69).
+    expect(dkkPair.rate).toBe(7.4746);
     const sekPair = raw.published_pairs.find((p: any) => p.pair === 'EUR-SEK');
     const converted = 6348361.00 * (sekPair.rate / dkkPair.rate);
-    expect(Math.round(converted * 100) / 100).toBe(9394901.69);
+    expect(Math.round(converted * 100) / 100).toBe(9544284.21);
   });
 });
 
