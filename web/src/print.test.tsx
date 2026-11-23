@@ -298,7 +298,12 @@ describe('print header content — the unfalsifiability rule (spec v0.6.2)', () 
         // 2026-11-20): the minor bump moves the version constant
         // v0.21.1 -> v0.22.0; the share-of-total strip is screen-only, so
         // print is untouched in this pass as well.
-        expect(APP_VERSION).toBe('v0.22.0');
+        // HPA Hamburg 2027 tariff data v0.23.0 (user dual-year ruling of
+        // 2026-11-23): the minor bump moves the version constant
+        // v0.22.0 -> v0.23.0; the 2027 data silo is tree-inert (ports.json
+        // byte-identical, the app stays on the 2026 year constant), zero
+        // figure movement, print untouched in this pass as well.
+        expect(APP_VERSION).toBe('v0.23.0');
         expect(text).toContain('Tariff year: 2026');
         expect(text).toContain('Vessel profile: MAREN MAERSK (IMO 9632129)');
         expect(text).toContain('ESI:');

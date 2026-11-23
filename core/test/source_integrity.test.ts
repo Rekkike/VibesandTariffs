@@ -58,7 +58,13 @@ describe('Source link integrity (spec v0.2.26)', () => {
     expect(ports.length).toBeGreaterThanOrEqual(3);
     // v0.7.0 re-baseline (in-test attribution): Rotterdam joins the silo
     // set — the ninth silo, the first Dutch port.
-    expect(ports.map(p => p.port.metadata!.id).sort()).toEqual(['aarhus', 'bremerhaven', 'gavle', 'gothenburg', 'hamburg', 'helsingborg', 'norrkoping', 'norvik', 'rotterdam']);
+    // v0.23.0 re-baseline (in-test attribution, user ruling of 2026-11-23):
+    // the tree-inert dual-year fork hamburg_2027.yaml lands beside the frozen
+    // hamburg_2026.yaml and carries the same metadata.id 'hamburg', so the
+    // on-disk port-file list holds 'hamburg' twice; the fork's HPA rules cite
+    // the archived 2027 documents (verified by the document_url tests below),
+    // and the converter's sentinel keeps it out of ports.json.
+    expect(ports.map(p => p.port.metadata!.id).sort()).toEqual(['aarhus', 'bremerhaven', 'gavle', 'gothenburg', 'hamburg', 'hamburg', 'helsingborg', 'norrkoping', 'norvik', 'rotterdam']);
   });
 
   it('every fee rule document_url path is archived or explicitly not-archived (a)', () => {
