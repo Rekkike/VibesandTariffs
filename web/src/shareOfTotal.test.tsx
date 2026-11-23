@@ -288,13 +288,17 @@ describe('share-of-total scope — print untouched (user ruling 2026-11-20)', ()
     expect(printSource).not.toContain('share-of-total');
     expect(printSource).not.toContain('ShareOfTotal');
     // the registry and the ECB pins are untouched by this pass (hash
-    // pinned at the base verification; asserted here against the file)
+    // pinned at the base verification; asserted here against the file).
+    // v0.25.0 re-baseline (ECB rate pass (user ruling 2026-11-23)): the
+    // registry REGENERATES BY DESIGN in a rate pass, so its exchange_rates
+    // block carries the new pins - EUR-SEK 11.2375 and EUR-DKK 7.4746, both
+    // as_of 2026-11-23 (were 11.0628 / 7.4754, 2026-11-12).
     const registry = JSON.parse(fs.readFileSync(path.join(__dirname, 'data', 'ports.json'), 'utf8'));
     const sek = registry.exchange_rates.find((r: { pair?: string; from_currency: string; to_currency: string }) => r.from_currency === 'EUR' && r.to_currency === 'SEK');
     const dkk = registry.exchange_rates.find((r: { pair?: string; from_currency: string; to_currency: string }) => r.from_currency === 'EUR' && r.to_currency === 'DKK');
-    expect(sek.rate).toBe(11.0628);
-    expect(sek.as_of).toBe('2026-11-12');
-    expect(dkk.rate).toBe(7.4754);
-    expect(dkk.as_of).toBe('2026-11-12');
+    expect(sek.rate).toBe(11.2375);
+    expect(sek.as_of).toBe('2026-11-23');
+    expect(dkk.rate).toBe(7.4746);
+    expect(dkk.as_of).toBe('2026-11-23');
   });
 });

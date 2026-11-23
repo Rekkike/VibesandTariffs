@@ -309,7 +309,12 @@ describe('print header content — the unfalsifiability rule (spec v0.6.2)', () 
         // (ports.json byte-identical, the app stays on the 2026 year
         // constant), zero figure movement, print untouched in this pass as
         // well.
-        expect(APP_VERSION).toBe('v0.24.0');
+        // ECB rate re-pin v0.25.0 (user ruling 2026-11-23): the minor bump
+        // moves the version constant v0.24.0 -> v0.25.0; a data-only re-pin
+        // of the exchange-rate constants of record (EUR-SEK 11.2375,
+        // EUR-DKK 7.4746, as_of 2026-11-23) with declared movement at the
+        // converted surfaces only; the print block stays byte-identical.
+        expect(APP_VERSION).toBe('v0.25.0');
         expect(text).toContain('Tariff year: 2026');
         expect(text).toContain('Vessel profile: MAREN MAERSK (IMO 9632129)');
         expect(text).toContain('ESI:');
