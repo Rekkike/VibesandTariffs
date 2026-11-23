@@ -277,13 +277,18 @@ describe('Swedish domestic expansion — Sjöfartsverket shared rules (reference
     // directory beside the frozen 2026 silo; it carries no
     // Sjöfartsverket-style national block either (its non-HPA billers are
     // byte-carried), so the no-duplication contract is unaffected.
+    // v0.24.0 re-baseline (in-test attribution, user ruling of 2026-11-23):
+    // the tree-inert dual-year fork gothenburg_2027.yaml joins the data
+    // directory beside the frozen gothenburg_2026.yaml; its Sjöfartsverket
+    // block is byte-carried inside the port's own file (the reference, not a
+    // duplication), so the no-duplication contract is unaffected.
     const files = fs.readdirSync(DATA_DIR).filter(f => f.endsWith('.yaml'));
     const portFiles = files.filter(f => f !== 'exchange_rates.yaml' && f !== 'vessel_library.yaml');
     expect(portFiles.sort()).toEqual([
       'aarhus_2026.yaml', 'bremerhaven_2026.yaml', 'gavle_2026.yaml',
-      'gothenburg_2026.yaml', 'hamburg_2026.yaml', 'hamburg_2027.yaml',
-      'helsingborg_2026.yaml', 'norrkoping_2026.yaml', 'norvik_2026.yaml',
-      'rotterdam_2026.yaml'
+      'gothenburg_2026.yaml', 'gothenburg_2027.yaml', 'hamburg_2026.yaml',
+      'hamburg_2027.yaml', 'helsingborg_2026.yaml', 'norrkoping_2026.yaml',
+      'norvik_2026.yaml', 'rotterdam_2026.yaml'
     ]);
   });
 });

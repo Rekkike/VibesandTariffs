@@ -64,7 +64,14 @@ describe('Source link integrity (spec v0.2.26)', () => {
     // on-disk port-file list holds 'hamburg' twice; the fork's HPA rules cite
     // the archived 2027 documents (verified by the document_url tests below),
     // and the converter's sentinel keeps it out of ports.json.
-    expect(ports.map(p => p.port.metadata!.id).sort()).toEqual(['aarhus', 'bremerhaven', 'gavle', 'gothenburg', 'hamburg', 'hamburg', 'helsingborg', 'norrkoping', 'norvik', 'rotterdam']);
+    // v0.24.0 re-baseline (in-test attribution, user ruling of 2026-11-23):
+    // the tree-inert dual-year fork gothenburg_2027.yaml lands beside the
+    // frozen gothenburg_2026.yaml and carries the same metadata.id
+    // 'gothenburg', so the on-disk port-file list holds 'gothenburg' twice;
+    // the fork's edited Port of Gothenburg rules cite the archived 2027
+    // document (verified by the document_url tests below), and the converter's
+    // sentinel keeps it out of ports.json.
+    expect(ports.map(p => p.port.metadata!.id).sort()).toEqual(['aarhus', 'bremerhaven', 'gavle', 'gothenburg', 'gothenburg', 'hamburg', 'hamburg', 'helsingborg', 'norrkoping', 'norvik', 'rotterdam']);
   });
 
   it('every fee rule document_url path is archived or explicitly not-archived (a)', () => {
@@ -214,7 +221,11 @@ describe('Source link integrity (spec v0.2.26)', () => {
     expect(referenceText).toContain('text extraction');
     // All five Swedish silos cite the archived path exactly, with no
     // residual never-existed .pdf citation anywhere in the data.
-    for (const file of ['gavle_2026.yaml', 'gothenburg_2026.yaml', 'helsingborg_2026.yaml', 'norrkoping_2026.yaml', 'norvik_2026.yaml']) {
+    // v0.24.0 re-baseline (in-test attribution, user ruling of 2026-11-23):
+    // the tree-inert dual-year fork gothenburg_2027.yaml joins the Swedish
+    // silo list; its byte-carried Sjöfartsverket rules cite the same archived
+    // prislista path, so the citation contract holds for the fork too.
+    for (const file of ['gavle_2026.yaml', 'gothenburg_2026.yaml', 'gothenburg_2027.yaml', 'helsingborg_2026.yaml', 'norrkoping_2026.yaml', 'norvik_2026.yaml']) {
       const text = fs.readFileSync(path.join(DATA_DIR, file), 'utf8');
       expect(text).toContain('document_url: docs/sources/sweden/national/sjofartsverket/prislista-farleds-lotsavgifter-2026.txt');
       expect(text).not.toMatch(/document_url:.*prislista.*\.pdf"?\s*$/m);
