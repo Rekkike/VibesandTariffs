@@ -335,3 +335,83 @@ through figure.
 
 **Unchanged.** Hatch cover 3,111, gearbox 1,036, ISPS 80, the storage
 ladders and the yard surcharges.
+
+---
+
+## 9. Port of Gothenburg 2027 document and the dual-year drift (v0.24.0, user ruling of 2026-11-23)
+
+The dual-year accumulation continues from the v0.23.0 Hamburg precedent: the
+repository ingests the Port of Gothenburg Port Tariff 2027 and the Gothenburg
+2027 data fork now, while the app remains on the 2026 year constant. The 2027
+fork (`core/data/gothenburg_2027.yaml`) sits beside the FROZEN
+`gothenburg_2026.yaml` (byte-identical); only the Port of Gothenburg biller's
+rules drift per the table below.
+
+### 9.1 Archived 2027 document of record (sha256-verified after download)
+
+| Path | Document | Pages | SHA-256 |
+|------|----------|-------|---------|
+| `docs/sources/sweden/gothenburg/port-authority/port-tariff-2027.pdf` | Port of Gothenburg, Port Tariff 2027 — version 1, effective 1 January 2027, published 30 September 2026 | 37 | `e0d46c17e7bee2afcc1b78879e3089bfca19d51db1b1dd2e79661944fcece130` |
+
+551,198 bytes, downloaded from
+https://www.portofgothenburg.com/globalassets/dokument/port_of_gothenburg_port_tariff_2027.pdf
+and verified against the published figures (bytes, sha256, version, effective
+date, publish date, page count) at v0.24.0. Binary PDF archived per the
+v0.23.0 precedent (sibling of `port-tariff-2026.txt`; no text twin).
+
+### 9.2 Per-rule drift table, 2026 encoding -> 2027 published (v0.24.0, user ruling of 2026-11-23)
+
+| Rule | 2026 encoded | 2027 published | Classification | Citation (archived 2027 PDF) |
+|------|--------------|----------------|----------------|------------------------------|
+| `port_gothenburg_container_vessel_dues` band rates | 1.96 / 1.71 / 1.15 / 0.80 SEK/GT | 2.08 / 1.83 / 1.26 / 0.91 SEK/GT | rate-index; band boundaries (0–20,000 / 20,001–40,000 / 40,001–60,000 / >60,001 GT) and the progressive banding unchanged | section 2.2 table p. 9; worked examples pp. 11–12 |
+| same rule, minimum | 500 | 800 SEK | structural — section 3 p. 3: "The minimum amount invoiced per vessel and per call is 800 SEK"; the 2026 silo encoded this same section-3 minimum as the rule minimum, the interpretation carried | section 3 p. 3 |
+| same rule, ESI adjustment condition | `esi_score >= 30` | `esi_score >= 20` | structural — "a minimum ESI score of 20 points or at least CSI-class 4"; the 10% discount, the CSI-class-4 alternative, the stacking order, the second additive 10% fossil-free discount and the 50% frequency discount unchanged; the esi_score input surface unchanged | section 2.2 p. 10 |
+| `port_gothenburg_waste_solid_non_eu` | 0.24 SEK/GT | 0.23 SEK/GT | rate-index; corroborated by the printed sample p. 12 (12,000 GT × 0.23 = 2,760 SEK); embedded figure in the description updated | section 2.2 p. 10; sample p. 12 |
+| `port_gothenburg_fresh_water` | 50 SEK/m³ above 50 m³ | 55 SEK/m³ above 50 m³ | rate-index; free band below 50 m³ unchanged | section 2.1 copy p. 7 |
+| `port_gothenburg_waste_scrubber` | 800 SEK | 850 SEK administration fee | rate-index | section 2.2 p. 10 |
+| `port_gothenburg_ops_connection` | 7,000 SEK | 7,100 SEK | rate-index; one fee per port call, jetties 519/520/521 unchanged | section 2.1 copy pp. 7–8 |
+| `port_gothenburg_layup` | 45 SEK/m LOA per day | 45.50 SEK/m LOA per day | rate-index; "per calendar day or part thereof" unchanged | section 2.1 copy p. 7 |
+
+**Restructure note (fresh water, OPS, lay-up).** The 2027 document folds the
+2026 general sections (4.2 fresh water, 5.1 OPS, 5.2 lay-up) into the
+per-segment sections; the values are printed at the section 2.1 copies
+(pp. 7–8), and the three edited rules' source_references cite those pages
+with the restructure note recorded.
+
+**Worked examples recomputed through the engine as pins**
+(`core/test/gothenburg_2027.test.ts`): the 70,000 GT Europe call —
+20,000×2.08 + 20,000×1.83 + 20,000×1.26 + 10,000×0.91 = **112,500 SEK**
+infrastructure dues (pp. 11–12); the 12,000 GT non-Europe ESI-20 call —
+24,960 − 2,496 + 3,720 + 2,760 = **28,944 SEK** (p. 12).
+
+**Byte-carried unchanged in the fork:** waste_solid_eu 0.13 SEK/GT, sludge EU
+0.21 / non-EU 0.31 SEK/GT / excess 2,400 SEK/m³, the EU 2022/91 certificate
+discount −0.05 SEK/GT, every Sjöfartsverket rule, every APM Terminals rule,
+the towage estimate, both Klippan mooring rules, the ETS and FuelEU notices,
+and every configuration section (input_profile, default_call, ancillary
+config, OPS descriptor). Their source_references keep pointing at the 2026
+archives; only the six edited rules re-point at `port-tariff-2027.pdf`
+(issued 2026-09-30).
+
+**Tree-inert anti-contamination, binding (the v0.23.0 sentinel mechanism):**
+the converter year constant STAYS 2026 and the loader/converter config is
+untouched; the fork carries an empty top-level `vessels: []` sentinel so the
+converter's `Array.isArray(data.vessels)` branch (which precedes the
+fee_rules branch, no year filter) classifies it as an empty vessel-library
+file and the 2027 yaml never enters the build — ports.json byte-identical
+(sha256 6a04579c8f63b25b63cf755644dfcd5c125cb908aaea708010f1d85a4d9f3544
+before and after; red-proven: removing the sentinel moves the registry hash).
+The dedicated flip pass (not this one) moves the year constant, removes the
+sentinel, and re-points the live pins.
+
+### 9.3 Other-biller status at v0.24.0
+
+- **Sjöfartsverket:** the 2027 prislista (farleds- och lotsavgifter 2027) is
+  unpublished as of 2026-11-23 — December watch; the 2026 prislista stays the
+  encoded source (byte-carried).
+- **APM Terminals Gothenburg:** the APMT surface holds only the 2024, 2025 and
+  2026 editions; no 2027 Terminal Tariff exists yet — the 2026 June revision
+  stays encoded (byte-carried).
+- **Klippan båtmanstation:** notice-only (contact-based, no price list);
+  unchanged.
+- **Towage:** a declared estimate (no published tariff); unchanged.
