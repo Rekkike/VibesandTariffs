@@ -496,3 +496,77 @@ Hamburg analogue of the Aarhus ToB §2.1 clause recorded in
 AARHUS_EXTRACTION_REFERENCE.md §5.5. The model prices the published
 schedule; any comparison-screen note about negotiated deviations is
 proposed for a future ruling, not implemented here.
+
+## 18. HPA 2027 documents and the dual-year drift (v0.23.0, user ruling of 2026-11-23)
+
+The dual-year accumulation begins: the repository ingests the HPA 2027
+documents and the Hamburg 2027 data fork now, while the app remains on the
+2026 year constant. The 2027 fork (`core/data/hamburg_2027.yaml`) is
+tree-inert until the dedicated flip pass (a future pass moves the year
+constant, removes the fork's `vessels: []` converter sentinel, and
+re-points the live pins; not this pass). `core/data/hamburg_2026.yaml` is
+FROZEN, byte-identical.
+
+### 18.1 Archived 2027 documents of record (sha256-verified after download)
+
+Downloaded 2026-11-23 from the HPA maritime-shipping page
+(https://www.hamburg-port-authority.de/en/waterway/maritime-shipping, the
+/fileadmin/user_upload/Hafengeld/2027/ PDF links) and archived per the 2026
+naming pattern:
+
+| Archive path | Document | Pages | sha256 |
+|---|---|---|---|
+| `docs/sources/germany/hamburg/port-authority/pricelist-maritime-shipping-2027.pdf` | HPA Pricelist Maritime Shipping (Schedule of Fees and Charges), as of 01.01.2027, issued 14.10.2026, version 1.0 | 17 | `f400c2a93c2ce1aa6e0374539ae0c25564c90020cd8d7ddb8969f08842bb3686` |
+| `docs/sources/germany/hamburg/port-authority/stc-maritime-shipping-2027.pdf` | HPA Special Terms and Conditions Maritime Shipping, as of 01.01.2027, issued 14.10.2026, version 1.0 | 16 | `df4e1a0503bd0b76d7019b30868a302d2817724aa894511ea23f061daa4ef2b9` |
+| `docs/sources/germany/hamburg/port-authority/port-gtc-2027.pdf` | HPA Port GTC, as of 01.01.2027, issued 14.10.2026, version 1.0 | 15 | `f49eec1b12607ec8e61cb96c8ef7d5398c38e7fce1bb03bac450ee12c325ea2a` |
+
+Verified dates: effective as of 01 January 2027, issued 14.10.2026, version
+1.0, on each document's own cover. Page anchors verified against the
+archived PDFs: cat. 31 step table and items 115/140/145/210/217/280 on
+pricelist p. 6 (the printed sample calculation on p. 8 repeats them: 149,000
+GT, Tier III, ESI Core 80, OPS, 26 mn GT = level 3, −9.0%, cap 230,000);
+Li 311/312 and ALGS 1/2 with the 45.71/17.35 minimums on p. 7 (also printed
+pp. 15, 17); SG 2/SG 3 on p. 7. STC 2027: 4.1.1.1 ESI Core bands pp. 10–11,
+4.1.1.2 Green Award p. 11, 4.1.2.4 OPS p. 12, 4.1.2.11 Quantum pp. 13–14,
+section 2.2 demurrage p. 9. Port GTC 2027: 2.3.1 processing fees p. 10.
+The string "noise" appears nowhere in any of the three 2027 documents.
+
+### 18.2 Per-rule drift table, 2026 encoding -> 2027 published (worksuite-verified at source)
+
+| Rule | 2026 | 2027 | Classification | Citation (archived 2027 PDFs) |
+|---|---|---|---|---|
+| hpa_port_fee tranche A (EUR/GT, GT \| env) | 0.0856 \| 0.0214 | 0.0882 \| 0.0220 | rate-index (+2.80 to +3.06% across the six movements) | pricelist p. 6 (sample p. 8) |
+| hpa_port_fee tranche B | 0.2981 \| 0.0746 | 0.3070 \| 0.0768 | rate-index | pricelist p. 6 (sample p. 8) |
+| hpa_port_fee tranche C | 0.2485 \| 0.0621 | 0.2560 \| 0.0640 | rate-index | pricelist p. 6 (sample p. 8) |
+| hpa_port_fee minimum | 43.56 | 44.87 | rate-index | pricelist p. 6 |
+| hpa_port_fee tier map (item 115) | 30 / 25 / 5 / -20 | 30 / 25 / 5 / -20 | unchanged | pricelist p. 6; STC 2.1.1 |
+| hpa_port_fee cap (item 210) | 225,000 GT | 230,000 GT (no port fee for GT in excess) | structural | pricelist p. 6; STC 4.1.2.2 |
+| ESI discount (item 140, STC 4.1.1.1) | "ESI air", four bands: 20-<25: 0.35% cap 175; 25-<35: 0.7% cap 350; 35-<50: 3.5% cap 700; >=50: 7% cap 1050 | "ESI Core", three bands: 10-<20: 0.7% cap 350; 20-<35: 3.5% cap 700; >=35: 7.0% cap 1400 | structural restructure + rename; percent of the tier-adjusted environmental subtotal, capped per call; ESI Core = ESI-NOx + ESI-SOx + ESI-GHG + ESI Innovation per the ESI programme in force; IAPH database; quarterly checks; no application; input stays a 0-100 score | pricelist p. 6 item 140; STC pp. 10-11 |
+| ESI noise discount (2026 STC 4.1.1.2) | four bands 0.15/0.3/1.5/3% caps 75/150/300/450 | RETIRED - no successor; "noise" appears nowhere in either 2027 document | retirement (absence pin in core/test/hamburg_2027.test.ts; the esi_noise_score input surface belongs to the flip pass) | — |
+| STC 2027 4.1.1.2 Green Award (item 145) | — | -3% on the environmental component, price categories 11 and 12 only, certificate required | recorded-not-encoded (out of the cat-31 silo) | STC p. 11; pricelist p. 3 item 145 |
+| OPS rebate (item 217, STC 4.1.2.4) | rate_per_gt 0.0150 | 0.0125 (-16.67%) | rate-index; clause structure unchanged: >= 10 MWh environmentally friendly shore power per call, time-limited to calls up to and including 31 December 2027; boolean ops_usage unchanged | pricelist p. 6 item 217; STC p. 12 |
+| Quantum discount (item 280, STC 4.1.2.11) | 2.5 / 5.0 / 7.5% | 3.0 / 6.0 / 9.0% | rate-index; band boundaries unchanged (> 1.5 mn, > 10 mn, > 25 mn prior-year GT, per beneficiary per calendar year); steps numbered 1/2/3; explicit exclusion of special-tariff-260/265-reduced and non-commercial calls (both tariffs unmodeled; wording only); sample calculation p. 8 shows level 3 at 26 mn GT = -9.0% | STC pp. 13-14; pricelist p. 8 |
+| hpa_demurrage Li 311 / Li 312 | 0.0165 / 0.0255 EUR/GT per commenced 12 h; minimum 44.38 | 0.0170 / 0.0263; minimum 45.71 | rate-index; structure unchanged (120 h port-fee coverage; 120 h excess boundary) | pricelist p. 7 (pp. 15, 17); STC 2.2 p. 9 |
+| hpa_berth_fee_quay (ALGS 1) | 0.0152 EUR/GT per commenced 6 h; minimum 16.84 | 0.0157; minimum 17.35 | rate-index; structure unchanged (per docking; per 6 h or part) | pricelist p. 7 (pp. 15, 17) |
+| hpa_berth_fee_dolphins (ALGS 2) | 0.0052; minimum 16.84 | 0.0054; minimum 17.35 (the 2027 pricelist minimum applies to both ALGS items) | rate-index; structure unchanged | pricelist p. 7 (pp. 15, 17) |
+
+Record-only, unmodeled both years (no change): SG 2 electronic ship-data
+transmission 1,689.20 EUR/year; SG 3 processing fee 19.26 EUR per commenced
+20 min (Port GTC 2.3.1) — pricelist 2027 p. 7, GTC 2027 p. 10.
+
+### 18.3 Encoding and inertness
+
+`core/data/hamburg_2027.yaml` is a fork of the frozen 2026 file: the four
+non-HPA billers (GDWS federal pilotage, HHLA terminals, BUKEA waste,
+EUROGATE terminals) are byte-carried (no 2027 documents exist for them yet),
+the per-port configuration sections are byte-carried (the esi_noise_score
+input surface stays for the flip pass), and only the HPA biller's four rules
+carry the drift above, with every HPA source_reference re-pointed at the
+2027 documents (document_issued 2026-10-14). The fork carries an empty
+`vessels: []` sentinel: while the converter year constant stays 2026, the
+converter classifies the file on its vessel-library branch, so the 2027
+yaml never enters the generated registry — ports.json stays byte-identical
+(sha256 6a04579c8f63b25b63cf755644dfcd5c125cb908aaea708010f1d85a4d9f3544
+before and after). The frozen-2027 suite core/test/hamburg_2027.test.ts
+pins every updated rule at the 2027 values with in-test attribution, plus
+the ESI-noise absence pin and the Green Award recorded-not-encoded note.

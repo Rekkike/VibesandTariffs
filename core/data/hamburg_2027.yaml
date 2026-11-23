@@ -1,0 +1,2331 @@
+# Hamburg 2027 port file - Port Call Cost Analyzer
+# Dual-year fork of the FROZEN hamburg_2026.yaml (user ruling of 2026-11-23,
+# v0.23.0): only the HPA biller's rules drift to the 2027 documents; the four
+# non-HPA billers (GDWS, HHLA, BUKEA, EUROGATE) are byte-carried. The app stays
+# on the 2026 year constant - this file is tree-inert until the dedicated flip
+# pass, which moves the year constant, removes the sentinel below, and
+# re-points the live pins.
+# Tree-inert sentinel: while the converter year constant stays 2026, this empty
+# vessels array keeps convert_yaml_to_json.js on its vessel-library branch, so
+# this 2027 fork never enters the generated registry (ports.json stays
+# byte-identical, sha256 6a04579c8f63b25b63cf755644dfcd5c125cb908aaea708010f1d85a4d9f3544).
+# The flip pass deletes this line.
+vessels: []
+# Extraction authority: docs/sources/germany/hamburg/HAMBURG_EXTRACTION_REFERENCE.md
+# (2027 section: the per-rule drift table, document hashes, verified dates).
+# All amounts in EUR. Billers: HPA, GDWS, HHLA, EUROGATE, City of Hamburg (BUKEA).
+# Terminal scope (spec v0.2.49): a Hamburg call is priced against a named terminal
+# operator. HHLA ship's-dues and terminal items apply only to HHLA calls (default);
+# EUROGATE items only to Eurogate calls. Port-wide charges (HPA, GDWS, BUKEA, towage)
+# are operator-neutral. S5/S6 terms-only documents not archived - live upstream URLs
+# in the extraction reference.
+
+metadata:
+  id: hamburg
+  name: Port of Hamburg
+  country: Germany
+  currency: EUR
+  validity_start: "2027-01-01"
+  validity_end: "2027-12-31"
+  description: "Hamburg port call costs: HPA port fee (cat. 31), GDWS pilotage (River Elbe), HHLA Quay Tariff, and the City of Hamburg ship waste fee (BUKEA). Handling and towage are estimated parameters (unpublished rates)."
+
+billers:
+  - id: hpa
+    name: HPA (Hamburg Port Authority)
+    description: "Port authority: port fee, demurrage, HPA berth fees"
+    currency: EUR
+  - id: gdws
+    name: GDWS (Federal) via pilot station
+    description: "Federal pilotage dues and pilot fees, River Elbe"
+    currency: EUR
+  - id: hhla
+    name: HHLA Container Terminals
+    description: "HHLA Container Terminal Burchardkai/Altenwerder/Tollerort - one published Quay Tariff (Kaitarif) for all three terminals"
+    currency: EUR
+    surcharge:
+      id: hhla_hafenfonds_surcharge
+      name: Hafenfonds Surcharge
+      fee_family: hafenfonds
+      percentage: 1.5
+      exclude_families:
+        - storage
+        - terminal_handling
+      source_reference:
+        document_name: "quay-tariff-2026.pdf"
+        document_url: "docs/sources/germany/hamburg/hhla/quay-tariff-2026.pdf"
+        document_issued: "2025-11-27"
+        page: 16
+        clause: "9.2.3"
+        verified_on: "2026-09-21"
+        verified_by: "vibe-session-hamburg"
+  - id: city_of_hamburg_bukea
+    name: City of Hamburg (BUKEA)
+    description: "Free and Hanseatic City of Hamburg - Environment, Climate, Energy and Agriculture Authority (BUKEA); municipal ship waste fee under HmbSchEG 2022 / EU PRF Directive 2019/883"
+    currency: EUR
+  - id: eurogate
+    name: EUROGATE Container Terminal Hamburg
+    description: "EUROGATE Hamburg - published Prices and Conditions (effective 01.03.2026): berthing charge/tonnage dues, waterside container handling, security, social-fund surcharge (spec v0.2.49 terminal scope)"
+    currency: EUR
+    surcharge:
+      id: eurogate_social_fund_surcharge
+      name: Social Fund Surcharge
+      fee_family: social_fund
+      percentage: 1.5
+      exclude_families:
+        - storage
+        - security
+      source_reference:
+        document_name: "prices-and-conditions-2026.pdf"
+        document_url: "docs/sources/germany/hamburg/eurogate/prices-and-conditions-2026.pdf"
+        document_issued: "2026-01-01"
+        page: 2
+        clause: "1.3.13"
+        verified_on: "2026-09-24"
+        verified_by: "vibe-session-hamburg-terminal-scope"
+
+fee_rules:
+  # ==========================================================================
+  # HPA - Price Category 31 (Container Ships)
+  # ==========================================================================
+  - id: hpa_port_fee
+    fee_family: port_dues
+    biller: HPA (Hamburg Port Authority)
+    name: Port Fee (Hafengeld)
+    description: "HPA price category 31 container ship fee: GT and environmental components, cumulative tranches over GT (half-open bands, lower exclusive / upper inclusive). Covers up to 120 h in port. GT above 230,000 GT is not chargeable. Minimum 44.87 EUR per chargeable call."
+    rate_structure:
+      type: composite_tranche
+      basis: gt
+      gt_cap: 230000
+      tranches:
+        - min: null
+          max: 20000
+          components:
+            gt: 0.0882
+            env: 0.0220
+        - min: 20000
+          max: 100000
+          components:
+            gt: 0.3070
+            env: 0.0768
+        - min: 100000
+          max: null
+          components:
+            gt: 0.2560
+            env: 0.0640
+      component_adjustments:
+        env:
+          # 1. Tier surcharge/reduction (pricelist 2027 item 115; STC 2.1.1 tier basis: most polluting engine, IAPP proof)
+          - kind: tier_pct
+            map:
+              "Tier 0": 30
+              "Tier I": 25
+              "Tier II": 5
+              "Tier III": -20
+          # 2. ESI Core discount on the tier-adjusted env subtotal (STC 2027 4.1.1.1; pricelist 2027 item 140). ESI Core = ESI-NOx + ESI-SOx + ESI-GHG + ESI Innovation per the ESI programme in force; IAPH database; quarterly checks; no application needed. Renamed from "ESI air" and restructured four bands -> three.
+          - kind: score_discount_pct_with_cap
+            input: esi_score
+            description: "ESI Core"
+            bands:
+              - { min: 10, max: 20, pct: 0.7, cap: 350 }
+              - { min: 20, max: 35, pct: 3.5, cap: 700 }
+              - { min: 35, max: null, pct: 7.0, cap: 1400 }
+          # 3. ESI noise discount: RETIRED in 2027 - "noise" appears nowhere in
+          # either 2027 document and the 2026 noise rule has no successor; not
+          # carried into this file (absence pin in core/test/hamburg_2027.test.ts).
+          # STC 2027 4.1.1.2 is the new Green Award discount (-3% on the env
+          # component, price categories 11 and 12 only, certificate required):
+          # out of the cat-31 silo, recorded-not-encoded in the extraction reference.
+        gt:
+          # 2. OPS rebate (pricelist 2027 item 217; STC 2027 4.1.2.4), applied to capped GT
+          - kind: per_gt_rebate
+            rate_per_gt: 0.0125
+            condition_input: ops_usage
+            description: "OPS rebate: granted when the ship received at least 10 MWh of environmentally friendly shore power per call; time-limited to calls up to and including 31 December 2027"
+          # 3. Quantum discount on the OPS-adjusted GT subtotal (STC 2027 4.1.2.11; pricelist 2027 item 280)
+          - kind: pct_discount_banded
+            input: quantum_prior_year_gt
+            description: "Quantum (steps 1/2/3; special-tariff-260/265-reduced and non-commercial calls excluded)"
+            bands:
+              - { min: 1500000, max: 10000000, pct: 3.0 }
+              - { min: 10000000, max: 25000000, pct: 6.0 }
+              - { min: 25000000, max: null, pct: 9.0 }
+      component_labels:
+        gt: "GT component"
+        env: "Environmental component"
+    minimum: 44.87
+    source_reference:
+      document_name: "pricelist-maritime-shipping-2027.pdf"
+      document_url: "docs/sources/germany/hamburg/port-authority/pricelist-maritime-shipping-2027.pdf"
+      document_issued: "2026-10-14"
+      page: 6
+      clause: "cat. 31 item A; item 115 (Tier); item 140 (ESI Core, STC 4.1.1.1); item 210 (cap 230,000 GT); item 217 (OPS, STC 4.1.2.4); item 280 (Quantum, STC 4.1.2.11); sample calculation p. 8 (26 mn GT = level 3, -9.0%)"
+      verified_on: "2026-11-23"
+      verified_by: "vibe-session-hamburg-2027"
+
+  - id: hpa_demurrage
+    fee_family: lay_up
+    biller: HPA (Hamburg Port Authority)
+    name: Demurrage
+    description: "HPA demurrage beyond the port fee's 120 h coverage: 0.0170 EUR/GT per commenced 12 h of excess (up to 120 h excess) or 0.0263 EUR/GT per commenced 12 h beyond that. Minimum 45.71 EUR."
+    rate_structure:
+      type: per_commenced_period
+      basis: gt
+      hours_input: port_time_hours
+      fallback_hours: lay_time_hours
+      free_hours: 120
+      period_hours: 12
+      tiers:
+        - up_to_excess_hours: 120
+          rate_per_period_per_basis: 0.0170
+        - up_to_excess_hours: null
+          rate_per_period_per_basis: 0.0263
+    minimum: 45.71
+    source_reference:
+      document_name: "pricelist-maritime-shipping-2027.pdf"
+      document_url: "docs/sources/germany/hamburg/port-authority/pricelist-maritime-shipping-2027.pdf"
+      document_issued: "2026-10-14"
+      page: 7
+      clause: "cat. 31 item B; Li 311 / Li 312 (also printed pp. 15, 17); STC 2027 section 2.2 (120 h excess boundary)"
+      verified_on: "2026-11-23"
+      verified_by: "vibe-session-hamburg-2027"
+
+  - id: hpa_berth_fee_quay
+    fee_family: idle_berth
+    biller: HPA (Hamburg Port Authority)
+    name: HPA Berth Fee (Quay)
+    description: "HPA-operated quay berth fee: 0.0157 EUR/GT per commenced 6 h. Not charged at terminal berths (off by default). Minimum 17.35 EUR per docking per 6 h."
+    applicable_conditions:
+      hpa_berth_usage: true
+      berth_type: quay
+    rate_structure:
+      type: per_commenced_period
+      basis: gt
+      hours_input: berth_hours
+      free_hours: 0
+      period_hours: 6
+      minimum_per_period: 17.35
+      tiers:
+        - up_to_excess_hours: null
+          rate_per_period_per_basis: 0.0157
+    minimum: 17.35
+    source_reference:
+      document_name: "pricelist-maritime-shipping-2027.pdf"
+      document_url: "docs/sources/germany/hamburg/port-authority/pricelist-maritime-shipping-2027.pdf"
+      document_issued: "2026-10-14"
+      page: 7
+      clause: "cat. 31 item C; ALGS 1 (also printed pp. 15, 17); the 2027 pricelist minimum 17.35 applies to both ALGS items"
+      verified_on: "2026-11-23"
+      verified_by: "vibe-session-hamburg-2027"
+
+  - id: hpa_berth_fee_dolphins
+    fee_family: idle_berth
+    biller: HPA (Hamburg Port Authority)
+    name: HPA Berth Fee (Dolphins)
+    description: "HPA-operated dolphins berth fee: 0.0054 EUR/GT per commenced 6 h. Not charged at terminal berths (off by default). Minimum 17.35 EUR per docking per 6 h."
+    applicable_conditions:
+      hpa_berth_usage: true
+      berth_type: dolphins
+    rate_structure:
+      type: per_commenced_period
+      basis: gt
+      hours_input: berth_hours
+      free_hours: 0
+      period_hours: 6
+      minimum_per_period: 17.35
+      tiers:
+        - up_to_excess_hours: null
+          rate_per_period_per_basis: 0.0054
+    minimum: 17.35
+    source_reference:
+      document_name: "pricelist-maritime-shipping-2027.pdf"
+      document_url: "docs/sources/germany/hamburg/port-authority/pricelist-maritime-shipping-2027.pdf"
+      document_issued: "2026-10-14"
+      page: 7
+      clause: "cat. 31 item C; ALGS 2 (also printed pp. 15, 17); the 2027 pricelist minimum 17.35 applies to both ALGS items"
+      verified_on: "2026-11-23"
+      verified_by: "vibe-session-hamburg-2027"
+
+  # ==========================================================================
+  # GDWS Pilotage - River Elbe
+  # ==========================================================================
+  - id: gdws_pilotage_dues
+    fee_family: pilotage
+    biller: GDWS (Federal) via pilot station
+    name: Pilotage Dues (Lotsabgaben)
+    description: "GDWS pilotage dues for a full Elbe transit (Hamburg - Elbe buoy = 100%). GT-banded flat amounts, Anlage 1, Abschnitt B Teil I, Elbe column. Above 52,000 GT the Elbe cap of 5,322 EUR applies. Partial transits scale via the segment percentage."
+    rate_structure:
+      type: banded_flat
+      basis: gt
+      bands:
+        - min: 0
+          max: 300
+          amount: 90
+        - min: 300
+          max: 400
+          amount: 121
+        - min: 400
+          max: 500
+          amount: 153
+        - min: 500
+          max: 600
+          amount: 155
+        - min: 600
+          max: 700
+          amount: 169
+        - min: 700
+          max: 800
+          amount: 173
+        - min: 800
+          max: 900
+          amount: 177
+        - min: 900
+          max: 1000
+          amount: 181
+        - min: 1000
+          max: 1100
+          amount: 186
+        - min: 1100
+          max: 1200
+          amount: 195
+        - min: 1200
+          max: 1300
+          amount: 207
+        - min: 1300
+          max: 1400
+          amount: 211
+        - min: 1400
+          max: 1500
+          amount: 218
+        - min: 1500
+          max: 1600
+          amount: 230
+        - min: 1600
+          max: 1700
+          amount: 239
+        - min: 1700
+          max: 1800
+          amount: 249
+        - min: 1800
+          max: 1900
+          amount: 259
+        - min: 1900
+          max: 2000
+          amount: 270
+        - min: 2000
+          max: 2100
+          amount: 279
+        - min: 2100
+          max: 2200
+          amount: 294
+        - min: 2200
+          max: 2300
+          amount: 302
+        - min: 2300
+          max: 2400
+          amount: 312
+        - min: 2400
+          max: 2500
+          amount: 324
+        - min: 2500
+          max: 2600
+          amount: 335
+        - min: 2600
+          max: 2700
+          amount: 351
+        - min: 2700
+          max: 2800
+          amount: 360
+        - min: 2800
+          max: 2900
+          amount: 385
+        - min: 2900
+          max: 3000
+          amount: 395
+        - min: 3000
+          max: 3200
+          amount: 427
+        - min: 3200
+          max: 3400
+          amount: 447
+        - min: 3400
+          max: 3600
+          amount: 469
+        - min: 3600
+          max: 3800
+          amount: 500
+        - min: 3800
+          max: 4000
+          amount: 528
+        - min: 4000
+          max: 4200
+          amount: 561
+        - min: 4200
+          max: 4400
+          amount: 584
+        - min: 4400
+          max: 4600
+          amount: 618
+        - min: 4600
+          max: 4800
+          amount: 662
+        - min: 4800
+          max: 5000
+          amount: 696
+        - min: 5000
+          max: 5500
+          amount: 765
+        - min: 5500
+          max: 6000
+          amount: 816
+        - min: 6000
+          max: 6500
+          amount: 886
+        - min: 6500
+          max: 7000
+          amount: 959
+        - min: 7000
+          max: 7500
+          amount: 1030
+        - min: 7500
+          max: 8000
+          amount: 1102
+        - min: 8000
+          max: 8500
+          amount: 1178
+        - min: 8500
+          max: 9000
+          amount: 1251
+        - min: 9000
+          max: 9500
+          amount: 1326
+        - min: 9500
+          max: 10000
+          amount: 1358
+        - min: 10000
+          max: 10500
+          amount: 1396
+        - min: 10500
+          max: 11000
+          amount: 1431
+        - min: 11000
+          max: 11500
+          amount: 1500
+        - min: 11500
+          max: 12000
+          amount: 1569
+        - min: 12000
+          max: 12500
+          amount: 1641
+        - min: 12500
+          max: 13000
+          amount: 1709
+        - min: 13000
+          max: 13500
+          amount: 1776
+        - min: 13500
+          max: 14000
+          amount: 1851
+        - min: 14000
+          max: 14500
+          amount: 1922
+        - min: 14500
+          max: 15000
+          amount: 1994
+        - min: 15000
+          max: 15500
+          amount: 2068
+        - min: 15500
+          max: 16000
+          amount: 2136
+        - min: 16000
+          max: 16500
+          amount: 2210
+        - min: 16500
+          max: 17000
+          amount: 2282
+        - min: 17000
+          max: 17500
+          amount: 2357
+        - min: 17500
+          max: 18000
+          amount: 2429
+        - min: 18000
+          max: 18500
+          amount: 2508
+        - min: 18500
+          max: 19000
+          amount: 2582
+        - min: 19000
+          max: 19500
+          amount: 2656
+        - min: 19500
+          max: 20000
+          amount: 2730
+        - min: 20000
+          max: 20500
+          amount: 2806
+        - min: 20500
+          max: 21000
+          amount: 2878
+        - min: 21000
+          max: 21500
+          amount: 2956
+        - min: 21500
+          max: 22000
+          amount: 3030
+        - min: 22000
+          max: 22500
+          amount: 3106
+        - min: 22500
+          max: 23000
+          amount: 3176
+        - min: 23000
+          max: 23500
+          amount: 3256
+        - min: 23500
+          max: 24000
+          amount: 3331
+        - min: 24000
+          max: 24500
+          amount: 3393
+        - min: 24500
+          max: 25000
+          amount: 3476
+        - min: 25000
+          max: 25500
+          amount: 3558
+        - min: 25500
+          max: 26000
+          amount: 3641
+        - min: 26000
+          max: 26500
+          amount: 3721
+        - min: 26500
+          max: 27000
+          amount: 3802
+        - min: 27000
+          max: 27500
+          amount: 3885
+        - min: 27500
+          max: 28000
+          amount: 3969
+        - min: 28000
+          max: 28500
+          amount: 4048
+        - min: 28500
+          max: 29000
+          amount: 4129
+        - min: 29000
+          max: 29500
+          amount: 4213
+        - min: 29500
+          max: 30000
+          amount: 4295
+        - min: 30000
+          max: 31000
+          amount: 4374
+        - min: 31000
+          max: 32000
+          amount: 4458
+        - min: 32000
+          max: 33000
+          amount: 4540
+        - min: 33000
+          max: 34000
+          amount: 4620
+        - min: 34000
+          max: 35000
+          amount: 4701
+        - min: 35000
+          max: 36000
+          amount: 4784
+        - min: 36000
+          max: 37000
+          amount: 4869
+        - min: 37000
+          max: 38000
+          amount: 4944
+        - min: 38000
+          max: 39000
+          amount: 5028
+        - min: 39000
+          max: 40000
+          amount: 5112
+        - min: 40000
+          max: 42000
+          amount: 5152
+        - min: 42000
+          max: 44000
+          amount: 5184
+        - min: 44000
+          max: 46000
+          amount: 5204
+        - min: 46000
+          max: 48000
+          amount: 5233
+        - min: 48000
+          max: 50000
+          amount: 5255
+        - min: 50000
+          max: 52000
+          amount: 5258
+        - min: 52000
+          max: null
+          amount: 5322
+    scale_by:
+      input_field: pilotage_segment_pct
+      default_value: 100
+      unit: percent
+    source_reference:
+      document_name: "pilot-tariff-2026.pdf"
+      document_url: "docs/sources/germany/national/gdws/pilot-tariff-2026.pdf"
+      document_issued: "2026-01-01"
+      page: "Anlage 1, Abschnitt B Teil I (Elbe column)"
+      clause: "Lotstarif; Elbe dues cap 5,322 above 52,000 GT"
+      verified_on: "2026-09-21"
+      verified_by: "vibe-session-hamburg"
+
+  - id: gdws_pilot_fees
+    fee_family: pilotage
+    biller: GDWS (Federal) via pilot station
+    name: Pilot Fees (Lotsgelder)
+    description: "GDWS pilot fees for a full Elbe transit (100% column). GT-banded flat amounts, Anlage 2, Abschnitt B Teil I, Elbe column. Above 40,000 GT: +44 EUR per commenced 2,000 GT, capped at 4,100 EUR."
+    rate_structure:
+      type: banded_flat
+      basis: gt
+      bands:
+        - min: 0
+          max: 300
+          amount: 224
+        - min: 300
+          max: 400
+          amount: 230
+        - min: 400
+          max: 500
+          amount: 238
+        - min: 500
+          max: 600
+          amount: 242
+        - min: 600
+          max: 700
+          amount: 253
+        - min: 700
+          max: 800
+          amount: 262
+        - min: 800
+          max: 900
+          amount: 277
+        - min: 900
+          max: 1000
+          amount: 287
+        - min: 1000
+          max: 1100
+          amount: 297
+        - min: 1100
+          max: 1200
+          amount: 308
+        - min: 1200
+          max: 1300
+          amount: 318
+        - min: 1300
+          max: 1400
+          amount: 327
+        - min: 1400
+          max: 1500
+          amount: 338
+        - min: 1500
+          max: 1600
+          amount: 350
+        - min: 1600
+          max: 1700
+          amount: 356
+        - min: 1700
+          max: 1800
+          amount: 367
+        - min: 1800
+          max: 1900
+          amount: 374
+        - min: 1900
+          max: 2000
+          amount: 384
+        - min: 2000
+          max: 2100
+          amount: 390
+        - min: 2100
+          max: 2200
+          amount: 400
+        - min: 2200
+          max: 2300
+          amount: 405
+        - min: 2300
+          max: 2400
+          amount: 415
+        - min: 2400
+          max: 2500
+          amount: 426
+        - min: 2500
+          max: 2600
+          amount: 432
+        - min: 2600
+          max: 2700
+          amount: 443
+        - min: 2700
+          max: 2800
+          amount: 450
+        - min: 2800
+          max: 2900
+          amount: 459
+        - min: 2900
+          max: 3000
+          amount: 473
+        - min: 3000
+          max: 3200
+          amount: 485
+        - min: 3200
+          max: 3400
+          amount: 498
+        - min: 3400
+          max: 3600
+          amount: 507
+        - min: 3600
+          max: 3800
+          amount: 530
+        - min: 3800
+          max: 4000
+          amount: 544
+        - min: 4000
+          max: 4200
+          amount: 559
+        - min: 4200
+          max: 4400
+          amount: 575
+        - min: 4400
+          max: 4600
+          amount: 589
+        - min: 4600
+          max: 4800
+          amount: 611
+        - min: 4800
+          max: 5000
+          amount: 635
+        - min: 5000
+          max: 5500
+          amount: 658
+        - min: 5500
+          max: 6000
+          amount: 683
+        - min: 6000
+          max: 6500
+          amount: 711
+        - min: 6500
+          max: 7000
+          amount: 741
+        - min: 7000
+          max: 7500
+          amount: 773
+        - min: 7500
+          max: 8000
+          amount: 798
+        - min: 8000
+          max: 8500
+          amount: 829
+        - min: 8500
+          max: 9000
+          amount: 856
+        - min: 9000
+          max: 9500
+          amount: 887
+        - min: 9500
+          max: 10000
+          amount: 909
+        - min: 10000
+          max: 10500
+          amount: 938
+        - min: 10500
+          max: 11000
+          amount: 963
+        - min: 11000
+          max: 11500
+          amount: 978
+        - min: 11500
+          max: 12000
+          amount: 997
+        - min: 12000
+          max: 12500
+          amount: 1016
+        - min: 12500
+          max: 13000
+          amount: 1034
+        - min: 13000
+          max: 13500
+          amount: 1050
+        - min: 13500
+          max: 14000
+          amount: 1073
+        - min: 14000
+          max: 14500
+          amount: 1097
+        - min: 14500
+          max: 15000
+          amount: 1122
+        - min: 15000
+          max: 15500
+          amount: 1141
+        - min: 15500
+          max: 16000
+          amount: 1164
+        - min: 16000
+          max: 16500
+          amount: 1187
+        - min: 16500
+          max: 17000
+          amount: 1213
+        - min: 17000
+          max: 17500
+          amount: 1239
+        - min: 17500
+          max: 18000
+          amount: 1261
+        - min: 18000
+          max: 18500
+          amount: 1287
+        - min: 18500
+          max: 19000
+          amount: 1310
+        - min: 19000
+          max: 19500
+          amount: 1332
+        - min: 19500
+          max: 20000
+          amount: 1359
+        - min: 20000
+          max: 20500
+          amount: 1379
+        - min: 20500
+          max: 21000
+          amount: 1404
+        - min: 21000
+          max: 21500
+          amount: 1426
+        - min: 21500
+          max: 22000
+          amount: 1450
+        - min: 22000
+          max: 22500
+          amount: 1474
+        - min: 22500
+          max: 23000
+          amount: 1499
+        - min: 23000
+          max: 23500
+          amount: 1522
+        - min: 23500
+          max: 24000
+          amount: 1546
+        - min: 24000
+          max: 24500
+          amount: 1571
+        - min: 24500
+          max: 25000
+          amount: 1594
+        - min: 25000
+          max: 25500
+          amount: 1619
+        - min: 25500
+          max: 26000
+          amount: 1645
+        - min: 26000
+          max: 26500
+          amount: 1671
+        - min: 26500
+          max: 27000
+          amount: 1694
+        - min: 27000
+          max: 27500
+          amount: 1720
+        - min: 27500
+          max: 28000
+          amount: 1744
+        - min: 28000
+          max: 28500
+          amount: 1769
+        - min: 28500
+          max: 29000
+          amount: 1794
+        - min: 29000
+          max: 29500
+          amount: 1823
+        - min: 29500
+          max: 30000
+          amount: 1843
+        - min: 30000
+          max: 31000
+          amount: 1870
+        - min: 31000
+          max: 32000
+          amount: 1898
+        - min: 32000
+          max: 33000
+          amount: 1923
+        - min: 33000
+          max: 34000
+          amount: 1946
+        - min: 34000
+          max: 35000
+          amount: 1974
+        - min: 35000
+          max: 36000
+          amount: 1998
+        - min: 36000
+          max: 37000
+          amount: 2019
+        - min: 37000
+          max: 38000
+          amount: 2049
+        - min: 38000
+          max: 39000
+          amount: 2074
+        - min: 39000
+          max: 40000
+          amount: 2107
+        - min: 40000
+          max: null
+          amount: 2107
+      linear_extension:
+        from_basis: 40000
+        per_basis_units: 2000
+        amount: 44
+    maximum: 4100
+    scale_by:
+      input_field: pilotage_segment_pct
+      default_value: 100
+      unit: percent
+    source_reference:
+      document_name: "pilot-tariff-2026.pdf"
+      document_url: "docs/sources/germany/national/gdws/pilot-tariff-2026.pdf"
+      document_issued: "2026-01-01"
+      page: "Anlage 2, Abschnitt B Teil I (Elbe column)"
+      clause: "Lotstarif; +44 per commenced 2,000 GT over 40,000, capped 4,100"
+      verified_on: "2026-09-21"
+      verified_by: "vibe-session-hamburg"
+
+  # ==========================================================================
+  # HHLA Quay Tariff 2026
+  # ==========================================================================
+  - id: hhla_tonnage_dues
+    fee_family: vessel_fee
+    biller: HHLA Container Terminals
+    name: Tonnage Dues (Ship's Dues)
+    description: "HHLA tonnage dues: 1.25 EUR/GT for the first 24 h of lay time, then 0.80 EUR/GT per commenced 12 h. Lay time starts at berthing; Sundays/holidays count only if worked (S4 1.2) - modeled as a simple hours input."
+    rate_structure:
+      type: tiered_per_period
+      basis: gt
+      hours_input: lay_time_hours
+      initial_tier:
+        hours: 24
+        rate_per_basis: 1.25
+      subsequent_tier:
+        period_hours: 12
+        rate_per_basis: 0.80
+    applicable_conditions:
+      terminal_operator: HHLA
+    source_reference:
+      document_name: "quay-tariff-2026.pdf"
+      document_url: "docs/sources/germany/hamburg/hhla/quay-tariff-2026.pdf"
+      document_issued: "2025-11-27"
+      page: 3
+      clause: "1.2"
+      verified_on: "2026-09-21"
+      verified_by: "vibe-session-hamburg"
+
+  - id: hhla_security_charge
+    fee_family: security
+    biller: HHLA Container Terminals
+    name: Security Charge
+    description: "HHLA security charge: 17.00 EUR per container to/from overseas vessel (S4 1.3.3)."
+    rate_structure:
+      type: per_unit
+      unit_type: container_total
+      unit_rate: 17.00
+    applicable_conditions:
+      terminal_operator: HHLA
+    source_reference:
+      document_name: "quay-tariff-2026.pdf"
+      document_url: "docs/sources/germany/hamburg/hhla/quay-tariff-2026.pdf"
+      document_issued: "2025-11-27"
+      page: 4
+      clause: "1.3.3"
+      verified_on: "2026-09-21"
+      verified_by: "vibe-session-hamburg"
+
+  - id: hhla_gangway
+    fee_family: readiness_fee
+    biller: HHLA Container Terminals
+    name: Gangway
+    description: "HHLA gangway flat rate per gangway: 453.50 EUR (feeder) / 633.80 EUR (overseas) (S4 1.4). Class defaults by vessel class (feeder-class container vessel - feeder rate; deep-sea - overseas rate); one gangway per call default, editable."
+    rate_structure:
+      type: flat_by_input
+      input_field: gangway_class
+      fallback_option: overseas
+      options:
+        - value: feeder
+          amount: 453.50
+        - value: overseas
+          amount: 633.80
+      count_field: gangway_count
+    applicable_conditions:
+      terminal_operator: HHLA
+    source_reference:
+      document_name: "quay-tariff-2026.pdf"
+      document_url: "docs/sources/germany/hamburg/hhla/quay-tariff-2026.pdf"
+      document_issued: "2025-11-27"
+      page: 4
+      clause: "1.4"
+      verified_on: "2026-09-21"
+      verified_by: "vibe-session-hamburg"
+
+  - id: hhla_gangway_supervision
+    fee_family: readiness_fee
+    biller: HHLA Container Terminals
+    name: Gangway Supervision
+    description: "HHLA gangway supervision during operations: 101.30 EUR/h (S4 1.5). Default 0 h in reference calls (scenario-dependent)."
+    rate_structure:
+      type: per_unit
+      unit_type: gangway_supervision_hours
+      unit_rate: 101.30
+    applicable_conditions:
+      terminal_operator: HHLA
+    source_reference:
+      document_name: "quay-tariff-2026.pdf"
+      document_url: "docs/sources/germany/hamburg/hhla/quay-tariff-2026.pdf"
+      document_issued: "2025-11-27"
+      page: 4
+      clause: "1.5"
+      verified_on: "2026-09-21"
+      verified_by: "vibe-session-hamburg"
+
+  - id: hhla_container_handling
+    fee_family: terminal_handling
+    biller: HHLA Container Terminals
+    name: Container Handling (est., Eurogate anchor)
+    description: "Container handling per move. HHLA's rate is unpublished (S4 2.1.2: upon request, individually negotiated). Default anchored to EUROGATE Container Terminal Hamburg's published waterside lift charge 5.1.1 (S9, effective 01.03.2026), 358.00 EUR per move. A move is one container lifted once (discharge or load). HHLA terminal call with a handling estimate anchored to Eurogate's published lift charge - never presented as an Eurogate terminal call (spec v0.2.24)."
+    rate_structure:
+      type: per_unit
+      unit_type: move
+      unit_rate: 358.00
+      unit_rate_input: handling_rate_per_move
+    estimated_parameter:
+      description: "estimated; HHLA rate unpublished, default anchored to Eurogate Hamburg published lift charge 5.1.1, 01.03.2026"
+      severity: info
+    applicable_conditions:
+      terminal_operator: HHLA
+    source_reference:
+      document_name: "prices-and-conditions-2026.pdf"
+      document_url: "docs/sources/germany/hamburg/eurogate/prices-and-conditions-2026.pdf"
+      document_issued: "2026-01-01"
+      page: 10
+      clause: "5.1.1 (anchor; HHLA S4 2.1.2 unpublished)"
+      verified_on: "2026-09-21"
+      verified_by: "vibe-session-hamburg"
+
+  - id: hhla_storage_import_20ft
+    fee_family: storage
+    biller: HHLA Container Terminals
+    name: Storage Import 20ft
+    description: "HHLA import storage: free time 3 calendar days after last discharge day; then 41.10 EUR per container/day. Import rates double after 7 chargeable days and triple after 14."
+    rate_structure:
+      type: progressive_daily
+      days_input: storage_days_import
+      container_count_input: containers_discharged_le20ft
+      free_days: 3
+      bands:
+        - min_days: 1
+          max_days: 7
+          rate_per_container_per_day: 41.10
+        - min_days: 8
+          max_days: 14
+          rate_per_container_per_day: 82.20
+        - min_days: 15
+          max_days: null
+          rate_per_container_per_day: 123.30
+    applicable_conditions:
+      terminal_operator: HHLA
+    source_reference:
+      document_name: "quay-tariff-2026.pdf"
+      document_url: "docs/sources/germany/hamburg/hhla/quay-tariff-2026.pdf"
+      document_issued: "2025-11-27"
+      page: 6
+      clause: "3"
+      verified_on: "2026-09-21"
+      verified_by: "vibe-session-hamburg"
+
+  - id: hhla_storage_import_40ft
+    fee_family: storage
+    biller: HHLA Container Terminals
+    name: Storage Import 40ft
+    description: "HHLA import storage: free time 3 calendar days after last discharge day; then 82.20 EUR per container/day. Import rates double after 7 chargeable days and triple after 14."
+    rate_structure:
+      type: progressive_daily
+      days_input: storage_days_import
+      container_count_input: containers_discharged_gt20ft
+      free_days: 3
+      bands:
+        - min_days: 1
+          max_days: 7
+          rate_per_container_per_day: 82.20
+        - min_days: 8
+          max_days: 14
+          rate_per_container_per_day: 164.40
+        - min_days: 15
+          max_days: null
+          rate_per_container_per_day: 246.60
+    applicable_conditions:
+      terminal_operator: HHLA
+    source_reference:
+      document_name: "quay-tariff-2026.pdf"
+      document_url: "docs/sources/germany/hamburg/hhla/quay-tariff-2026.pdf"
+      document_issued: "2025-11-27"
+      page: 6
+      clause: "3"
+      verified_on: "2026-09-21"
+      verified_by: "vibe-session-hamburg"
+
+  - id: hhla_storage_export_20ft
+    fee_family: storage
+    biller: HHLA Container Terminals
+    name: Storage Export 20ft
+    description: "HHLA export storage: free time 5 days after delivery; then 41.10 EUR per container/day. Export rates double after 9 chargeable days."
+    rate_structure:
+      type: progressive_daily
+      days_input: storage_days_export
+      container_count_input: containers_loaded_le20ft
+      free_days: 5
+      bands:
+        - min_days: 1
+          max_days: 9
+          rate_per_container_per_day: 41.10
+        - min_days: 10
+          max_days: null
+          rate_per_container_per_day: 82.20
+    applicable_conditions:
+      terminal_operator: HHLA
+    source_reference:
+      document_name: "quay-tariff-2026.pdf"
+      document_url: "docs/sources/germany/hamburg/hhla/quay-tariff-2026.pdf"
+      document_issued: "2025-11-27"
+      page: 6
+      clause: "3"
+      verified_on: "2026-09-21"
+      verified_by: "vibe-session-hamburg"
+
+  - id: hhla_storage_export_40ft
+    fee_family: storage
+    biller: HHLA Container Terminals
+    name: Storage Export 40ft
+    description: "HHLA export storage: free time 5 days after delivery; then 82.20 EUR per container/day. Export rates double after 9 chargeable days."
+    rate_structure:
+      type: progressive_daily
+      days_input: storage_days_export
+      container_count_input: containers_loaded_gt20ft
+      free_days: 5
+      bands:
+        - min_days: 1
+          max_days: 9
+          rate_per_container_per_day: 82.20
+        - min_days: 10
+          max_days: null
+          rate_per_container_per_day: 164.40
+    applicable_conditions:
+      terminal_operator: HHLA
+    source_reference:
+      document_name: "quay-tariff-2026.pdf"
+      document_url: "docs/sources/germany/hamburg/hhla/quay-tariff-2026.pdf"
+      document_issued: "2025-11-27"
+      page: 6
+      clause: "3"
+      verified_on: "2026-09-21"
+      verified_by: "vibe-session-hamburg"
+
+  - id: hhla_storage_transshipment
+    fee_family: storage
+    biller: HHLA Container Terminals
+    name: Storage Transshipment
+    description: "HHLA transshipment storage: free time 7 days; then 41.10 EUR per container/day (20ft base)."
+    rate_structure:
+      type: progressive_daily
+      days_input: storage_days_transshipment
+      container_count_input: transshipment_units
+      free_days: 7
+      bands:
+        - min_days: 1
+          max_days: null
+          rate_per_container_per_day: 41.10
+    applicable_conditions:
+      terminal_operator: HHLA
+    source_reference:
+      document_name: "quay-tariff-2026.pdf"
+      document_url: "docs/sources/germany/hamburg/hhla/quay-tariff-2026.pdf"
+      document_issued: "2025-11-27"
+      page: 6
+      clause: "3"
+      verified_on: "2026-09-21"
+      verified_by: "vibe-session-hamburg"
+
+  - id: hhla_storage_hazardous
+    fee_family: storage
+    biller: HHLA Container Terminals
+    name: Storage Hazardous
+    description: "HHLA hazardous storage: free time 1 day; then 185.10 EUR per container per 24 h (IMO class 1+7, no free time beyond the statutory day)."
+    rate_structure:
+      type: progressive_daily
+      days_input: storage_days_hazardous
+      container_count_input: dangerous_goods_units
+      free_days: 1
+      bands:
+        - min_days: 1
+          max_days: null
+          rate_per_container_per_day: 185.10
+    applicable_conditions:
+      terminal_operator: HHLA
+    source_reference:
+      document_name: "quay-tariff-2026.pdf"
+      document_url: "docs/sources/germany/hamburg/hhla/quay-tariff-2026.pdf"
+      document_issued: "2025-11-27"
+      page: 6
+      clause: "3"
+      verified_on: "2026-09-21"
+      verified_by: "vibe-session-hamburg"
+
+  - id: hhla_storage_empties_20ft
+    fee_family: storage
+    biller: HHLA Container Terminals
+    name: Storage Empties 20ft
+    description: "HHLA empty-container storage: no free time; 20.70 EUR per container/day."
+    rate_structure:
+      type: progressive_daily
+      days_input: storage_empty_days
+      container_count_input: storage_empty_20ft_units
+      free_days: 0
+      bands:
+        - min_days: 1
+          max_days: null
+          rate_per_container_per_day: 20.70
+    applicable_conditions:
+      terminal_operator: HHLA
+    source_reference:
+      document_name: "quay-tariff-2026.pdf"
+      document_url: "docs/sources/germany/hamburg/hhla/quay-tariff-2026.pdf"
+      document_issued: "2025-11-27"
+      page: 6
+      clause: "3"
+      verified_on: "2026-09-21"
+      verified_by: "vibe-session-hamburg"
+
+  - id: hhla_storage_empties_40ft
+    biller: HHLA Container Terminals
+    fee_family: storage
+    name: Storage Empties 40ft
+    description: "HHLA empty-container storage: no free time; 41.40 EUR per container/day."
+    rate_structure:
+      type: progressive_daily
+      days_input: storage_empty_days
+      container_count_input: storage_empty_40ft_units
+      free_days: 0
+      bands:
+        - min_days: 1
+          max_days: null
+          rate_per_container_per_day: 41.40
+    applicable_conditions:
+      terminal_operator: HHLA
+    source_reference:
+      document_name: "quay-tariff-2026.pdf"
+      document_url: "docs/sources/germany/hamburg/hhla/quay-tariff-2026.pdf"
+      document_issued: "2025-11-27"
+      page: 6
+      clause: "3"
+      verified_on: "2026-09-21"
+      verified_by: "vibe-session-hamburg"
+
+  - id: hhla_storage_import_45ft
+    fee_family: storage
+    biller: HHLA Container Terminals
+    name: Storage Import 45ft
+    description: "HHLA import storage: free time 3 calendar days after last discharge day; then 92.20 EUR per container/day. Import rates double after 7 chargeable days and triple after 14 (S4 3)."
+    rate_structure:
+      type: progressive_daily
+      days_input: storage_days_import
+      container_count_input: storage_import_45ft_units
+      free_days: 3
+      bands:
+        - min_days: 1
+          max_days: 7
+          rate_per_container_per_day: 92.20
+        - min_days: 8
+          max_days: 14
+          rate_per_container_per_day: 184.40
+        - min_days: 15
+          max_days: null
+          rate_per_container_per_day: 276.60
+    applicable_conditions:
+      terminal_operator: HHLA
+    source_reference:
+      document_name: "quay-tariff-2026.pdf"
+      document_url: "docs/sources/germany/hamburg/hhla/quay-tariff-2026.pdf"
+      document_issued: "2025-11-27"
+      page: 6
+      clause: "3"
+      verified_on: "2026-09-21"
+      verified_by: "vibe-session-hamburg"
+  - id: hhla_storage_export_45ft
+    fee_family: storage
+    biller: HHLA Container Terminals
+    name: Storage Export 45ft
+    description: "HHLA export storage: free time 5 days after delivery; then 92.20 EUR per container/day. Export rates double after 9 chargeable days (S4 3)."
+    rate_structure:
+      type: progressive_daily
+      days_input: storage_days_export
+      container_count_input: storage_export_45ft_units
+      free_days: 5
+      bands:
+        - min_days: 1
+          max_days: 9
+          rate_per_container_per_day: 92.20
+        - min_days: 10
+          max_days: null
+          rate_per_container_per_day: 184.40
+    applicable_conditions:
+      terminal_operator: HHLA
+    source_reference:
+      document_name: "quay-tariff-2026.pdf"
+      document_url: "docs/sources/germany/hamburg/hhla/quay-tariff-2026.pdf"
+      document_issued: "2025-11-27"
+      page: 6
+      clause: "3"
+      verified_on: "2026-09-21"
+      verified_by: "vibe-session-hamburg"
+  - id: hhla_container_service_gassing_20ft
+    fee_family: cargo_fee
+    biller: HHLA Container Terminals
+    name: Gassing Space 20ft
+    description: "HHLA container services: gassing space 176.90 EUR per container, 20ft (S4 8). Optional call input, default off."
+    rate_structure:
+      type: per_unit
+      unit_type: gassing_20ft_units
+      unit_rate: 176.90
+    applicable_conditions:
+      terminal_operator: HHLA
+    source_reference:
+      document_name: "quay-tariff-2026.pdf"
+      document_url: "docs/sources/germany/hamburg/hhla/quay-tariff-2026.pdf"
+      document_issued: "2025-11-27"
+      page: 12
+      clause: "8"
+      verified_on: "2026-09-21"
+      verified_by: "vibe-session-hamburg"
+  - id: hhla_container_service_gassing_40ft
+    fee_family: cargo_fee
+    biller: HHLA Container Terminals
+    name: Gassing Space 40ft
+    description: "HHLA container services: gassing space 240.70 EUR per container, 40ft (S4 8). Optional call input, default off."
+    rate_structure:
+      type: per_unit
+      unit_type: gassing_40ft_units
+      unit_rate: 240.70
+    applicable_conditions:
+      terminal_operator: HHLA
+    source_reference:
+      document_name: "quay-tariff-2026.pdf"
+      document_url: "docs/sources/germany/hamburg/hhla/quay-tariff-2026.pdf"
+      document_issued: "2025-11-27"
+      page: 12
+      clause: "8"
+      verified_on: "2026-09-21"
+      verified_by: "vibe-session-hamburg"
+  # --- HHLA Container Services (S4 8) - optional call inputs, default off ---
+  - id: hhla_container_service_reception
+    fee_family: cargo_fee
+    biller: HHLA Container Terminals
+    name: Container Reception/Delivery
+    description: "HHLA container services: reception/delivery 182.10 EUR per container (S4 8). Optional call input, default off."
+    rate_structure:
+      type: per_unit
+      unit_type: container_service_reception_units
+      unit_rate: 182.10
+    applicable_conditions:
+      terminal_operator: HHLA
+    source_reference:
+      document_name: "quay-tariff-2026.pdf"
+      document_url: "docs/sources/germany/hamburg/hhla/quay-tariff-2026.pdf"
+      document_issued: "2025-11-27"
+      page: 12
+      clause: "8"
+      verified_on: "2026-09-21"
+      verified_by: "vibe-session-hamburg"
+
+  - id: hhla_container_service_extra_movement
+    fee_family: cargo_fee
+    biller: HHLA Container Terminals
+    name: Extra Movement
+    description: "HHLA container services: extra movement 144.70 EUR (S4 8). Optional call input, default off."
+    rate_structure:
+      type: per_unit
+      unit_type: container_service_extra_moves
+      unit_rate: 144.70
+    applicable_conditions:
+      terminal_operator: HHLA
+    source_reference:
+      document_name: "quay-tariff-2026.pdf"
+      document_url: "docs/sources/germany/hamburg/hhla/quay-tariff-2026.pdf"
+      document_issued: "2025-11-27"
+      page: 12
+      clause: "8"
+      verified_on: "2026-09-21"
+      verified_by: "vibe-session-hamburg"
+
+  - id: hhla_container_service_admin
+    fee_family: cargo_fee
+    biller: HHLA Container Terminals
+    rate_structure:
+      type: flat
+      amount: 42.20
+    name: Administration Fee
+    description: "HHLA container services: administration fee 42.20 EUR (S4 8). Optional call input, default off."
+    applicable_conditions:
+      terminal_operator: HHLA
+      container_service_admin_fee: true
+    source_reference:
+      document_name: "quay-tariff-2026.pdf"
+      document_url: "docs/sources/germany/hamburg/hhla/quay-tariff-2026.pdf"
+      document_issued: "2025-11-27"
+      page: 12
+      clause: "8"
+      verified_on: "2026-09-21"
+      verified_by: "vibe-session-hamburg"
+
+  - id: hhla_container_service_vgm_weighing
+    fee_family: cargo_fee
+    biller: HHLA Container Terminals
+    name: VGM Weighing
+    description: "HHLA container services: VGM weighing 218.10 EUR per unit (S4 8). Optional call input, default off."
+    rate_structure:
+      type: per_unit
+      unit_type: vgm_weighing_units
+      unit_rate: 218.10
+    applicable_conditions:
+      terminal_operator: HHLA
+    source_reference:
+      document_name: "quay-tariff-2026.pdf"
+      document_url: "docs/sources/germany/hamburg/hhla/quay-tariff-2026.pdf"
+      document_issued: "2025-11-27"
+      page: 12
+      clause: "8"
+      verified_on: "2026-09-21"
+      verified_by: "vibe-session-hamburg"
+
+  - id: hhla_container_service_vgm_calculative
+    fee_family: cargo_fee
+    biller: HHLA Container Terminals
+    name: VGM Calculative
+    description: "HHLA container services: calculative VGM 45.00 EUR per unit (S4 8). Optional call input, default off."
+    rate_structure:
+      type: per_unit
+      unit_type: vgm_calculative_units
+      unit_rate: 45.00
+    applicable_conditions:
+      terminal_operator: HHLA
+    source_reference:
+      document_name: "quay-tariff-2026.pdf"
+      document_url: "docs/sources/germany/hamburg/hhla/quay-tariff-2026.pdf"
+      document_issued: "2025-11-27"
+      page: 12
+      clause: "8"
+      verified_on: "2026-09-21"
+      verified_by: "vibe-session-hamburg"
+
+  - id: hhla_container_service_reefer_connect
+    fee_family: cargo_fee
+    biller: HHLA Container Terminals
+    name: Reefer Connection
+    description: "HHLA container services: reefer connection 62.10 EUR per unit (S4 8). Optional call input, default off."
+    rate_structure:
+      type: per_unit
+      unit_type: reefer_connect_units
+      unit_rate: 62.10
+    applicable_conditions:
+      terminal_operator: HHLA
+    source_reference:
+      document_name: "quay-tariff-2026.pdf"
+      document_url: "docs/sources/germany/hamburg/hhla/quay-tariff-2026.pdf"
+      document_issued: "2025-11-27"
+      page: 12
+      clause: "8"
+      verified_on: "2026-09-21"
+      verified_by: "vibe-session-hamburg"
+
+  - id: hhla_container_service_reefer_energy
+    fee_family: cargo_fee
+    biller: HHLA Container Terminals
+    name: Reefer Energy
+    description: "HHLA container services: reefer energy 117.00 EUR per 24 h (S4 8). Optional call input, default off."
+    rate_structure:
+      type: per_unit
+      unit_type: reefer_days
+      unit_rate: 117.00
+    applicable_conditions:
+      terminal_operator: HHLA
+    source_reference:
+      document_name: "quay-tariff-2026.pdf"
+      document_url: "docs/sources/germany/hamburg/hhla/quay-tariff-2026.pdf"
+      document_issued: "2025-11-27"
+      page: 12
+      clause: "8"
+      verified_on: "2026-09-21"
+      verified_by: "vibe-session-hamburg"
+
+  - id: hhla_container_service_reefer_check
+    fee_family: cargo_fee
+    biller: HHLA Container Terminals
+    name: Reefer Check
+    description: "HHLA container services: reefer checks 22.50 EUR each (S4 8). Optional call input, default off."
+    rate_structure:
+      type: per_unit
+      unit_type: reefer_checks
+      unit_rate: 22.50
+    applicable_conditions:
+      terminal_operator: HHLA
+    source_reference:
+      document_name: "quay-tariff-2026.pdf"
+      document_url: "docs/sources/germany/hamburg/hhla/quay-tariff-2026.pdf"
+      document_issued: "2025-11-27"
+      page: 12
+      clause: "8"
+      verified_on: "2026-09-21"
+      verified_by: "vibe-session-hamburg"
+
+  - id: hhla_container_service_labelling
+    fee_family: cargo_fee
+    biller: HHLA Container Terminals
+    name: Labelling
+    description: "HHLA container services: labelling 113.95 EUR per unit (S4 8). Optional call input, default off."
+    rate_structure:
+      type: per_unit
+      unit_type: labelling_units
+      unit_rate: 113.95
+    applicable_conditions:
+      terminal_operator: HHLA
+    source_reference:
+      document_name: "quay-tariff-2026.pdf"
+      document_url: "docs/sources/germany/hamburg/hhla/quay-tariff-2026.pdf"
+      document_issued: "2025-11-27"
+      page: 12
+      clause: "8"
+      verified_on: "2026-09-21"
+      verified_by: "vibe-session-hamburg"
+
+  - id: hhla_container_service_neutralization
+    fee_family: cargo_fee
+    biller: HHLA Container Terminals
+    name: Neutralization
+    description: "HHLA container services: neutralization 123.30 EUR per unit (S4 8). Optional call input, default off."
+    rate_structure:
+      type: per_unit
+      unit_type: neutralization_units
+      unit_rate: 123.30
+    applicable_conditions:
+      terminal_operator: HHLA
+    source_reference:
+      document_name: "quay-tariff-2026.pdf"
+      document_url: "docs/sources/germany/hamburg/hhla/quay-tariff-2026.pdf"
+      document_issued: "2025-11-27"
+      page: 12
+      clause: "8"
+      verified_on: "2026-09-21"
+      verified_by: "vibe-session-hamburg"
+
+  # ==========================================================================
+  # City of Hamburg (BUKEA) - Ship Waste Fee (SchiffsAbgV)
+  # ==========================================================================
+  - id: bukea_waste_marpol_i
+    fee_family: waste
+    biller: City of Hamburg (BUKEA)
+    name: Ship Waste Fee - MARPOL I
+    description: "Hamburg ship waste fee, MARPOL I (oil/sludge) component: 0.0135 EUR/GT. Standard disposal up to ship's tank capacity (2 h max pumping)."
+    rate_structure:
+      type: per_unit
+      unit_type: gt
+      unit_rate: 0.0135
+    adjustments:
+      - type: discount
+        percentage: 50
+        condition: waste_alternative_fuel_reduction
+        description: "Alternative fuel reduction: -50% of MARPOL I share (application-based, off by default)"
+      - type: discount
+        percentage: 90
+        condition: waste_short_sea_reduction
+        description: "Short-sea reduction: -90% of total (application-based, off by default)"
+    source_reference:
+      document_name: "ship-waste-fees-ordinance-2025.pdf"
+      document_url: "docs/sources/germany/hamburg/city-bukea/ship-waste-fees-ordinance-2025.pdf"
+      document_issued: "2025-06-24"
+      page: "Annex 2, Table 2"
+      clause: "MARPOL I"
+      verified_on: "2026-09-21"
+      verified_by: "vibe-session-hamburg"
+
+  - id: bukea_waste_marpol_iv
+    fee_family: waste
+    biller: City of Hamburg (BUKEA)
+    name: Ship Waste Fee - MARPOL IV
+    description: "Hamburg ship waste fee, MARPOL IV (sewage) component: 1 EUR/call. Up to 10 m3."
+    rate_structure:
+      type: flat
+      amount: 1.00
+    adjustments:
+      - type: discount
+        percentage: 90
+        condition: waste_short_sea_reduction
+        description: "Short-sea reduction: -90% of total (application-based, off by default)"
+    source_reference:
+      document_name: "ship-waste-fees-ordinance-2025.pdf"
+      document_url: "docs/sources/germany/hamburg/city-bukea/ship-waste-fees-ordinance-2025.pdf"
+      document_issued: "2025-06-24"
+      page: "Annex 2, Table 2"
+      clause: "MARPOL IV"
+      verified_on: "2026-09-21"
+      verified_by: "vibe-session-hamburg"
+
+  - id: bukea_waste_marpol_v_abc
+    fee_family: waste
+    biller: City of Hamburg (BUKEA)
+    name: Ship Waste Fee - MARPOL V A-C
+    description: "Hamburg ship waste fee, MARPOL V A-C component: 0.0121 EUR/GT, capped: max 45,000 GT counted; ships over 45,000 GT pay a flat 828 EUR. Reductions on application: -2% of MARPOL V share (sustainable-waste ships), -90% short-sea."
+    rate_structure:
+      type: banded_flat
+      basis: gt
+      bands:
+        - min: null
+          max: 45000
+          rate: 0.0121
+        - min: 45000
+          max: null
+          amount: 828
+    adjustments:
+      - type: discount
+        percentage: 2
+        condition: waste_sustainable_waste_reduction
+        description: "Sustainable-waste reduction: -2% of MARPOL V share (application-based, off by default)"
+      - type: discount
+        percentage: 90
+        condition: waste_short_sea_reduction
+        description: "Short-sea reduction: -90% of total (application-based, off by default)"
+    source_reference:
+      document_name: "ship-waste-fees-ordinance-2025.pdf"
+      document_url: "docs/sources/germany/hamburg/city-bukea/ship-waste-fees-ordinance-2025.pdf"
+      document_issued: "2025-06-24"
+      page: "Annex 2, Table 2"
+      clause: "MARPOL V A-C"
+      verified_on: "2026-09-21"
+      verified_by: "vibe-session-hamburg"
+
+  - id: bukea_waste_marpol_v_defi
+    fee_family: waste
+    biller: City of Hamburg (BUKEA)
+    name: Ship Waste Fee - MARPOL V D/E/F/I
+    description: "Hamburg ship waste fee, MARPOL V D/E/F/I fixed allowances component: 47.30 EUR/call. Reduction: -90% short-sea (application-based, off by default)."
+    rate_structure:
+      type: flat
+      amount: 47.30
+    adjustments:
+      - type: discount
+        percentage: 90
+        condition: waste_short_sea_reduction
+        description: "Short-sea reduction: -90% of total (application-based, off by default)"
+    source_reference:
+      document_name: "ship-waste-fees-ordinance-2025.pdf"
+      document_url: "docs/sources/germany/hamburg/city-bukea/ship-waste-fees-ordinance-2025.pdf"
+      document_issued: "2025-06-24"
+      page: "Annex 2, Table 2"
+      clause: "MARPOL V D/E/F/I"
+      verified_on: "2026-09-21"
+      verified_by: "vibe-session-hamburg"
+
+  # ==========================================================================
+  # Estimated Parameters - Towage (no published tariff)
+  # ==========================================================================
+  - id: hamburg_towage_estimate
+    fee_family: towage
+    biller: Towage operators (estimated)
+    name: Towage (estimated)
+    description: "Towage per call. No published tariff (operators: Bugsier, Petersen & Alpers, Lutgens & Reimers). Default 15,000 EUR per call (3 tugs x ~5,000 EUR/tug, deep-sea Elbe escort market range). User-editable. Operator-neutral: applies at any Hamburg terminal (spec v0.2.49 terminal scope)."
+    rate_structure:
+      type: flat
+      amount: 15000
+      amount_input: towage_amount
+    estimated_parameter:
+      description: "estimated; no published tariff (operators Bugsier, Petersen & Alpers, Lutgens & Reimers); default 3 tugs x ~5,000 EUR/tug"
+      severity: info
+    source_reference:
+      document_name: "HAMBURG_EXTRACTION_REFERENCE.md"
+      document_url: "docs/sources/germany/hamburg/HAMBURG_EXTRACTION_REFERENCE.md"
+      document_issued: "2026-09-21"
+      page: 8
+      clause: "8 - Estimated Parameters"
+      verified_on: "2026-09-21"
+      verified_by: "vibe-session-hamburg"
+  # ==========================================================================
+  # EUROGATE Container Terminal Hamburg - Prices and Conditions (S9, 01.03.2026)
+  # Terminal scope (spec v0.2.49): these items apply only to Eurogate calls.
+  # ==========================================================================
+  - id: eurogate_berthing_charge
+    fee_family: vessel_fee
+    biller: EUROGATE Container Terminal Hamburg
+    name: Berthing Charge / Tonnage Dues
+    description: "Eurogate berthing charge (vessel charge ch. 2): every ship berthed at the handling facilities pays a berthing charge based on GT and lay time - 1.04 EUR/GT for the first 24 h of lay days, then 0.60 EUR/GT per commenced 12 h or part. Lay time runs docking to casting off, calculated uninterruptedly (S9 2.1.1-2.1.2). Ship's dues are billed separately from handling (ch. 5) - verdict two, spec v0.2.49."
+    rate_structure:
+      type: tiered_per_period
+      basis: gt
+      hours_input: lay_time_hours
+      initial_tier:
+        hours: 24
+        rate_per_basis: 1.04
+      subsequent_tier:
+        period_hours: 12
+        rate_per_basis: 0.60
+    applicable_conditions:
+      terminal_operator: Eurogate
+    source_reference:
+      document_name: "prices-and-conditions-2026.pdf"
+      document_url: "docs/sources/germany/hamburg/eurogate/prices-and-conditions-2026.pdf"
+      document_issued: "2026-01-01"
+      page: 4
+      clause: "2.1.1-2.1.2"
+      verified_on: "2026-09-24"
+      verified_by: "vibe-session-hamburg-terminal-scope"
+  - id: eurogate_container_handling
+    fee_family: terminal_handling
+    biller: EUROGATE Container Terminal Hamburg
+    name: Container Handling (waterside lift)
+    description: "Eurogate waterside handling: loading/discharging ISO containers (full or empty) from/to main vessel, feeder or barge, 358.00 EUR per container lift (S9 5.1.1). A move is one container lifted once. Published rate - no estimated-parameter flag. Does not bundle berth time; vessel charges are a separate chapter (verdict two, spec v0.2.49). Basis note (v0.4.0 item 3, re-verified against the archived S9): the 358.00 covers the vessel-to-quay lift ONLY - ch. 6 receiving and delivery from/to rail/truck is a separate 152.00 EUR per movement (S9 6.1.1) never included in this figure, and ch. 5.6 conventional-cargo quay receiving/delivery is its own schedule; no onward rail/truck delivery is bundled."
+    rate_structure:
+      type: per_unit
+      unit_type: move
+      unit_rate: 358.00
+    applicable_conditions:
+      terminal_operator: Eurogate
+    source_reference:
+      document_name: "prices-and-conditions-2026.pdf"
+      document_url: "docs/sources/germany/hamburg/eurogate/prices-and-conditions-2026.pdf"
+      document_issued: "2026-01-01"
+      page: 6
+      clause: "5.1.1"
+      verified_on: "2026-09-24"
+      verified_by: "vibe-session-hamburg-terminal-scope"
+  - id: eurogate_security_charge
+    fee_family: security
+    biller: EUROGATE Container Terminal Hamburg
+    name: Security Charge
+    description: "Eurogate security charge: 24.95 EUR per container, full or empty (S9 13.1). Handling prices are plus security charge (S9 ch. 5 note)."
+    rate_structure:
+      type: per_unit
+      unit_type: container_total
+      unit_rate: 24.95
+    applicable_conditions:
+      terminal_operator: Eurogate
+    source_reference:
+      document_name: "prices-and-conditions-2026.pdf"
+      document_url: "docs/sources/germany/hamburg/eurogate/prices-and-conditions-2026.pdf"
+      document_issued: "2026-01-01"
+      page: 19
+      clause: "13.1"
+      verified_on: "2026-09-24"
+      verified_by: "vibe-session-hamburg-terminal-scope"
+  - id: eurogate_lashing
+    fee_family: cargo_fee
+    biller: EUROGATE Container Terminal Hamburg
+    name: Lashing / Unlashing (system lashings)
+    description: "Eurogate lashing/unlashing using system lashings on board seagoing vessels, 47.00 EUR per container (S9 5.2.1; basis: overall volume of containers handled and restowed). Ordered service - fires only when a lashing container count is entered; blank charges zero, never a seeded count."
+    rate_structure:
+      type: per_unit
+      unit_type: lashing_containers
+      unit_rate: 47.00
+    applicable_conditions:
+      terminal_operator: Eurogate
+    source_reference:
+      document_name: "prices-and-conditions-2026.pdf"
+      document_url: "docs/sources/germany/hamburg/eurogate/prices-and-conditions-2026.pdf"
+      document_issued: "2026-01-01"
+      page: 7
+      clause: "5.2.1"
+      verified_on: "2026-09-25"
+      verified_by: "vibe-session-eurogate-promotion"
+  - id: eurogate_twistlocks
+    fee_family: cargo_fee
+    biller: EUROGATE Container Terminal Hamburg
+    name: Setting / Removing Twistlocks
+    description: "Eurogate setting/removing twistlocks on board, 24.00 EUR per container (S9 5.2.2). Ordered service - fires only when a twistlock container count is entered; blank charges zero."
+    rate_structure:
+      type: per_unit
+      unit_type: twistlock_containers
+      unit_rate: 24.00
+    applicable_conditions:
+      terminal_operator: Eurogate
+    source_reference:
+      document_name: "prices-and-conditions-2026.pdf"
+      document_url: "docs/sources/germany/hamburg/eurogate/prices-and-conditions-2026.pdf"
+      document_issued: "2026-01-01"
+      page: 7
+      clause: "5.2.2"
+      verified_on: "2026-09-25"
+      verified_by: "vibe-session-eurogate-promotion"
+  - id: eurogate_imo_surcharge
+    fee_family: cargo_fee
+    biller: EUROGATE Container Terminal Hamburg
+    name: IMO Container Surcharge
+    description: "Eurogate surcharge for IMO (dangerous-goods) containers, 87.00 EUR per container (S9 5.3). Fires only for IMO units; the default call carries none."
+    rate_structure:
+      type: per_unit
+      unit_type: imo_containers
+      unit_rate: 87.00
+    applicable_conditions:
+      terminal_operator: Eurogate
+    source_reference:
+      document_name: "prices-and-conditions-2026.pdf"
+      document_url: "docs/sources/germany/hamburg/eurogate/prices-and-conditions-2026.pdf"
+      document_issued: "2026-01-01"
+      page: 7
+      clause: "5.3"
+      verified_on: "2026-09-25"
+      verified_by: "vibe-session-eurogate-promotion"
+  - id: eurogate_small_call_minimum
+    fee_family: terminal_handling
+    biller: EUROGATE Container Terminal Hamburg
+    name: Small-Call Minimum (up to 20 containers)
+    description: "Eurogate charge for ships with up to 20 containers handled: 3,308.00 EUR per transaction per ship (S9 5.4). A minimum bill for small calls - can never fire for the 4,000-move default; the gate is the call's attested handled-container count, entered only for small calls (blank = not a small call, charges nothing)."
+    rate_structure:
+      type: banded_flat
+      basis: small_call_containers
+      bands:
+        - min: null
+          max: 20
+          amount: 3308.00
+        - min: 20
+          max: null
+          amount: 0.00
+    applicable_conditions:
+      terminal_operator: Eurogate
+      small_call_containers: present
+    source_reference:
+      document_name: "prices-and-conditions-2026.pdf"
+      document_url: "docs/sources/germany/hamburg/eurogate/prices-and-conditions-2026.pdf"
+      document_issued: "2026-01-01"
+      page: 7
+      clause: "5.4"
+      verified_on: "2026-09-25"
+      verified_by: "vibe-session-eurogate-promotion"
+  - id: eurogate_layby_charge
+    fee_family: vessel_fee
+    biller: EUROGATE Container Terminal Hamburg
+    name: Lay-By Berth Charge
+    description: "Eurogate lay-by berth charge: ships using the terminal as a lay-by berth prior to start or after completion of cargo operations, 1.34 EUR per TEU per 24 h or part thereof; berth dues count by maximum nominal TEU intake (S9 2.1.4). Fires only when lay-by hours are entered (blank charges nothing); the default is a working cargo call. The TEU basis is the vessel's maximum nominal TEU intake."
+    rate_structure:
+      type: per_commenced_period
+      basis: teu
+      hours_input: layby_hours
+      free_hours: 0
+      period_hours: 24
+      tiers:
+        - up_to_excess_hours: null
+          rate_per_period_per_basis: 1.34
+    applicable_conditions:
+      terminal_operator: Eurogate
+      layby_hours: present
+    source_reference:
+      document_name: "prices-and-conditions-2026.pdf"
+      document_url: "docs/sources/germany/hamburg/eurogate/prices-and-conditions-2026.pdf"
+      document_issued: "2026-01-01"
+      page: 4
+      clause: "2.1.4"
+      verified_on: "2026-09-25"
+      verified_by: "vibe-session-eurogate-promotion"
+  - id: eurogate_reefer_first_24h
+    fee_family: cargo_fee
+    biller: EUROGATE Container Terminal Hamburg
+    name: Reefer Temperature Maintenance - First 24 h
+    description: "Eurogate refrigeration and temperature maintenance: first 24 hours or part thereof including plug on / plug off in the yard, 181.50 EUR per reefer container (S9 9.1). Fires only with reefer units; the default call carries none."
+    rate_structure:
+      type: per_unit
+      unit_type: reefer
+      unit_rate: 181.50
+    applicable_conditions:
+      terminal_operator: Eurogate
+    source_reference:
+      document_name: "prices-and-conditions-2026.pdf"
+      document_url: "docs/sources/germany/hamburg/eurogate/prices-and-conditions-2026.pdf"
+      document_issued: "2026-01-01"
+      page: 12
+      clause: "9.1"
+      verified_on: "2026-09-25"
+      verified_by: "vibe-session-eurogate-promotion"
+  - id: eurogate_reefer_subsequent_24h
+    fee_family: cargo_fee
+    biller: EUROGATE Container Terminal Hamburg
+    name: Reefer Temperature Maintenance - Subsequent 24 h
+    description: "Eurogate refrigeration and temperature maintenance: each subsequent 24 hours or part thereof, 144.50 EUR per reefer container per day (S9 9.2). Fires only with reefer units and reefer days beyond the first 24 h; blank charges zero."
+    rate_structure:
+      type: per_commenced_day
+      daily_rate: 144.50
+      basis: reefer_extra_days
+      unit_input: reefer_units
+      unit_type: reefer_units
+    applicable_conditions:
+      terminal_operator: Eurogate
+      reefer_extra_days: present
+    source_reference:
+      document_name: "prices-and-conditions-2026.pdf"
+      document_url: "docs/sources/germany/hamburg/eurogate/prices-and-conditions-2026.pdf"
+      document_issued: "2026-01-01"
+      page: 12
+      clause: "9.2"
+      verified_on: "2026-09-25"
+      verified_by: "vibe-session-eurogate-promotion"
+
+  # ===========================================================================
+  # EU REGULATORY BLOCK (spec v0.2.69) — ETS allowances and the FuelEU notice
+  # Transcribed into this port's own file per the silo principle, exactly as
+  # the national Sjöfartsverket rules are: the EU instruments are EU-wide, but
+  # every port file carries its own rules with its own citations and never
+  # references another port's. Authority of record:
+  # docs/sources/eu/EU_REGULATORY_EXTRACTION_REFERENCE.md.
+  # ===========================================================================
+  - id: hamburg_eu_ets_allowances
+    fee_family: regulatory
+    biller: EU (European Union) — shipping company's administering authority
+    name: EU ETS Allowances (user-specified basis)
+    description: "EU ETS surrender obligation for this call's in-scope emissions (Directive (EU) 2023/959 amending Directive 2003/87/EC, Articles 3ga-3gb): cargo and passenger ships of or above 5,000 GT, regardless of flag. Scope: 100 percent of in-port emissions plus the voyage fraction — 50 percent of extra-EU leg emissions, 100 percent of intra-EU (the shared arrival-origin selector carries the leg). The entered emissions figure is the user's own in-scope tonnage for this call — no published per-call figure exists; THETIS-MRV annual data may orient the entry but is never a default. The allowance price is EUA market data (EEX auctions), never a hardcoded rate. Blank inputs render nothing (the blank-means-nothing contract)."
+    rate_structure:
+      type: flat
+      amount: 0
+      ets_product:
+        emissions_input: ets_emissions_tco2
+        price_input: ets_allowance_price
+        phase_in_fraction: 1.0
+        phase_in_pct: 100
+        basis_note: "ETS surrender for 2026-reported emissions at 100 percent (Directive 2003/87/EC Art. 3gb(1), inserted by Directive (EU) 2023/959: 40 percent of 2024-reported, 70 percent of 2025-reported, 100 percent of 2026-reported onward); leg scope per the shared arrival-origin selector (extra-EU leg: 50 percent of voyage emissions + 100 percent in-port; intra-EU: 100 percent); allowances are surrendered in EUR (the EU-market instrument's own currency)"
+    applicable_conditions:
+      min_gt: 5000
+    estimated_parameter:
+      description: "derived from user-specified inputs — the emissions basis and the EUA price are the user's own (no published per-call emissions figure or allowance price exists; THETIS-MRV annual figures orient the entry, never default it)"
+      severity: info
+    source_reference:
+      document_name: "faq-maritime-ets.html.md (official Commission FAQ; Directive (EU) 2023/959 the instrument)"
+      document_url: "docs/sources/eu/ets/faq-maritime-ets.html.md"
+      upstream_url: "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32023L0959"
+      document_issued: "2023-05-10"
+      page: "Timing & scope"
+      clause: "Directive 2003/87/EC Art. 3ga-3gb as inserted by Directive (EU) 2023/959; surrender fractions 40/70/100 percent of 2024/2025/2026-reported emissions"
+      verified_on: "2026-09-29"
+      verified_by: "vibe-session-eu-regulatory"
+  - id: hamburg_fueleu_notice
+    fee_family: regulatory
+    biller: EU (European Union) — FuelEU compliance balance
+    name: FuelEU Maritime — annual compliance balance (notice, no per-call charge)
+    description: "FuelEU Maritime (Regulation (EU) 2023/1805, Art. 4) applies to this vessel at this port (commercial ship above 5,000 GT): the yearly average GHG intensity of the energy used on board is limited against the 2020 reference value 91.16 gCO2e/MJ, reduced 2 percent for 2025-2029 (limit 89.34 gCO2e/MJ); in-scope energy is 100 percent intra-EU voyages and at berth, 50 percent on extra-EU legs. The compliance balance is assessed ANNUALLY per ship (with pooling, banking, and borrowing across ships and years, Arts. 20-21); a deficit is penalised at 2,400 EUR per tonne VLSFO-equivalent energy (Art. 23, Annex IV B). A per-call FuelEU charge cannot be computed honestly — no per-call figure is rendered; this line is a notice only and adds nothing to any total."
+    rate_structure:
+      type: flat
+      amount: 0
+    regulatory_notice:
+      description: "FuelEU Maritime applies to this vessel at this port (commercial ship above 5,000 GT, Regulation (EU) 2023/1805 Art. 2/4): the yearly average GHG intensity of the energy used on board is limited against the 2020 reference value 91.16 gCO2e/MJ minus 2 percent for 2025-2029 (limit 89.34 gCO2e/MJ), well-to-wake; a compliance deficit is penalised at 2,400 EUR per tonne VLSFO-equivalent energy (Art. 23, Annex IV B). The compliance balance is ANNUAL per ship with pooling, banking, and borrowing across ships and years (Arts. 20-21) — a per-call FuelEU charge cannot be computed honestly, so no per-call figure is rendered; this notice adds nothing to any total."
+      severity: info
+    applicable_conditions:
+      min_gt: 5000
+    source_reference:
+      document_name: "fueleu-maritime.html.md + fueleu-qa.html.md (official Commission pages; Regulation (EU) 2023/1805 the instrument)"
+      document_url: "docs/sources/eu/fueleu/fueleu-maritime.html.md"
+      upstream_url: "https://eur-lex.europa.eu/eli/reg/2023/1805/oj/eng"
+      document_issued: "2023-09-13"
+      page: "Key facts"
+      clause: "Regulation (EU) 2023/1805 Art. 4 (91.16 reference, 2 percent 2025-2029), Arts. 20-21 (banking/borrowing/pooling), Art. 23 + Annex IV B (2,400 EUR/t VLSFO-eq penalty)"
+      verified_on: "2026-09-29"
+      verified_by: "vibe-session-eu-regulatory"
+
+# Per-port default-call data (spec v0.2.59): the port-specific input-form
+# defaults, data-authored in the port's own file. Configuration only -
+# list-price defaults, never rates. The engine overlays these on the shared
+# worst-case core (core/src/defaults.ts); the comparison applies the same
+# merge per port since v0.2.53.
+  # ==========================================================================
+  # EUROGATE SCENARIO-ADJUSTMENT LAYER (spec v0.3.3) - the deferred layer the
+  # extraction adjudicated ("storage is a scenario layer"; ch. 3-4 are
+  # scenario-dependent per-shift/per-hour charges requiring an operational
+  # schedule). Adjust, never re-transcribe: every figure derives from the
+  # pinned published rates by stated arithmetic; scenario-off renders no line
+  # and moves no total (byte-identical to v0.3.2). Storage stays excluded from
+  # the 1.5% social-fund base (S9 1.3.13).
+  # ==========================================================================
+  - id: eurogate_storage_import_20ft
+    fee_family: storage
+    biller: EUROGATE Container Terminal Hamburg
+    name: Storage Import 20ft (scenario)
+    description: "Eurogate import storage (S9 7.2): ISO 20' full containers, 3 calendar days free, then 42.00 EUR/container/day for days 4-8, 84.00 for days 9-13, 126.00 for days 14-18, 168.00 as from day 19. Counting per S9 7.5.3 (the day of delivery to the terminal is free; the day of redelivery counts as a full day). Scenario surface - fires only when storage days are entered; blank renders no line."
+    rate_structure:
+      type: progressive_daily
+      days_input: storage_days_import
+      container_count_input: containers_discharged_le20ft
+      free_days: 3
+      bands:
+        - min_days: 1
+          max_days: 5
+          rate_per_container_per_day: 42.00
+        - min_days: 6
+          max_days: 10
+          rate_per_container_per_day: 84.00
+        - min_days: 11
+          max_days: 15
+          rate_per_container_per_day: 126.00
+        - min_days: 16
+          max_days: null
+          rate_per_container_per_day: 168.00
+    applicable_conditions:
+      terminal_operator: Eurogate
+    scenario_adjusted:
+      description: "scenario-derived figure - the storage-day count is the user's scenario input over the pinned S9 7.2 schedule; never tariff-transcribed usage"
+      severity: info
+    source_reference:
+      document_name: "prices-and-conditions-2026.pdf"
+      document_url: "docs/sources/germany/hamburg/eurogate/prices-and-conditions-2026.pdf"
+      document_issued: "2026-01-01"
+      page: 9
+      clause: "7.2"
+      verified_on: "2026-10-02"
+      verified_by: "vibe-session-v0.3.3"
+  - id: eurogate_storage_import_40ft
+    fee_family: storage
+    biller: EUROGATE Container Terminal Hamburg
+    name: Storage Import 40ft (scenario)
+    description: "Eurogate import storage (S9 7.2): ISO 40' full containers, 3 calendar days free, then 84.00 EUR/container/day for days 4-8, 168.00 for days 9-13, 252.00 for days 14-18, 336.00 as from day 19. Counting per S9 7.5.3. Scenario surface - blank renders no line."
+    rate_structure:
+      type: progressive_daily
+      days_input: storage_days_import
+      container_count_input: containers_discharged_gt20ft
+      free_days: 3
+      bands:
+        - min_days: 1
+          max_days: 5
+          rate_per_container_per_day: 84.00
+        - min_days: 6
+          max_days: 10
+          rate_per_container_per_day: 168.00
+        - min_days: 11
+          max_days: 15
+          rate_per_container_per_day: 252.00
+        - min_days: 16
+          max_days: null
+          rate_per_container_per_day: 336.00
+    applicable_conditions:
+      terminal_operator: Eurogate
+    scenario_adjusted:
+      description: "scenario-derived figure - the storage-day count is the user's scenario input over the pinned S9 7.2 schedule; never tariff-transcribed usage"
+      severity: info
+    source_reference:
+      document_name: "prices-and-conditions-2026.pdf"
+      document_url: "docs/sources/germany/hamburg/eurogate/prices-and-conditions-2026.pdf"
+      document_issued: "2026-01-01"
+      page: 9
+      clause: "7.2"
+      verified_on: "2026-10-02"
+      verified_by: "vibe-session-v0.3.3"
+  - id: eurogate_storage_export_20ft
+    fee_family: storage
+    biller: EUROGATE Container Terminal Hamburg
+    name: Storage Export 20ft (scenario)
+    description: "Eurogate export storage (S9 7.1): ISO 20' full containers, 5 calendar days free, then 42.00 EUR/container/day for days 6-13, 84.00 as from day 14. Counting per S9 7.5.3. Scenario surface - blank renders no line."
+    rate_structure:
+      type: progressive_daily
+      days_input: storage_days_export
+      container_count_input: containers_loaded_le20ft
+      free_days: 5
+      bands:
+        - min_days: 1
+          max_days: 8
+          rate_per_container_per_day: 42.00
+        - min_days: 9
+          max_days: null
+          rate_per_container_per_day: 84.00
+    applicable_conditions:
+      terminal_operator: Eurogate
+    scenario_adjusted:
+      description: "scenario-derived figure - the storage-day count is the user's scenario input over the pinned S9 7.1 schedule; never tariff-transcribed usage"
+      severity: info
+    source_reference:
+      document_name: "prices-and-conditions-2026.pdf"
+      document_url: "docs/sources/germany/hamburg/eurogate/prices-and-conditions-2026.pdf"
+      document_issued: "2026-01-01"
+      page: 8
+      clause: "7.1"
+      verified_on: "2026-10-02"
+      verified_by: "vibe-session-v0.3.3"
+  - id: eurogate_storage_export_40ft
+    fee_family: storage
+    biller: EUROGATE Container Terminal Hamburg
+    name: Storage Export 40ft (scenario)
+    description: "Eurogate export storage (S9 7.1): ISO 40' full containers, 5 calendar days free, then 84.00 EUR/container/day for days 6-13, 168.00 as from day 14. Counting per S9 7.5.3. Scenario surface - blank renders no line."
+    rate_structure:
+      type: progressive_daily
+      days_input: storage_days_export
+      container_count_input: containers_loaded_gt20ft
+      free_days: 5
+      bands:
+        - min_days: 1
+          max_days: 8
+          rate_per_container_per_day: 84.00
+        - min_days: 9
+          max_days: null
+          rate_per_container_per_day: 168.00
+    applicable_conditions:
+      terminal_operator: Eurogate
+    scenario_adjusted:
+      description: "scenario-derived figure - the storage-day count is the user's scenario input over the pinned S9 7.1 schedule; never tariff-transcribed usage"
+      severity: info
+    source_reference:
+      document_name: "prices-and-conditions-2026.pdf"
+      document_url: "docs/sources/germany/hamburg/eurogate/prices-and-conditions-2026.pdf"
+      document_issued: "2026-01-01"
+      page: 8
+      clause: "7.1"
+      verified_on: "2026-10-02"
+      verified_by: "vibe-session-v0.3.3"
+  - id: eurogate_shift_surcharges
+    fee_family: ancillary_service
+    biller: EUROGATE Container Terminal Hamburg
+    name: Shift Surcharges, Overtime and Waiting Times (scenario)
+    description: "Eurogate waterside work outside weekday 1st/2nd shift (S9 ch. 3), per shift / per gang: weekday 3rd shift 2,097.00 EUR; Saturdays 1st/2nd 4,956.00; Saturdays 3rd/4th 6,947.00; Sundays and public holidays 1st/2nd 4,956.00; Sundays and public holidays 3rd/4th 6,947.00; pre-high-holiday weekday 1st shift 5,566.00; pre-high-holiday Saturday 1st shift 5,301.00. Overtime per hour/part thereof per gang (S9 3.3): weekdays by 1st shift 700.00, by 2nd 1,154.00; Saturdays 1,243.00/1,639.00/2,030.00 by shift; Sundays/holidays 1,639.00 (1st/2nd), 2,030.00 (3rd/4th). Waiting time per S9 3.4 is charged by shift per man per hour at the ch. 4 staff rate (142.00 EUR). Common costs for the line operating the vessel (S9 3.5). Scenario surface - the shift schedule is the user's scenario input; blank renders no line."
+    rate_structure:
+      type: scenario_input_sum
+      gang_count_field: shift_gangs
+      items:
+        - input_field: scenario_shifts_weekday_3rd
+          rate: 2097.00
+          unit_label: "weekday 3rd shifts"
+        - input_field: scenario_shifts_saturday_12
+          rate: 4956.00
+          unit_label: "Saturday 1st/2nd shifts"
+        - input_field: scenario_shifts_saturday_34
+          rate: 6947.00
+          unit_label: "Saturday 3rd/4th shifts"
+        - input_field: scenario_shifts_sunday_12
+          rate: 4956.00
+          unit_label: "Sunday/holiday 1st/2nd shifts"
+        - input_field: scenario_shifts_sunday_34
+          rate: 6947.00
+          unit_label: "Sunday/holiday 3rd/4th shifts"
+        - input_field: scenario_shifts_preholiday_weekday_1
+          rate: 5566.00
+          unit_label: "pre-high-holiday weekday 1st shifts"
+        - input_field: scenario_shifts_preholiday_saturday_1
+          rate: 5301.00
+          unit_label: "pre-high-holiday Saturday 1st shifts"
+        - input_field: scenario_overtime_hours_weekday_1
+          rate: 700.00
+          unit_label: "overtime h by weekday 1st shift"
+        - input_field: scenario_overtime_hours_weekday_2
+          rate: 1154.00
+          unit_label: "overtime h by weekday 2nd shift"
+        - input_field: scenario_overtime_hours_saturday_1
+          rate: 1243.00
+          unit_label: "overtime h by Saturday 1st shift"
+        - input_field: scenario_overtime_hours_saturday_2
+          rate: 1639.00
+          unit_label: "overtime h by Saturday 2nd shift"
+        - input_field: scenario_overtime_hours_saturday_3
+          rate: 2030.00
+          unit_label: "overtime h by Saturday 3rd shift"
+        - input_field: scenario_overtime_hours_sunday_12
+          rate: 1639.00
+          unit_label: "overtime h on Sundays/holidays 1st/2nd"
+        - input_field: scenario_overtime_hours_sunday_34
+          rate: 2030.00
+          unit_label: "overtime h on Sundays/holidays 3rd/4th"
+        - input_field: scenario_waiting_man_hours
+          rate: 142.00
+          unit_label: "waiting-time man-hours (per S9 3.4 at the ch. 4.1 staff rate)"
+    applicable_conditions:
+      terminal_operator: Eurogate
+    scenario_adjusted:
+      description: "scenario-derived figure - the shift/overtime/waiting schedule is the user's scenario input over the pinned S9 ch. 3/4 rates; never tariff-transcribed usage"
+      severity: info
+    source_reference:
+      document_name: "prices-and-conditions-2026.pdf"
+      document_url: "docs/sources/germany/hamburg/eurogate/prices-and-conditions-2026.pdf"
+      document_issued: "2026-01-01"
+      page: 5
+      clause: "3.1-3.4"
+      verified_on: "2026-10-02"
+      verified_by: "vibe-session-v0.3.3"
+  - id: eurogate_equipment_hire
+    fee_family: ancillary_service
+    biller: EUROGATE Container Terminal Hamburg
+    name: Hire of Handling Equipment and Staff (scenario)
+    description: "Eurogate hire of staff and equipment with terminal employees, per hour or part thereof (S9 ch. 4): staff incl. commercial 142.00 EUR; container crane incl. driver 1,841.00; van carrier incl. driver 699.00; mafi incl. driver 244.00; fork-lift up to 5 t 190.00; fork-lift over 5 t 309.00; reachstacker incl. driver 583.00; security vehicle incl. driver 190.00; security inspector 169.00; mafi trailer rental per day 212.00. Changes to the wage agreement have an immediate effect on the stated rates (S9 ch. 4 note). Scenario surface - the hire schedule is the user's scenario input; blank renders no line."
+    rate_structure:
+      type: scenario_input_sum
+      items:
+        - input_field: scenario_staff_hours
+          rate: 142.00
+          unit_label: "staff hours"
+        - input_field: scenario_crane_hours
+          rate: 1841.00
+          unit_label: "container-crane hours"
+        - input_field: scenario_van_carrier_hours
+          rate: 699.00
+          unit_label: "van-carrier hours"
+        - input_field: scenario_mafi_hours
+          rate: 244.00
+          unit_label: "mafi hours"
+        - input_field: scenario_forklift_small_hours
+          rate: 190.00
+          unit_label: "fork-lift (up to 5 t) hours"
+        - input_field: scenario_forklift_large_hours
+          rate: 309.00
+          unit_label: "fork-lift (over 5 t) hours"
+        - input_field: scenario_reachstacker_hours
+          rate: 583.00
+          unit_label: "reachstacker hours"
+        - input_field: scenario_security_vehicle_hours
+          rate: 190.00
+          unit_label: "security-vehicle hours"
+        - input_field: scenario_security_inspector_hours
+          rate: 169.00
+          unit_label: "security-inspector hours"
+        - input_field: scenario_mafi_trailer_days
+          rate: 212.00
+          unit_label: "mafi-trailer rental days"
+    applicable_conditions:
+      terminal_operator: Eurogate
+    scenario_adjusted:
+      description: "scenario-derived figure - the equipment/staff hire schedule is the user's scenario input over the pinned S9 ch. 4 rates; never tariff-transcribed usage"
+      severity: info
+    source_reference:
+      document_name: "prices-and-conditions-2026.pdf"
+      document_url: "docs/sources/germany/hamburg/eurogate/prices-and-conditions-2026.pdf"
+      document_issued: "2026-01-01"
+      page: 6
+      clause: "4.1-4.9"
+      verified_on: "2026-10-02"
+      verified_by: "vibe-session-v0.3.3"
+default_call:
+  # Terminal scope (spec v0.2.49; promotion per v0.2.66): Hamburg calls are
+  # priced against a named terminal operator; the default and reference
+  # operator is EUROGATE Container Terminal Hamburg. HHLA remains a
+  # switchable terminal variant (extraction reference §17.6).
+  terminal_operator: Eurogate
+  # NOx Tier (spec v0.2.29, amended v0.2.44): not entered by default; the
+  # engine infers from the build year when one is present.
+  engine_tier: null
+  engine_tier_estimated: null
+  infer_engine_tier_from_build_year: false
+  gangway_class: overseas
+  gangway_count: 1
+  gangway_supervision_hours: 0
+  pilotage_segment_pct: 100
+  towage_amount: 15000
+  handling_rate_per_move: 358
+  hpa_berth_usage: false
+  berth_type: quay
+  berth_hours: 0
+  esi_noise_score: null
+  quantum_prior_year_gt: 0
+  waste_short_sea_reduction: false
+  waste_alternative_fuel_reduction: false
+  waste_sustainable_waste_reduction: false
+
+# OPS speculative component descriptor (spec v0.2.57, data-authored v0.2.59):
+# presence, currency, unit - configuration only, no rates.
+ops_speculative:
+  electricity: { enabled: true, currency: EUR, unit: EUR/kWh }
+  demand: { enabled: false, currency: EUR, unit: EUR/call }
+  connection: { enabled: true, currency: EUR, unit: EUR/call }
+  per_gt: { enabled: false, currency: EUR, unit: EUR/GT }
+# Per-port input profile (spec v0.2.59): the input sections the workspace
+# renders for this port. UI configuration, never rates. The operator list
+# is the user-facing select; the gating values live in the fee rules'
+# terminal_operator applicable_conditions.
+
+
+input_profile:
+  # Port-specific reset fields (spec v0.2.60): the call inputs a port
+  # switch resets to their default. Declared per port; the App reset
+  # effect iterates the union across the registry.
+  reset_fields:
+    - engine_tier
+    - engine_tier_estimated
+    - esi_noise_score
+    - towage_amount
+    - handling_rate_per_move
+    - gangway_class
+    - gangway_count
+    - gangway_supervision_hours
+    - hpa_berth_usage
+    - berth_type
+    - berth_hours
+    - quantum_prior_year_gt
+    - pilotage_segment_pct
+    - waste_short_sea_reduction
+    - waste_alternative_fuel_reduction
+    - waste_sustainable_waste_reduction
+    - ops_electricity_price
+    - ops_demand_charge
+    - ops_connection_charge
+    - ops_per_gt_charge
+    - lashing_containers
+    - twistlock_containers
+    - imo_containers
+    - layby_hours
+    - reefer_extra_days
+    - small_call_containers
+    - ets_emissions_tco2
+    - ets_allowance_price
+    - storage_days_import
+    - storage_days_export
+    - storage_empty_days
+    - shift_gangs
+    - scenario_shifts_weekday_3rd
+    - scenario_shifts_saturday_12
+    - scenario_shifts_saturday_34
+    - scenario_shifts_sunday_12
+    - scenario_shifts_sunday_34
+    - scenario_shifts_preholiday_weekday_1
+    - scenario_shifts_preholiday_saturday_1
+    - scenario_overtime_hours_weekday_1
+    - scenario_overtime_hours_weekday_2
+    - scenario_overtime_hours_saturday_1
+    - scenario_overtime_hours_saturday_2
+    - scenario_overtime_hours_saturday_3
+    - scenario_overtime_hours_sunday_12
+    - scenario_overtime_hours_sunday_34
+    - scenario_waiting_man_hours
+    - scenario_staff_hours
+    - scenario_crane_hours
+    - scenario_van_carrier_hours
+    - scenario_mafi_hours
+    - scenario_forklift_small_hours
+    - scenario_forklift_large_hours
+    - scenario_reachstacker_hours
+    - scenario_security_vehicle_hours
+    - scenario_security_inspector_hours
+    - scenario_mafi_trailer_days
+  # Field-level inputs inside the shared general-information group (the
+  # build-year field drives the engine's Tier inference).
+  fields:
+    - build_year
+  sections:
+    - id: hamburg_call_parameters
+      heading: Hamburg Call Parameters
+      operators:
+        - value: Eurogate
+          label: EUROGATE Container Terminal Hamburg (default — reference operator)
+        - value: HHLA
+          label: HHLA (CTA/CTB/CTT — switchable terminal variant)
+    - id: hamburg_scenario_parameters
+      heading: Hamburg Scenario Parameters (Eurogate - user-specified schedule)
+    - id: eu_regulatory
+      heading: EU Regulatory (ETS allowances - user-specified basis)
